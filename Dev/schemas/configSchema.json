@@ -119,166 +119,109 @@
       "type": "boolean",
       "description": "If true, enables detailed logging of player join and leave events to the console."
     },
-    "enableSwearCheck": {
-      "type": "boolean",
-      "description": "If true, enables the Swear Word detection check."
+    "chatChecks": {
+      "type": "object",
+      "description": "Settings for chat-related checks.",
+      "properties": {
+        "swear": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "words": { "type": "array", "items": { "type": "string" } },
+            "actionProfile": { "type": "string" }
+          }
+        },
+        "advertising": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "patterns": { "type": "array", "items": { "type": "string" } },
+            "whitelist": { "type": "array", "items": { "type": "string" } },
+            "actionProfile": { "type": "string" }
+          }
+        },
+        "caps": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "minLength": { "type": "number" },
+            "percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+            "actionProfile": { "type": "string" }
+          }
+        },
+        "charRepeat": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "minLength": { "type": "number" },
+            "threshold": { "type": "number" },
+            "actionProfile": { "type": "string" }
+          }
+        },
+        "symbolSpam": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "minLength": { "type": "number" },
+            "percentage": { "type": "number", "minimum": 0, "maximum": 100 },
+            "actionProfile": { "type": "string" }
+          }
+        },
+        "fastMessage": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "thresholdMs": { "type": "number" },
+            "actionProfile": { "type": "string" }
+          }
+        }
+      }
     },
-    "swearWordList": {
-      "type": "array",
-      "description": "List of swear words to detect (case-insensitive, whole word).",
-      "items": { "type": "string" }
-    },
-    "swearCheckMuteDuration": {
-      "type": "string",
-      "description": "Duration for the mute applied on swear word detection (e.g., \"30s\", \"5m\", \"1h\"). Parsed by `playerUtils.parseDuration`."
-    },
-    "swearCheckActionProfileName": {
-      "type": "string",
-      "description": "The action profile name from `actionProfiles.js` for swear word violations."
-    },
-    "enableAntiAdvertisingCheck": {
-      "type": "boolean",
-      "description": "If true, enables the basic anti-advertising check in chat."
-    },
-    "antiAdvertisingPatterns": {
-      "type": "array",
-      "description": "List of string patterns to detect potential advertisements. These are simple substring matches.",
-      "items": { "type": "string" }
-    },
-    "antiAdvertisingActionProfileName": {
-      "type": "string",
-      "description": "The action profile name from `actionProfiles.js` for advertising violations."
-    },
-    "enableAdvancedLinkDetection": {
-      "type": "boolean",
-      "description": "If true, enables advanced regex-based link detection and whitelisting."
-    },
-    "advancedLinkRegexList": {
-      "type": "array",
-      "description": "List of regex strings for advanced link detection. Ensure these are valid JavaScript regex patterns.",
-      "items": { "type": "string", "format": "regex" }
-    },
-    "advertisingWhitelistPatterns": {
-      "type": "array",
-      "description": "List of patterns (strings or regex strings) to whitelist from advertising flags. If using regex, ensure they are valid.",
-      "items": { "type": "string" }
-    },
-    "enableCapsCheck": {
-      "type": "boolean",
-      "description": "If true, enables the check for excessive capitalization (CAPS abuse) in chat."
-    },
-    "capsCheckMinLength": {
-      "type": "number",
-      "description": "The minimum message length for the CAPS abuse check to apply."
-    },
-    "capsCheckUpperCasePercentage": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 100,
-      "description": "The percentage (0-100) of uppercase letters to trigger a CAPS abuse flag."
-    },
-    "capsCheckActionProfileName": {
-      "type": "string",
-      "description": "The action profile name from `actionProfiles.js` for CAPS abuse violations."
-    },
-    "enableCharRepeatCheck": {
-      "type": "boolean",
-      "description": "If true, enables the check for excessive character repetition in chat (e.g., \"helloooooo\")."
-    },
-    "charRepeatMinLength": {
-      "type": "number",
-      "description": "The minimum message length for the character repeat check to apply."
-    },
-    "charRepeatThreshold": {
-      "type": "number",
-      "description": "The minimum number of identical consecutive characters to trigger a flag."
-    },
-    "charRepeatActionProfileName": {
-      "type": "string",
-      "description": "The action profile name from `actionProfiles.js` for character repeat violations."
-    },
-    "enableSymbolSpamCheck": {
-      "type": "boolean",
-      "description": "If true, enables the check for excessive symbol usage in chat."
-    },
-    "symbolSpamMinLength": {
-      "type": "number",
-      "description": "The minimum message length for the symbol spam check to apply."
-    },
-    "symbolSpamPercentage": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 100,
-      "description": "The percentage (0-100) of non-alphanumeric characters to trigger a symbol spam flag."
-    },
-    "symbolSpamActionProfileName": {
-      "type": "string",
-      "description": "The action profile name from `actionProfiles.js` for symbol spam violations."
-    },
-    "enableTntAntiGrief": {
-      "type": "boolean",
-      "description": "If true, enables anti-grief measures for TNT placement."
-    },
-    "allowAdminTntPlacement": {
-      "type": "boolean",
-      "description": "If true, admins (identified by `adminTag`) can place TNT without restriction."
-    },
-    "tntPlacementAction": {
-      "type": "string",
-      "enum": ["remove", "warn", "flagOnly"],
-      "description": "Action to take when unauthorized TNT placement is detected."
-    },
-    "enableWitherAntiGrief": {
-      "type": "boolean",
-      "description": "If true, enables anti-grief measures for Wither spawning."
-    },
-    "allowAdminWitherSpawn": {
-      "type": "boolean",
-      "description": "If true, admins can spawn Withers without restriction."
-    },
-    "witherSpawnAction": {
-      "type": "string",
-      "enum": ["prevent", "kill", "warn", "flagOnly"],
-      "description": "Action for unauthorized Wither spawn."
-    },
-    "enableFireAntiGrief": {
-      "type": "boolean",
-      "description": "If true, enables anti-grief measures for fire spread/placement."
-    },
-    "allowAdminFire": {
-      "type": "boolean",
-      "description": "If true, admins can create fire without restriction."
-    },
-    "fireControlAction": {
-      "type": "string",
-      "enum": ["extinguish", "warn", "flagOnly"],
-      "description": "Action for unauthorized fire."
-    },
-    "enableLavaAntiGrief": {
-      "type": "boolean",
-      "description": "If true, enables anti-grief measures for lava placement."
-    },
-    "allowAdminLava": {
-      "type": "boolean",
-      "description": "If true, admins can place lava without restriction."
-    },
-    "lavaPlacementAction": {
-      "type": "string",
-      "enum": ["remove", "warn", "flagOnly"],
-      "description": "Action for unauthorized lava placement."
-    },
-    "enableWaterAntiGrief": {
-      "type": "boolean",
-      "description": "If true, enables anti-grief measures for water placement."
-    },
-    "allowAdminWater": {
-      "type": "boolean",
-      "description": "If true, admins can place water without restriction."
-    },
-    "waterPlacementAction": {
-      "type": "string",
-      "enum": ["remove", "warn", "flagOnly"],
-      "description": "Action for unauthorized water placement."
+    "antiGrief": {
+      "type": "object",
+      "description": "Settings for anti-grief measures.",
+      "properties": {
+        "tnt": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "allowAdmins": { "type": "boolean" },
+            "action": { "type": "string", "enum": ["remove", "warn", "flagOnly"] }
+          }
+        },
+        "wither": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "allowAdmins": { "type": "boolean" },
+            "action": { "type": "string", "enum": ["prevent", "kill", "warn", "flagOnly"] }
+          }
+        },
+        "fire": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "allowAdmins": { "type": "boolean" },
+            "action": { "type": "string", "enum": ["extinguish", "warn", "flagOnly"] }
+          }
+        },
+        "lava": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "allowAdmins": { "type": "boolean" },
+            "action": { "type": "string", "enum": ["remove", "warn", "flagOnly"] }
+          }
+        },
+        "water": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "allowAdmins": { "type": "boolean" },
+            "action": { "type": "string", "enum": ["remove", "warn", "flagOnly"] }
+          }
+        }
+      }
     },
     "enableBlockSpamAntiGrief": {
       "type": "boolean",

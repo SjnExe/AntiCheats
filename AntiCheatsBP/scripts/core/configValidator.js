@@ -199,90 +199,55 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         },
         { name: 'generalHelpMessages', type: 'array', arrayElementType: 'string' },
         { name: 'enableDetailedJoinLeaveLogging', type: 'boolean' },
-        { name: 'enableSwearCheck', type: 'boolean' },
-        { name: 'swearWordList', type: 'array', arrayElementType: 'string' },
-        { name: 'swearCheckMuteDuration', type: 'durationString' },
         {
-            name: 'swearCheckActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            }
-        },
-        { name: 'enableAntiAdvertisingCheck', type: 'boolean' },
-        { name: 'antiAdvertisingPatterns', type: 'array', arrayElementType: 'string' },
-        {
-            name: 'antiAdvertisingActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            }
-        },
-        { name: 'enableAdvancedLinkDetection', type: 'boolean' },
-        {
-            name: 'advancedLinkRegexList', type: 'array', arrayElementType: 'string',
-            validator: (val, path, errs) => {
-                val.forEach((regex, index) => {
-                    try {
-                        RegExp(regex);
-                    } catch (e) {
-                        errs.push(`${path}[${index}]: Invalid regex pattern "${regex}": ${e.message}`);
-                    }
-                });
-                return true;
-            }
-        },
-        { name: 'advertisingWhitelistPatterns', type: 'array', arrayElementType: 'string' },
-        { name: 'enableCapsCheck', type: 'boolean' },
-        { name: 'capsCheckMinLength', type: 'nonNegativeNumber' },
-        {
-            name: 'capsCheckUpperCasePercentage', type: 'number',
-            validator: (val, path, errs) => {
-                if (val < 0 || val > 100) {
-                    errs.push(`${path}: Must be between 0 and 100. Got ${val}.`);
-                }
-                return val >= 0 && val <= 100;
-            }
-        },
-        {
-            name: 'capsCheckActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            }
-        },
-        {
-            name: 'charRepeatActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            }
-        },
-        {
-            name: 'symbolSpamActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            }
-        },
-        {
-            name: 'fastMessageSpamActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            }
+            name: 'chatChecks', type: 'object', objectProperties: [
+                {
+                    name: 'swear', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'words', type: 'array', arrayElementType: 'string' },
+                        { name: 'actionProfile', type: 'string' },
+                    ]
+                },
+                {
+                    name: 'advertising', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'patterns', type: 'array', arrayElementType: 'string' },
+                        { name: 'whitelist', type: 'array', arrayElementType: 'string' },
+                        { name: 'actionProfile', type: 'string' },
+                    ]
+                },
+                {
+                    name: 'caps', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'minLength', type: 'nonNegativeNumber' },
+                        { name: 'percentage', type: 'number' },
+                        { name: 'actionProfile', type: 'string' },
+                    ]
+                },
+                {
+                    name: 'charRepeat', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'minLength', type: 'nonNegativeNumber' },
+                        { name: 'threshold', type: 'positiveNumber' },
+                        { name: 'actionProfile', type: 'string' },
+                    ]
+                },
+                {
+                    name: 'symbolSpam', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'minLength', type: 'nonNegativeNumber' },
+                        { name: 'percentage', type: 'number' },
+                        { name: 'actionProfile', type: 'string' },
+                    ]
+                },
+                {
+                    name: 'fastMessage', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'thresholdMs', type: 'positiveNumber' },
+                        { name: 'actionProfile', type: 'string' },
+                    ]
+                },
+            ]
         },
         {
             name: 'maxWordsSpamActionProfileName', type: 'string',
@@ -338,16 +303,44 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                 return actionProfileNames.includes(val);
             }
         },
-        { name: 'enableTntAntiGrief', type: 'boolean' },
         {
-            name: 'tntPlacementAction', type: 'string',
-            validator: (val, path, errs) => {
-                const valid = ['remove', 'warn', 'flagOnly'];
-                if (!valid.includes(val)) {
-                    errs.push(`${path}: Invalid action. Expected one of ${valid.join(', ')}. Got ${val}.`);
-                }
-                return valid.includes(val);
-            }
+            name: 'antiGrief', type: 'object', objectProperties: [
+                {
+                    name: 'tnt', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'allowAdmins', type: 'boolean' },
+                        { name: 'action', type: 'string' },
+                    ]
+                },
+                {
+                    name: 'wither', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'allowAdmins', type: 'boolean' },
+                        { name: 'action', type: 'string' },
+                    ]
+                },
+                {
+                    name: 'fire', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'allowAdmins', type: 'boolean' },
+                        { name: 'action', type: 'string' },
+                    ]
+                },
+                {
+                    name: 'lava', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'allowAdmins', type: 'boolean' },
+                        { name: 'action', type: 'string' },
+                    ]
+                },
+                {
+                    name: 'water', type: 'object', objectProperties: [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'allowAdmins', type: 'boolean' },
+                        { name: 'action', type: 'string' },
+                    ]
+                },
+            ]
         },
         {
             name: 'soundEvents', type: 'object',

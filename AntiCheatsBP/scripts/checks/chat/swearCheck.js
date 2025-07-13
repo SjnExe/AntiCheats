@@ -86,16 +86,16 @@ export async function checkSwear(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config?.enableSwearCheck) {
+    if (!config?.chatChecks?.swear?.enabled) {
         return;
     }
     const originalMessage = eventData.message;
-    if (!Array.isArray(config.swearWordList) || config.swearWordList.length === 0) {
-        playerUtils?.debugLog(`[SwearCheck] Skipped for ${playerName}: swearWordList is empty/undefined.`, pData?.isWatched ? playerName : null, dependencies);
+    if (!Array.isArray(config.chatChecks.swear.words) || config.chatChecks.swear.words.length === 0) {
+        playerUtils?.debugLog(`[SwearCheck] Skipped for ${playerName}: swear word list is empty/undefined.`, pData?.isWatched ? playerName : null, dependencies);
         return;
     }
 
-    const normalizedSwearWordList = config.swearWordList
+    const normalizedSwearWordList = config.chatChecks.swear.words
         .map(sw => {
             const originalSwear = String(sw ?? '');
             return {
@@ -111,7 +111,7 @@ export async function checkSwear(player, eventData, pData, dependencies) {
     }
 
     const wordsInMessage = originalMessage.split(/\s+/);
-    const rawActionProfileKey = config?.swearCheckActionProfileName ?? 'chatSwearViolation';
+    const rawActionProfileKey = config?.chatChecks?.swear?.actionProfile ?? 'chatSwearViolation';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());

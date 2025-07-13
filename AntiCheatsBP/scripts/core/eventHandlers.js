@@ -345,17 +345,17 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
     }
     const entityName = entity.typeId;
 
-    if (entity.typeId === mc.MinecraftEntityTypes.wither.id && config?.enableWitherAntiGrief) {
+    if (entity.typeId === mc.MinecraftEntityTypes.wither.id && config?.antiGrief?.wither?.enabled) {
         playerUtils?.debugLog(
-            `[EvtHdlr.EntSpawn] Wither spawned (ID: ${entity.id}). Action: ${config.witherSpawnAction}. Cause: ${cause}`,
+            `[EvtHdlr.EntSpawn] Wither spawned (ID: ${entity.id}). Action: ${config.antiGrief.wither.action}. Cause: ${cause}`,
             null, dependencies,
         );
         const violationDetails = {
-            entityId: entity.id, entityType: entity.typeId, actionTaken: config.witherSpawnAction,
+            entityId: entity.id, entityType: entity.typeId, actionTaken: config.antiGrief.wither.action,
             playerNameOrContext: 'System/Environment', cause,
         };
         await actionManager?.executeCheckAction(null, 'worldAntiGriefWitherSpawn', violationDetails, dependencies);
-        if (config.witherSpawnAction === 'kill') {
+        if (config.antiGrief.wither.action === 'kill') {
             try {
                 entity.kill();
                 playerUtils?.debugLog(`[EvtHdlr.EntSpawn] Wither (ID: ${entity.id}) killed.`, null, dependencies);
@@ -453,25 +453,24 @@ async function _handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependenci
     let defaultMessageKey = '';
     const cancelByDefault = true;
 
-    if (itemStack.typeId === 'minecraft:tnt' && config?.enableTntAntiGrief) {
+    if (itemStack.typeId === 'minecraft:tnt' && config?.antiGrief?.tnt?.enabled) {
         checkType = 'worldAntiGriefTntPlace';
-        actionConfigKey = 'tntPlacementAction';
+        actionConfigKey = 'tnt';
         defaultMessageKey = 'antigrief.tntPlacementDenied';
-    } else if (itemStack.typeId === 'minecraft:lava_bucket' && config?.enableLavaAntiGrief) {
+    } else if (itemStack.typeId === 'minecraft:lava_bucket' && config?.antiGrief?.lava?.enabled) {
         checkType = 'worldAntiGriefLava';
-        actionConfigKey = 'lavaPlacementAction';
+        actionConfigKey = 'lava';
         defaultMessageKey = 'antigrief.lavaPlacementDenied';
-    } else if (itemStack.typeId === 'minecraft:water_bucket' && config?.enableWaterAntiGrief) {
+    } else if (itemStack.typeId === 'minecraft:water_bucket' && config?.antiGrief?.water?.enabled) {
         checkType = 'worldAntiGriefWater';
-        actionConfigKey = 'waterPlacementAction';
+        actionConfigKey = 'water';
         defaultMessageKey = 'antigrief.waterPlacementDenied';
     }
 
     if (checkType) {
         const playerPermission = rankManager?.getPlayerPermissionLevel(player, dependencies);
-        const isAdminAllowed = (checkType === 'worldAntiGriefTntPlace' && config.allowAdminTntPlacement) ||
-                               (checkType === 'worldAntiGriefLava' && config.allowAdminLava) ||
-                               (checkType === 'worldAntiGriefWater' && config.allowAdminWater);
+        const griefConfig = config.antiGrief[actionConfigKey];
+        const isAdminAllowed = griefConfig.allowAdmins;
 
         if (isAdminAllowed && permissionLevels?.admin !== undefined && playerPermission <= permissionLevels.admin) {
             playerUtils?.debugLog(
@@ -481,7 +480,7 @@ async function _handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependenci
             return;
         }
 
-        const actionTaken = config[actionConfigKey] || 'prevent';
+        const actionTaken = griefConfig.action || 'prevent';
         const violationDetails = {
             itemTypeId: itemStack.typeId,
             location: { x: block.location.x, y: block.location.y, z: block.location.z },
