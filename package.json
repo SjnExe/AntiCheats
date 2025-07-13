@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .js,.json",
-    "lint:fix": "eslint . --ext .js,.json --fix"
+    "lint:fix": "eslint . --ext .js,.json --fix",
+    "lint:report": "eslint . --ext .js,.json --output-file eslint_report.txt"
   },
   "repository": {
     "type": "git",

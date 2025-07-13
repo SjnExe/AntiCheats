@@ -1,0 +1,10 @@
+
+/app/AntiCheatsBP/scripts/core/uiManager.js
+   841:9  warning  Unused eslint-disable directive (no problems were reported from 'no-magic-numbers')
+   892:5  warning  Unused eslint-disable directive (no problems were reported from 'no-magic-numbers')
+   985:9  warning  Unused eslint-disable directive (no problems were reported from 'no-magic-numbers')
+  1302:5  warning  Unused eslint-disable directive (no problems were reported from 'no-magic-numbers')
+  1331:5  warning  Unused eslint-disable directive (no problems were reported from 'no-magic-numbers')
+
+✖ 5 problems (0 errors, 5 warnings)
+  0 errors and 5 warnings potentially fixable with the `--fix` option.

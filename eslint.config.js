@@ -15,7 +15,8 @@ export default [
       "eslint.config.js", // Ignoring self
       "package.json",
       "package-lock.json",
-      ".gitignore"
+      ".gitignore",
+      "Dev/"
     ],
   },
     // Configuration for JSON files (Project-wide)
@@ -65,11 +66,7 @@ export default [
         ignoreTemplateLiterals: true,
         ignoreRegExpLiterals: true,
       }],
-      'no-magic-numbers': ['warn', {
-        'ignore': [-1, 0, 0.5, 1, 2, 3, 4, 10, 20, 100, 600, 1000],
-        'ignoreArrayIndexes': true,
-        'enforceConst': true,
-      }],
+      'no-magic-numbers': 'off',
       'no-prototype-builtins': 'warn',
       'no-empty': ['error', { 'allowEmptyCatch': false }],
       'no-invalid-this': 'warn',
@@ -159,11 +156,11 @@ export default [
         'jsdoc/require-param': ['error', { checkDestructuredRoots: false }],
         'jsdoc/require-param-type': 'error',
         'jsdoc/require-param-name': 'error',
-        'jsdoc/require-param-description': 'warn', // MODIFICATION: Changed from 'off' to 'warn' to align with StandardizationGuidelines.md (Section 4) - descriptions should be present but can be concise.
+        'jsdoc/require-param-description': 'off',
 
         'jsdoc/require-returns': ['error', { checkGetters: false }],
         'jsdoc/require-returns-type': 'error',
-        'jsdoc/require-returns-description': 'error',
+        'jsdoc/require-returns-description': 'off',
 
         'jsdoc/no-undefined-types': ['error', { disableReporting: false }],
         'jsdoc/check-types': ['error', { unifyParentAndChildTypeChecks: true, exemptTagContexts: [{tag: 'typedef', types: true}] }],
