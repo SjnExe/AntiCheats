@@ -239,14 +239,13 @@ function checkEventAPIsReady(dependencies) {
  * Performs all initializations for the AntiCheat system.
  */
 function performInitializations() {
-    const startupDependencies = getStandardDependencies();
-    validateDependencies(startupDependencies, 'performInitializations - startup');
+    const dependencies = getStandardDependencies();
+    validateDependencies(dependencies, 'performInitializations - startup');
 
-    startupDependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', startupDependencies);
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Attempting to subscribe to events...`, 'System', startupDependencies);
+    dependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', dependencies);
+    dependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Attempting to subscribe to events...`, 'System', dependencies);
 
     mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
-        const dependencies = getStandardDependencies();
         if (eventData.message.startsWith(dependencies.config.prefix)) {
             const commandHandlingDependencies = { ...dependencies, commandDefinitionMap, commandExecutionMap };
             await handleChatCommand(eventData, commandHandlingDependencies);
@@ -255,18 +254,17 @@ function performInitializations() {
         }
     });
 
-    mc.world.afterEvents.playerSpawn.subscribe((eventData) => handlePlayerSpawn(eventData, getStandardDependencies()));
-    mc.world.beforeEvents.playerLeave.subscribe((eventData) => handlePlayerLeave(eventData, getStandardDependencies()));
-    mc.world.afterEvents.entityHurt.subscribe((eventData) => handleEntityHurt(eventData, getStandardDependencies()));
-    mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies()));
-    mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies()));
-    mc.world.beforeEvents.itemUse.subscribe((eventData) => handleItemUse(eventData, getStandardDependencies()));
-    mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockBefore(eventData, getStandardDependencies()));
-    mc.world.afterEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies()));
-    mc.world.afterEvents.playerInventoryItemChange.subscribe((eventData) => handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, getStandardDependencies()));
-    mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies()));
+    mc.world.afterEvents.playerSpawn.subscribe((eventData) => handlePlayerSpawn(eventData, dependencies));
+    mc.world.beforeEvents.playerLeave.subscribe((eventData) => handlePlayerLeave(eventData, dependencies));
+    mc.world.afterEvents.entityHurt.subscribe((eventData) => handleEntityHurt(eventData, dependencies));
+    mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockBeforeEvent(eventData, dependencies));
+    mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockAfterEvent(eventData, dependencies));
+    mc.world.beforeEvents.itemUse.subscribe((eventData) => handleItemUse(eventData, dependencies));
+    mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockBefore(eventData, dependencies));
+    mc.world.afterEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockAfterEvent(eventData, dependencies));
+    mc.world.afterEvents.playerInventoryItemChange.subscribe((eventData) => handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, dependencies));
+    mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => handlePlayerDimensionChangeAfterEvent(eventData, dependencies));
     mc.world.afterEvents.entityDie.subscribe((eventData) => {
-        const dependencies = getStandardDependencies();
         if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
             handlePlayerDeath(eventData, dependencies);
         }
@@ -274,82 +272,82 @@ function performInitializations() {
             handleEntityDieForDeathEffects(eventData, dependencies);
         }
     });
-    mc.world.afterEvents.entitySpawn.subscribe((eventData) => handleEntitySpawnEventAntiGrief(eventData, getStandardDependencies()));
-    mc.world.afterEvents.pistonActivate.subscribe((eventData) => handlePistonActivateAntiGrief(eventData, getStandardDependencies()));
+    mc.world.afterEvents.entitySpawn.subscribe((eventData) => handleEntitySpawnEventAntiGrief(eventData, dependencies));
+    mc.world.afterEvents.pistonActivate.subscribe((eventData) => handlePistonActivateAntiGrief(eventData, dependencies));
 
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Initializing other modules...`, 'System', startupDependencies);
-    initializeCommands(startupDependencies);
-    initializeLogCache(startupDependencies);
-    initializeReportCache(startupDependencies);
-    initializeRanks(startupDependencies);
+    dependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Initializing other modules...`, 'System', dependencies);
+    initializeCommands(dependencies);
+    initializeLogCache(dependencies);
+    initializeReportCache(dependencies);
+    initializeRanks(dependencies);
 
-    if (startupDependencies.config.enableWorldBorderSystem) {
-        const knownDims = startupDependencies.config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
-        knownDims.forEach(dimId => getBorderSettings(dimId, startupDependencies));
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] World border settings loaded.`, 'System', startupDependencies);
+    if (dependencies.config.enableWorldBorderSystem) {
+        const knownDims = dependencies.config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
+        knownDims.forEach(dimId => getBorderSettings(dimId, dependencies));
+        dependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] World border settings loaded.`, 'System', dependencies);
     }
 
-    mc.world.sendMessage(startupDependencies.playerUtils.getString('system.core.initialized', { version: configModule.acVersion }));
+    mc.world.sendMessage(dependencies.playerUtils.getString('system.core.initialized', { version: configModule.acVersion }));
 
     // --- Configuration Validation ---
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Performing configuration validation...`, 'System', startupDependencies);
+    dependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Performing configuration validation...`, 'System', dependencies);
     const allValidationErrors = [];
     const knownCommands = getAllRegisteredCommandNames();
 
     const mainConfigErrors = validateMainConfig(configModule.defaultConfigSettings, checkActionProfiles, knownCommands, configModule.commandAliases);
     if (mainConfigErrors.length > 0) {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}] Main Config validation errors found:`, 'SystemCritical', startupDependencies);
-        mainConfigErrors.forEach(err => startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies));
+        dependencies.playerUtils.debugLog(`[${mainModuleName}] Main Config validation errors found:`, 'SystemCritical', dependencies);
+        mainConfigErrors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
         allValidationErrors.push(...mainConfigErrors.map(e => `[config.js] ${e}`));
     }
 
     const actionProfileErrors = validateActionProfiles(checkActionProfiles);
     if (actionProfileErrors.length > 0) {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}] Action Profiles validation errors found:`, 'SystemCritical', startupDependencies);
-        actionProfileErrors.forEach(err => startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies));
+        dependencies.playerUtils.debugLog(`[${mainModuleName}] Action Profiles validation errors found:`, 'SystemCritical', dependencies);
+        actionProfileErrors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
         allValidationErrors.push(...actionProfileErrors.map(e => `[actionProfiles.js] ${e}`));
     }
 
     const autoModErrors = validateAutoModConfig(automodConfig, checkActionProfiles);
     if (autoModErrors.length > 0) {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}] AutoMod Config validation errors found:`, 'SystemCritical', startupDependencies);
-        autoModErrors.forEach(err => startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies));
+        dependencies.playerUtils.debugLog(`[${mainModuleName}] AutoMod Config validation errors found:`, 'SystemCritical', dependencies);
+        autoModErrors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
         allValidationErrors.push(...autoModErrors.map(e => `[automodConfig.js] ${e}`));
     }
 
     const ranksConfigForValidation = { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel };
-    const ranksConfigErrors = validateRanksConfig(ranksConfigForValidation, startupDependencies.config.ownerPlayerName, startupDependencies.config.adminTag);
+    const ranksConfigErrors = validateRanksConfig(ranksConfigForValidation, dependencies.config.ownerPlayerName, dependencies.config.adminTag);
     if (ranksConfigErrors.length > 0) {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}] Ranks Config validation errors found:`, 'SystemCritical', startupDependencies);
-        ranksConfigErrors.forEach(err => startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies));
+        dependencies.playerUtils.debugLog(`[${mainModuleName}] Ranks Config validation errors found:`, 'SystemCritical', dependencies);
+        ranksConfigErrors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
         allValidationErrors.push(...ranksConfigErrors.map(e => `[ranksConfig.js] ${e}`));
     }
 
     if (allValidationErrors.length > 0) {
         const summaryMessage = `CRITICAL: AntiCheat configuration validation failed with ${allValidationErrors.length} error(s). Check logs for details.`;
-        startupDependencies.playerUtils.notifyAdmins(summaryMessage, 'SystemCritical', startupDependencies, true);
+        dependencies.playerUtils.notifyAdmins(summaryMessage, 'SystemCritical', dependencies, true);
     } else {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}] All configurations validated successfully.`, 'System', startupDependencies);
+        dependencies.playerUtils.debugLog(`[${mainModuleName}] All configurations validated successfully.`, 'System', dependencies);
     }
     // --- End Configuration Validation ---
 
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}] Anti-Cheat Core System Initialized. Tick loop active.`, 'System', startupDependencies);
+    dependencies.playerUtils.debugLog(`[${mainModuleName}] Anti-Cheat Core System Initialized. Tick loop active.`, 'System', dependencies);
 
     mc.system.runInterval(async () => {
         currentTick++;
-        const tickDependencies = getStandardDependencies();
+        dependencies.currentTick = currentTick; // Update the tick in the shared dependencies object
 
-        if (tickDependencies.config.enableWorldBorderSystem) {
+        if (dependencies.config.enableWorldBorderSystem) {
             try {
-                processWorldBorderResizing(tickDependencies);
+                processWorldBorderResizing(dependencies);
             } catch (e) {
-                tickDependencies.playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', tickDependencies);
-                addLog({ actionType: 'errorMainWorldBorderResize', context: 'Main.TickLoop.worldBorderResizing', details: { errorMessage: e.message, stack: e.stack } }, tickDependencies);
+                dependencies.playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', dependencies);
+                addLog({ actionType: 'errorMainWorldBorderResize', context: 'Main.TickLoop.worldBorderResizing', details: { errorMessage: e.message, stack: e.stack } }, dependencies);
             }
         }
 
         const allPlayers = mc.world.getAllPlayers();
-        cleanupActivePlayerData(allPlayers, tickDependencies);
+        cleanupActivePlayerData(allPlayers, dependencies);
 
         for (const player of allPlayers) {
             if (!player?.isValid()) {
@@ -357,34 +355,35 @@ function performInitializations() {
             }
             let pData;
             try {
-                pData = await ensurePlayerDataInitialized(player, currentTick, tickDependencies);
+                pData = await ensurePlayerDataInitialized(player, currentTick, dependencies);
             } catch (e) {
-                tickDependencies.playerUtils.debugLog(`[TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, tickDependencies);
+                dependencies.playerUtils.debugLog(`[TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, dependencies);
                 continue;
             }
             if (!pData) {
                 continue;
             }
 
-            updateTransientPlayerData(player, pData, tickDependencies);
-            clearExpiredItemUseStates(pData, tickDependencies);
+            updateTransientPlayerData(player, pData, dependencies);
+            clearExpiredItemUseStates(pData, dependencies);
 
             // Execute all registered checks for the player
             for (const checkName in checks) {
+                const checkFunction = checks[checkName];
                 // Skip non-function properties if any exist on the checks object
-                if (typeof checks[checkName] !== 'function') {
+                if (typeof checkFunction !== 'function') {
                     continue;
                 }
 
                 // Map check function name to its corresponding config key
                 const configKey = `enable${checkName.charAt(0).toUpperCase() + checkName.slice(1)}`;
-                if (tickDependencies.config[configKey]) {
+                if (dependencies.config[configKey]) {
                     try {
                         // Await the check function
-                        await checks[checkName](player, pData, tickDependencies);
+                        await checkFunction(player, pData, dependencies);
                     } catch (checkError) {
                         const errorMessage = `[TickLoop] Error during ${checkName} for ${player?.nameTag}: ${checkError?.message ?? 'Unknown error'}`;
-                        tickDependencies.playerUtils.debugLog(errorMessage, player?.nameTag, tickDependencies);
+                        dependencies.playerUtils.debugLog(errorMessage, player?.nameTag, dependencies);
                         addLog({
                             actionType: 'error.main.playerTick.checkFail',
                             context: 'Main.TickLoop.playerChecks',
@@ -395,42 +394,41 @@ function performInitializations() {
                                 message: checkError?.message ?? 'N/A',
                                 rawErrorStack: checkError?.stack ?? 'N/A',
                             },
-                        }, tickDependencies);
+                        }, dependencies);
                     }
                 }
             }
 
-            if (tickDependencies.config.enableWorldBorderSystem) {
-                enforceWorldBorderForPlayer(player, pData, tickDependencies);
+            if (dependencies.config.enableWorldBorderSystem) {
+                enforceWorldBorderForPlayer(player, pData, dependencies);
             }
         }
 
         if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
-            tickDependencies.playerUtils.debugLog(`Performing periodic data persistence.`, 'System', tickDependencies);
+            dependencies.playerUtils.debugLog(`Performing periodic data persistence.`, 'System', dependencies);
             allPlayers.forEach(async player => {
                 if (!player.isValid()) {
                     return;
                 }
                 const pData = getPlayerData(player.id);
                 if (pData?.isDirtyForSave) {
-                    await saveDirtyPlayerData(player, tickDependencies);
+                    await saveDirtyPlayerData(player, dependencies);
                 }
             });
-            persistLogCacheToDisk(tickDependencies);
-            persistReportsToDisk(tickDependencies);
+            persistLogCacheToDisk(dependencies);
+            persistReportsToDisk(dependencies);
         }
     }, 1);
 
     mc.system.runInterval(() => {
-        const tpaDeps = getStandardDependencies();
-        if (tpaDeps.config.enableTpaSystem) {
-            clearExpiredRequests(tpaDeps);
+        if (dependencies.config.enableTpaSystem) {
+            clearExpiredRequests(dependencies);
             getRequestsInWarmup().forEach(req => {
-                if (tpaDeps.config.tpaCancelOnMoveDuringWarmup) {
-                    checkPlayerMovementDuringWarmup(req, tpaDeps);
+                if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
+                    checkPlayerMovementDuringWarmup(req, dependencies);
                 }
                 if (req.status === 'pendingTeleportWarmup' && Date.now() >= (req.warmupExpiryTimestamp || 0)) {
-                    executeTeleport(req.requestId, tpaDeps);
+                    executeTeleport(req.requestId, dependencies);
                 }
             });
         }
