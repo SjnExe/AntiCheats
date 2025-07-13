@@ -404,24 +404,29 @@ async function processPlayer(player, dependencies) {
             continue;
         }
 
-        const configKey = `enable${checkName.charAt(0).toUpperCase() + checkName.slice(1)}`;
-        if (dependencies.config[configKey]) {
-            try {
-                await checkFunction(player, pData, dependencies);
-            } catch (checkError) {
-                const errorMessage = `[TickLoop] Error during ${checkName} for ${player?.nameTag}: ${checkError?.message ?? 'Unknown error'}`;
-                dependencies.playerUtils.debugLog(errorMessage, player?.nameTag, dependencies);
-                addLog({
-                    actionType: 'error.main.playerTick.checkFail',
-                    context: 'Main.TickLoop.playerChecks',
-                    targetName: player?.nameTag || 'UnknownPlayer',
-                    details: {
-                        check: checkName,
-                        configKey,
-                        message: checkError?.message ?? 'N/A',
-                        rawErrorStack: checkError?.stack ?? 'N/A',
-                    },
-                }, dependencies);
+        const checkConfig = dependencies.config.checks[checkName];
+        if (checkConfig?.enabled) {
+            const lastCheckTick = pData.lastCheckTick?.[checkName] || 0;
+            const interval = checkConfig.intervalTicks || 1;
+            if (currentTick - lastCheckTick >= interval) {
+                pData.lastCheckTick = pData.lastCheckTick || {};
+                pData.lastCheckTick[checkName] = currentTick;
+                try {
+                    await checkFunction(player, pData, dependencies);
+                } catch (checkError) {
+                    const errorMessage = `[TickLoop] Error during ${checkName} for ${player?.nameTag}: ${checkError?.message ?? 'Unknown error'}`;
+                    dependencies.playerUtils.debugLog(errorMessage, player?.nameTag, dependencies);
+                    addLog({
+                        actionType: 'error.main.playerTick.checkFail',
+                        context: 'Main.TickLoop.playerChecks',
+                        targetName: player?.nameTag || 'UnknownPlayer',
+                        details: {
+                            check: checkName,
+                            message: checkError?.message ?? 'N/A',
+                            rawErrorStack: checkError?.stack ?? 'N/A',
+                        },
+                    }, dependencies);
+                }
             }
         }
     }
