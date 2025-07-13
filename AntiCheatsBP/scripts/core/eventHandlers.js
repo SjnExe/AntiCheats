@@ -1,22 +1,23 @@
-// Profiling data structure from main.js - needs to be accessible or passed if used here directly.
-// For now, assume it's globally accessible for simplicity in this example, or passed via dependencies.
-// A better approach would be to pass `profilingData` through `dependencies`.
-// Let's assume `dependencies.profilingData` and `dependencies.MAX_PROFILING_HISTORY` will be available.
-
-/**
- * Wraps an event handler function with profiling logic.
- * @module AntiCheatsBP/scripts/core/eventHandlers
- * @param {string} handlerName - The name of the event handler for logging.
- * @param {Function} handlerFunction - The actual event handler function.
- * @returns {Function} - The wrapped event handler function.
- */
+import * as mc from '@minecraft/server';
+import { getExpectedBreakTicks, isNetherLocked, isEndLocked, formatSessionDuration } from '../utils/index.js';
+const defaultCombatLogThresholdSeconds = 15;
+const welcomeMessageDelayTicks = 20;
+const deathCoordsMessageDelayTicks = 5;
+const defaultFoodUseDurationSeconds = 1.6;
+const ticksPerSecond = 20;
+const defaultTowerPlacementHistoryLength = 20;
+const blockOffsetOneBelow = -1;
+const blockOffsetTwoBelow = -2;
+const golemConstructionCheckTickWindow = 10;
+const renderDistanceCheckDelayTicks = 100;
+const minTimeoutDelayTicks = 1;
 function profileEventHandler(handlerName, handlerFunction) {
-    return async function(...args) {
-        const dependencies = args[args.length - 1]; // Dependencies object is usually the last argument
+    return async function (...args) {
+        const dependencies = args[args.length - 1];
         if (dependencies && dependencies.config && dependencies.config.enablePerformanceProfiling && dependencies.profilingData) {
             const startTime = Date.now();
             try {
-                await handlerFunction.apply(null, args); // Explicitly set 'this' to null
+                await handlerFunction.apply(null, args);
             } finally {
                 const endTime = Date.now();
                 const duration = endTime - startTime;
@@ -31,37 +32,10 @@ function profileEventHandler(handlerName, handlerFunction) {
                 }
             }
         } else {
-            await handlerFunction.apply(null, args); // Explicitly set 'this' to null
+            await handlerFunction.apply(null, args);
         }
     };
 }
-
-/**
- * @file Centralized handlers for various Minecraft Server API events.
- * Ensures consistent error handling and dependency usage.
- */
-import * as mc from '@minecraft/server';
-import { getExpectedBreakTicks, isNetherLocked, isEndLocked, formatSessionDuration } from '../utils/index.js';
-
-// Constants for magic numbers used in this file
-const defaultCombatLogThresholdSeconds = 15;
-const welcomeMessageDelayTicks = 20;
-const deathCoordsMessageDelayTicks = 5;
-const defaultFoodUseDurationSeconds = 1.6;
-const ticksPerSecond = 20;
-const defaultTowerPlacementHistoryLength = 20; // Renamed for clarity and to match usage
-const blockOffsetOneBelow = -1; // This seems to be used as a direct value, not a config default
-const blockOffsetTwoBelow = -2; // This also seems to be used as a direct value
-const golemConstructionCheckTickWindow = 10; // For Math.abs(...) < 10
-const renderDistanceCheckDelayTicks = 100;
-const minTimeoutDelayTicks = 1;
-
-
-/**
- * Handles player leave events.
- * @param {import('@minecraft/server').PlayerLeaveBeforeEvent} eventData - The player leave event data.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
- */
 async function _handlePlayerLeave(eventData, dependencies) {
     const { playerDataManager, playerUtils, config, logManager, actionManager } = dependencies;
     const { getPlayerData } = playerDataManager;

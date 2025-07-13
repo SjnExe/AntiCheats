@@ -11,7 +11,6 @@
  */
 /** @type {{[key: string]: import('../types.js').ActionProfileEntry}} */
 export const checkActionProfiles = {
-    // Movement Checks
     movementFlyHover: {
         enabled: true,
         flag: {
@@ -32,7 +31,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected excessive ground speed. Speed: {speedBps} BPS (Max: {maxAllowedBps})',
-            type: 'movementSpeed', // General type, specific check is 'movementSpeedGround'
+            type: 'movementSpeed',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bSpeed (Ground)§r. Speed: §a{speedBps}§r BPS (Max: §a{maxAllowedBps}§r)',
@@ -132,7 +131,6 @@ export const checkActionProfiles = {
             detailsPrefix: 'Sustained Flight: ',
         },
     },
-    // Combat Checks
     combatReachAttack: {
         enabled: true,
         flag: {
@@ -168,7 +166,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected suspicious pitch snap after attack. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
-            type: 'combatViewSnap', // General type for view anomalies
+            type: 'combatViewSnap',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bPitch Snap§r. Change: §a{change}°§r, Limit: §a{limit}°§r (§a{postAttackTimeMs}ms§r after attack)',
@@ -183,7 +181,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected suspicious yaw snap after attack. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
-            type: 'combatViewSnap', // General type
+            type: 'combatViewSnap',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bYaw Snap§r. Change: §a{change}°§r, Limit: §a{limit}°§r (§a{postAttackTimeMs}ms§r after attack)',
@@ -213,7 +211,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})',
-            type: 'combatAura', // General aura type
+            type: 'combatAura',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bMulti-Target Aura§r. Targets: §a{targetsHit}§r in §a{windowSeconds}s§r (Threshold: §a{threshold}§r)',
@@ -228,7 +226,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 5,
             reason: 'System detected player attacking while sleeping. Target: {targetEntityType}',
-            type: 'combatStateConflict', // General state conflict type
+            type: 'combatStateConflict',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bAttacking While Sleeping§r. Target: §a{targetEntityType}§r',
@@ -286,7 +284,7 @@ export const checkActionProfiles = {
     combatLog: {
         enabled: true,
         flag: {
-            increment: 0, // Actual increment handled by playerLeave event based on config
+            increment: 0,
             reason: 'Player disconnected {timeSinceLastCombat}s after combat. Flags: +{incrementAmount}',
             type: 'combatLog',
         },
@@ -298,8 +296,6 @@ export const checkActionProfiles = {
             detailsPrefix: 'Combat Log Violation: ',
         },
     },
-
-    // World Interaction Checks
     worldNuker: {
         enabled: true,
         flag: {
@@ -449,7 +445,7 @@ export const checkActionProfiles = {
             actionType: 'detectedInstaBreakUnbreakable',
             detailsPrefix: 'InstaBreak (Unbreakable) Violation: ',
         },
-        cancelEvent: true, // Typically, this check would cancel the break event
+        cancelEvent: true,
     },
     worldInstaBreakSpeed: {
         enabled: true,
@@ -466,8 +462,6 @@ export const checkActionProfiles = {
             detailsPrefix: 'InstaBreak (Speed) Violation: ',
         },
     },
-
-    // Player State/Data Checks
     playerNameSpoof: {
         enabled: true,
         flag: {
@@ -498,12 +492,12 @@ export const checkActionProfiles = {
             detailsPrefix: 'Anti-GMC Violation: ',
         },
     },
-    playerInventoryModSwitchUse: { // Specific profile for switch-use pattern
+    playerInventoryModSwitchUse: {
         enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected suspicious inventory manipulation (Switch-Use). Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}',
-            type: 'playerInventoryMod', // General type
+            type: 'playerInventoryMod',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bInventoryMod (Switch-Use)§r. Detail: §a{reasonDetail}§r. Item: §a{itemType}§r, Slot: §a{slot}§r',
@@ -513,12 +507,12 @@ export const checkActionProfiles = {
             detailsPrefix: 'InventoryMod (Switch-Use) Violation: ',
         },
     },
-    playerInventoryModMoveLocked: { // Specific profile for moving items while UI should be locked
+    playerInventoryModMoveLocked: {
         enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected suspicious inventory manipulation (Move-Locked). Detail: {reasonDetail}. Item: {itemTypeInvolved}, Slot: {slotChanged}, Action: {actionInProgress}',
-            type: 'playerInventoryMod', // General type
+            type: 'playerInventoryMod',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bInventoryMod (Move-Locked)§r. Detail: §a{reasonDetail}§r. Item: §a{itemTypeInvolved}§r, Slot: §a{slotChanged}§r, Action: §a{actionInProgress}§r',
@@ -533,7 +527,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Client reported an excessive render distance: {reportedDistance} chunks (Max: {maxAllowed} chunks).',
-            type: 'playerClientAnomaly', // General type for client-side anomalies
+            type: 'playerClientAnomaly',
         },
         notifyAdmins: {
             message: '§e{playerName}§r reported render distance of §a{reportedDistance}§r chunks (Max: §a{maxAllowed}§r). Potential client modification.',
@@ -558,8 +552,6 @@ export const checkActionProfiles = {
             detailsPrefix: 'Self-Hurt Violation: ',
         },
     },
-
-    // Action Checks
     actionFastUse: {
         enabled: true,
         flag: {
@@ -575,8 +567,6 @@ export const checkActionProfiles = {
             detailsPrefix: 'Fast Use Violation: ',
         },
     },
-
-    // Chat Checks
     chatSpamFastMessage: {
         enabled: true,
         flag: {
@@ -587,7 +577,7 @@ export const checkActionProfiles = {
         log: {
             actionType: 'detectedFastMessageSpam',
             detailsPrefix: 'Msg: \'{messageContent}\'. Interval: {timeSinceLastMsgMs}ms. Threshold: {thresholdMs}ms. ',
-            includeViolationDetails: false, // Details are in reason/prefix
+            includeViolationDetails: false,
         },
         notifyAdmins: {
             message: '§e{playerName}§7 is sending messages too quickly (§a{timeSinceLastMsgMs}ms§7). Flagged. (Msg: §f{messageContent}§7)',
@@ -809,7 +799,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Message contained newline characters. Message: {message}',
-            type: 'chatFormattingViolation', // General type for formatting issues
+            type: 'chatFormattingViolation',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for using §bnewlines§r in chat. Message: §f{message}§r',
@@ -836,8 +826,6 @@ export const checkActionProfiles = {
         },
         cancelMessage: true,
     },
-
-    // AntiGrief Checks
     worldAntiGriefTntPlace: {
         enabled: true,
         flag: {
@@ -852,7 +840,7 @@ export const checkActionProfiles = {
             actionType: 'antiGriefTntPlacement',
             detailsPrefix: 'AntiGrief TNT: ',
         },
-        cancelEvent: true, // Assuming default action from config is to cancel
+        cancelEvent: true,
     },
     worldAntiGriefWitherSpawn: {
         enabled: true,
@@ -868,7 +856,7 @@ export const checkActionProfiles = {
             actionType: 'antiGriefWitherSpawn',
             detailsPrefix: 'AntiGrief Wither: ',
         },
-        cancelEvent: true, // If action is 'prevent'
+        cancelEvent: true,
     },
     worldAntiGriefFire: {
         enabled: true,
@@ -963,9 +951,9 @@ export const checkActionProfiles = {
             detailsPrefix: 'AntiGrief BlockSpam (Density): ',
         },
     },
-    worldAntiGriefPistonLag: { // This is primarily a notification/log, not usually a player flag
+    worldAntiGriefPistonLag: {
         enabled: true,
-        flag: null, // No direct player flag, it's a world event log
+        flag: null,
         notifyAdmins: {
             message: '[AntiGrief] Rapid §bpiston activity§r detected at §a{x},{y},{z}§r in §a{dimensionId}§r. Rate: §a{rate}/sec§r over §a{duration}s§r. (Potential Lag)',
         },

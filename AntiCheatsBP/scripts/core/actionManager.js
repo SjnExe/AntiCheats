@@ -3,10 +3,7 @@
  * @module AntiCheatsBP/scripts/core/actionManager
  * This module is responsible for interpreting check results and applying configured consequences.
  */
-
-// Constants
 const DECIMAL_PLACES_FOR_VIOLATION_DETAILS = 3;
-
 /**
  * Formats violation details into a readable string.
  * @param {import('../types.js').ViolationDetails | undefined} violationDetails - An object containing details of the violation.
@@ -25,7 +22,6 @@ function formatViolationDetails(violationDetails) {
         })
         .join(', ');
 }
-
 /**
  * Formats a message template with player name, check type, and violation details.
  * @param {string | undefined} template - The message template with placeholders like {playerName}, {checkType}, {detailsString}, and any keys from violationDetails.
@@ -42,7 +38,6 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
     message = message.replace(/{playerName}/g, playerName);
     message = message.replace(/{checkType}/g, checkType);
     message = message.replace(/{detailsString}/g, formatViolationDetails(violationDetails));
-
     if (violationDetails && typeof violationDetails === 'object') {
         for (const key in violationDetails) {
             if (Object.prototype.hasOwnProperty.call(violationDetails, key)) {
@@ -58,7 +53,6 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
     }
     return message;
 }
-
 /**
  * Executes configured actions for a detected cheat/violation based on predefined profiles.
  * Handles cases where `player` might be null (e.g., system-level checks).
@@ -72,23 +66,19 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
     const { playerDataManager, playerUtils, logManager, checkActionProfiles, config } = dependencies;
     const playerNameForLog = player?.nameTag ?? 'System';
-
     if (!checkActionProfiles) {
         playerUtils?.debugLog(`[ActionManager.executeCheckAction CRITICAL] checkActionProfiles not found in dependencies. Cannot process action for ${checkType}. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
-
     const profile = checkActionProfiles[checkType];
     if (!profile) {
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] No action profile found for checkType: '${checkType}'. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
-
     if (!profile.enabled) {
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] Actions for checkType '${checkType}' are disabled. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
-
     const baseReasonTemplate = profile.flag?.reason || `Triggered ${checkType}`;
     const flagReasonMessage = formatActionMessage(
         baseReasonTemplate,
@@ -96,11 +86,9 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         checkType,
         violationDetails,
     );
-
     if (player && profile.flag) {
         const flagType = profile.flag.type || checkType;
         const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
-
         for (let i = 0; i < increment; i++) {
             await playerDataManager?.addFlag(player, flagType, flagReasonMessage, dependencies, violationDetails);
         }
@@ -108,11 +96,9 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     } else if (!player && profile.flag) {
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] Skipping flagging for checkType '${checkType}' (player is null).`, null, dependencies);
     }
-
     if (profile.log) {
         const defaultPascalCase = `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
         const logActionType = profile.log.actionType || (defaultPascalCase.charAt(0).toLowerCase() + defaultPascalCase.slice(1));
-
         let logDetailsString = profile.log.detailsPrefix || '';
         if (profile.log.includeViolationDetails !== false) {
             logDetailsString += formatViolationDetails(violationDetails);
@@ -129,7 +115,6 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             dimensionId: player?.dimension?.id,
         }, dependencies);
     }
-
     if (profile.notifyAdmins?.message) {
         const notifyMsg = formatActionMessage(
             profile.notifyAdmins.message,
@@ -137,26 +122,18 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             checkType,
             violationDetails,
         );
-        // Re-fetch pData if player exists, as addFlag was awaited and pData might have changed or player disconnected
         const pDataAfterAwait = player && player.isValid() ? playerDataManager?.getPlayerData(player.id) : null;
-
         if (config.notifyOnPlayerFlagged !== false) {
-            playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pDataAfterAwait); // Use the re-fetched pData
+            playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pDataAfterAwait);
         }
     }
-
-    // Use the re-fetched pData (pDataAfterAwait) for lastViolationDetailsMap update
-    // This block should only execute if player was valid and pDataAfterAwait was successfully fetched.
     if (player && player.isValid() && violationDetails && Object.keys(violationDetails).length > 0) {
-        // Using a fresh fetch here to be absolutely certain after all awaits.
-        // However, if pDataAfterAwait from above is sufficient and confirmed valid, it can be reused.
-        // For maximum safety in this specific update:
         const currentPData = playerDataManager?.getPlayerData(player.id);
         if (currentPData) {
             currentPData.lastViolationDetailsMap ??= {};
             const detailsToStore = {
                 timestamp: Date.now(),
-                details: formatViolationDetails(violationDetails), // General formatted details
+                details: formatViolationDetails(violationDetails),
             };
             if (violationDetails.itemTypeId) {
                 detailsToStore.itemTypeId = violationDetails.itemTypeId;
@@ -164,11 +141,10 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             if (typeof violationDetails.quantityFound === 'number') {
                 detailsToStore.quantityFound = violationDetails.quantityFound;
             }
-
             currentPData.lastViolationDetailsMap[checkType] = detailsToStore;
             currentPData.isDirtyForSave = true;
             playerUtils?.debugLog(`[ActionManager.executeCheckAction] Stored violation details for check '${checkType}' for ${playerNameForLog}: ${JSON.stringify(detailsToStore)}`, player?.nameTag, dependencies);
-        } else { // Player is valid, but pData is null (should be rare if player just interacted)
+        } else {
             playerUtils?.debugLog(`[ActionManager.executeCheckAction] Could not store violation details for '${checkType}' (pData not found for ${playerNameForLog} after await).`, player?.nameTag, dependencies);
         }
     } else if (player && !player.isValid() && violationDetails && Object.keys(violationDetails).length > 0) {
