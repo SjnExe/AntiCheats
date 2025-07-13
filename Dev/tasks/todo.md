@@ -5,9 +5,9 @@ This file lists the tasks for improving the AntiCheat addon.
 ## Code Quality and Maintainability
 
 - [ ] **Refactor `config.js`:**
-    - [ ] Group related settings into logical sections.
+    - [x] Group related settings into logical sections.
     - [ ] Provide clear and concise comments for each setting.
-    - [ ] Simplify complex or redundant settings.
+    - [x] Simplify complex or redundant settings.
 - [ ] **Improve `commandManager.js`:**
     - [x] Implement dynamic command loading to improve performance.
     - [x] Streamline the command disabling mechanism.
