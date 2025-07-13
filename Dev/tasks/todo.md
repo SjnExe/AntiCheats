@@ -12,9 +12,9 @@ This file lists the tasks for improving the AntiCheat addon.
     - [x] Implement dynamic command loading to improve performance.
     - [x] Streamline the command disabling mechanism.
     - [x] Provide more specific error messages for command failures.
-- [ ] **Standardize code style:**
-    - [ ] Ensure all code adheres to a consistent style guide.
-    - [ ] Use a linter to automatically enforce code style.
+- [x] **Standardize code style:**
+    - [x] Ensure all code adheres to a consistent style guide.
+    - [x] Use a linter to automatically enforce code style.
 - [ ] **Add unit tests:**
     - [ ] Write unit tests for critical components, such as the command manager and the configuration loader.
     - [ ] Set up a continuous integration (CI) pipeline to run tests automatically.
