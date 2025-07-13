@@ -24,9 +24,9 @@ This file lists the tasks for improving the AntiCheat addon.
 - [x] **Optimize the main tick loop:**
     - [x] Profile the main tick loop to identify performance bottlenecks.
     - [x] Implement caching or other optimizations to reduce the frequency of expensive checks.
-- [ ] **Optimize individual checks:**
-    - [ ] Review each check to identify potential performance improvements.
-    - [ ] Use more efficient algorithms and data structures.
+- [x] **Optimize individual checks:**
+    - [x] Review each check to identify potential performance improvements.
+    - [x] Use more efficient algorithms and data structures.
 - [ ] **Provide performance guidance:**
     - [ ] Document the performance impact of each check.
     - [ ] Provide recommendations for configuring the addon for optimal performance.
