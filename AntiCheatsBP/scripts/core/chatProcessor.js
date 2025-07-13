@@ -3,13 +3,9 @@
  * @module AntiCheatsBP/scripts/core/chatProcessor
  */
 import * as mc from '@minecraft/server';
-
-// Constants
-const MAX_MESSAGE_SNIPPET_LENGTH = 50; // Used for logging/debug, not a config default
+const MAX_MESSAGE_SNIPPET_LENGTH = 50;
 const DEFAULT_CHAT_DURING_COMBAT_COOLDOWN_SECONDS = 4;
 const DEFAULT_MAX_MESSAGE_LENGTH = 256;
-
-
 /**
  * Processes an incoming chat message, performing various checks and formatting.
  * This function is typically called from a `beforeChatSend` event handler.
@@ -21,29 +17,26 @@ const DEFAULT_MAX_MESSAGE_LENGTH = 256;
  * @returns {Promise<void>}
  */
 export async function processChatMessage(player, pData, originalMessage, eventData, dependencies) {
-    const { config, playerUtils, checks, playerDataManager, logManager, actionManager, rankManager } = dependencies; // getString removed
+    const { config, playerUtils, checks, playerDataManager, logManager, actionManager, rankManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
-
     try {
         if (!player?.isValid()) {
             console.warn('[ChatProcessor.processChatMessage] Invalid player object received.');
             eventData.cancel = true;
             return;
         }
-
         if (!pData) {
-            playerUtils?.warnPlayer(player, playerUtils.getString('error.playerDataNotFound', dependencies)); // MODIFIED
+            playerUtils?.warnPlayer(player, playerUtils.getString('error.playerDataNotFound', dependencies));
             eventData.cancel = true;
             playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cancelling chat for ${playerName} due to missing pData.`, playerName, dependencies);
             return;
         }
-
         if (playerDataManager?.isMuted(player, dependencies)) {
             const muteInfo = playerDataManager.getMuteInfo(player, dependencies);
-            const reason = muteInfo?.reason ?? playerUtils.getString('common.value.noReasonProvided', dependencies); // MODIFIED
-            const formattedMuteMessage = playerUtils.getString('chat.error.mutedDetailed', dependencies, { // MODIFIED
+            const reason = muteInfo?.reason ?? playerUtils.getString('common.value.noReasonProvided', dependencies);
+            const formattedMuteMessage = playerUtils.getString('chat.error.mutedDetailed', dependencies, {
                 reason,
-                duration: muteInfo?.unmuteTime === Infinity ? playerUtils.getString('common.value.permanent', dependencies) : playerUtils.formatDurationFriendly(muteInfo?.unmuteTime - Date.now()), // MODIFIED (formatDurationFriendly is on playerUtils)
+                duration: muteInfo?.unmuteTime === Infinity ? playerUtils.getString('common.value.permanent', dependencies) : playerUtils.formatDurationFriendly(muteInfo?.unmuteTime - Date.now()),
             });
             playerUtils?.warnPlayer(player, formattedMuteMessage);
             eventData.cancel = true;
@@ -51,7 +44,6 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cancelling chat for ${playerName} (muted). Reason: ${reason}`, playerName, dependencies);
             return;
         }
-
         if (config?.enableChatDuringCombatCheck && pData.lastCombatInteractionTime) {
             const timeSinceCombat = (Date.now() - pData.lastCombatInteractionTime) / 1000;
             if (timeSinceCombat < (config.chatDuringCombatCooldownSeconds ?? DEFAULT_CHAT_DURING_COMBAT_COOLDOWN_SECONDS)) {
@@ -60,7 +52,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                     if (profile.cancelMessage !== false) {
                         eventData.cancel = true;
                     }
-                    playerUtils?.warnPlayer(player, playerUtils.getString(profile.messageKey || 'chat.error.combatCooldown', dependencies, { seconds: config.chatDuringCombatCooldownSeconds ?? DEFAULT_CHAT_DURING_COMBAT_COOLDOWN_SECONDS })); // MODIFIED
+                    playerUtils?.warnPlayer(player, playerUtils.getString(profile.messageKey || 'chat.error.combatCooldown', dependencies, { seconds: config.chatDuringCombatCooldownSeconds ?? DEFAULT_CHAT_DURING_COMBAT_COOLDOWN_SECONDS }));
                     await actionManager?.executeCheckAction(player, 'playerChatDuringCombat', { timeSinceCombat: timeSinceCombat.toFixed(1) }, dependencies);
                     if (eventData.cancel) {
                         playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cancelling chat for ${playerName} (chat during combat).`, playerName, dependencies);
@@ -69,15 +61,14 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 }
             }
         }
-
         if (!eventData.cancel && config?.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
-            const itemUseState = pData.isUsingConsumable ? playerUtils.getString('check.inventoryMod.action.usingConsumable', dependencies) : playerUtils.getString('check.inventoryMod.action.chargingBow', dependencies); // MODIFIED
+            const itemUseState = pData.isUsingConsumable ? playerUtils.getString('check.inventoryMod.action.usingConsumable', dependencies) : playerUtils.getString('check.inventoryMod.action.chargingBow', dependencies);
             const profile = dependencies.checkActionProfiles?.playerChatDuringItemUse;
             if (profile?.enabled) {
                 if (profile.cancelMessage !== false) {
                     eventData.cancel = true;
                 }
-                playerUtils?.warnPlayer(player, playerUtils.getString(profile.messageKey || 'chat.error.itemUse', dependencies, { itemUseState })); // MODIFIED
+                playerUtils?.warnPlayer(player, playerUtils.getString(profile.messageKey || 'chat.error.itemUse', dependencies, { itemUseState }));
                 await actionManager?.executeCheckAction(player, 'playerChatDuringItemUse', { itemUseState }, dependencies);
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cancelling chat for ${playerName} (chat during item use: ${itemUseState}).`, playerName, dependencies);
@@ -85,13 +76,11 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 }
             }
         }
-
         if (pData.isChargingBow) {
             pData.isChargingBow = false;
             pData.isDirtyForSave = true;
             playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cleared isChargingBow for ${playerName} due to chat attempt.`, playerName, dependencies);
         }
-
         const chatCheckFunctions = [
             { fn: checks?.checkSwear, enabled: config?.enableSwearCheck, name: 'swearCheck' },
             { fn: checks?.checkMessageRate, enabled: config?.enableFastMessageSpamCheck, name: 'messageRateCheck' },
@@ -105,7 +94,6 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             { fn: checks?.checkCharRepeat, enabled: config?.enableCharRepeatCheck, name: 'charRepeatCheck' },
             { fn: checks?.checkSymbolSpam, enabled: config?.enableSymbolSpamCheck, name: 'symbolSpamCheck' },
         ];
-
         for (const check of chatCheckFunctions) {
             if (eventData.cancel) {
                 break;
@@ -118,55 +106,44 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 }
             }
         }
-
         if (!eventData.cancel && config?.enableNewlineCheck) {
             if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
-                playerUtils?.warnPlayer(player, playerUtils.getString('chat.error.newline', dependencies)); // MODIFIED
+                playerUtils?.warnPlayer(player, playerUtils.getString('chat.error.newline', dependencies));
                 const messageSnippet = originalMessage.substring(0, MAX_MESSAGE_SNIPPET_LENGTH) + (originalMessage.length > MAX_MESSAGE_SNIPPET_LENGTH ? '...' : '');
-
                 const shouldCancelForNewline = config.cancelMessageOnNewline !== false;
-
                 if (shouldCancelForNewline) {
                     eventData.cancel = true;
                 }
-
                 if (config.flagOnNewline) {
                     await actionManager?.executeCheckAction(player, 'chatNewline', { message: messageSnippet }, dependencies);
                 }
-
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by NewlineCheck.`, playerName, dependencies);
                     return;
                 }
             }
         }
-
         if (!eventData.cancel && config?.enableMaxMessageLengthCheck) {
             if (originalMessage.length > (config.maxMessageLength ?? DEFAULT_MAX_MESSAGE_LENGTH)) {
-                playerUtils?.warnPlayer(player, playerUtils.getString('chat.error.maxLength', dependencies, { maxLength: config.maxMessageLength ?? DEFAULT_MAX_MESSAGE_LENGTH })); // MODIFIED
+                playerUtils?.warnPlayer(player, playerUtils.getString('chat.error.maxLength', dependencies, { maxLength: config.maxMessageLength ?? DEFAULT_MAX_MESSAGE_LENGTH }));
                 const messageSnippet = originalMessage.substring(0, MAX_MESSAGE_SNIPPET_LENGTH) + (originalMessage.length > MAX_MESSAGE_SNIPPET_LENGTH ? '...' : '');
-
                 const shouldCancelForMaxLength = config.cancelOnMaxMessageLength !== false;
-
                 if (shouldCancelForMaxLength) {
                     eventData.cancel = true;
                 }
-
                 if (config.flagOnMaxMessageLength) {
                     await actionManager?.executeCheckAction(player, 'chatMaxLength', { messageLength: originalMessage.length, maxLength: config.maxMessageLength ?? DEFAULT_MAX_MESSAGE_LENGTH, messageSnippet }, dependencies);
                 }
-
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by MaxMessageLengthCheck.`, playerName, dependencies);
                     return;
                 }
             }
         }
-
         if (!eventData.cancel) {
             const rankElements = rankManager?.getPlayerRankFormattedChatElements(player, dependencies);
             if (rankElements) {
-                const finalMessage = `${rankElements.fullPrefix}${rankElements.nameColor}${playerName}§r${rankElements.chatSuffix}${playerUtils.getString('chat.format.separator', dependencies)}${rankElements.messageColor}${originalMessage}`; // MODIFIED
+                const finalMessage = `${rankElements.fullPrefix}${rankElements.nameColor}${playerName}§r${rankElements.chatSuffix}${playerUtils.getString('chat.format.separator', dependencies)}${rankElements.messageColor}${originalMessage}`;
                 mc.world.sendMessage(finalMessage);
                 eventData.cancel = true;
                 logManager?.addLog({ actionType: 'chatMessageSent', targetName: playerName, targetId: player.id, details: originalMessage }, dependencies);

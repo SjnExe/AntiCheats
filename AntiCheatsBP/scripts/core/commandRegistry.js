@@ -2,13 +2,7 @@
  * @file Central registry for all command modules. This file imports all individual command
  * @module AntiCheatsBP/scripts/core/commandRegistry
  * files and exports them as an array to be used by the commandManager.
- *
- * IMPORTANT: THIS FILE IS MANUALLY MAINTAINED.
- * Ensure this file is updated when adding, removing, or renaming command files
- * in the '../commands/' directory. Refer to 'Dev/README.md' for instructions.
  */
-
-// Import all command modules
 import * as addrankCmd from '../commands/addrank.js';
 import * as banCmd from '../commands/ban.js';
 import * as clearchatCmd from '../commands/clearchat.js';
@@ -52,13 +46,12 @@ import * as warningsCmd from '../commands/warnings.js';
 import * as watchCmd from '../commands/watch.js';
 import * as worldborderCmd from '../commands/worldborder.js';
 import * as xraynotifyCmd from '../commands/xraynotify.js';
-
 /**
  * Array containing all registered command modules.
  * Each module is expected to export a `definition` object (conforming to `CommandDefinition` type)
  * and an `execute` function.
+ * @type {Array<import('../types.js').CommandModule>}
  */
-/** @type {Array<import('../types.js').CommandModule>} */
 export const commandModules = [
     addrankCmd,
     banCmd,
@@ -104,8 +97,3 @@ export const commandModules = [
     worldborderCmd,
     xraynotifyCmd,
 ];
-
-// Ensure JSDoc type import path is correct based on its location relative to types.js
-// If commandRegistry.js is in 'core/', and types.js is in root 'scripts/', path is '../types.js'
-// If commandRegistry.js is in 'commands/', and types.js is in root 'scripts/', path is '../../types.js'
-// Current: core/commandRegistry.js -> ../types.js is correct.
