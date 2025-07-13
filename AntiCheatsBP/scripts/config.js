@@ -352,15 +352,21 @@ export function updateConfigValue(key, value) {
     try {
         if (expectedType === 'boolean') {
             if (typeof value === 'string') {
-                if (value.toLowerCase() === 'true') coercedValue = true;
-                else if (value.toLowerCase() === 'false') coercedValue = false;
-                else throw new Error('Invalid boolean string');
+                if (value.toLowerCase() === 'true') {
+                    coercedValue = true;
+                } else if (value.toLowerCase() === 'false') {
+                    coercedValue = false;
+                } else {
+                    throw new Error('Invalid boolean string');
+                }
             } else if (typeof value !== 'boolean') {
                 throw new Error(`Expected boolean, got ${typeof value}`);
             }
         } else if (expectedType === 'number') {
             coercedValue = Number(value);
-            if (isNaN(coercedValue)) throw new Error('Invalid number');
+            if (isNaN(coercedValue)) {
+                throw new Error('Invalid number');
+            }
         } else if (expectedType === 'string') {
             coercedValue = String(value);
         } else if (typeof expectedType === 'object') {

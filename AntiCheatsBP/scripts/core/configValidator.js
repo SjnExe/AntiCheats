@@ -195,7 +195,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
             name: 'helpLinks', type: 'array', arrayElementType: 'object', objectProperties: [
                 { name: 'title', type: 'string' },
                 { name: 'url', type: 'string' },
-            ]
+            ],
         },
         { name: 'generalHelpMessages', type: 'array', arrayElementType: 'string' },
         { name: 'enableDetailedJoinLeaveLogging', type: 'boolean' },
@@ -206,7 +206,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                         { name: 'enabled', type: 'boolean' },
                         { name: 'words', type: 'array', arrayElementType: 'string' },
                         { name: 'actionProfile', type: 'string' },
-                    ]
+                    ],
                 },
                 {
                     name: 'advertising', type: 'object', objectProperties: [
@@ -214,7 +214,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                         { name: 'patterns', type: 'array', arrayElementType: 'string' },
                         { name: 'whitelist', type: 'array', arrayElementType: 'string' },
                         { name: 'actionProfile', type: 'string' },
-                    ]
+                    ],
                 },
                 {
                     name: 'caps', type: 'object', objectProperties: [
@@ -222,7 +222,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                         { name: 'minLength', type: 'nonNegativeNumber' },
                         { name: 'percentage', type: 'number' },
                         { name: 'actionProfile', type: 'string' },
-                    ]
+                    ],
                 },
                 {
                     name: 'charRepeat', type: 'object', objectProperties: [
@@ -230,7 +230,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                         { name: 'minLength', type: 'nonNegativeNumber' },
                         { name: 'threshold', type: 'positiveNumber' },
                         { name: 'actionProfile', type: 'string' },
-                    ]
+                    ],
                 },
                 {
                     name: 'symbolSpam', type: 'object', objectProperties: [
@@ -238,16 +238,16 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                         { name: 'minLength', type: 'nonNegativeNumber' },
                         { name: 'percentage', type: 'number' },
                         { name: 'actionProfile', type: 'string' },
-                    ]
+                    ],
                 },
                 {
                     name: 'fastMessage', type: 'object', objectProperties: [
                         { name: 'enabled', type: 'boolean' },
                         { name: 'thresholdMs', type: 'positiveNumber' },
                         { name: 'actionProfile', type: 'string' },
-                    ]
+                    ],
                 },
-            ]
+            ],
         },
         {
             name: 'maxWordsSpamActionProfileName', type: 'string',
@@ -256,7 +256,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
-            }
+            },
         },
         {
             name: 'chatContentRepeatActionProfileName', type: 'string',
@@ -265,7 +265,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
-            }
+            },
         },
         {
             name: 'unicodeAbuseActionProfileName', type: 'string',
@@ -274,7 +274,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
-            }
+            },
         },
         {
             name: 'gibberishActionProfileName', type: 'string',
@@ -283,7 +283,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
-            }
+            },
         },
         {
             name: 'mentionsActionProfileName', type: 'string',
@@ -292,7 +292,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
-            }
+            },
         },
         {
             name: 'impersonationActionProfileName', type: 'string',
@@ -301,7 +301,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
-            }
+            },
         },
         {
             name: 'antiGrief', type: 'object', objectProperties: [
@@ -310,37 +310,37 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                         { name: 'enabled', type: 'boolean' },
                         { name: 'allowAdmins', type: 'boolean' },
                         { name: 'action', type: 'string' },
-                    ]
+                    ],
                 },
                 {
                     name: 'wither', type: 'object', objectProperties: [
                         { name: 'enabled', type: 'boolean' },
                         { name: 'allowAdmins', type: 'boolean' },
                         { name: 'action', type: 'string' },
-                    ]
+                    ],
                 },
                 {
                     name: 'fire', type: 'object', objectProperties: [
                         { name: 'enabled', type: 'boolean' },
                         { name: 'allowAdmins', type: 'boolean' },
                         { name: 'action', type: 'string' },
-                    ]
+                    ],
                 },
                 {
                     name: 'lava', type: 'object', objectProperties: [
                         { name: 'enabled', type: 'boolean' },
                         { name: 'allowAdmins', type: 'boolean' },
                         { name: 'action', type: 'string' },
-                    ]
+                    ],
                 },
                 {
                     name: 'water', type: 'object', objectProperties: [
                         { name: 'enabled', type: 'boolean' },
                         { name: 'allowAdmins', type: 'boolean' },
                         { name: 'action', type: 'string' },
-                    ]
+                    ],
                 },
-            ]
+            ],
         },
         {
             name: 'soundEvents', type: 'object',
@@ -366,7 +366,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                                     return false;
                                 }
                                 return true;
-                            }
+                            },
                         },
                         { name: 'description', type: 'string' },
                     ];
@@ -379,7 +379,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     }
                 }
                 return overallSoundEventsValid;
-            }
+            },
         },
         {
             name: 'commandSettings', type: 'object',
@@ -403,7 +403,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     }
                 }
                 return overallIsValid;
-            }
+            },
         },
         { name: 'chatClearLinesCount', type: 'positiveNumber' },
         { name: 'reportsViewPerPage', type: 'positiveNumber' },
@@ -420,6 +420,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
             continue;
         }
         if (!knownKeys.includes(key) && !manuallyHandledKeys.includes(key)) {
+            // unknown keys are ignored
         }
     }
     if (commandAliasesMap) {
@@ -477,19 +478,19 @@ export function validateActionProfiles(actionProfiles) {
                     { name: 'increment', type: 'number' },
                     { name: 'reason', type: 'string' },
                     { name: 'type', type: 'camelCaseString' },
-                ]
+                ],
             },
             {
                 name: 'notifyAdmins', type: 'object', optional: true, objectProperties: [
                     { name: 'message', type: 'string' },
-                ]
+                ],
             },
             {
                 name: 'log', type: 'object', optional: true, objectProperties: [
                     { name: 'actionType', type: 'camelCaseString' },
                     { name: 'detailsPrefix', type: 'string', optional: true },
                     { name: 'includeViolationDetails', type: 'boolean', optional: true },
-                ]
+                ],
             },
             { name: 'cancelMessage', type: 'boolean', optional: true },
             { name: 'cancelEvent', type: 'boolean', optional: true },
@@ -500,7 +501,7 @@ export function validateActionProfiles(actionProfiles) {
                         errs.push(`${path}: Invalid customAction "${val}". Expected one of ${validCustomActions.join(', ')}.`);
                     }
                     return validCustomActions.includes(val);
-                }
+                },
             },
         ];
         ensureFields(profile, profileFieldDefs, profileContext, errors);
@@ -560,7 +561,7 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                         errs.push(`${path}: checkType "${val}" is not a valid camelCase string or a known actionProfile name.`);
                     }
                     return true;
-                }
+                },
             },
             { name: 'enabled', type: 'boolean' },
             { name: 'description', type: 'string', optional: true },
@@ -581,7 +582,7 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                                 errs.push(`${path}: Invalid actionType "${val}". Expected one of ${validAutoModActions.join(', ')}.`);
                             }
                             return validAutoModActions.includes(val);
-                        }
+                        },
                     },
                     { name: 'parameters', type: 'object' },
                     { name: 'resetFlagsAfterAction', type: 'boolean' },
@@ -625,6 +626,7 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                 }
             });
         } else {
+            // Not an array, so no need to validate tiers
         }
     });
     return errors;
@@ -683,7 +685,7 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                     }
                     rankIds.add(val);
                     return true;
-                }
+                },
             },
             { name: 'name', type: 'string' },
             { name: 'permissionLevel', type: 'number' },
@@ -693,7 +695,7 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                     { name: 'prefixColor', type: 'colorCode', optional: true },
                     { name: 'nameColor', type: 'colorCode', optional: true },
                     { name: 'messageColor', type: 'colorCode', optional: true },
-                ]
+                ],
             },
             { name: 'nametagPrefix', type: 'string', optional: true },
             { name: 'conditions', type: 'array' },
@@ -705,7 +707,7 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                     }
                     rankPriorities.add(val);
                     return true;
-                }
+                },
             },
             { name: 'assignableBy', type: 'number', optional: true },
         ];
@@ -725,7 +727,7 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                                 errs.push(`${path}: Invalid condition type "${val}". Expected one of ${validConditionTypes.join(', ')}.`);
                             }
                             return validConditionTypes.includes(val);
-                        }
+                        },
                     },
                     { name: 'prefix', type: 'string', optional: true },
                     { name: 'tag', type: 'string', optional: true },

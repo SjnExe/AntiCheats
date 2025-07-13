@@ -198,7 +198,7 @@ function validateDependencies(deps, callContext) {
             let path = '';
             for (const key of keys) {
                 path = path ? `${path}.${key}` : key;
-                if (current === null || typeof current !== 'object' || !current.hasOwnProperty(key)) {
+                if (current === null || typeof current !== 'object' || !Object.prototype.hasOwnProperty.call(current, key)) {
                     errors.push(`CRITICAL: deps.${path} is missing.`);
                     current = undefined;
                     break;

@@ -59,7 +59,8 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
 
     const symbolPercentage = (symbolChars / totalCharsNonSpace) * 100;
 
-    if (symbolPercentage >= (config?.symbolSpamPercentage ?? 50)) {
+    const percentageThreshold = config?.symbolSpamPercentage ?? 50;
+    if (symbolPercentage >= percentageThreshold) {
         const watchedPlayerName = pData?.isWatched ? playerName : null;
         playerUtils?.debugLog(
             `[SymbolSpamCheck] Player ${playerName} triggered symbol spam. ` +

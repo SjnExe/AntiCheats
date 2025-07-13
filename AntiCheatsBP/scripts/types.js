@@ -481,7 +481,7 @@
 /**
  * Custom error class for command-related errors.
  * This allows for more specific error handling in the command manager.
- * @extends Error
+ * @augments Error
  */
 export class CommandError extends Error {
     /**
