@@ -31,11 +31,8 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
-    const defaultMinLength = 5;
-    const defaultThreshold = 5;
-
-    const minLength = config?.charRepeatMinLength ?? defaultMinLength;
-    const threshold = config?.charRepeatThreshold ?? defaultThreshold;
+    const minLength = config?.charRepeatMinLength ?? 5;
+    const threshold = config?.charRepeatThreshold ?? 5;
 
     if (message.length < minLength) {
         return;

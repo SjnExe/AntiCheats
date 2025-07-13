@@ -9,9 +9,6 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
-const defaultMinLength = 10;
-const defaultPercentageThreshold = 50;
-
 /**
  * Checks a chat message for excessive symbol usage.
  * Symbols are defined as non-alphanumeric characters, excluding spaces.
@@ -36,7 +33,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
-    const minLength = config?.symbolSpamMinLength ?? defaultMinLength;
+    const minLength = config?.symbolSpamMinLength ?? 10;
     if (message.length < minLength) {
         return;
     }
@@ -61,9 +58,8 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
     }
 
     const symbolPercentage = (symbolChars / totalCharsNonSpace) * 100;
-    const percentageThreshold = config?.symbolSpamPercentage ?? defaultPercentageThreshold;
 
-    if (symbolPercentage >= percentageThreshold) {
+    if (symbolPercentage >= (config?.symbolSpamPercentage ?? 50)) {
         const watchedPlayerName = pData?.isWatched ? playerName : null;
         playerUtils?.debugLog(
             `[SymbolSpamCheck] Player ${playerName} triggered symbol spam. ` +

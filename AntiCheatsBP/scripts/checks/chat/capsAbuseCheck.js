@@ -32,10 +32,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
-    const defaultMinLength = 10;
-    const defaultPercentageThreshold = 70;
-
-    const minLength = config?.capsCheckMinLength ?? defaultMinLength;
+    const minLength = config?.capsCheckMinLength ?? 10;
     if (message.length < minLength) {
         return;
     }
@@ -58,9 +55,8 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
     }
 
     const upperCasePercentage = (upperCaseLetters / totalLetters) * 100;
-    const percentageThreshold = config?.capsCheckUpperCasePercentage ?? defaultPercentageThreshold;
 
-    if (upperCasePercentage >= percentageThreshold) {
+    if (upperCasePercentage >= (config?.capsCheckUpperCasePercentage ?? 70)) {
         const watchedPlayerName = pData?.isWatched ? playerName : null;
         playerUtils?.debugLog(
             `[CapsAbuseCheck] Player ${playerName} triggered CAPS abuse. ` +
