@@ -21,25 +21,12 @@ export default [
     // Configuration for JSON files (Project-wide)
   ...jsonc.configs['flat/recommended-with-json'],
 
-  // Configuration for AntiCheatsBP JavaScript files (Minecraft Addon Scripts)
+  // Base configuration for all JavaScript files
   {
     files: ["AntiCheatsBP/scripts/**/*.js"],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
-      globals: { // Minecraft Bedrock Scripting API globals
-        setTimeout: "readonly",
-        clearTimeout: "readonly",
-        setInterval: "readonly",
-        clearInterval: "readonly",
-        console: "readonly", // Allowed via no-console: off, but good to list
-        mc: "readonly",
-        world: "readonly",
-        system: "readonly",
-      },
-    },
-    plugins: {
-      // jsdoc plugin is applied in the dedicated JSDoc config block below
     },
     rules: {
       // Start with eslint:recommended rules
@@ -57,7 +44,7 @@ export default [
       'curly': ['error', 'all'],
       'eqeqeq': ['error', 'always'],
       'no-var': 'error',
-      'no-console': 'off', // Controlled use via playerUtils.debugLog which uses console.warn
+      'no-console': 'off', // Default to off, will be overridden where needed
       'brace-style': ['error', '1tbs', { 'allowSingleLine': false }],
       'func-call-spacing': ['error', 'never'],
       'comma-dangle': ['error', 'always-multiline'],
@@ -114,107 +101,34 @@ export default [
         properties: 'always',
         ignoreDestructuring: false,
         ignoreImports: false,
-        ignoreGlobals: false, // Globals are defined above, this ensures they are not flagged if not camelCase by mistake
+        ignoreGlobals: false, // Globals are defined in specific configs, this ensures they are not flagged if not camelCase by mistake
         allow: ['error_code', 'error_message', 'stack_trace'],
       }],
     },
   },
-  // Configuration for Build Scripts (Node.js environment)
+  // Configuration for AntiCheatsBP JavaScript files (Minecraft Addon Scripts)
   {
-    files: ["scripts/**/*.js"],
+    files: ["AntiCheatsBP/scripts/**/*.js"],
     languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: "module",
-      globals: { // Node.js globals
-        process: "readonly",
-        __dirname: "readonly",
-        __filename: "readonly",
-        require: "readonly",
-        module: "readonly",
-        console: "readonly", // Explicitly allow console for build scripts
+      globals: { // Minecraft Bedrock Scripting API globals
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        console: "readonly", // Allowed via no-console: off in base, but good to list
+        mc: "readonly",
+        world: "readonly",
+        system: "readonly",
       },
     },
     rules: {
-      // Start with eslint:recommended rules
-      ...eslintJs.configs.recommended.rules,
-      // Apply the same custom style rules as AntiCheatsBP for consistency
-      'semi': ['error', 'always'],
-      'quotes': ['error', 'single', { 'avoidEscape': true, 'allowTemplateLiterals': true }],
-      'indent': ['error', 4, { 'SwitchCase': 1 }],
-      'no-unused-vars': ['warn', {
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_',
-        'caughtErrorsIgnorePattern': '^_'
-      }],
-      'curly': ['error', 'all'],
-      'eqeqeq': ['error', 'always'],
-      'no-var': 'error',
-      'no-console': 'off', // Console is expected in build scripts
-      'brace-style': ['error', '1tbs', { 'allowSingleLine': false }],
-      'func-call-spacing': ['error', 'never'],
-      'comma-dangle': ['error', 'always-multiline'],
-      'comma-spacing': ['error', { 'before': false, 'after': true }],
-      'keyword-spacing': ['error', { 'before': true, 'after': true }],
-      'space-before-blocks': ['error', 'always'],
-      'space-in-parens': ['error', 'never'],
-      'space-infix-ops': 'error',
-      'arrow-spacing': ['error', { 'before': true, 'after': true }],
-      'no-multi-spaces': ['error', { ignoreEOLComments: true }],
-      'object-curly-spacing': ['error', 'always'],
-      'array-bracket-spacing': ['error', 'never'],
-      'max-len': ['warn', {
-        code: 256,
-        ignoreComments: true,
-        ignoreUrls: true,
-        ignoreStrings: true,
-        ignoreTemplateLiterals: true,
-        ignoreRegExpLiterals: true,
-      }],
-      'no-magic-numbers': ['warn', {
-        'ignore': [-1, 0, 0.5, 1, 2, 3, 4, 10, 20, 100, 600, 1000], // 1 is already in this list, covers process.exit(1)
-        'ignoreArrayIndexes': true,
-        'enforceConst': true,
-      }],
-      'no-prototype-builtins': 'warn',
-      'no-empty': ['error', { 'allowEmptyCatch': false }],
-      'no-invalid-this': 'warn',
-      'no-loss-of-precision': 'error',
-      'no-useless-catch': 'error',
-      'no-useless-escape': 'error',
-      'no-useless-return': 'error',
-      'prefer-const': 'error',
-      // 'require-await': 'warn', // Less relevant for typical build scripts
-
-      // Additional general ESLint rules
-      'no-useless-rename': 'warn',
-      'no-useless-computed-key': 'warn',
-      'no-extra-boolean-cast': 'error',
-      'no-extra-semi': 'error',
-      'no-lone-blocks': 'warn',
-      'no-useless-constructor': 'warn',
-      'no-unneeded-ternary': ['warn', { defaultAssignment: false }],
-      'prefer-arrow-callback': 'warn',
-      'dot-notation': ['warn', { allowKeywords: true }],
-      'yoda': ['warn', 'never', { exceptRange: true }],
-      'no-else-return': ['warn', { allowElseIf: false }],
-      'prefer-template': 'warn',
-      'object-shorthand': ['warn', 'properties'],
-      'no-useless-concat': 'warn',
-      'prefer-object-spread': 'warn',
-
-      'camelcase': ['error', {
-        properties: 'always',
-        ignoreDestructuring: false,
-        ignoreImports: false,
-        ignoreGlobals: false,
-        allow: ['error_code', 'error_message', 'stack_trace'],
-      }],
+        'no-console': 'off', // Controlled use via playerUtils.debugLog which uses console.warn
     }
   },
-  // JSDoc specific configuration (applies to both AntiCheatsBP and build scripts)
+  // JSDoc specific configuration (applies to both AntiCheatsBP and Dev scripts)
   {
     ...jsdoc.configs['flat/recommended'],
-    files: ["AntiCheatsBP/scripts/**/*.js", "scripts/**/*.js"],
+    files: ["AntiCheatsBP/scripts/**/*.js"],
     plugins: {
       jsdoc: jsdoc, // Ensure jsdoc plugin is explicitly associated here
     },
