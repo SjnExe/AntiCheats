@@ -2,6 +2,7 @@
 
 import eslintJs from "@eslint/js";
 import jsdoc from "eslint-plugin-jsdoc";
+import jsonc from "eslint-plugin-jsonc";
 // import { FlatCompat } from "@eslint/eslintrc"; // Keep this commented for now, will use if jsdoc plugin needs it
 
 // Using @eslint/js and eslint-plugin-jsdoc.
@@ -17,6 +18,8 @@ export default [
       ".gitignore"
     ],
   },
+    // Configuration for JSON files (Project-wide)
+  ...jsonc.configs['flat/recommended-with-json'],
 
   // Configuration for AntiCheatsBP JavaScript files (Minecraft Addon Scripts)
   {
