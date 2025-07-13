@@ -9,12 +9,7 @@
       21,
       90
     ],
-    "version": "__VERSION_ARRAY__",
-    "authors": [
-      "Sjn.exe"
-    ],
-    "license": "MIT",
-    "url": "https://github.com/SjnExe/AntiCheats"
+    "version": "__VERSION_ARRAY__"
   },
   "modules": [
     {
@@ -50,6 +45,13 @@
       "version": "__VERSION_ARRAY__"
     }
   ],
+  "metadata": {
+    "authors": [
+      "Sjn.exe"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/SjnExe/AntiCheats"
+  },
   "capabilities": [
     "script_eval"
   ]
