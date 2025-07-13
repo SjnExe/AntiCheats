@@ -35,3 +35,6 @@ yarn-error.log*
 # Ignore test coverage reports
 coverage/
 .nyc_output/
+
+# Ignore linting reports
+Dev/lint/
