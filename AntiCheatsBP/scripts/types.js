@@ -460,6 +460,7 @@
  * Contains context from the game event that triggered the check.
  * Specific keys depend on the event and check. Example: `{ targetEntity: Entity, gameMode: GameMode }` for `reachCheck`.
  * @typedef {object} EventSpecificData
+ * @property
  */
 
 /**

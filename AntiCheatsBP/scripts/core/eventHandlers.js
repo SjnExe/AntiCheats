@@ -11,6 +11,11 @@ const blockOffsetTwoBelow = -2;
 const golemConstructionCheckTickWindow = 10;
 const renderDistanceCheckDelayTicks = 100;
 const minTimeoutDelayTicks = 1;
+/**
+ *
+ * @param handlerName
+ * @param handlerFunction
+ */
 function profileEventHandler(handlerName, handlerFunction) {
     return async function (...args) {
         const dependencies = args[args.length - 1];
@@ -36,6 +41,11 @@ function profileEventHandler(handlerName, handlerFunction) {
         }
     };
 }
+/**
+ *
+ * @param eventData
+ * @param dependencies
+ */
 async function _handlePlayerLeave(eventData, dependencies) {
     const { playerDataManager, playerUtils, config, logManager, actionManager } = dependencies;
     const { getPlayerData } = playerDataManager;

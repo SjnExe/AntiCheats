@@ -4,42 +4,95 @@
  * This file contains functions to validate the structure and values of configuration files
  * for the AntiCheat system. It helps prevent runtime errors due to misconfigurations.
  */
+
+/**
+ * Checks if a value is a string.
+ * @param {*} value - The value to check.
+ * @returns {boolean}
+ */
 function isString(value) {
     return typeof value === 'string';
 }
+/**
+ * Checks if a value is a number.
+ * @param {*} value - The value to check.
+ * @returns {boolean}
+ */
 function isNumber(value) {
     return typeof value === 'number' && !isNaN(value);
 }
+/**
+ * Checks if a value is a boolean.
+ * @param {*} value - The value to check.
+ * @returns {boolean}
+ */
 function isBoolean(value) {
     return typeof value === 'boolean';
 }
+/**
+ * Checks if a value is an array.
+ * @param {*} value - The value to check.
+ * @returns {boolean}
+ */
 function isArray(value) {
     return Array.isArray(value);
 }
+/**
+ * Checks if a value is an object.
+ * @param {*} value - The value to check.
+ * @returns {boolean}
+ */
 function isObject(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
+/**
+ *
+ * @param colorCode
+ */
 function isValidColorCode(colorCode) {
     return isString(colorCode) && /^§[0-9a-fk-or]$/.test(colorCode);
 }
+/**
+ *
+ * @param str
+ */
 function isValidCamelCase(str) {
     if (!isString(str) || str.length === 0) {
         return false;
     }
     return /^[a-z]+([A-Z][a-z0-9]*)*$/.test(str);
 }
+/**
+ *
+ * @param num
+ */
 function isPositiveNumber(num) {
     return isNumber(num) && num > 0;
 }
+/**
+ *
+ * @param num
+ */
 function isNonNegativeNumber(num) {
     return isNumber(num) && num >= 0;
 }
+/**
+ *
+ * @param durationStr
+ */
 function isValidDurationString(durationStr) {
     if (!isString(durationStr)) {
         return false;
     }
     return /^\d+[smhd]$/.test(durationStr) || /^\d+$/.test(durationStr);
 }
+/**
+ *
+ * @param obj
+ * @param fieldDefs
+ * @param context
+ * @param errors
+ */
 function ensureFields(obj, fieldDefs, context, errors) {
     if (!isObject(obj)) {
         errors.push(`${context}: Expected an object, but got ${typeof obj}.`);

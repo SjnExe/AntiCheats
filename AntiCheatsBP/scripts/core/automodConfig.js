@@ -7,11 +7,11 @@
  * @typedef {import('../types.js').AutoModActionParameters} AutoModActionParameters
  * @typedef {import('../types.js').AutoModTierRule} AutoModTierRule
  * @typedef {object} AutoModRuleDef
- * @property {string} checkType
- * @property {boolean} enabled
- * @property {string} [description]
- * @property {number} [resetFlagsAfterSeconds]
- * @property {AutoModTierRule[]} tiers
+ * @property {string} checkType - The type of check this rule applies to.
+ * @property {boolean} enabled - Whether this rule is enabled.
+ * @property {string} [description] - A description of the rule.
+ * @property {number} [resetFlagsAfterSeconds] - The number of seconds after which to reset the flags for this rule.
+ * @property {AutoModTierRule[]} tiers - The tiers of actions to take based on the flag count.
  */
 /** @type {{ automodRuleSets: AutoModRuleDef[] }} */
 export const automodConfig = {

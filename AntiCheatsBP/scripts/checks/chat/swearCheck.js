@@ -85,6 +85,10 @@ function normalizeWordForSwearCheck(word, dependencies) {
 let normalizedSwearWordSet = new Set();
 let lastSwearList;
 
+/**
+ * Initializes or updates the swear word list from the config.
+ * @param {Dependencies} dependencies - The dependencies object.
+ */
 function initializeSwearList(dependencies) {
     const { config } = dependencies;
     const currentSwearList = config?.chatChecks?.swear?.words;
@@ -101,6 +105,13 @@ function initializeSwearList(dependencies) {
     }
 }
 
+/**
+ * Checks a chat message for swear words.
+ * @param {import('@minecraft/server').Player} player - The player sending the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {Dependencies} dependencies - Full dependencies object.
+ */
 export async function checkSwear(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
