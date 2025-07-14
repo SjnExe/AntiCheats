@@ -172,67 +172,55 @@ export function updatePlayerNametag(player, dependencies) {
     if (!config || typeof config !== 'object') {
         console.error(`[RankManager.updatePlayerNametag] Config object invalid for ${playerNameForLog}. Nametag not updated.`);
         playerUtils?.debugLog(`[RankManager.updatePlayerNametag] Config invalid for ${playerNameForLog}.`, playerNameForLog, dependencies);
-        try {
-            if (player.isValid()) {
-                player.nameTag = String(player.nameTag || player.name || '');
-            }
-        } catch (e) { /* ignore */ }
+        if (player.isValid()) {
+            player.nameTag = String(player.nameTag || player.name || '');
+        }
         return;
     }
 
     const vanishedTagToUse = config.vanishedPlayerTag || 'vanished'; // Default vanish tag
 
-    try {
-        if (player.hasTag(vanishedTagToUse)) {
-            player.nameTag = ''; // Vanished players have no visible nametag
-            return;
-        }
+    if (player.hasTag(vanishedTagToUse)) {
+        player.nameTag = ''; // Vanished players have no visible nametag
+        return;
+    }
 
-        const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
-        const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
+    const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
+    const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
 
-        // Attempt to derive base name more reliably if current nameTag seems to have a prefix
-        let baseName = player.name ?? getString('common.value.player'); // Default to system name
-        const currentNameTag = player.nameTag;
+    // Attempt to derive base name more reliably if current nameTag seems to have a prefix
+    let baseName = player.name ?? getString('common.value.player'); // Default to system name
+    const currentNameTag = player.nameTag;
 
-        if (currentNameTag && typeof currentNameTag === 'string' && currentNameTag.length > 0) {
-            let currentTagSeemsPrefixed = false;
-            // Check against all known rank prefixes to strip existing one if present
-            for (const def of sortedRankDefinitions) {
-                if (def.nametagPrefix && currentNameTag.startsWith(def.nametagPrefix)) {
-                    const potentialBase = currentNameTag.substring(def.nametagPrefix.length);
-                    if (potentialBase.length > 0) { // Ensure stripping prefix doesn't leave an empty name
-                        baseName = potentialBase;
-                        currentTagSeemsPrefixed = true;
-                    }
-                    break;
+    if (currentNameTag && typeof currentNameTag === 'string' && currentNameTag.length > 0) {
+        let currentTagSeemsPrefixed = false;
+        // Check against all known rank prefixes to strip existing one if present
+        for (const def of sortedRankDefinitions) {
+            if (def.nametagPrefix && currentNameTag.startsWith(def.nametagPrefix)) {
+                const potentialBase = currentNameTag.substring(def.nametagPrefix.length);
+                if (potentialBase.length > 0) { // Ensure stripping prefix doesn't leave an empty name
+                    baseName = potentialBase;
+                    currentTagSeemsPrefixed = true;
                 }
-            }
-            // If no known prefix was stripped, but nameTag is different from system name, use nameTag as base.
-            // This handles cases where a name might have been set by other means or an unknown prefix.
-            if (!currentTagSeemsPrefixed && currentNameTag !== baseName) {
-                baseName = currentNameTag;
+                break;
             }
         }
-        // If after all checks baseName is empty (e.g. player.name was empty), default again.
-        if (!baseName || baseName.trim() === '') {
-            baseName = getString('common.value.player');
+        // If no known prefix was stripped, but nameTag is different from system name, use nameTag as base.
+        // This handles cases where a name might have been set by other means or an unknown prefix.
+        if (!currentTagSeemsPrefixed && currentNameTag !== baseName) {
+            baseName = currentNameTag;
         }
+    }
+    // If after all checks baseName is empty (e.g. player.name was empty), default again.
+    if (!baseName || baseName.trim() === '') {
+        baseName = getString('common.value.player');
+    }
 
 
-        player.nameTag = nametagToApply + baseName;
+    player.nameTag = nametagToApply + baseName;
 
-        if (config.enableDebugLogging && playerUtils) {
-            playerUtils.debugLog(`[RankManager.updatePlayerNametag] Updated nametag for ${playerNameForLog} (Original: '${currentNameTag}') to '${player.nameTag}' (Rank: ${rankDefinition?.id ?? 'default'})`, playerNameForLog, dependencies);
-        }
-    } catch (error) {
-        console.error(`[RankManager.updatePlayerNametag] Error for '${playerNameForLog}': ${error.stack || error}`);
-        playerUtils?.debugLog(`[RankManager.updatePlayerNametag] Error for ${playerNameForLog}: ${error.message}`, playerNameForLog, dependencies);
-        try {
-            if (player.isValid()) {
-                player.nameTag = String(player.name ?? dependencies.getString('common.value.player'));
-            }
-        } catch (e) { /* ignore */ } // Used dependencies.getString directly
+    if (config.enableDebugLogging && playerUtils) {
+        playerUtils.debugLog(`[RankManager.updatePlayerNametag] Updated nametag for ${playerNameForLog} (Original: '${currentNameTag}') to '${player.nameTag}' (Rank: ${rankDefinition?.id ?? 'default'})`, playerNameForLog, dependencies);
     }
 }
 

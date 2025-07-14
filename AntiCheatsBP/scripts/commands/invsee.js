@@ -44,14 +44,7 @@ export async function execute(player, args, dependencies) {
     }
 
     let inventoryComponent;
-    try {
-        inventoryComponent = foundPlayer.getComponent(mc.EntityComponentTypes.Inventory);
-    } catch (e) {
-        player.sendMessage(getString('command.invsee.noAccess', { playerName: foundPlayer.nameTag }));
-        playerUtils?.debugLog(`[InvSeeCommand CRITICAL] Error getting inventory component for ${foundPlayer.nameTag}: ${e.message}`, adminName, dependencies);
-        console.error(`[InvSeeCommand CRITICAL] Error getting inventory component for ${foundPlayer.nameTag}: ${e.stack || e}`);
-        return;
-    }
+    inventoryComponent = foundPlayer.getComponent(mc.EntityComponentTypes.Inventory);
 
 
     if (!inventoryComponent?.container) {
@@ -69,12 +62,10 @@ export async function execute(player, args, dependencies) {
             itemCount++;
             const nameTagText = itemStack.nameTag ? getString('command.invsee.item.nameTag', { nameTag: itemStack.nameTag }) : '';
             let durabilityText = '';
-            try {
-                const durabilityComponent = itemStack.getComponent(mc.ItemComponentTypes.Durability);
-                if (durabilityComponent) {
-                    durabilityText = getString('command.invsee.item.durability', { currentDurability: (durabilityComponent.maxDurability - durabilityComponent.damage).toString(), maxDurability: durabilityComponent.maxDurability.toString() });
-                }
-            } catch (e) { /* Component may not exist, or error fetching; text remains empty */ }
+            const durabilityComponent = itemStack.getComponent(mc.ItemComponentTypes.Durability);
+            if (durabilityComponent) {
+                durabilityText = getString('command.invsee.item.durability', { currentDurability: (durabilityComponent.maxDurability - durabilityComponent.damage).toString(), maxDurability: durabilityComponent.maxDurability.toString() });
+            }
 
             let loreText = '';
             const lore = itemStack.getLore();
@@ -83,16 +74,14 @@ export async function execute(player, args, dependencies) {
             }
 
             let enchantsText = '';
-            try {
-                const enchantableComponent = itemStack.getComponent(mc.ItemComponentTypes.Enchantable);
-                if (enchantableComponent) {
-                    const enchantments = enchantableComponent.getEnchantments();
-                    if (enchantments.length > 0) {
-                        const enchStrings = enchantments.map(ench => `${ench.type.id.replace('minecraft:', '')} ${ench.level}`);
-                        enchantsText = getString('command.invsee.item.enchants', { enchantEntries: enchStrings.join(', ') });
-                    }
+            const enchantableComponent = itemStack.getComponent(mc.ItemComponentTypes.Enchantable);
+            if (enchantableComponent) {
+                const enchantments = enchantableComponent.getEnchantments();
+                if (enchantments.length > 0) {
+                    const enchStrings = enchantments.map(ench => `${ench.type.id.replace('minecraft:', '')} ${ench.level}`);
+                    enchantsText = getString('command.invsee.item.enchants', { enchantEntries: enchStrings.join(', ') });
                 }
-            } catch (e) { /* Component may not exist, or error fetching; text remains empty */ }
+            }
 
             inventoryDetails += `${getString('ui.invsee.slotEntry', {
                 slotNum: i.toString(),

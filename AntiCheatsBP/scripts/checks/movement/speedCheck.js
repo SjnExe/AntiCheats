@@ -84,12 +84,10 @@ export async function checkSpeed(player, pData, dependencies) {
             const groundTicksThreshold = config?.speedGroundConsecutiveTicksThreshold ?? defaultSpeedGroundConsecutiveTicksThreshold;
             if (pData.consecutiveOnGroundSpeedingTicks >= groundTicksThreshold) {
                 let activeEffectsString = 'none';
-                try {
-                    const effects = player.getEffects();
-                    if (effects.length > 0) {
-                        activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
-                    }
-                } catch (e) { /* Error suppressed, default value will be used */ }
+                const effects = player.getEffects();
+                if (effects.length > 0) {
+                    activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
+                }
 
                 const violationDetails = {
                     detectedSpeedBps: hSpeedBPS.toFixed(speedLoggingDecimalPlaces),

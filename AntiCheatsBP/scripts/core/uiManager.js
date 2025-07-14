@@ -233,10 +233,10 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
      * Each item opens the playerActionsPanel for the selected player.
      * @param {import('@minecraft/server').Player} player - The admin player viewing the panel.
      * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
-     * @param {object} _context - The current panel context.
+     * @param {object} context - The current panel context.
      * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for online players.
      */
-    generateOnlinePlayerItems: (player, dependencies, _context) => { // _context is the panel's current context
+    generateOnlinePlayerItems: (player, dependencies) => { // _context is the panel's current context
         const { mc, playerDataManager } = dependencies;
         const items = [];
         const onlinePlayers = mc.world.getAllPlayers();
@@ -286,10 +286,10 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
      * Each item opens the playerActionsPanel for the selected player.
      * @param {import('@minecraft/server').Player} player - The admin player viewing the panel.
      * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
-     * @param {object} _context - The current panel context.
+     * @param {object} context - The current panel context.
      * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for watched online players.
      */
-    generateWatchedPlayerItems: (player, dependencies, _context) => {
+    generateWatchedPlayerItems: (player, dependencies) => {
         const { mc, playerDataManager } = dependencies;
         const items = [];
         const onlinePlayers = mc.world.getAllPlayers();
@@ -334,9 +334,9 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
  * Navigates back to the calling panel or a default management panel upon completion or cancellation.
  * @param {import('@minecraft/server').Player} player The admin player initiating the action.
  * @param {import('../types.js').Dependencies} dependencies Standard addon dependencies.
- * @param {object} _context The context from the calling panel, used for navigation.
+ * @param {object} context The context from the calling panel, used for navigation.
  */
-async function showResetFlagsFormImpl(player, dependencies, _context) {
+async function showResetFlagsFormImpl(player, dependencies, context) {
     const { playerUtils, getString, commandExecutionMap, logManager } = dependencies;
     const adminPlayerName = player.nameTag;
     playerUtils?.debugLog(`[UiManager.showResetFlagsFormImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
@@ -351,7 +351,7 @@ async function showResetFlagsFormImpl(player, dependencies, _context) {
             const confirmedReset = response.formValues[1]; // Renamed for clarity from 'confirmed'
             if (!targetPlayerName || targetPlayerName.trim() === '') {
                 player.sendMessage(getString('common.error.nameEmpty'));
-                await showResetFlagsFormImpl(player, dependencies, _context); return;
+                await showResetFlagsFormImpl(player, dependencies, context); return;
             }
             if (!confirmedReset) {
                 player.sendMessage('§eFlag reset not confirmed. Action cancelled.');
@@ -393,9 +393,8 @@ async function showResetFlagsFormImpl(player, dependencies, _context) {
  * Dynamically discovers editable keys from the main configuration object.
  * @param {import('@minecraft/server').Player} player The admin player viewing the configuration list.
  * @param {import('../types.js').Dependencies} dependencies Standard addon dependencies.
- * @param {object} _context The context from the calling panel, used for navigation.
  */
-async function showConfigCategoriesListImpl(player, dependencies, _context) {
+async function showConfigCategoriesListImpl(player, dependencies) {
     const { playerUtils, config, getString } = dependencies;
     playerUtils.debugLog(`[UiManager.showConfigCategoriesListImpl] Called by ${player.nameTag}`, player.nameTag, dependencies);
     const form = new ActionFormData().title('Edit Configuration Key');
@@ -638,7 +637,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
  * @returns {Promise<boolean>} True if confirmed and callback executed, false otherwise.
  */
 async function _showConfirmationModal(adminPlayer, titleString, bodyString, confirmToggleLabelString, onConfirmCallback, dependencies, bodyParams = {}) {
-    const { playerUtils, logManager } = dependencies;
+    const { playerUtils, logManager, getString } = dependencies;
     const playerName = adminPlayer?.nameTag ?? 'UnknownAdmin';
     let processedBody = bodyString;
     if (bodyParams) {
@@ -673,9 +672,8 @@ async function _showConfirmationModal(adminPlayer, titleString, bodyString, conf
  * If confirmed, executes the 'clearchat' command.
  * @param {import('@minecraft/server').Player} player The admin player initiating the action.
  * @param {import('../types.js').Dependencies} dependencies Standard addon dependencies.
- * @param {object} _context The context from the calling panel, used for navigation.
  */
-async function confirmClearChatImpl(player, dependencies, _context) {
+async function confirmClearChatImpl(player, dependencies) {
     const { playerUtils, getString, commandExecutionMap } = dependencies;
     const adminPlayerName = player.nameTag;
     playerUtils?.debugLog(`[UiManager.confirmClearChatImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
@@ -700,9 +698,8 @@ async function confirmClearChatImpl(player, dependencies, _context) {
  * If confirmed, executes the 'lagclear' command or a fallback vanilla command.
  * @param {import('@minecraft/server').Player} player The admin player initiating the action.
  * @param {import('../types.js').Dependencies} dependencies Standard addon dependencies.
- * @param {object} _context The context from the calling panel, used for navigation.
  */
-async function confirmLagClearImpl(player, dependencies, _context) {
+async function confirmLagClearImpl(player, dependencies) {
     const { playerUtils, commandExecutionMap } = dependencies;
     const adminPlayerName = player.nameTag;
     playerUtils?.debugLog(`[UiManager.confirmLagClearImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
@@ -734,9 +731,8 @@ async function confirmLagClearImpl(player, dependencies, _context) {
  * Navigates back to the calling panel or a default management panel after the modal is closed.
  * @param {import('@minecraft/server').Player} player The admin player viewing the logs.
  * @param {import('../types.js').Dependencies} dependencies Standard addon dependencies.
- * @param {object} _context The context from the calling panel, used for navigation.
  */
-async function displayActionLogsModalImpl(player, dependencies, _context) {
+async function displayActionLogsModalImpl(player, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;
     const adminPlayerName = player.nameTag;
     playerUtils?.debugLog(`[UiManager.displayActionLogsModalImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
@@ -809,13 +805,13 @@ async function displayActionLogsModalImpl(player, dependencies, _context) {
  * After input, navigates to the `logViewerPanel` with the filter applied.
  * @param {import('@minecraft/server').Player} player The admin player initiating the filter.
  * @param {import('../types.js').Dependencies} dependencies Standard addon dependencies.
- * @param {object} _context The current panel context, potentially containing existing filters.
+ * @param {object} context The current panel context, potentially containing existing filters.
  */
-async function showModLogFilterModalImpl(player, dependencies, _context) {
-    const { playerUtils, getString, logManager } = dependencies;
+async function showModLogFilterModalImpl(player, dependencies, context) {
+    const { playerUtils, getString, logManager, config } = dependencies;
     const adminPlayerName = player.nameTag;
-    playerUtils?.debugLog(`[UiManager.showModLogFilterModalImpl] Requested by ${adminPlayerName}, current context: ${JSON.stringify(_context)}`, adminPlayerName, dependencies);
-    const modal = new ModalFormData().title(getString('ui.modLogSelect.filterModal.title')).textField(getString('ui.modLogSelect.filterModal.textField.label'), getString('ui.modLogSelect.filterModal.textField.placeholder'), _context.playerNameFilter || '');
+    playerUtils?.debugLog(`[UiManager.showModLogFilterModalImpl] Requested by ${adminPlayerName}, current context: ${JSON.stringify(context)}`, adminPlayerName, dependencies);
+    const modal = new ModalFormData().title(getString('ui.modLogSelect.filterModal.title')).textField(getString('ui.modLogSelect.filterModal.textField.label'), getString('ui.modLogSelect.filterModal.textField.placeholder'), context.playerNameFilter || '');
     try {
         const response = await modal.show(player);
         if (response.canceled) {
@@ -840,12 +836,12 @@ async function showModLogFilterModalImpl(player, dependencies, _context) {
 
 
         const logsPerPage = config?.ui?.logsPerPage ?? 5;
-        const allLogs = logManager.getLogs ? logManager.getLogs(_context.logTypeFilter || [], newPlayerNameFilter) : [];
+        const allLogs = logManager.getLogs ? logManager.getLogs(context.logTypeFilter || [], newPlayerNameFilter) : [];
         const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
 
-        const nextContext = { ..._context, playerNameFilter: newPlayerNameFilter, currentPage: 1, totalPages };
+        const nextContext = { ...context, playerNameFilter: newPlayerNameFilter, currentPage: 1, totalPages };
         // When navigating from filter modal, always push the current state (modLogSelectionPanel)
-        pushToPlayerNavStack(player.id, 'modLogSelectionPanel', _context);
+        pushToPlayerNavStack(player.id, 'modLogSelectionPanel', context);
         await showPanel(player, 'logViewerPanel', dependencies, nextContext);
 
     } catch (error) {
@@ -1408,9 +1404,9 @@ const UI_ACTION_FUNCTIONS = {
      * @deprecated
      * @param {import('@minecraft/server').Player} player The player who would view the links.
      * @param {import('../types.js').Dependencies} dependencies Standard addon dependencies.
-     * @param {object} _context The context from the calling panel.
+     * @param {object} context The context from the calling panel.
      */
-    showHelpfulLinksPageContent: async (player, dependencies, _context) => {
+    showHelpfulLinksPageContent: async (player, dependencies) => {
         const { playerUtils } = dependencies; // _config as helpfulLinks is not used
         playerUtils.debugLog(`Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
         // const helpfulLinks = config?.helpfulLinks ?? []; // Unused variable
@@ -1551,9 +1547,9 @@ const UI_ACTION_FUNCTIONS = {
      * Displays a modal with system information about the addon and server.
      * @param {import('@minecraft/server').Player} player - The player viewing the system info.
      * @param {import('../types.js').Dependencies} dependencies - Standard addon dependencies.
-     * @param {object} _context - The context from the calling panel (typically `serverManagementPanel`). Not directly used by this function but passed for consistency.
+     * @param {object} context - The context from the calling panel (typically `serverManagementPanel`). Not directly used by this function but passed for consistency.
      */
-    displaySystemInfoModal: async (player, dependencies, _context) => {
+    displaySystemInfoModal: async (player, dependencies) => {
         const { playerUtils, config, getString, mc, logManager, playerDataManager, reportManager } = dependencies;
         const viewingPlayerName = player.nameTag;
         playerUtils?.debugLog(`[UiManager.displaySystemInfoModal] Requested by ${viewingPlayerName}`, viewingPlayerName, dependencies);
@@ -2009,10 +2005,9 @@ const UI_ACTION_FUNCTIONS = {
      *   - `targetPlayerName` (string) - The name of the target player.
      */
     showUnbanFormForPlayer: async (player, dependencies, context) => {
-        // eslint-disable-next-line no-unused-vars
-        const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
+        const { playerUtils, getString, commandExecutionMap } = dependencies;
         const adminPlayerName = player.nameTag;
-        const { targetPlayerName } = context; // Removed targetPlayerId
+        const { targetPlayerName } = context;
 
         if (!targetPlayerName) {
             player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'unban' }));

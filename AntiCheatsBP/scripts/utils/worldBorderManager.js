@@ -315,16 +315,14 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
         if (checkY < minDimensionHeight) {
             break;
         }
-        try {
-            const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
-            const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
-            if (blockFeet?.isAir && blockHead?.isAir) {
-                const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
-                if (blockBelowFeet?.isSolid) {
-                    return checkY;
-                }
+        const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
+        const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
+        if (blockFeet?.isAir && blockHead?.isAir) {
+            const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
+            if (blockBelowFeet?.isSolid) {
+                return checkY;
             }
-        } catch (e) { /* Error getting block, continue search */ }
+        }
     }
 
     const searchUpStartY = Math.max(minDimensionHeight, Math.min(Math.floor(initialY), maxDimensionHeight));
@@ -333,16 +331,14 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
         if (checkY > maxDimensionHeight) {
             break;
         }
-        try {
-            const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
-            const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
-            if (blockFeet?.isAir && blockHead?.isAir) {
-                const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
-                if (blockBelowFeet?.isSolid) {
-                    return checkY;
-                }
+        const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
+        const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
+        if (blockFeet?.isAir && blockHead?.isAir) {
+            const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
+            if (blockBelowFeet?.isSolid) {
+                return checkY;
             }
-        } catch (e) { /* Error getting block, continue search */ }
+        }
     }
     return Math.floor(initialY);
 }
@@ -356,13 +352,7 @@ export function processWorldBorderResizing(dependencies) {
     const knownBorderDimensions = config.worldBorderKnownDimensions ?? ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
     for (const dimId of knownBorderDimensions) {
         let dimBorderSettings = null;
-        try {
-            dimBorderSettings = getBorderSettings(dimId, dependencies);
-        } catch (e) {
-            console.error(`[WorldBorderManager-Resize] Error getting border settings for ${dimId} during resize check: ${e.stack || e}`);
-            playerUtils.debugLog(`[WorldBorderManager-Resize] Error getting border settings for ${dimId}: ${e.message}`, 'System', dependencies);
-            continue;
-        }
+        dimBorderSettings = getBorderSettings(dimId, dependencies);
         if (dimBorderSettings?.isResizing && dimBorderSettings.enabled) {
             const currentTimeMs = Date.now();
             if (typeof dimBorderSettings.resizeStartTimeMs !== 'number' ||
@@ -420,7 +410,7 @@ export function processWorldBorderResizing(dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Removed async
-    const { config, playerUtils, logManager: _logManager, getString, rankManager, permissionLevels, currentTick } = dependencies; // Renamed logManager
+    const { config, playerUtils, getString, rankManager, permissionLevels, currentTick } = dependencies; // Renamed logManager
     if (!config.enableWorldBorderSystem) {
         return;
     }
@@ -488,44 +478,32 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
         let performTeleport = !enableDamage;
         if (enableDamage && damageIntervalTicks > 0 && damageAmount > 0) {
             if (pData.ticksOutsideBorder % damageIntervalTicks === 0) {
-                try {
-                    player.applyDamage(damageAmount, { cause: mc.EntityDamageCause.worldBorder });
-                    pData.borderDamageApplications = (pData.borderDamageApplications || 0) + 1;
-                    pData.isDirtyForSave = true;
+                player.applyDamage(damageAmount, { cause: mc.EntityDamageCause.worldBorder });
+                pData.borderDamageApplications = (pData.borderDamageApplications || 0) + 1;
+                pData.isDirtyForSave = true;
+                if (pData.isWatched) {
+                    playerUtils.debugLog(`[WBM] Applied ${damageAmount} damage to ${player.nameTag}. Total: ${pData.borderDamageApplications}`, player.nameTag, dependencies);
+                }
+                if (pData.borderDamageApplications >= teleportAfterNumDamageEvents) {
+                    performTeleport = true;
                     if (pData.isWatched) {
-                        playerUtils.debugLog(`[WBM] Applied ${damageAmount} damage to ${player.nameTag}. Total: ${pData.borderDamageApplications}`, player.nameTag, dependencies);
+                        playerUtils.debugLog(`[WBM] ${player.nameTag} reached ${pData.borderDamageApplications} damage events. Triggering teleport.`, player.nameTag, dependencies);
                     }
-                    if (pData.borderDamageApplications >= teleportAfterNumDamageEvents) {
-                        performTeleport = true;
-                        if (pData.isWatched) {
-                            playerUtils.debugLog(`[WBM] ${player.nameTag} reached ${pData.borderDamageApplications} damage events. Triggering teleport.`, player.nameTag, dependencies);
-                        }
-                    }
-                } catch (e) {
-                    console.warn(`[WBM] Failed to apply damage to ${player.nameTag}: ${e}`);
-                    playerUtils.debugLog(`[WBM] Failed to apply damage to ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
                 }
             }
         }
         if (performTeleport) {
             const safeY = findSafeTeleportY(player.dimension, targetX, loc.y, targetZ, dependencies);
-            try {
-                player.teleport({ x: targetX, y: safeY, z: targetZ }, { dimension: player.dimension });
-                if (config.worldBorderWarningMessage) {
-                    playerUtils.warnPlayer(player, getString(config.worldBorderWarningMessage));
-                }
-                if (pData.isWatched) {
-                    playerUtils.debugLog(`[WBM] Teleported ${player.nameTag} to XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}) Y=${safeY}. Reason: ${!enableDamage ? 'Standard' : (pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'MaxDmg' : 'Error?')}`, player.nameTag, dependencies);
-                }
-                pData.ticksOutsideBorder = 0;
-                pData.borderDamageApplications = 0;
-                pData.isDirtyForSave = true;
-            } catch (e) {
-                console.warn(`[WBM] Failed to teleport player ${player.nameTag}: ${e}`);
-                if (pData.isWatched) {
-                    playerUtils.debugLog(`[WBM] Teleport failed: ${e.message}`, player.nameTag, dependencies);
-                }
+            player.teleport({ x: targetX, y: safeY, z: targetZ }, { dimension: player.dimension });
+            if (config.worldBorderWarningMessage) {
+                playerUtils.warnPlayer(player, getString(config.worldBorderWarningMessage));
             }
+            if (pData.isWatched) {
+                playerUtils.debugLog(`[WBM] Teleported ${player.nameTag} to XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}) Y=${safeY}. Reason: ${!enableDamage ? 'Standard' : (pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'MaxDmg' : 'Error?')}`, player.nameTag, dependencies);
+            }
+            pData.ticksOutsideBorder = 0;
+            pData.borderDamageApplications = 0;
+            pData.isDirtyForSave = true;
         }
     } else {
         if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
@@ -587,10 +565,8 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                     }
                     for (let dyn = actualStartDyn; dyn <= actualEndDyn; dyn += (1 / density)) {
                         for (let h = 0; h < wallHeight; h++) {
-                            try {
-                                const particleLoc = isXAxis ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
-                                player.dimension.spawnParticle(particleNameToUse, particleLoc);
-                            } catch (e) { /* Error spawning particle, suppress */ }
+                            const particleLoc = isXAxis ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
+                            player.dimension.spawnParticle(particleNameToUse, particleLoc);
                         }
                     }
                 };
@@ -621,9 +597,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                         const pX = centerX + radiusToUse * Math.cos(angle);
                         const pZ = centerZ + radiusToUse * Math.sin(angle);
                         for (let h = 0; h < wallHeight; h++) {
-                            try {
-                                player.dimension.spawnParticle(particleNameToUse, { x: pX, y: yBase + h, z: pZ });
-                            } catch (e) { /* Error spawning particle, suppress */ }
+                            player.dimension.spawnParticle(particleNameToUse, { x: pX, y: yBase + h, z: pZ });
                         }
                     }
                 }

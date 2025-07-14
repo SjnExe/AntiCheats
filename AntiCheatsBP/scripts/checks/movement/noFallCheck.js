@@ -29,7 +29,7 @@ const defaultMinFallDistanceForDamage = 3.5;
  * @returns {Promise<void>}
  */
 export async function checkNoFall(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, currentTick, logManager } = dependencies;
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
     if (!config?.enableNofallCheck) {
@@ -91,25 +91,17 @@ export async function checkNoFall(player, pData, dependencies) {
             return;
         }
 
-        try {
-            const blockLocationBelow = { x: Math.floor(player.location.x), y: Math.floor(player.location.y) - 1, z: Math.floor(player.location.z) };
-            const blockBelow = player.dimension.getBlock(blockLocationBelow);
+        const blockLocationBelow = { x: Math.floor(player.location.x), y: Math.floor(player.location.y) - 1, z: Math.floor(player.location.z) };
+        const blockBelow = player.dimension.getBlock(blockLocationBelow);
 
-            if (blockBelow && (config?.noFallMitigationBlocks ?? []).includes(blockBelow.typeId)) {
-                if (pData.isWatched) {
-                    playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} landed on a configured fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified. FallDistance reset.`, watchedPlayerName, dependencies);
-                }
-                if (pData.fallDistance > 0) {
-                    pData.fallDistance = 0; pData.isDirtyForSave = true;
-                }
-                return;
+        if (blockBelow && (config?.noFallMitigationBlocks ?? []).includes(blockBelow.typeId)) {
+            if (pData.isWatched) {
+                playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} landed on a configured fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified. FallDistance reset.`, watchedPlayerName, dependencies);
             }
-        } catch (e) {
-            playerUtils?.debugLog(`[NoFallCheck WARNING] Error checking block below player ${playerName}: ${e.message}`, watchedPlayerName, dependencies);
-            logManager?.addLog({
-                actionType: 'errorNoFallCheckBlockBelow', context: 'NoFallCheck.getBlockBelow',
-                targetName: playerName, details: { error: e.message }, errorStack: e.stack,
-            }, dependencies);
+            if (pData.fallDistance > 0) {
+                pData.fallDistance = 0; pData.isDirtyForSave = true;
+            }
+            return;
         }
 
         if (pData.isWatched) {
@@ -124,20 +116,16 @@ export async function checkNoFall(player, pData, dependencies) {
 
         if (pData.fallDistance > minDamageDistance && !pData.isTakingFallDamage) {
             let currentHealth = 'N/A';
-            try {
-                const healthComponent = player.getComponent(mc.EntityComponentTypes.Health);
-                if (healthComponent) {
-                    currentHealth = healthComponent.currentValue.toString();
-                }
-            } catch (e) { /* Error suppressed, default value will be used */ }
+            const healthComponent = player.getComponent(mc.EntityComponentTypes.Health);
+            if (healthComponent) {
+                currentHealth = healthComponent.currentValue.toString();
+            }
 
             let activeEffectsString = 'none';
-            try {
-                const effects = player.getEffects();
-                if (effects.length > 0) {
-                    activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
-                }
-            } catch (e) { /* Error suppressed, default value will be used */ }
+            const effects = player.getEffects();
+            if (effects.length > 0) {
+                activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
+            }
 
             const violationDetails = {
                 fallDistance: pData.fallDistance.toFixed(2), // .toFixed(2) is fine

@@ -287,15 +287,13 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
     }
 
     let efficiencyLevel = 0;
-    try {
-        const enchantComp = itemStack.getComponent(mc.ItemComponentTypes.Enchantable);
-        if (enchantComp) {
-            const efficiency = enchantComp.getEnchantment('efficiency');
-            if (efficiency) {
-                efficiencyLevel = efficiency.level;
-            }
+    const enchantComp = itemStack.getComponent(mc.ItemComponentTypes.Enchantable);
+    if (enchantComp) {
+        const efficiency = enchantComp.getEnchantment('efficiency');
+        if (efficiency) {
+            efficiencyLevel = efficiency.level;
         }
-    } catch (e) { /* Component may not exist or error fetching; efficiency remains 0 */ }
+    }
     if (efficiencyLevel > 0) {
         speed += (efficiencyLevel * efficiencyLevel + 1);
     }
@@ -403,15 +401,13 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
 
     let efficiencyLevel = 0;
     if (itemStack) {
-        try {
-            const enchantComp = itemStack.getComponent(mc.ItemComponentTypes.Enchantable);
-            if (enchantComp) {
-                const eff = enchantComp.getEnchantment('efficiency');
-                if (eff) {
-                    efficiencyLevel = eff.level;
-                }
+        const enchantComp = itemStack.getComponent(mc.ItemComponentTypes.Enchantable);
+        if (enchantComp) {
+            const eff = enchantComp.getEnchantment('efficiency');
+            if (eff) {
+                efficiencyLevel = eff.level;
             }
-        } catch (e) { /* Component may not exist or error fetching; efficiency remains 0 */ }
+        }
     }
     if (efficiencyLevel > 0) {
         toolSpeed += (efficiencyLevel * efficiencyLevel + 1);
@@ -440,12 +436,10 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
     let hasAquaAffinity = false;
     const headArmor = player.getComponent(mc.EntityComponentTypes.Equippable)?.getEquipmentSlot(mc.EquipmentSlot.Head);
     if (headArmor?.hasItem()) {
-        try {
-            const enchantComp = headArmor.getItem().getComponent(mc.ItemComponentTypes.Enchantable);
-            if (enchantComp?.getEnchantment('aqua_affinity')) {
-                hasAquaAffinity = true;
-            }
-        } catch (e) { /* Component may not exist or error fetching; aqua affinity remains false */ }
+        const enchantComp = headArmor.getItem().getComponent(mc.ItemComponentTypes.Enchantable);
+        if (enchantComp?.getEnchantment('aqua_affinity')) {
+            hasAquaAffinity = true;
+        }
     }
     if (player.isInWater && !hasAquaAffinity) {
         breakTimeSeconds *= inWaterNoAquaAffinityPenalty;
