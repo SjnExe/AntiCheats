@@ -74,7 +74,7 @@ export async function execute(player, args, dependencies) {
                 if (durabilityComponent) {
                     durabilityText = getString('command.invsee.item.durability', { currentDurability: (durabilityComponent.maxDurability - durabilityComponent.damage).toString(), maxDurability: durabilityComponent.maxDurability.toString() });
                 }
-            } catch (_e) { /* Component may not exist, or error fetching; text remains empty */ }
+            } catch (e) { /* Component may not exist, or error fetching; text remains empty */ }
 
             let loreText = '';
             const lore = itemStack.getLore();
@@ -92,7 +92,7 @@ export async function execute(player, args, dependencies) {
                         enchantsText = getString('command.invsee.item.enchants', { enchantEntries: enchStrings.join(', ') });
                     }
                 }
-            } catch (_e) { /* Component may not exist, or error fetching; text remains empty */ }
+            } catch (e) { /* Component may not exist, or error fetching; text remains empty */ }
 
             inventoryDetails += `${getString('ui.invsee.slotEntry', {
                 slotNum: i.toString(),

@@ -89,7 +89,7 @@ export async function checkSpeed(player, pData, dependencies) {
                     if (effects.length > 0) {
                         activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
                     }
-                } catch (_e) { /* Error suppressed, default value will be used */ }
+                } catch (e) { /* Error suppressed, default value will be used */ }
 
                 const violationDetails = {
                     detectedSpeedBps: hSpeedBPS.toFixed(speedLoggingDecimalPlaces),

@@ -118,7 +118,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
      * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for helpful links.
      */
     generateHelpfulLinkItems: (player, dependencies, context) => {
-        const { config, getString: _getString } = dependencies;
+        const { config } = dependencies;
         const helpfulLinks = config?.helpfulLinks ?? [];
         const items = [];
 
@@ -160,7 +160,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
      * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for server rules.
      */
     generateServerRuleItems: (player, dependencies, context) => {
-        const { config, getString: _getString } = dependencies;
+        const { config } = dependencies;
         // Assuming config.serverRules is an array of strings.
         const serverRules = config?.serverRules ?? [];
         const items = [];
@@ -198,7 +198,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
      * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for general tips.
      */
     generateGeneralTipItems: (player, dependencies, context) => {
-        const { config, getString: _getString } = dependencies;
+        const { config } = dependencies;
         // Assuming config.generalTips is an array of strings.
         const generalTips = config?.generalTips ?? [];
         const items = [];
@@ -237,7 +237,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
      * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for online players.
      */
     generateOnlinePlayerItems: (player, dependencies, _context) => { // _context is the panel's current context
-        const { mc, playerDataManager, playerUtils: _playerUtils } = dependencies;
+        const { mc, playerDataManager } = dependencies;
         const items = [];
         const onlinePlayers = mc.world.getAllPlayers();
 
@@ -290,7 +290,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
      * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for watched online players.
      */
     generateWatchedPlayerItems: (player, dependencies, _context) => {
-        const { mc, playerDataManager, playerUtils: _playerUtils } = dependencies;
+        const { mc, playerDataManager } = dependencies;
         const items = [];
         const onlinePlayers = mc.world.getAllPlayers();
 
@@ -396,7 +396,7 @@ async function showResetFlagsFormImpl(player, dependencies, _context) {
  * @param {object} _context The context from the calling panel, used for navigation.
  */
 async function showConfigCategoriesListImpl(player, dependencies, _context) {
-    const { playerUtils, config, getString, _logManager } = dependencies;
+    const { playerUtils, config, getString } = dependencies;
     playerUtils.debugLog(`[UiManager.showConfigCategoriesListImpl] Called by ${player.nameTag}`, player.nameTag, dependencies);
     const form = new ActionFormData().title('Edit Configuration Key');
 
@@ -522,7 +522,7 @@ async function showConfigCategoriesListImpl(player, dependencies, _context) {
  */
 async function showEditSingleConfigValueFormImpl(player, dependencies, context) {
     const { playerUtils, config, getString, logManager } = dependencies;
-    const { keyName, keyType, currentValue: _currentValue, parentPanelForEdit, parentContextForEdit } = context; // currentValue is the actual value from config
+    const { keyName, keyType, parentPanelForEdit, parentContextForEdit } = context; // currentValue is the actual value from config
     playerUtils.debugLog(`[UiManager.showEditSingleConfigValueFormImpl] Editing ${keyName} (type: ${keyType}) for ${player.nameTag}`, player.nameTag, dependencies);
 
     // keyType can be 'boolean', 'number', 'string', or 'arrayString'.
@@ -638,7 +638,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
  * @returns {Promise<boolean>} True if confirmed and callback executed, false otherwise.
  */
 async function _showConfirmationModal(adminPlayer, titleString, bodyString, confirmToggleLabelString, onConfirmCallback, dependencies, bodyParams = {}) {
-    const { playerUtils, logManager, getString } = dependencies;
+    const { playerUtils, logManager } = dependencies;
     const playerName = adminPlayer?.nameTag ?? 'UnknownAdmin';
     let processedBody = bodyString;
     if (bodyParams) {
@@ -703,7 +703,7 @@ async function confirmClearChatImpl(player, dependencies, _context) {
  * @param {object} _context The context from the calling panel, used for navigation.
  */
 async function confirmLagClearImpl(player, dependencies, _context) {
-    const { playerUtils, _getString, commandExecutionMap } = dependencies;
+    const { playerUtils, commandExecutionMap } = dependencies;
     const adminPlayerName = player.nameTag;
     playerUtils?.debugLog(`[UiManager.confirmLagClearImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
     await _showConfirmationModal(player, '§l§cConfirm Lag Clear§r', 'Are you sure you want to clear all ground items and non-player/non-persistent entities? This may cause lag temporarily.', '§cConfirm Lag Clear', async () => {
@@ -812,7 +812,7 @@ async function displayActionLogsModalImpl(player, dependencies, _context) {
  * @param {object} _context The current panel context, potentially containing existing filters.
  */
 async function showModLogFilterModalImpl(player, dependencies, _context) {
-    const { playerUtils, getString, logManager, config } = dependencies;
+    const { playerUtils, getString, logManager } = dependencies;
     const adminPlayerName = player.nameTag;
     playerUtils?.debugLog(`[UiManager.showModLogFilterModalImpl] Requested by ${adminPlayerName}, current context: ${JSON.stringify(_context)}`, adminPlayerName, dependencies);
     const modal = new ModalFormData().title(getString('ui.modLogSelect.filterModal.title')).textField(getString('ui.modLogSelect.filterModal.textField.label'), getString('ui.modLogSelect.filterModal.textField.placeholder'), _context.playerNameFilter || '');
@@ -973,7 +973,7 @@ async function displaySpecificLogsPageImpl(player, dependencies, context) {
  * `logTypeFilter`, `playerNameFilter`, and `currentPage`. `totalPages` will be calculated.
  */
 async function showPanel(player, panelId, dependencies, currentContext = {}) {
-    const { playerUtils, logManager, getString, _permissionLevels, rankManager, config } = dependencies;
+    const { playerUtils, logManager, getString, rankManager, config } = dependencies;
     const viewingPlayerName = player.nameTag;
 
     playerUtils?.debugLog(`[UiManager.showPanel] Player: ${viewingPlayerName}, PanelID: ${panelId}, Context: ${JSON.stringify(currentContext)}`, viewingPlayerName, dependencies);
@@ -1411,7 +1411,7 @@ const UI_ACTION_FUNCTIONS = {
      * @param {object} _context The context from the calling panel.
      */
     showHelpfulLinksPageContent: async (player, dependencies, _context) => {
-        const { playerUtils, config: _config, getString: _getString } = dependencies; // _config as helpfulLinks is not used
+        const { playerUtils } = dependencies; // _config as helpfulLinks is not used
         playerUtils.debugLog(`Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
         // const helpfulLinks = config?.helpfulLinks ?? []; // Unused variable
         // This function is no longer used by helpfulLinksPanel, which now dynamically generates items.
@@ -1913,7 +1913,7 @@ const UI_ACTION_FUNCTIONS = {
      *   - `targetPlayerName` (string) - The name of the target player.
      */
     showUnmuteFormForPlayer: async (player, dependencies, context) => {
-        const { playerUtils, getString, commandExecutionMap } = dependencies; // Removed unused logManager
+        const { playerUtils, getString, commandExecutionMap } = dependencies;
         const adminPlayerName = player.nameTag;
         const { targetPlayerName } = context; // Removed targetPlayerId
 
@@ -2048,8 +2048,7 @@ const UI_ACTION_FUNCTIONS = {
      *   - `targetPlayerName` (string) - The name of the target player.
      */
     confirmResetPlayerFlagsForPlayer: async (player, dependencies, context) => {
-        // eslint-disable-next-line no-unused-vars
-        const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
+        const { playerUtils, getString, commandExecutionMap } = dependencies;
         const adminPlayerName = player.nameTag;
         const { targetPlayerName } = context; // Removed targetPlayerId
 

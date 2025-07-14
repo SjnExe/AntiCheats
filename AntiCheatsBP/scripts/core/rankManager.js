@@ -176,7 +176,7 @@ export function updatePlayerNametag(player, dependencies) {
             if (player.isValid()) {
                 player.nameTag = String(player.nameTag || player.name || '');
             }
-        } catch (_e) { /* ignore */ }
+        } catch (e) { /* ignore */ }
         return;
     }
 
@@ -232,7 +232,7 @@ export function updatePlayerNametag(player, dependencies) {
             if (player.isValid()) {
                 player.nameTag = String(player.name ?? dependencies.getString('common.value.player'));
             }
-        } catch (_e) { /* ignore */ } // Used dependencies.getString directly
+        } catch (e) { /* ignore */ } // Used dependencies.getString directly
     }
 }
 

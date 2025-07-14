@@ -129,7 +129,7 @@ export async function checkNoFall(player, pData, dependencies) {
                 if (healthComponent) {
                     currentHealth = healthComponent.currentValue.toString();
                 }
-            } catch (_e) { /* Error suppressed, default value will be used */ }
+            } catch (e) { /* Error suppressed, default value will be used */ }
 
             let activeEffectsString = 'none';
             try {
@@ -137,7 +137,7 @@ export async function checkNoFall(player, pData, dependencies) {
                 if (effects.length > 0) {
                     activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
                 }
-            } catch (_e) { /* Error suppressed, default value will be used */ }
+            } catch (e) { /* Error suppressed, default value will be used */ }
 
             const violationDetails = {
                 fallDistance: pData.fallDistance.toFixed(2), // .toFixed(2) is fine

@@ -295,7 +295,7 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
                 efficiencyLevel = efficiency.level;
             }
         }
-    } catch (_e) { /* Component may not exist or error fetching; efficiency remains 0 */ }
+    } catch (e) { /* Component may not exist or error fetching; efficiency remains 0 */ }
     if (efficiencyLevel > 0) {
         speed += (efficiencyLevel * efficiencyLevel + 1);
     }
@@ -411,7 +411,7 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
                     efficiencyLevel = eff.level;
                 }
             }
-        } catch (_e) { /* Component may not exist or error fetching; efficiency remains 0 */ }
+        } catch (e) { /* Component may not exist or error fetching; efficiency remains 0 */ }
     }
     if (efficiencyLevel > 0) {
         toolSpeed += (efficiencyLevel * efficiencyLevel + 1);
@@ -445,7 +445,7 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
             if (enchantComp?.getEnchantment('aqua_affinity')) {
                 hasAquaAffinity = true;
             }
-        } catch (_e) { /* Component may not exist or error fetching; aqua affinity remains false */ }
+        } catch (e) { /* Component may not exist or error fetching; aqua affinity remains false */ }
     }
     if (player.isInWater && !hasAquaAffinity) {
         breakTimeSeconds *= inWaterNoAquaAffinityPenalty;

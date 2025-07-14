@@ -324,7 +324,7 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
                     return checkY;
                 }
             }
-        } catch (_e) { /* Error getting block, continue search */ }
+        } catch (e) { /* Error getting block, continue search */ }
     }
 
     const searchUpStartY = Math.max(minDimensionHeight, Math.min(Math.floor(initialY), maxDimensionHeight));
@@ -342,7 +342,7 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
                     return checkY;
                 }
             }
-        } catch (_e) { /* Error getting block, continue search */ }
+        } catch (e) { /* Error getting block, continue search */ }
     }
     return Math.floor(initialY);
 }
@@ -501,9 +501,9 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                             playerUtils.debugLog(`[WBM] ${player.nameTag} reached ${pData.borderDamageApplications} damage events. Triggering teleport.`, player.nameTag, dependencies);
                         }
                     }
-                } catch (_e) {
-                    console.warn(`[WBM] Failed to apply damage to ${player.nameTag}: ${_e}`);
-                    playerUtils.debugLog(`[WBM] Failed to apply damage to ${player.nameTag}: ${_e.message}`, player.nameTag, dependencies);
+                } catch (e) {
+                    console.warn(`[WBM] Failed to apply damage to ${player.nameTag}: ${e}`);
+                    playerUtils.debugLog(`[WBM] Failed to apply damage to ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
                 }
             }
         }
@@ -590,7 +590,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                             try {
                                 const particleLoc = isXAxis ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
                                 player.dimension.spawnParticle(particleNameToUse, particleLoc);
-                            } catch (_e) { /* Error spawning particle, suppress */ }
+                            } catch (e) { /* Error spawning particle, suppress */ }
                         }
                     }
                 };
@@ -623,7 +623,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                         for (let h = 0; h < wallHeight; h++) {
                             try {
                                 player.dimension.spawnParticle(particleNameToUse, { x: pX, y: yBase + h, z: pZ });
-                            } catch (_e) { /* Error spawning particle, suppress */ }
+                            } catch (e) { /* Error spawning particle, suppress */ }
                         }
                     }
                 }
