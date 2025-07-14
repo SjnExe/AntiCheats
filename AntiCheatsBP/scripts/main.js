@@ -398,7 +398,13 @@ async function processPlayer(player, dependencies) {
     updateTransientPlayerData(player, pData, dependencies);
     clearExpiredItemUseStates(pData, dependencies);
 
-    for (const checkName in checks) {
+    // Stagger checks across ticks
+    const checkNames = Object.keys(checks);
+    const checksPerTick = Math.ceil(checkNames.length / (dependencies.config.checkStaggerTicks || 1));
+    const tickOffset = currentTick % (dependencies.config.checkStaggerTicks || 1);
+    const checksToRun = checkNames.slice(tickOffset * checksPerTick, (tickOffset + 1) * checksPerTick);
+
+    for (const checkName of checksToRun) {
         const checkFunction = checks[checkName];
         if (typeof checkFunction !== 'function') {
             continue;
@@ -452,7 +458,7 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
             await saveDirtyPlayerData(player, dependencies);
         }
     }
-    persistLogCacheToDisk(dependencies);
+    await persistLogCacheToDisk(dependencies);
     persistReportsToDisk(dependencies);
 }
 

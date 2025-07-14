@@ -1,0 +1,65 @@
+
+/app/AntiCheatsBP/scripts/core/configValidator.js
+  11:1  warning  Missing JSDoc @returns description              jsdoc/require-returns-description
+  19:1  warning  Missing JSDoc @returns description              jsdoc/require-returns-description
+  27:1  warning  Missing JSDoc @returns description              jsdoc/require-returns-description
+  35:1  warning  Missing JSDoc @returns description              jsdoc/require-returns-description
+  43:1  warning  Missing JSDoc @returns description              jsdoc/require-returns-description
+  48:1  warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+  50:1  warning  Missing JSDoc @param "colorCode" description    jsdoc/require-param-description
+  50:1  warning  Missing JSDoc @param "colorCode" type           jsdoc/require-param-type
+  55:1  warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+  57:1  warning  Missing JSDoc @param "str" description          jsdoc/require-param-description
+  57:1  warning  Missing JSDoc @param "str" type                 jsdoc/require-param-type
+  65:1  warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+  67:1  warning  Missing JSDoc @param "num" description          jsdoc/require-param-description
+  67:1  warning  Missing JSDoc @param "num" type                 jsdoc/require-param-type
+  72:1  warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+  74:1  warning  Missing JSDoc @param "num" description          jsdoc/require-param-description
+  74:1  warning  Missing JSDoc @param "num" type                 jsdoc/require-param-type
+  79:1  warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+  81:1  warning  Missing JSDoc @param "durationStr" description  jsdoc/require-param-description
+  81:1  warning  Missing JSDoc @param "durationStr" type         jsdoc/require-param-type
+  89:1  warning  Missing JSDoc @returns declaration              jsdoc/require-returns
+  91:1  warning  Missing JSDoc @param "obj" description          jsdoc/require-param-description
+  91:1  warning  Missing JSDoc @param "obj" type                 jsdoc/require-param-type
+  92:1  warning  Missing JSDoc @param "fieldDefs" description    jsdoc/require-param-description
+  92:1  warning  Missing JSDoc @param "fieldDefs" type           jsdoc/require-param-type
+  93:1  warning  Missing JSDoc @param "context" description      jsdoc/require-param-description
+  93:1  warning  Missing JSDoc @param "context" type             jsdoc/require-param-type
+  94:1  warning  Missing JSDoc @param "errors" description       jsdoc/require-param-description
+  94:1  warning  Missing JSDoc @param "errors" type              jsdoc/require-param-type
+
+/app/AntiCheatsBP/scripts/core/eventHandlers.js
+   14:1  warning  Missing JSDoc @returns declaration                  jsdoc/require-returns
+   16:1  warning  Missing JSDoc @param "handlerName" description      jsdoc/require-param-description
+   16:1  warning  Missing JSDoc @param "handlerName" type             jsdoc/require-param-type
+   17:1  warning  Missing JSDoc @param "handlerFunction" description  jsdoc/require-param-description
+   17:1  warning  Missing JSDoc @param "handlerFunction" type         jsdoc/require-param-type
+   46:1  warning  Missing JSDoc @param "eventData" description        jsdoc/require-param-description
+   46:1  warning  Missing JSDoc @param "eventData" type               jsdoc/require-param-type
+   47:1  warning  Missing JSDoc @param "dependencies" description     jsdoc/require-param-description
+   47:1  warning  Missing JSDoc @param "dependencies" type            jsdoc/require-param-type
+  947:1  warning  Missing JSDoc @param "eventData" description        jsdoc/require-param-description
+  948:1  warning  Missing JSDoc @param "dependencies" description     jsdoc/require-param-description
+
+/app/AntiCheatsBP/scripts/core/playerDataManager.js
+  32:1  warning  @param "_dependencies" does not match an existing function parameter  jsdoc/check-param-names
+
+/app/AntiCheatsBP/scripts/core/tpaManager.js
+  410:1  warning  @param "_dependencies" does not match an existing function parameter  jsdoc/check-param-names
+
+/app/AntiCheatsBP/scripts/core/uiManager.js
+   236:1  warning  @param "context" does not match an existing function parameter  jsdoc/check-param-names
+   289:1  warning  @param "context" does not match an existing function parameter  jsdoc/check-param-names
+  1407:1  warning  @param "context" does not match an existing function parameter  jsdoc/check-param-names
+  1550:1  warning  @param "context" does not match an existing function parameter  jsdoc/check-param-names
+
+/app/AntiCheatsBP/scripts/main.js
+  441:1  warning  Missing JSDoc @param "allPlayers" description    jsdoc/require-param-description
+  442:1  warning  Missing JSDoc @param "dependencies" description  jsdoc/require-param-description
+
+/app/AntiCheatsBP/scripts/types.js
+  455:1  warning  Use object shorthand or index signatures instead of `Object`, e.g., `{[key: string]: string}`  jsdoc/check-types
+
+✖ 49 problems (0 errors, 49 warnings)

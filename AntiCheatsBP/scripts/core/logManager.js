@@ -48,14 +48,14 @@ export function initializeLogCache(dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if successful or not needed, false on error.
  */
-export function persistLogCacheToDisk(dependencies) {
+export async function persistLogCacheToDisk(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
     // Only persist if dirty OR if the property doesn't exist (initial save of potentially empty logs)
     if (!logsAreDirty && minecraftSystem?.world?.getDynamicProperty(logPropertyKey) !== undefined) {
         return true;
     }
     try {
-        minecraftSystem?.world?.setDynamicProperty(logPropertyKey, JSON.stringify(logsInMemory));
+        await minecraftSystem?.world?.setDynamicProperty(logPropertyKey, JSON.stringify(logsInMemory));
         logsAreDirty = false; // Reset dirty flag after successful persistence
         playerUtils?.debugLog(`[LogManager.persistLogCacheToDisk] Persisted ${logsInMemory.length} logs.`, null, dependencies);
         return true;

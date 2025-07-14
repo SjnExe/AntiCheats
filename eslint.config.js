@@ -1,5 +1,6 @@
 import eslintJs from '@eslint/js';
 import globals from 'globals';
+import eslintPluginJsonc from 'eslint-plugin-jsonc';
 
 export default [
     {
@@ -10,7 +11,6 @@ export default [
             'package-lock.json',
             '.gitignore',
             'Dev/',
-            '**/*.json',
         ],
     },
     {
@@ -31,4 +31,5 @@ export default [
             'semi': ['error', 'always'],
         },
     },
+    ...eslintPluginJsonc.configs['flat/recommended-with-jsonc'],
 ];
