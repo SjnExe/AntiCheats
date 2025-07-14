@@ -59,8 +59,9 @@ String literals used for `actionType` values (e.g., in `automodConfig.js` for Au
 
 ### JSDoc
 *   While JSDoc can be useful, it is not enforced by the linter in this project.
-*   If you choose to use JSDoc, it should be as compact as possible.
+*   If you choose to use JSDoc, it should be as compact as possible, where single line comment should never use multi line comment style.
 *   Constants should not be used if they are not necessary.
+*   There should be no unnecessary comments or empty lines.
 
 ### Magic Numbers
 *   The `no-magic-numbers` linting rule is disabled.
