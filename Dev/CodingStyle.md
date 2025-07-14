@@ -53,16 +53,18 @@ String literals used for `actionType` values (e.g., in `automodConfig.js` for Au
     - Examples for AutoMod rule actions: `warn`, `kick`, `tempBan`, `mute`, `flagOnly`, `teleportSafe`.
     - Examples for `log.actionType` in action profiles: `detectedFlyHover`, `antigriefTntPlacement`, `detectedSpeedGround`.
 
-## JSDoc
-*   Use JSDoc comments for all functions, especially exported ones.
-    *   **Conciseness is Key**: Comments should be clear and informative but also concise. Avoid overly verbose descriptions, especially if the function's purpose, parameters, and return values are clear from its name and signature. The `jsdoc/require-description-complete-sentence` ESLint rule is disabled (`'off'`) to support brevity, allowing descriptions that are not full sentences.
-    *   **Compact JSDoc**:
-        *   **Single-line comments are highly encouraged** for simple type annotations (e.g., `/** @type {string} */`) or very short, self-contained descriptions (e.g., `/** @returns {boolean} True if successful. */` or `/** Handles player login. */`).
-        *   If a function is simple and its name is descriptive (e.g., `/** @param {string} userId */`), a very brief comment is sufficient.
-        *   Minimize empty lines within JSDoc blocks. ESLint rules are set up to enforce this (tags should follow the main description or each other without unnecessary blank lines).
-    *   Detail purpose, parameters (`@param`), and return values (`@returns`) as needed, but prioritize clarity and conciseness over forced verbosity.
-*   Use JSDoc typedefs (`@typedef`) for complex object structures (e.g., `PlayerAntiCheatData`). These are typically centralized in `types.js`.
-*   Refer to `Dev/StandardizationGuidelines.md` for more detailed JSDoc type usage and specific formatting examples.
+## JSDoc and Magic Numbers (Linting Rules)
+
+**JSDoc and magic number linting rules are explicitly disabled in this project and should not be re-enabled.**
+
+### JSDoc
+*   While JSDoc can be useful, it is not enforced by the linter in this project.
+*   If you choose to use JSDoc, it should be as compact as possible.
+*   Constants should not be used if they are not necessary.
+
+### Magic Numbers
+*   The `no-magic-numbers` linting rule is disabled.
+*   While it's good practice to avoid unexplained numbers in the code, this rule is often too strict and can lead to less readable code.
 
 ## General Formatting
 *   Follow existing code formatting for indentation (e.g., 4 spaces), spacing, and brace style.

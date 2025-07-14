@@ -30,6 +30,8 @@ const defaultConfigSettings = {
         enablePerformanceProfiling: false,
         /** @type {number} Interval in game ticks to log performance profile data if enabled. Default: 1200 (60 seconds). */
         logPerformanceProfileIntervalTicks: 1200,
+        /** @type {number} Number of ticks to stagger checks over. Higher numbers reduce tick load but increase detection time. 1 = no stagger. */
+        checkStaggerTicks: 1,
     },
 
     /** @type {object} Settings related to player status effects and tags. */
