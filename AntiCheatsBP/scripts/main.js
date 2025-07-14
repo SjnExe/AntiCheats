@@ -1,3 +1,4 @@
+import { system } from '@minecraft/server';
 import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui';
 
@@ -178,7 +179,6 @@ function validateDependencies(deps, callContext) {
         'playerUtils.debugLog': 'function',
         'playerUtils.getString': 'function',
         'actionManager.executeCheckAction': 'function',
-        'system.runInterval': 'function',
         'configValidator.validateMainConfig': 'function',
         'chatProcessor.processChatMessage': 'function',
         'checks': 'object',
@@ -239,8 +239,8 @@ function performInitializations() {
     mc.world.sendMessage(dependencies.playerUtils.getString('system.core.initialized', { version: configModule.acVersion }));
     dependencies.playerUtils.debugLog(`[${mainModuleName}] Anti-Cheat Core System Initialized. Tick loop active.`, 'System', dependencies);
 
-    mc.system.runInterval(() => mainTick(dependencies), 1);
-    mc.system.runInterval(() => tpaTick(dependencies), TPA_SYSTEM_TICK_INTERVAL);
+    system.runInterval(() => mainTick(dependencies), 1);
+    system.runInterval(() => tpaTick(dependencies), TPA_SYSTEM_TICK_INTERVAL);
 }
 /**
  * Subscribes to all necessary Minecraft server events.
@@ -491,11 +491,11 @@ function attemptInitializeSystem(retryCount = 0) {
         console.warn(`[${mainModuleName}] Initialization failed. Retrying in ${delay / 20}s. Attempt ${retryCount + 1}/${maxInitRetries}. Error: ${e.message}`);
 
         if (retryCount < maxInitRetries) {
-            mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
+            system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
             console.error(`[${mainModuleName}] CRITICAL: MAX RETRIES REACHED. System will not initialize.`);
         }
     }
 }
 
-mc.system.runTimeout(() => attemptInitializeSystem(), initialRetryDelayTicks);
+system.runTimeout(() => attemptInitializeSystem(), initialRetryDelayTicks);
