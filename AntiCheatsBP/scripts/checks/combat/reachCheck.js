@@ -100,10 +100,7 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
             targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''),
             playerGameMode: mc.GameMode[gameMode] ?? String(gameMode),
         };
-        const rawActionProfileKey = config?.reachCheckActionProfileName ?? 'combatReachAttack';
-        const actionProfileKey = rawActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const actionProfileKey = config?.reachCheckActionProfileName ?? 'combatReachAttack';
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils?.debugLog(`[ReachCheck] Flagged ${playerName} for reach. Distance: ${distanceToTargetOrigin.toFixed(loggingDecimalPlaces)}, Max: ${maxAllowedReach.toFixed(loggingDecimalPlaces)}`, watchedPlayerName, dependencies);

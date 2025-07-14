@@ -71,10 +71,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     }
 
     const maxSpawns = config.entitySpamMaxSpawnsInWindow || defaultEntitySpamMaxSpawnsInWindow;
-    const rawActionProfileKey = config.entitySpamActionProfileName ?? 'worldAntiGriefEntityspam';
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config.entitySpamActionProfileName ?? 'worldAntiGriefEntityspam';
 
     if (pData.recentEntitySpamTimestamps[entityType].length > maxSpawns) {
         const violationDetails = {

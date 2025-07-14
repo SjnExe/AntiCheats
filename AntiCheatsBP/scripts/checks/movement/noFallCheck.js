@@ -148,10 +148,7 @@ export async function checkNoFall(player, pData, dependencies) {
                 onGround: player.isOnGround.toString(),
                 isTakingFallDamageReported: (pData.isTakingFallDamage ?? false).toString(),
             };
-            const rawActionProfileKey = config?.noFallActionProfileName ?? 'movementNoFall';
-            const actionProfileKey = rawActionProfileKey
-                .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-                .replace(/^[A-Z]/, (match) => match.toLowerCase());
+            const actionProfileKey = config?.noFallActionProfileName ?? 'movementNoFall';
             await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
             playerUtils?.debugLog(`[NoFallCheck] Flagged ${playerName} for NoFall. FallDist: ${pData.fallDistance.toFixed(2)}, MinDamageDist: ${minDamageDistance}`, watchedPlayerName, dependencies);
         }

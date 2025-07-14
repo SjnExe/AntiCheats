@@ -48,10 +48,7 @@ export async function checkViewSnap(player, pData, dependencies) {
     const invalidPitchMin = config?.invalidPitchThresholdMin ?? defaultInvalidPitchMin;
     const invalidPitchMax = config?.invalidPitchThresholdMax ?? defaultInvalidPitchMax;
 
-    const rawInvalidPitchActionProfileKey = config?.invalidPitchActionProfileName ?? 'combatInvalidPitch';
-    const invalidPitchActionProfileKey = rawInvalidPitchActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const invalidPitchActionProfileKey = config?.invalidPitchActionProfileName ?? 'combatInvalidPitch';
 
     if (currentPitch < invalidPitchMin || currentPitch > invalidPitchMax) {
         const violationDetails = {
@@ -76,10 +73,7 @@ export async function checkViewSnap(player, pData, dependencies) {
         const postAttackTimeMs = ticksSinceLastAttack * msPerTick;
 
         const maxPitchSnap = config?.maxPitchSnapPerTick ?? defaultMaxPitchSnapPerTick;
-        const rawPitchSnapActionProfileKey = config?.pitchSnapActionProfileName ?? 'combatViewSnapPitch';
-        const pitchSnapActionProfileKey = rawPitchSnapActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const pitchSnapActionProfileKey = config?.pitchSnapActionProfileName ?? 'combatViewSnapPitch';
 
         if (deltaPitch > maxPitchSnap) {
             const violationDetails = {
@@ -94,10 +88,7 @@ export async function checkViewSnap(player, pData, dependencies) {
         }
 
         const maxYawSnap = config?.maxYawSnapPerTick ?? 100;
-        const rawYawSnapActionProfileKey = config?.yawSnapActionProfileName ?? 'combatViewSnapYaw';
-        const yawSnapActionProfileKey = rawYawSnapActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const yawSnapActionProfileKey = config?.yawSnapActionProfileName ?? 'combatViewSnapYaw';
 
         if (deltaYaw > maxYawSnap) {
             const violationDetails = {

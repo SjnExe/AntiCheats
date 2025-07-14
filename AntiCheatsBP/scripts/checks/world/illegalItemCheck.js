@@ -51,19 +51,13 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
 
     if (actionType === 'place' && bannedItemsForPlace.includes(itemId)) {
         isBanned = true;
-        const rawProfileKey = config.illegalItemPlaceActionProfileName ?? 'worldIllegalItemPlace';
-        checkProfileKey = rawProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    checkProfileKey = config.illegalItemPlaceActionProfileName ?? 'worldIllegalItemPlace';
         violationDetails.blockLocationX = eventData.block?.location?.x?.toString() ?? 'N/A';
         violationDetails.blockLocationY = eventData.block?.location?.y?.toString() ?? 'N/A';
         violationDetails.blockLocationZ = eventData.block?.location?.z?.toString() ?? 'N/A';
     } else if (actionType === 'use' && bannedItemsForUse.includes(itemId)) {
         isBanned = true;
-        const rawProfileKey = config.illegalItemUseActionProfileName ?? 'worldIllegalItemUse';
-        checkProfileKey = rawProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        checkProfileKey = config.illegalItemUseActionProfileName ?? 'worldIllegalItemUse';
         violationDetails.sourceTypeId = eventData.source?.typeId ?? 'unknownSource';
     }
 

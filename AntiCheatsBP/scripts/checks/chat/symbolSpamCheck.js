@@ -28,10 +28,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         return;
     }
 
-    const rawActionProfileKey = config?.symbolSpamActionProfileName ?? 'chatSymbolSpamDetected';
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.symbolSpamActionProfileName ?? 'chatSymbolSpamDetected';
 
     const minLength = config?.symbolSpamMinLength ?? 10;
     if (message.length < minLength) {

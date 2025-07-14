@@ -129,10 +129,7 @@ export async function checkSwear(player, eventData, pData, dependencies) {
 
     const originalMessage = eventData.message;
     const wordsInMessage = originalMessage.split(/\s+/);
-    const rawActionProfileKey = config?.chatChecks?.swear?.actionProfile ?? 'chatSwearViolation';
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.chatChecks?.swear?.actionProfile ?? 'chatSwearViolation';
     const watchedPlayerName = pData?.isWatched ? playerName : null;
 
     for (const wordInMessage of wordsInMessage) {

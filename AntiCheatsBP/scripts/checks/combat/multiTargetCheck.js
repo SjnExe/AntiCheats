@@ -94,10 +94,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
             threshold: threshold.toString(),
             targetIdsSample: Array.from(distinctTargets).slice(0, distinctTargetsSampleLimitMulti).join(', '),
         };
-        const rawActionProfileKey = config?.multiTargetActionProfileName ?? 'combatMultiTargetAura';
-        const actionProfileKey = rawActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const actionProfileKey = config?.multiTargetActionProfileName ?? 'combatMultiTargetAura';
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 

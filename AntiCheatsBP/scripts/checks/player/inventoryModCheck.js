@@ -39,10 +39,7 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
         return;
     }
 
-    const rawActionProfileKey = config?.inventoryModSwitchUseActionProfileName ?? 'playerInventoryModSwitchUse';
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.inventoryModSwitchUseActionProfileName ?? 'playerInventoryModSwitchUse';
 
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
@@ -112,10 +109,7 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
             newItemAmount: newItem?.amount?.toString() ?? 'N/A',
             oldItemAmount: oldItem?.amount?.toString() ?? 'N/A',
         };
-        const rawActionProfileKey = config?.inventoryModMoveLockedActionProfileName ?? 'playerInventoryModMoveLocked';
-        const actionProfileKey = rawActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const actionProfileKey = config?.inventoryModMoveLockedActionProfileName ?? 'playerInventoryModMoveLocked';
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 

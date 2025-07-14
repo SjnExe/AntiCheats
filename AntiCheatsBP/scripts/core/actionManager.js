@@ -97,8 +97,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] Skipping flagging for checkType '${checkType}' (player is null).`, null, dependencies);
     }
     if (profile.log) {
-        const defaultPascalCase = `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
-        const logActionType = profile.log.actionType || (defaultPascalCase.charAt(0).toLowerCase() + defaultPascalCase.slice(1));
+    const logActionType = profile.log.actionType || `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
         let logDetailsString = profile.log.detailsPrefix || '';
         if (profile.log.includeViolationDetails !== false) {
             logDetailsString += formatViolationDetails(violationDetails);

@@ -30,10 +30,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
         return;
     }
 
-    const rawActionProfileName = config?.antiAdvertisingActionProfileName ?? 'chatAdvertisingDetected';
-    const actionProfileName = rawActionProfileName
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileName = config?.antiAdvertisingActionProfileName ?? 'chatAdvertisingDetected';
 
     const watchedPlayerName = pData?.isWatched ? playerName : null;
 

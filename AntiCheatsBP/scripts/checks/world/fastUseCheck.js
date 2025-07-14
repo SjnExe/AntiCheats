@@ -45,10 +45,7 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
             cooldownMs: cooldown.toString(),
             actualTimeMs: timeSinceLastUseMs.toString(),
         };
-        const rawActionProfileKey = config.fastUseActionProfileName ?? 'actionFastUse';
-        const actionProfileKey = rawActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const actionProfileKey = config.fastUseActionProfileName ?? 'actionFastUse';
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;

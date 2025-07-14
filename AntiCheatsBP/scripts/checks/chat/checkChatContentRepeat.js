@@ -46,10 +46,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         return;
     }
 
-    const rawActionProfileKey = config?.chatContentRepeatActionProfileName ?? 'chatContentRepeat';
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.chatContentRepeatActionProfileName ?? 'chatContentRepeat';
 
     if (!pData) {
         playerUtils?.debugLog(`[ChatContentRepeatCheck] pData is null for ${playerName}, skipping check.`, playerName, dependencies);

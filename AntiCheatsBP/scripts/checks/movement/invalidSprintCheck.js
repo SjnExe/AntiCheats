@@ -43,10 +43,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
 
-        const rawActionProfileKey = config?.invalidSprintActionProfileName ?? 'movementInvalidSprint';
-        const actionProfileKey = rawActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const actionProfileKey = config?.invalidSprintActionProfileName ?? 'movementInvalidSprint';
         const watchedPlayerName = pData.isWatched ? playerName : null;
 
         try {

@@ -49,10 +49,7 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     const maxDiacriticRatio = config?.unicodeAbuseMaxDiacriticRatio ?? defaultMaxDiacriticRatio;
     const absoluteMaxDiacritics = config?.unicodeAbuseAbsoluteMaxDiacritics ?? defaultAbsoluteMaxDiacritics;
 
-    const rawActionProfileKey = config?.unicodeAbuseActionProfileName ?? defaultActionProfileKey;
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.unicodeAbuseActionProfileName ?? defaultActionProfileKey;
 
     let diacriticCount = 0;
     let baseCharCount = 0;

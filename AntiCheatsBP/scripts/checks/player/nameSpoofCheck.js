@@ -95,10 +95,7 @@ export async function checkNameSpoof(player, pData, dependencies) {
             disallowedCharRegexConfig: config?.nameSpoofDisallowedCharsRegex ?? 'N/A',
             minChangeIntervalConfig: (config?.nameSpoofMinChangeIntervalTicks ?? 0).toString(),
         };
-        const rawActionProfileKey = config?.nameSpoofActionProfileName ?? 'playerNameSpoof';
-        const actionProfileKey = rawActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const actionProfileKey = config?.nameSpoofActionProfileName ?? 'playerNameSpoof';
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
