@@ -51,7 +51,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
 
     if (actionType === 'place' && bannedItemsForPlace.includes(itemId)) {
         isBanned = true;
-    checkProfileKey = config.illegalItemPlaceActionProfileName ?? 'worldIllegalItemPlace';
+        checkProfileKey = config.illegalItemPlaceActionProfileName ?? 'worldIllegalItemPlace';
         violationDetails.blockLocationX = eventData.block?.location?.x?.toString() ?? 'N/A';
         violationDetails.blockLocationY = eventData.block?.location?.y?.toString() ?? 'N/A';
         violationDetails.blockLocationZ = eventData.block?.location?.z?.toString() ?? 'N/A';
