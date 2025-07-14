@@ -228,13 +228,11 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
             if (neighborLoc.x === faceLocation.x && neighborLoc.y === faceLocation.y && neighborLoc.z === faceLocation.z) {
                 continue;
             }
-            try {
-                const neighborBlock = dimension.getBlock(neighborLoc);
-                if (neighborBlock && !neighborBlock.isAir && !neighborBlock.isLiquid) {
-                    hasSolidSupport = true;
-                    break;
-                }
-            } catch (e) { /* Error suppressed, continue checking other neighbors */ }
+            const neighborBlock = dimension.getBlock(neighborLoc);
+            if (neighborBlock && !neighborBlock.isAir && !neighborBlock.isLiquid) {
+                hasSolidSupport = true;
+                break;
+            }
         }
 
         if (!hasSolidSupport) {
