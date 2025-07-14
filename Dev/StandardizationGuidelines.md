@@ -71,7 +71,7 @@ This document outlines the consolidated standardization guidelines for the AntiC
     *   **Content (Functions):**
         *   **Concise Summary**: The main description should be brief and to the point. If the function's purpose, parameters, and return type are very clear from its name and signature (e.g., `function getUserById(id: string): User`), the summary can be extremely brief, focusing only on non-obvious aspects or side effects. Avoid restating the obvious.
         *   **Compactness**:
-            *   **Single-line JSDoc comments are highly preferred** for simple type annotations (e.g., `/** @type {string} */`) or very short, self-contained descriptions (e.g., `/** @returns {boolean} True if action was successful. */` or `/** Processes user input. */`).
+            *   **Single-line JSDoc comments are highly preferred** for simple type annotations (e.g., `/** @type {string} */`) or very short, self-contained descriptions (e.g., `/** @returns {boolean} True if action was successful. */` or `/** Processes user input. */`), where single line comment should never use multi line comment style.
             *   ESLint rules are configured to support this:
                 *   `jsdoc/multiline-blocks` allows single-line blocks.
                 *   `jsdoc/tag-lines` is set to 'never' to minimize empty lines.
@@ -88,7 +88,7 @@ This document outlines the consolidated standardization guidelines for the AntiC
         *   Example (Good): `// Offset by 1 to align with the legacy system's 1-based indexing.`
         *   Example (Bad): `// Increment counter` followed by `counter++;`
     *   **Conciseness**: Keep inline comments brief and to the point.
-    *   Avoid obvious or redundant comments.
+    *   Avoid obvious or redundant comments, and there should be no unnecessary comments or empty lines.
     *   Use `// TODO:` and `// FIXME:` for tracking. Briefly include context, the issue, and optionally a name/date.
 *   **File Header Comments:**
     *   Maintain brief JSDoc-style file purpose descriptions at the top (`@file`).
