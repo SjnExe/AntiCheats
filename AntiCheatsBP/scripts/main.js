@@ -258,18 +258,20 @@ function subscribeToEvents(dependencies) {
         }
     });
 
-    const eventSubscriptions = {
+    const beforeEventSubscriptions = {
+        'playerBreakBlock': handlePlayerBreakBlockBeforeEvent,
+        'itemUse': handleItemUse,
+        'playerPlaceBlock': handlePlayerPlaceBlockBefore,
+    };
+
+    const afterEventSubscriptions = {
         'playerSpawn': handlePlayerSpawn,
         'playerLeave': handlePlayerLeave,
         'entityHurt': handleEntityHurt,
-        'playerBreakBlock': handlePlayerBreakBlockBeforeEvent,
-        'afterPlayerBreakBlock': handlePlayerBreakBlockAfterEvent,
-        'itemUse': handleItemUse,
-        'playerPlaceBlock': handlePlayerPlaceBlockBefore,
-        'afterPlayerPlaceBlock': handlePlayerPlaceBlockAfterEvent,
-        'afterPlayerInventoryItemChange': (eventData) => handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, dependencies),
-        'afterPlayerDimensionChange': handlePlayerDimensionChangeAfterEvent,
-        'afterEntityDie': (eventData) => {
+        'playerBreakBlock': handlePlayerBreakBlockAfterEvent,
+        'playerPlaceBlock': handlePlayerPlaceBlockAfterEvent,
+        'playerDimensionChange': handlePlayerDimensionChangeAfterEvent,
+        'entityDie': (eventData) => {
             if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
                 handlePlayerDeath(eventData, dependencies);
             }
@@ -277,15 +279,17 @@ function subscribeToEvents(dependencies) {
                 handleEntityDieForDeathEffects(eventData, dependencies);
             }
         },
-        'afterEntitySpawn': handleEntitySpawnEventAntiGrief,
-        'afterPistonActivate': handlePistonActivateAntiGrief,
+        'entitySpawn': handleEntitySpawnEventAntiGrief,
+        'pistonActivate': handlePistonActivateAntiGrief,
+        'playerInventoryItemChange': (eventData) => handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, dependencies),
     };
 
-    for (const eventName in eventSubscriptions) {
-        const handler = eventSubscriptions[eventName];
-        const eventEmitter = eventName.startsWith('after') ? mc.world.afterEvents : mc.world.beforeEvents;
-        const actualEventName = eventName.startsWith('after') ? eventName.substring(5) : eventName;
-        eventEmitter[actualEventName].subscribe((eventData) => handler(eventData, dependencies));
+    for (const eventName in beforeEventSubscriptions) {
+        mc.world.beforeEvents[eventName].subscribe((eventData) => beforeEventSubscriptions[eventName](eventData, dependencies));
+    }
+
+    for (const eventName in afterEventSubscriptions) {
+        mc.world.afterEvents[eventName].subscribe((eventData) => afterEventSubscriptions[eventName](eventData, dependencies));
     }
 }
 /**
