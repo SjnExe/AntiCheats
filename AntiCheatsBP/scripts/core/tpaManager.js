@@ -410,7 +410,7 @@ export function clearExpiredRequests(dependencies) {
  * @param {import('../types.js').CommandDependencies} _dependencies - Standard command dependencies, currently unused.
  * @returns {PlayerTpaStatus} The player's TPA status.
  */
-export function getPlayerTpaStatus(playerName, _dependencies) { // Added dependencies for future use if needed, prefixed with _
+export function getPlayerTpaStatus(playerName) { // Added dependencies for future use if needed, prefixed with _
     if (!playerTpaStatuses.has(playerName)) {
         return { playerName, acceptsTpaRequests: true, lastTpaToggleTimestamp: 0 }; // Default to accepting
     }

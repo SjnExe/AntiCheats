@@ -32,7 +32,7 @@ const scheduledFlagPurges = new Set();
  * @param {import('../types.js').Dependencies} _dependencies The dependencies object.
  * @returns {import('../types.js').PlayerAntiCheatData} The fully formed default player data object.
  */
-export function initializeDefaultPlayerData(player, currentTick, _dependencies) {
+export function initializeDefaultPlayerData(player, currentTick) {
     const now = Date.now();
 
     return {
