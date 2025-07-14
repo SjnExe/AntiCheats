@@ -12,8 +12,6 @@ import {
     getAllRegisteredCommandNames,
     commandDefinitionMap,
     commandExecutionMap,
-    registerCommandInternal,
-    unregisterCommandInternal,
 } from './core/commandManager.js';
 import * as configModule from './config.js';
 import {
@@ -104,8 +102,6 @@ function getStandardDependencies() {
         };
 
         const commandManager = {
-            registerCommand: registerCommandInternal,
-            unregisterCommand: unregisterCommandInternal,
             reloadCommands: initializeCommands,
         };
 
