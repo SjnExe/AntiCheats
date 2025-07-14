@@ -115,8 +115,10 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Description:** Clears a player's AntiCheat flags and violation data.
     *   **Permission:** Admin
 *   **`!tp`**
-    *   **Syntax:** `!tp <targetPlayerOrX> [destinationPlayerOrY] [z] [dimensionTargetOrPlayerToMove] [dimensionForCoords]`
-    *   **Description:** Teleports a player to another player or to coordinates.
+    *   **Syntax:**
+        *   `!tp <targetPlayer> [destinationPlayer]` - Teleport a player to another.
+        *   `!tp <playerToMove> <x> <y> <z> [dimension]` - Teleport a player to coordinates.
+    *   **Description:** Teleports a player to another player or to specific coordinates.
     *   **Permission:** Admin
 *   **`!unban`** (Alias: `!ub`)
     *   **Syntax:** `!unban <playername>`
@@ -192,11 +194,11 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Syntax:** `!tpa <playerName>`
     *   **Description:** Sends a teleport request to another player.
     *   **Permission:** Member
-*   **`!tpahere <playerName>`** (Alias: `!tph`; also `!tpask` from definition)
+*   **`!tpahere <playerName>`** (Alias: `!tph`)
     *   **Syntax:** `!tpahere <playerName>`
     *   **Description:** Requests another player to teleport to your location.
     *   **Permission:** Member
-*   **`!tpaccept [playerName]`** (Alias: `!tpaa`; also `!tpaaccept` from definition)
+*   **`!tpaccept [playerName]`** (Alias: `!tpaa`)
     *   **Syntax:** `!tpaccept [playerName]`
     *   **Description:** Accepts an incoming teleport request. Specify player name if multiple requests are pending.
     *   **Permission:** Member

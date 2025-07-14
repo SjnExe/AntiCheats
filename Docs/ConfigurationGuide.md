@@ -9,7 +9,7 @@ These are the first crucial steps after installing the addon:
 1.  **Set the Server Owner (Vital for Full Control):**
     *   **File:** `AntiCheatsBP/scripts/config.js`
     *   **Setting:** `ownerPlayerName`
-    *   **Action:** Change the placeholder value of `ownerPlayerName` to your **exact** in-game Minecraft name (case-sensitive).
+    *   **Action:** Change the placeholder value of `ownerPlayerName` to your **exact** in-game Minecraft name (case-sensitive). This is a JavaScript string, so it must be enclosed in quotes.
         ```javascript
         // Example in AntiCheatsBP/scripts/config.js
         export const ownerPlayerName = "YourExactPlayerName";
@@ -52,6 +52,15 @@ This file is extensively commented and allows you to customize a wide range of s
 *   **Individual Command Toggles:**
     *   `commandSettings`: An object to enable or disable specific commands individually.
     *   *Note on Command Aliases:* Previously, `config.js` might have contained a global `commandAliases` object. This has been deprecated. Command aliases are now defined directly within each command's definition object (typically in `AntiCheatsBP/scripts/commands/yourcommand.js`) under an `aliases` array.
+        ```javascript
+        // Example in a command file like AntiCheatsBP/scripts/commands/version.js
+        export const definition = {
+            name: 'version',
+            aliases: ['v', 'ver'], // Aliases for the version command
+            description: 'Displays the AntiCheat addon version.',
+            permissionLevel: 1024, // Member
+        };
+        ```
 
 **Structure of `config.js`:**
 The `config.js` file primarily exports constants. Many of these are grouped into an `editableConfigValues` object. This special object allows some (but not all) configuration values to be modified at runtime by the server Owner via the `!panel` UI or potentially a dedicated `!acconfig` command (if implemented).
@@ -250,7 +259,7 @@ soundEvents: {
 
 *   `soundId` (string):
     *   **Purpose:** The Minecraft sound ID to play (e.g., `"random.orb"`, `"note.pling"`, `"mob.villager.no"`).
-    *   **Finding Sound IDs:** You can find vanilla sound IDs on the [Minecraft Wiki](https://minecraft.fandom.com/wiki/Sounds.json) or by using in-game commands like `/playsound`.
+    *   **Finding Sound IDs:** You can find a comprehensive list of vanilla sound IDs on the [Official Minecraft Wiki](https://minecraft.fandom.com/wiki/Sounds.json). You can also discover them using in-game commands like `/playsound`.
     *   **Behavior:** If empty, `null`, or an invalid ID, no sound will play for this event even if `enabled` is true.
 
 *   `volume` (number, optional):
@@ -450,7 +459,7 @@ Each tier object defines a specific action to be taken when a flag threshold is 
 
 **Important Notes for `automodConfig.js` (Updated):**
 *   Always back up `automodConfig.js` before making changes.
-*   **`checkType` in rule sets and `actionType` in tiers MUST be `camelCase`**.
+*   **`checkType` in rule sets and `actionType` in tiers MUST be `camelCase`**. This is a strict requirement for the system to correctly match them.
 *   Ensure `tiers` within each rule set are logically ordered by `flagThreshold` (lowest to highest) for predictable escalation.
 *   The `duration` strings for bans/mutes must be in a format recognized by `playerUtils.parseDuration`.
 *   Thoroughly test any AutoMod rule changes. Pay close attention to `resetFlagsAfterAction` and the new `resetFlagsAfterSeconds` behavior.
