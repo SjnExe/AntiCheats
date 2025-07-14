@@ -1,5 +1,4 @@
 <p align="center">
-  <!-- TODO: Add a cool project logo/banner here. Example: <img src="link_to_your_logo.png" alt="AntiCheats Addon Logo" width="200"/> -->
   <h1 align="center">AntiCheats Addon for Minecraft BE</h1>
 </p>
 
@@ -57,11 +56,9 @@ This addon is packed with features to keep your server clean:
     *   **World Interaction:** Nuker, Illegal Item usage/placement, Fast Place/Use, AutoTool, InstaBreak, Anti-Grief (TNT, Fire, Lava, Wither, etc.), Building exploits (Tower, Scaffold).
     *   **Player Behavior:** Anti-Gamemode Creative (AntiGMC), NameSpoof, Self-Hurt, Inventory Modifications.
     *   **Chat:** Spam (fast message, max words, content repeat), Swear/Advertising filtering, CAPS/Symbol abuse, Unicode abuse, Impersonation.
-    *   <!-- TODO: Placeholder for a GIF/Screenshot showcasing a cheat detection in action -->
 *   🛠️ **Powerful Admin & Moderation Tools:**
     *   Intuitive in-game UI (`!panel` or `!ui`) for player management, server settings, and log viewing.
     *   Extensive text commands for all administrative functions.
-    *   <!-- TODO: Placeholder for a GIF/Screenshot of the !panel UI -->
 *   💾 **Persistent Player Data Management:**
     *   Flags, violation records, mutes, and bans are saved across player sessions using dynamic properties.
 *   ⚙️ **Highly Configurable System:**
@@ -72,7 +69,6 @@ This addon is packed with features to keep your server clean:
     *   Define escalating punishments (warn, kick, mute, ban) based on accumulated flag counts for specific cheat types via `automodConfig.js`.
 *   🗺️ **Dynamic World Border System:**
     *   Per-dimension, resizable (square or circle) borders with visual cues and configurable damage for out-of-bounds players.
-    *   <!-- TODO: Placeholder for a GIF/Screenshot of the World Border visuals -->
 *   🏅 **Flexible Rank System:**
     *   Define Owner, Admin, Member, and custom roles with specific permissions and visual chat/nametag prefixes via `ranksConfig.js`.
 *   📞 **Teleport Request System (TPA/TPAHere):**
