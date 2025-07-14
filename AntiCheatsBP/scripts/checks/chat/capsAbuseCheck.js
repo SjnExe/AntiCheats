@@ -27,10 +27,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
         return;
     }
 
-    const rawActionProfileKey = config?.capsCheckActionProfileName ?? 'chatCapsAbuseDetected';
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.capsCheckActionProfileName ?? 'chatCapsAbuseDetected';
 
     const minLength = config?.capsCheckMinLength ?? 10;
     if (message.length < minLength) {

@@ -62,10 +62,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             devicePlatform: player.clientSystemInfo.platformType?.toString() ?? 'Unknown',
         };
 
-        const rawActionProfileKey = config?.invalidRenderDistanceActionProfileName ?? 'playerInvalidRenderDistance';
-        const actionProfileKey = rawActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const actionProfileKey = config?.invalidRenderDistanceActionProfileName ?? 'playerInvalidRenderDistance';
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 

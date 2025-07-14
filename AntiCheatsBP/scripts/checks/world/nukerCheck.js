@@ -51,10 +51,7 @@ export async function checkNuker(player, pData, dependencies) {
     }
 
     const maxBreaks = config.nukerMaxBreaksShortInterval ?? DEFAULT_NUKER_MAX_BREAKS_SHORT_INTERVAL;
-    const rawActionProfileKey = config.nukerActionProfileName ?? 'worldNuker';
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config.nukerActionProfileName ?? 'worldNuker';
 
     if (brokenBlocksInWindow > maxBreaks) {
         if (pData.isWatched || config.enableDebugLogging) {

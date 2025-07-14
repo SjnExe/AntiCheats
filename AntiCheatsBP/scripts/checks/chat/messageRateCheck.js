@@ -39,10 +39,7 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
     const initialTime = Date.now(); // Timestamp of when this message event began processing
     const threshold = config?.fastMessageSpamThresholdMs ?? DEFAULT_FAST_MESSAGE_SPAM_THRESHOLD_MS;
 
-    const rawActionProfileKey = config?.fastMessageSpamActionProfileName ?? 'chatSpamFastMessage';
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.fastMessageSpamActionProfileName ?? 'chatSpamFastMessage';
 
     const { playerDataManager } = dependencies; // Ensure playerDataManager is available
     // let shouldCancelBasedOnProfile = false; // Removed as it's unused

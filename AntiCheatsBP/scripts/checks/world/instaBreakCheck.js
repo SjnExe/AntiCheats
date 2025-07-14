@@ -35,10 +35,7 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
                 z: eventData.block.location.z.toString(),
                 playerName: player.nameTag,
             };
-            const rawActionProfileKey = config.instaBreakUnbreakableActionProfileName ?? 'worldInstaBreakUnbreakable';
-            const actionProfileKey = rawActionProfileKey
-                .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-                .replace(/^[A-Z]/, (match) => match.toLowerCase());
+            const actionProfileKey = config.instaBreakUnbreakableActionProfileName ?? 'worldInstaBreakUnbreakable';
 
             // For this specific check, cancellation is intrinsic to the detection of breaking an unbreakable block.
             // The actionManager.executeCheckAction is primarily for logging/flagging this event.
@@ -122,10 +119,7 @@ export async function checkBreakSpeed(player, pData, eventData, dependencies) {
                 z: blockLocation.z.toString(),
                 toolUsed: pData.toolUsedForBreakAttempt ?? 'unknown',
             };
-            const rawActionProfileKey = config.instaBreakSpeedActionProfileName ?? 'worldInstaBreakSpeed';
-            const actionProfileKey = rawActionProfileKey
-                .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-                .replace(/^[A-Z]/, (match) => match.toLowerCase());
+            const actionProfileKey = config.instaBreakSpeedActionProfileName ?? 'worldInstaBreakSpeed';
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[InstaBreakCheck](Speed): Flagged ${player.nameTag} for breaking ${blockTypeId} in ${actualDurationTicks}t (Expected: ${expectedTicks === Infinity ? 'Inf' : expectedTicks}t, Tool: ${pData.toolUsedForBreakAttempt ?? 'unknown'}).`, pData.isWatched ? player.nameTag : null, dependencies);
         }

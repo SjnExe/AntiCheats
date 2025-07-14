@@ -53,10 +53,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
     const vowelRatioUpperBound = config?.gibberishVowelRatioUpperBound ?? defaultVowelRatioUpperBound;
     const maxConsecutiveConsonants = config?.gibberishMaxConsecutiveConsonants ?? defaultMaxConsecutiveConsonants;
 
-    const rawActionProfileKey = config?.gibberishActionProfileName ?? defaultActionProfileKey;
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.gibberishActionProfileName ?? defaultActionProfileKey;
 
     const cleanedMessage = rawMessageContent.toLowerCase().replace(/[.,!?()"';:{}[\]<>~`^\\]/g, '');
 

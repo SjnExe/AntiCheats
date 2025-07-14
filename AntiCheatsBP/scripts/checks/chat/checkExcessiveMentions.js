@@ -51,10 +51,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     const maxUniquePerMessage = config?.mentionsMaxUniquePerMessage ?? defaultMaxUniquePerMessage;
     const maxRepeatedPerMessage = config?.mentionsMaxRepeatedPerMessage ?? defaultMaxRepeatedPerMessage;
 
-    const rawActionProfileKey = config?.mentionsActionProfileName ?? defaultActionProfileKey;
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.mentionsActionProfileName ?? defaultActionProfileKey;
 
     const mentionRegex = /@([A-Za-z0-9_]{3,24})/g;
     const allMentions = [];

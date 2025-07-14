@@ -66,10 +66,7 @@ export async function checkSelfHurt(player, pData, dependencies, eventSpecificDa
             playerHealth: playerHealthString,
         };
 
-        const rawActionProfileKey = config?.selfHurtActionProfileName ?? 'playerSelfHurt';
-        const actionProfileKey = rawActionProfileKey
-            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-            .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const actionProfileKey = config?.selfHurtActionProfileName ?? 'playerSelfHurt';
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils?.debugLog(`[SelfHurtCheck] Flagged ${playerName} for suspicious self-hurt (entityAttack by self).`, watchedPlayerName, dependencies);

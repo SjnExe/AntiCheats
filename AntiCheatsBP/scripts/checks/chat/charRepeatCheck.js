@@ -26,10 +26,7 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
         return;
     }
 
-    const rawActionProfileKey = config?.charRepeatActionProfileName ?? 'chatCharRepeatDetected';
-    const actionProfileKey = rawActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const actionProfileKey = config?.charRepeatActionProfileName ?? 'chatCharRepeatDetected';
 
     const minLength = config?.charRepeatMinLength ?? 5;
     const threshold = config?.charRepeatThreshold ?? 5;

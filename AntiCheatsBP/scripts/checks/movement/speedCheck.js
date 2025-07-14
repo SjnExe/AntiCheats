@@ -74,10 +74,7 @@ export async function checkSpeed(player, pData, dependencies) {
         );
     }
 
-    const rawGroundActionProfileKey = config?.speedGroundActionProfileName ?? 'movementSpeedGround';
-    const groundActionProfileKey = rawGroundActionProfileKey
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
-        .replace(/^[A-Z]/, (match) => match.toLowerCase());
+    const groundActionProfileKey = config?.speedGroundActionProfileName ?? 'movementSpeedGround';
 
     if (player.isOnGround) {
         if (hSpeedBPS > maxAllowedSpeedBPS) {

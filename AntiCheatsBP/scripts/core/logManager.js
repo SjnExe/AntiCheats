@@ -97,9 +97,7 @@ export function addLog(logEntry, dependencies) {
 
     // Enforce camelCase for actionType as per guidelines
     const originalActionType = logEntry.actionType;
-    const standardizedActionType = originalActionType
-        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', '')) // Convert snake_case and kebab-case parts
-        .replace(/^[A-Z]/, (match) => match.toLowerCase()); // Ensure first letter is lowercase
+    const standardizedActionType = originalActionType;
 
     if (standardizedActionType !== originalActionType) {
         playerUtils?.debugLog(`[LogManager.addLog] Standardized actionType from '${originalActionType}' to '${standardizedActionType}'.`, null, dependencies);
