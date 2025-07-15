@@ -60,7 +60,6 @@ export function execute(player, args, dependencies) {
     }
 
     const isDecline = requestToCancel.targetName === player.name && requestToCancel.status === 'pendingAcceptance';
-    // const actionLogType = isDecline ? 'tpaRequestDeclinedByTarget' : 'tpaRequestCancelledByRequester'; // Unused variable
 
     tpaManager?.declineRequest(requestToCancel.requestId, dependencies);
 

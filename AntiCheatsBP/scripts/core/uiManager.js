@@ -2,7 +2,6 @@
  * @file Manages the display of dynamic, hierarchical UI panels and modal forms.
  * @module AntiCheatsBP/scripts/core/uiManager
  */
-// eslint-disable-next-line no-unused-vars
 import * as mc from '@minecraft/server';
 import { world } from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
@@ -371,10 +370,6 @@ async function showResetFlagsFormImpl(player, dependencies, context) {
         }
     }
 }
-
-// async function showWatchedPlayersListImpl(player, dependencies, context) {
-//     // ... implementation was here ...
-// } // Removed, replaced by watchedPlayersPanel
 
 /**
  * Displays a list of editable configuration keys.
@@ -1355,21 +1350,11 @@ const UI_ACTION_FUNCTIONS = {
             await showPanel(player, 'serverRulesPanel', dependencies, context);
         }
     },
-    /**
- * DEPRECATED: Displays helpful links in a modal.
-     * @deprecated
-     * @param {import('@minecraft/server').Player} player The player who would view the links.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
-     */
     showHelpfulLinksPageContent: async (player, dependencies) => {
-        const { playerUtils } = dependencies; // _config as helpfulLinks is not used
+        const { playerUtils } = dependencies;
         playerUtils.debugLog(`Action: showHelpfulLinksPageContent for ${player.name}`, player.name, dependencies);
-        // const helpfulLinks = config?.helpfulLinks ?? []; // Unused variable
-        // This function is no longer used by helpfulLinksPanel, which now dynamically generates items.
-        // It can be removed or kept for other potential uses if any. For this refactor, we'll remove it.
         playerUtils.debugLog(`DEPRECATED Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
         player.sendMessage('This way of showing links is outdated.');
-        // Ensure the player is returned to a sensible panel if this were somehow called.
         const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'mainUserPanel', context: {} };
         if (callingPanelState.panelId) {
             await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
@@ -1484,10 +1469,8 @@ const UI_ACTION_FUNCTIONS = {
             await showPanel(player, 'generalTipsPanel', dependencies, context);
         }
     },
-    // showOnlinePlayersList: showOnlinePlayersList, // Removed, replaced by onlinePlayersPanel
     showInspectPlayerForm,
     showResetFlagsForm: showResetFlagsFormImpl,
-    // showWatchedPlayersList: showWatchedPlayersListImpl, // Removed, replaced by watchedPlayersPanel
     /**
  * Displays a modal with system information.
  * @param {import('@minecraft/server').Player} player The player viewing the info.
@@ -2187,6 +2170,3 @@ async function showInspectPlayerForm(adminPlayer, dependencies, context) {
  * Main exported functions for UI management.
  */
 export { showPanel, clearPlayerNavStack };
-
-// Old showOnlinePlayersList function was here. It has been removed as it's replaced by onlinePlayersPanel.
-// Removing the deprecated showOnlinePlayersList function
