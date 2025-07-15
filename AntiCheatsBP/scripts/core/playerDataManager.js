@@ -501,25 +501,6 @@ export function clearExpiredItemUseStates(pData, dependencies) {
 }
 
 /**
- * Removes player data from the cache for players who have left the server.
- * @param {Array<import('@minecraft/server').Player>} allPlayers A list of all current players.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
- */
-export function cleanupActivePlayerData(allPlayers, dependencies) {
-    const onlinePlayerIds = new Set(allPlayers.map(p => p.id));
-    for (const [playerId, pData] of activePlayerData.entries()) {
-        if (!onlinePlayerIds.has(playerId)) {
-            pData.isOnline = false;
-            // This is a placeholder for the player object, as it's not available here.
-            // The save function needs a player object to set the dynamic property.
-            // This will be handled by a new function `handlePlayerLeave`.
-            activePlayerData.delete(playerId);
-            dependencies.playerUtils.debugLog(`[PlayerDataManager] Cleaned up and removed cached data for logged-out player ${pData.playerNameTag}.`, null, dependencies);
-        }
-    }
-}
-
-/**
  * Handles player leave events to ensure data is saved.
  * @param {import('@minecraft/server').Player} player The player who left.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
