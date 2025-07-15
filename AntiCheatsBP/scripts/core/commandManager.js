@@ -59,9 +59,6 @@ export function initializeCommands(dependencies) {
 (() => {
     const initialLoadDeps = {
         playerUtils: {
-            /**
-             *
-             */
             debugLog: () => {}, // console.log(`[CommandManagerInitialLoad] ${msg}`)
         },
     // aliasToCommandMap will be initialized within initializeCommands
