@@ -246,19 +246,54 @@ export function saveDirtyPlayerData(player, dependencies) {
 
         const serializedData = JSON.stringify(dataToSave);
 
-        // Basic size check
-        if (serializedData.length > maxSerializedDataLength) { // Leave buffer for Minecraft's limits
+        // Size check and recovery
+        if (serializedData.length > maxSerializedDataLength) {
             logManager.addLog({
-                actionType: 'error.pdm.dpWrite.sizeLimit',
-                context: 'playerDataManager.saveDirtyPlayerData',
+                actionType: 'warning.pdm.dpWrite.sizeLimit',
+                context: 'playerDataManager.saveDirtyPlayerData.recovery',
                 targetName: player.nameTag,
                 details: {
-                    errorCode: 'PDM_DP_WRITE_SIZE_EXCEEDED',
-                    message: `Serialized player data for ${player.nameTag} exceeds size limits.`,
-                    meta: { size: serializedData.length },
+                    errorCode: 'PDM_DP_SIZE_EXCEEDED_RECOVERY_ATTEMPT',
+                    message: `Serialized player data for ${player.nameTag} exceeds size limit (${serializedData.length} > ${maxSerializedDataLength}). Attempting recovery.`,
+                    meta: { originalSize: serializedData.length },
                 },
             }, dependencies);
-            return Promise.resolve(false);
+
+            // Recovery Step 1: Aggressively trim non-critical arrays
+            dataToSave.blockBreakTimestamps = [];
+            dataToSave.chatMessageTimestamps = [];
+            if (dataToSave.recentBlockPlacements) {
+                dataToSave.recentBlockPlacements = [];
+            }
+            if (dataToSave.flags) {
+                // Keep totalFlags but clear detailed history if it's large
+                const preservedFlags = { totalFlags: dataToSave.flags.totalFlags || 0 };
+                dataToSave.flags = preservedFlags;
+            }
+
+
+            serializedData = JSON.stringify(dataToSave);
+
+            // Recovery Step 2: Check size again
+            if (serializedData.length > maxSerializedDataLength) {
+                logManager.addLog({
+                    actionType: 'error.pdm.dpWrite.recoveryFail',
+                    context: 'playerDataManager.saveDirtyPlayerData.recovery',
+                    targetName: player.nameTag,
+                    details: {
+                        errorCode: 'PDM_DP_RECOVERY_FAILED_DATA_RESET',
+                        message: `Data recovery failed for ${player.nameTag}. Size after trimming is still too large (${serializedData.length}). Resetting player data to prevent corruption.`,
+                        meta: { trimmedSize: serializedData.length },
+                    },
+                }, dependencies);
+
+                // Recovery Step 3: Critical failure, reset data
+                const freshData = initializeDefaultPlayerData(player, dependencies.currentTick, dependencies);
+                const freshSerializedData = JSON.stringify(freshData);
+                player.setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
+                activePlayerData.set(player.id, freshData); // Update cache with fresh data
+                return Promise.resolve(true); // Saved fresh data
+            }
         }
 
         player.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
