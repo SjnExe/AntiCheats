@@ -128,7 +128,6 @@ async function _handlePlayerLeave(eventData, dependencies) {
     }
     playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Finished processing for ${playerName}.`, playerName, dependencies);
 }
-/** */
 export const handlePlayerLeave = profileEventHandler('handlePlayerLeave', _handlePlayerLeave);
 
 /**
@@ -292,13 +291,12 @@ async function _handlePlayerSpawn(eventData, dependencies) {
                 message: error.message,
                 rawErrorStack: error.stack,
                 meta: {
-                    initialSpawn,
-                },
-            },
+                    initialSpawn
+                }
+            }
         }, dependencies);
     }
 }
-/** */
 export const handlePlayerSpawn = profileEventHandler('handlePlayerSpawn', _handlePlayerSpawn);
 
 /**
@@ -324,7 +322,6 @@ async function _handlePistonActivateAntiGrief(eventData, dependencies) {
         playerUtils?.debugLog('[EvtHdlr.Piston CRITICAL] checkPistonLag function unavailable.', null, dependencies);
     }
 }
-/** */
 export const handlePistonActivateAntiGrief = profileEventHandler('handlePistonActivateAntiGrief', _handlePistonActivateAntiGrief);
 
 /**
@@ -424,7 +421,6 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
         }
     }
 }
-/** */
 export const handleEntitySpawnEventAntiGrief = profileEventHandler('handleEntitySpawnEventAntiGrief', _handleEntitySpawnEventAntiGrief);
 
 
@@ -505,7 +501,6 @@ async function _handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependenci
         }
     }
 }
-/** */
 export const handlePlayerPlaceBlockBeforeEventAntiGrief = profileEventHandler('handlePlayerPlaceBlockBeforeEventAntiGrief', _handlePlayerPlaceBlockBeforeEventAntiGrief);
 
 
@@ -552,7 +547,6 @@ function _handleEntityDieForDeathEffects(eventData, dependencies) {
         }, dependencies);
     }
 }
-/** */
 export const handleEntityDieForDeathEffects = profileEventHandler('handleEntityDieForDeathEffects', _handleEntityDieForDeathEffects);
 
 /**
@@ -634,7 +628,6 @@ async function _handleEntityHurt(eventData, dependencies) {
         }
     }
 }
-/** */
 export const handleEntityHurt = profileEventHandler('handleEntityHurt', _handleEntityHurt);
 
 
@@ -686,7 +679,6 @@ function _handlePlayerDeath(eventData, dependencies) {
         dimensionId: player.dimension.id,
     }, dependencies);
 }
-/** */
 export const handlePlayerDeath = profileEventHandler('handlePlayerDeath', _handlePlayerDeath);
 
 /**
@@ -730,7 +722,6 @@ function _subscribeToCombatLogEvents(dependencies) {
     dependencies.playerUtils?.debugLog('[EvtHdlr.CombatLogSub] Subscribed to entityHurt for CombatLog detection.', null, dependencies);
 }
 
-/** */
 export const subscribeToCombatLogEvents = _subscribeToCombatLogEvents;
 
 
@@ -782,7 +773,6 @@ async function _handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
         }
     }
 }
-/** */
 export const handlePlayerBreakBlockBeforeEvent = profileEventHandler('handlePlayerBreakBlockBeforeEvent', _handlePlayerBreakBlockBeforeEvent);
 
 /**
@@ -844,7 +834,6 @@ async function _handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
     finalPData.expectedBreakDurationTicks = 0;
     finalPData.isDirtyForSave = true;
 }
-/** */
 export const handlePlayerBreakBlockAfterEvent = profileEventHandler('handlePlayerBreakBlockAfterEvent', _handlePlayerBreakBlockAfterEvent);
 
 
@@ -944,7 +933,6 @@ async function _handleItemUse(eventData, dependencies) {
 
     }
 }
-/** */
 export const handleItemUse = profileEventHandler('handleItemUse', _handleItemUse);
 
 /**
@@ -956,7 +944,6 @@ function _handleItemUseOn(eventData, dependencies) {
     const { playerUtils } = dependencies;
     playerUtils?.debugLog('[EvtHdlr.ItemUseOn] ItemUseOn event triggered. This event might be unstable.', eventData.source?.name, dependencies);
 }
-/** */
 export const handleItemUseOn = profileEventHandler('handleItemUseOn', _handleItemUseOn);
 
 /**
@@ -983,7 +970,6 @@ async function _handleInventoryItemChange(player, newItemStack, oldItemStack, sl
         await checks.checkInventoryMoveWhileActionLocked(player, pData, dependencies, inventoryChangeData);
     }
 }
-/** */
 export const handleInventoryItemChange = profileEventHandler('handleInventoryItemChange', _handleInventoryItemChange);
 
 /**
@@ -1015,7 +1001,6 @@ async function _handlePlayerPlaceBlockBefore(eventData, dependencies) {
 
     await handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencies);
 }
-/** */
 export const handlePlayerPlaceBlockBefore = profileEventHandler('handlePlayerPlaceBlockBefore', _handlePlayerPlaceBlockBefore);
 
 /**
@@ -1126,7 +1111,6 @@ async function _handlePlayerPlaceBlockAfterEvent(eventData, dependencies) {
 
     await _processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies);
 }
-/** */
 export const handlePlayerPlaceBlockAfterEvent = profileEventHandler('handlePlayerPlaceBlockAfterEvent', _handlePlayerPlaceBlockAfterEvent);
 
 /**
@@ -1248,7 +1232,6 @@ async function _handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
         }
     }
 }
-/** */
 export const handlePlayerDimensionChangeAfterEvent = profileEventHandler('handlePlayerDimensionChangeAfterEvent', _handlePlayerDimensionChangeAfterEvent);
 
 /**
@@ -1273,5 +1256,4 @@ async function _handlePlayerHitEntityEvent(eventData, dependencies) {
     dependencies.playerUtils.debugLog(`[EvtHdlr.HitEnt] _handlePlayerHitEntityEvent called for ${damagingEntity?.name} hitting ${hitEntity?.name}. Add actual implementation if missing.`, damagingEntity?.name, dependencies);
 }
 
-/** */
 export const handlePlayerHitEntityEvent = profileEventHandler('handlePlayerHitEntityEvent', _handlePlayerHitEntityEvent);

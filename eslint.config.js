@@ -37,17 +37,7 @@ export default [
             'quotes': ['error', 'single'],
             'no-trailing-spaces': 'error',
             'indent': ['error', 4],
-            'comma-dangle': ['error', 'always-multiline'],
             'object-curly-spacing': ['error', 'always'],
-            'jsdoc/require-jsdoc': ['warn', {
-                'require': {
-                    'FunctionDeclaration': true,
-                    'MethodDefinition': true,
-                    'ClassDeclaration': true,
-                    'ArrowFunctionExpression': true,
-                    'FunctionExpression': true
-                }
-            }]
         },
     },
     ...eslintPluginJsonc.configs['flat/recommended-with-jsonc'],
