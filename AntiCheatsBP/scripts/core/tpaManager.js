@@ -484,7 +484,6 @@ export function checkPlayerMovementDuringWarmup(request, dependencies) {
         const teleportingPlayerNameTag = teleportingPlayer.nameTag;
         // Pass teleportingPlayerNameTag to getString for the player-facing message
         const reasonMsgPlayerKey = 'tpa.manager.warmupCancelledMovement.player'; // Assuming this key exists
-        // const reasonMsgPlayer = getString(reasonMsgPlayerKey, { playerName: teleportingPlayerNameTag }); // Unused variable
         const reasonLog = `Player ${teleportingPlayerNameTag} moved ${Math.sqrt(distanceSquared).toFixed(2)} blocks during TPA warmup for request ${request.requestId}.`;
 
         playerUtils?.debugLog(`[TpaManager.checkPlayerMovementDuringWarmup] Movement for ${teleportingPlayerNameTag}. Cancelling ${request.requestId}.`, teleportingPlayerNameTag, dependencies);
