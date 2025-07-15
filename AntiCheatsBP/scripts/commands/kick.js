@@ -1,6 +1,4 @@
-/**
- * @file Defines the !kick command for administrators to remove a player from the server.
- */
+// Defines the !kick command for administrators to remove a player from the server.
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'kick',

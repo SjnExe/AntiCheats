@@ -1,10 +1,6 @@
-/**
- * @file Defines the !report command.
- * Allows players to report other players for rule violations.
- */
+// Defines the !report command, allowing players to report others for rule violations.
 import * as reportManager from '../core/reportManager.js';
 
-// Constants
 const MIN_REPORT_REASON_LENGTH = 10;
 const MAX_REPORT_REASON_LENGTH = 256;
 
@@ -20,9 +16,9 @@ export const definition = {
 
 /**
  * Executes the report command.
- * @param {import('@minecraft/server').Player} player - The player executing the command.
- * @param {string[]} args - The command arguments (target player name and reason).
- * @param {import('../types.js').Dependencies} dependencies - The standard command dependencies.
+ * @param {import('@minecraft/server').Player} player The player executing the command.
+ * @param {string[]} args The command arguments (target player name and reason).
+ * @param {import('../types.js').Dependencies} dependencies The standard command dependencies.
  */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;

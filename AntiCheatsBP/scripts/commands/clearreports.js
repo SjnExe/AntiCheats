@@ -1,8 +1,4 @@
-/**
- * @file Defines the !clearreports command.
- * Allows administrators to clear player-submitted reports.
- * All actionType strings should be camelCase.
- */
+// Defines the !clearreports command, allowing administrators to clear player-submitted reports.
 import { clearAllReports, clearReportById, clearReportsForPlayer } from '../core/reportManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */
