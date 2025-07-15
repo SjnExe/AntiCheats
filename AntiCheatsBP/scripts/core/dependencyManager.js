@@ -202,6 +202,10 @@ class DependencyManager {
         return this.dependencies;
     }
 
+    getDependenciesUnsafe() {
+        return this.dependencies;
+    }
+
     refreshDependencies() {
         this.assembleDependencies();
         this.validateDependencies('refreshDependencies');
