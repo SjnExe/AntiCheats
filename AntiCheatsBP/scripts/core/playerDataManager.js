@@ -204,6 +204,10 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         }, dependencies);
         console.error(`[PlayerDataManager CRITICAL] Failed to initialize player data for ${player.nameTag}: ${error.stack}`);
         // Fallback to default data to prevent system failure for this player
+        if (!player.isValid()) {
+            playerUtils.debugLog(`[PlayerDataManager] Player ${player.nameTag} became invalid during data initialization after an error. Aborting.`, player.nameTag, dependencies);
+            return null;
+        }
         const fallbackData = initializeDefaultPlayerData(player, currentTick, dependencies);
         activePlayerData.set(player.id, fallbackData);
         return fallbackData;
