@@ -25,7 +25,7 @@ function discoverCommands() {
         'gmsp.js', 'help.js', 'inspect.js', 'invsee.js', 'kick.js', 'listranks.js', 'listwatched.js', 'mute.js', 'myflags.js',
         'netherlock.js', 'notify.js', 'panel.js', 'purgeflags.js', 'rank.js', 'reload.js', 'report.js', 'resetflags.js', 'rules.js',
         'testnotify.js', 'tp.js', 'tpa.js', 'tpacancel.js', 'tpaccept.js', 'tpahere.js', 'tpastatus.js', 'unban.js', 'unmute.js',
-        'vanish.js', 'version.js', 'viewreports.js', 'warnings.js', 'watch.js', 'worldborder.js', 'xraynotify.js'
+        'vanish.js', 'version.js', 'viewreports.js', 'warnings.js', 'watch.js', 'worldborder.js', 'xraynotify.js',
     ];
 
     commandFilePaths.clear();
