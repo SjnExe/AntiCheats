@@ -179,15 +179,28 @@ function validateConfigurations(dependencies) {
  * Processes all tasks for a single system tick.
  */
 async function mainTick() {
+    const dependencies = dependencyManager.getDependenciesUnsafe(); // Unsafe is acceptable here for logging
     if (isTickLoopRunning) {
-        // console.warn('[MainTick] Tick processing is overlapping.');
+        if (dependencies) {
+            addLog({
+                actionType: 'warning.main.tickOverlap',
+                context: 'Main.TickLoop',
+                details: { message: 'Tick processing is overlapping.' },
+            }, dependencies);
+        }
         return;
     }
     isTickLoopRunning = true;
     try {
         await processTick();
     } catch (e) {
-        console.error(`[MainTick] Unhandled error in tick processing: ${e?.message}\n${e?.stack}`);
+        if (dependencies) {
+            addLog({
+                actionType: 'error.main.tick.unhandled',
+                context: 'Main.TickLoop',
+                details: { errorMessage: e?.message, stack: e?.stack },
+            }, dependencies);
+        }
     } finally {
         isTickLoopRunning = false;
     }
@@ -354,9 +367,6 @@ function attemptInitializeSystem(retryCount = 0) {
         if (dependencies) {
             dependencies.playerUtils.debugLog(errorMessage, 'SystemError', dependencies);
             addLog({ actionType: 'error.main.initialization.retry', context: 'Main.attemptInitializeSystem', details: { message: e.message, stack: e.stack, retryCount: retryCount + 1 } }, dependencies);
-        } else {
-            // Fallback to console logging if dependency system itself has failed.
-            console.warn(errorMessage);
         }
 
         if (retryCount < maxInitRetries) {
@@ -367,9 +377,6 @@ function attemptInitializeSystem(retryCount = 0) {
                 dependencies.playerUtils.debugLog(criticalErrorMsg, 'SystemCritical', dependencies);
                 addLog({ actionType: 'error.main.initialization.critical', context: 'Main.attemptInitializeSystem', details: { message: 'Max retries reached', retryCount: retryCount + 1 } }, dependencies);
                 dependencies.playerUtils.notifyAdmins(criticalErrorMsg, 'SystemCritical', dependencies, true);
-            } else {
-                // Fallback to console logging if dependency system itself has failed.
-                console.error(criticalErrorMsg);
             }
         }
     }
