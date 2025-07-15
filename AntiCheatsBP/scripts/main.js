@@ -32,7 +32,6 @@ import { initializeLogCache, addLog, persistLogCacheToDisk } from './core/logMan
 import {
     ensurePlayerDataInitialized,
     getPlayerData,
-    cleanupActivePlayerData,
     updateTransientPlayerData,
     clearExpiredItemUseStates,
     saveDirtyPlayerData,
@@ -224,7 +223,6 @@ async function processTick() {
     }
 
     const onlinePlayers = world.getAllPlayers();
-    cleanupActivePlayerData(onlinePlayers, dependencies);
 
     const activePlayerData = getActivePlayers();
     for (const pData of activePlayerData) {
