@@ -86,9 +86,9 @@ function subscribeToEvents(dependencies) {
     world.beforeEvents.chatSend.subscribe((eventData) => {
         if (eventData.message.startsWith(dependencies.config.prefix)) {
             const commandHandlingDependencies = { ...dependencies, commandDefinitionMap, commandExecutionMap };
-            system.run(() => handleChatCommand(eventData, commandHandlingDependencies));
+            handleChatCommand(eventData, commandHandlingDependencies);
         } else {
-            system.run(() => handleBeforeChatSend(eventData, dependencies));
+            handleBeforeChatSend(eventData, dependencies);
         }
     });
 
