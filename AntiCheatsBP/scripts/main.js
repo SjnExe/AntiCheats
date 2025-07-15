@@ -2,9 +2,7 @@ import { system, world } from '@minecraft/server';
 import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui';
 
-import { executeCheckAction } from './core/actionManager.js';
 import { automodConfig } from './core/automodConfig.js';
-import { processChatMessage } from './core/chatProcessor.js';
 import { checkActionProfiles } from './core/actionProfiles.js';
 import * as checks from './checks/index.js'; // Keep as namespace for simplicity
 import {
@@ -41,24 +39,9 @@ import {
     clearExpiredItemUseStates,
     saveDirtyPlayerData,
 } from './core/playerDataManager.js';
-import { debugLog, getString, notifyAdmins, playSoundForEvent, isAdmin, formatSessionDuration } from './utils/playerUtils.js';
-import {
-    initializeRanks,
-    getPlayerPermissionLevel,
-    updatePlayerNametag,
-    getPlayerRankFormattedChatElements,
-    permissionLevels,
-} from './core/rankManager.js';
+import { initializeRanks } from './core/rankManager.js';
 import { initializeReportCache, persistReportsToDisk } from './core/reportManager.js';
-import { clearExpiredRequests, getRequestsInWarmup, checkPlayerMovementDuringWarmup, executeTeleport } from './core/tpaManager.js';
-import * as uiManager from './core/uiManager.js'; // Keep as namespace, UI calls are diverse
-import {
-    getBorderSettings,
-    saveBorderSettings,
-    processWorldBorderResizing,
-    enforceWorldBorderForPlayer,
-    isPlayerOutsideBorder,
-} from './utils/worldBorderManager.js';
+import { getBorderSettings, processWorldBorderResizing, enforceWorldBorderForPlayer } from './utils/worldBorderManager.js';
 import {
     validateMainConfig,
     validateActionProfiles,
@@ -66,156 +49,7 @@ import {
     validateRanksConfig,
 } from './core/configValidator.js';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './core/ranksConfig.js';
-
-let currentTick = 0;
-const mainModuleName = 'Main';
-
-const profilingData = {
-    tickLoop: { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] },
-    playerChecks: {},
-    eventHandlers: {},
-};
-const MAX_PROFILING_HISTORY = 100;
-
-
-/**
- * Assembles and returns the standardized dependency object.
- * @returns {import('./types.js').Dependencies} The dependencies object.
- */
-function getStandardDependencies() {
-    try {
-        const playerDataManager = {
-            ensurePlayerDataInitialized,
-            getPlayerData,
-            cleanupActivePlayerData,
-            updateTransientPlayerData,
-            clearExpiredItemUseStates,
-            saveDirtyPlayerData,
-        };
-
-        const worldBorderManager = {
-            getBorderSettings,
-            saveBorderSettings,
-            processWorldBorderResizing,
-            enforceWorldBorderForPlayer,
-            isPlayerOutsideBorder,
-        };
-
-        const commandManager = {
-            reloadCommands: initializeCommands,
-        };
-
-        const playerUtils = {
-            debugLog,
-            getString,
-            notifyAdmins,
-            playSoundForEvent,
-            isAdmin,
-            formatSessionDuration,
-        };
-
-        const rankManager = {
-            getPlayerPermissionLevel,
-            updatePlayerNametag,
-            getPlayerRankFormattedChatElements,
-        };
-
-        const configValidator = {
-            validateMainConfig,
-            validateActionProfiles,
-            validateAutoModConfig,
-            validateRanksConfig,
-        };
-
-        return {
-            config: configModule.editableConfigValues,
-            automodConfig,
-            checkActionProfiles,
-            mc,
-            currentTick,
-            playerDataManager,
-            worldBorderManager,
-            actionManager: { executeCheckAction },
-            logManager: { addLog, persistLogCacheToDisk },
-            reportManager: { persistReportsToDisk },
-            tpaManager: { clearExpiredRequests, getRequestsInWarmup, checkPlayerMovementDuringWarmup, executeTeleport },
-            commandManager,
-            playerUtils,
-            rankManager,
-            permissionLevels,
-            checks,
-            configValidator,
-            uiManager,
-            ActionFormData: mcui.ActionFormData,
-            MessageFormData: mcui.MessageFormData,
-            ModalFormData: mcui.ModalFormData,
-            system: mc.system,
-            ItemComponentTypes: mc.ItemComponentTypes,
-            chatProcessor: { processChatMessage },
-            editableConfig: configModule,
-            profilingData,
-            MAX_PROFILING_HISTORY,
-        };
-    } catch (error) {
-        console.error(`[${mainModuleName}.getStandardDependencies CRITICAL] Error during initial assembly: ${error.stack || error}`);
-        throw error;
-    }
-}
-
-
-/**
- * Validates the core dependencies object.
- * @param {import('./types.js').Dependencies} deps The dependencies object.
- * @param {string} callContext The context of the call.
- * @returns {boolean} True if dependencies are valid.
- */
-function validateDependencies(deps, callContext) {
-    const mainContext = `[${mainModuleName}.validateDependencies from ${callContext}]`;
-    const errors = [];
-
-    const dependencyChecks = {
-        'playerDataManager.ensurePlayerDataInitialized': 'function',
-        'playerUtils.debugLog': 'function',
-        'playerUtils.getString': 'function',
-        'actionManager.executeCheckAction': 'function',
-        'configValidator.validateMainConfig': 'function',
-        'chatProcessor.processChatMessage': 'function',
-        'checks': 'object',
-    };
-
-    if (!deps) {
-        errors.push('CRITICAL: Dependencies object itself is null or undefined.');
-    } else {
-        for (const keyPath in dependencyChecks) {
-            const expectedType = dependencyChecks[keyPath];
-            const keys = keyPath.split('.');
-            let current = deps;
-            let path = '';
-            for (const key of keys) {
-                path = path ? `${path}.${key}` : key;
-                if (current === null || typeof current !== 'object' || !Object.prototype.hasOwnProperty.call(current, key)) {
-                    errors.push(`CRITICAL: deps.${path} is missing.`);
-                    current = undefined;
-                    break;
-                }
-                current = current[key];
-            }
-
-            if (current !== undefined && typeof current !== expectedType) {
-                errors.push(`CRITICAL: deps.${keyPath} is NOT a ${expectedType}.`);
-            }
-        }
-    }
-
-    if (errors.length > 0) {
-        const fullErrorMessage = `${mainContext} Dependency validation failed:\n${errors.map(e => `  - ${e}`).join('\n')}`;
-        console.error('!!!! CRITICAL DEPENDENCY VALIDATION FAILURE !!!!');
-        console.error(fullErrorMessage);
-        throw new Error(fullErrorMessage);
-    }
-
-    return true;
-}
+import { dependencyManager } from './core/dependencyManager.js';
 
 const maxInitRetries = 3;
 const initialRetryDelayTicks = 20;
@@ -226,8 +60,8 @@ const TPA_SYSTEM_TICK_INTERVAL = 20;
  * Initializes the AntiCheat system.
  */
 function performInitializations() {
-    const dependencies = getStandardDependencies();
-    validateDependencies(dependencies, 'performInitializations - startup');
+    dependencyManager.validateDependencies('performInitializations - startup');
+    const dependencies = dependencyManager.getDependencies();
 
     dependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', dependencies);
 
@@ -236,10 +70,10 @@ function performInitializations() {
     validateConfigurations(dependencies);
 
     world.sendMessage({ translate: 'system.core.initialized', with: { version: configModule.acVersion } });
-    dependencies.playerUtils.debugLog(`[${mainModuleName}] Anti-Cheat Core System Initialized. Tick loop active.`, 'System', dependencies);
+    dependencies.playerUtils.debugLog(`[Main] Anti-Cheat Core System Initialized. Tick loop active.`, 'System', dependencies);
 
-    system.runInterval(() => mainTick(dependencies), 1);
-    system.runInterval(() => tpaTick(dependencies), TPA_SYSTEM_TICK_INTERVAL);
+    system.runInterval(() => mainTick(), 1);
+    system.runInterval(() => tpaTick(), TPA_SYSTEM_TICK_INTERVAL);
 }
 /**
  * Subscribes to all necessary server events.
@@ -346,19 +180,17 @@ function validateConfigurations(dependencies) {
 }
 /**
  * Processes all tasks for a single system tick.
- * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
-function mainTick(dependencies) {
-    system.runJob(mainTickGenerator(dependencies));
+function mainTick() {
+    system.runJob(mainTickGenerator());
 }
 
 /**
  * Generator function for the main tick loop.
- * @param {import('./types.js').Dependencies} dependencies
  */
-async function* mainTickGenerator(dependencies) {
-    currentTick++;
-    dependencies.currentTick = currentTick;
+async function* mainTickGenerator() {
+    const dependencies = dependencyManager.getDependencies();
+    dependencyManager.updateCurrentTick(dependencies.currentTick + 1);
 
     if (dependencies.config.enableWorldBorderSystem) {
         try {
@@ -377,7 +209,7 @@ async function* mainTickGenerator(dependencies) {
         await processPlayer(player, dependencies);
     }
 
-    if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
+    if (dependencies.currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
         yield; // Yield before this potentially long-running task
         await handlePeriodicDataPersistence(allPlayers, dependencies);
     }
@@ -474,17 +306,17 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
 
 /**
  * Processes TPA system ticks.
- * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
-function tpaTick(dependencies) {
+function tpaTick() {
+    const dependencies = dependencyManager.getDependencies();
     if (dependencies.config.enableTpaSystem) {
-        clearExpiredRequests(dependencies);
-        getRequestsInWarmup().forEach(req => {
+        dependencies.tpaManager.clearExpiredRequests(dependencies);
+        dependencies.tpaManager.getRequestsInWarmup().forEach(req => {
             if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
-                checkPlayerMovementDuringWarmup(req, dependencies);
+                dependencies.tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
             }
             if (req.status === 'pendingTeleportWarmup' && Date.now() >= (req.warmupExpiryTimestamp || 0)) {
-                executeTeleport(req.requestId, dependencies);
+                dependencies.tpaManager.executeTeleport(req.requestId, dependencies);
             }
         });
     }
@@ -500,19 +332,18 @@ function attemptInitializeSystem(retryCount = 0) {
             throw new Error('Core Minecraft APIs not ready');
         }
 
-        const tempStartupDepsForLog = getStandardDependencies();
-        validateDependencies(tempStartupDepsForLog, `attemptInitializeSystem - pre-check - attempt ${retryCount}`);
+        dependencyManager.validateDependencies(`attemptInitializeSystem - pre-check - attempt ${retryCount}`);
 
-        // console.log(`[${mainModuleName}] APIs ready, initializing...`);
+        // console.log(`[Main] APIs ready, initializing...`);
         performInitializations();
     } catch (e) {
         const delay = initialRetryDelayTicks * Math.pow(2, retryCount);
-        console.warn(`[${mainModuleName}] Initialization failed. Retrying in ${delay / 20}s. Attempt ${retryCount + 1}/${maxInitRetries}. Error: ${e.message}`);
+        console.warn(`[Main] Initialization failed. Retrying in ${delay / 20}s. Attempt ${retryCount + 1}/${maxInitRetries}. Error: ${e.message}`);
 
         if (retryCount < maxInitRetries) {
             system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            console.error(`[${mainModuleName}] CRITICAL: MAX RETRIES REACHED. System will not initialize.`);
+            console.error(`[Main] CRITICAL: MAX RETRIES REACHED. System will not initialize.`);
         }
     }
 }
