@@ -63,7 +63,7 @@ let isTickLoopRunning = false;
  */
 function performInitializations() {
     dependencyManager.validateDependencies('performInitializations - startup');
-    const dependencies = dependencyManager.getDependencies();
+    const dependencies = dependencyManager.getAll();
 
     dependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', dependencies);
 
@@ -203,7 +203,7 @@ async function mainTick() {
  * Processes a single tick of the main loop.
  */
 async function processTick() {
-    const dependencies = dependencyManager.getDependencies();
+    const dependencies = dependencyManager.getAll();
     dependencyManager.updateCurrentTick(dependencies.currentTick + 1);
 
     if (dependencies.config.enableWorldBorderSystem) {
@@ -333,7 +333,7 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
  * Processes TPA system ticks.
  */
 function tpaTick() {
-    const dependencies = dependencyManager.getDependencies();
+    const dependencies = dependencyManager.getAll();
     if (dependencies.config.enableTpaSystem) {
         dependencies.tpaManager.clearExpiredRequests(dependencies);
         dependencies.tpaManager.getRequestsInWarmup().forEach(req => {
