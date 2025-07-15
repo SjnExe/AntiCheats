@@ -100,7 +100,7 @@ const chatProcessor = { processChatMessage };
 
 class DependencyManager {
     constructor() {
-        this.dependencies = {};
+        this._dependencies = {};
         this.profilingData = {
             tickLoop: { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] },
             playerChecks: {},
@@ -109,12 +109,12 @@ class DependencyManager {
         this.MAX_PROFILING_HISTORY = 100;
         this.currentTick = 0;
 
-        this.assembleDependencies();
+        this._assembleDependencies();
     }
 
-    assembleDependencies() {
+    _assembleDependencies() {
         try {
-            this.dependencies = {
+            this._dependencies = {
                 config: configModule.editableConfigValues,
                 automodConfig,
                 checkActionProfiles,
@@ -144,7 +144,7 @@ class DependencyManager {
                 MAX_PROFILING_HISTORY: this.MAX_PROFILING_HISTORY,
             };
         } catch (error) {
-            console.error(`[${mainModuleName}.assembleDependencies CRITICAL] Error during assembly: ${error.stack || error}`);
+            console.error(`[${mainModuleName}._assembleDependencies CRITICAL] Error during assembly: ${error.stack || error}`);
             throw error;
         }
     }
@@ -152,7 +152,7 @@ class DependencyManager {
     validateDependencies(callContext) {
         const mainContext = `[${mainModuleName}.validateDependencies from ${callContext}]`;
         const errors = [];
-        const deps = this.dependencies;
+        const deps = this._dependencies;
 
         const dependencyChecks = {
             'playerDataManager.ensurePlayerDataInitialized': 'function',
@@ -198,23 +198,40 @@ class DependencyManager {
         return true;
     }
 
-    getDependencies() {
-        return this.dependencies;
+    /**
+     * Retrieves a specific dependency by name.
+     * @param {string} name The name of the dependency to retrieve.
+     * @returns {any} The requested dependency.
+     * @throws {Error} If the dependency is not found.
+     */
+    get(name) {
+        if (Object.prototype.hasOwnProperty.call(this._dependencies, name)) {
+            return this._dependencies[name];
+        }
+        throw new Error(`[${mainModuleName}] Dependency '${name}' not found.`);
+    }
+
+    /**
+     * Returns the entire dependencies object. Use with caution.
+     * @returns {object} The dependencies object.
+     */
+    getAll() {
+        return this._dependencies;
     }
 
     getDependenciesUnsafe() {
-        return this.dependencies;
+        return this._dependencies;
     }
 
     refreshDependencies() {
-        this.assembleDependencies();
+        this._assembleDependencies();
         this.validateDependencies('refreshDependencies');
-        this.dependencies.playerUtils.debugLog('Dependencies refreshed.', 'System', this.dependencies);
+        this.get('playerUtils').debugLog('Dependencies refreshed.', 'System', this.getAll());
     }
 
     updateCurrentTick(tick) {
         this.currentTick = tick;
-        this.dependencies.currentTick = tick;
+        this._dependencies.currentTick = tick;
     }
 }
 

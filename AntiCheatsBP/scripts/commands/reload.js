@@ -35,16 +35,16 @@ export async function execute(player, args, dependencies) {
         const ranksConfigModule = await import(`../core/ranksConfig.js?v=${timestamp}`);
 
         // Update the dependency manager with the newly loaded modules
-        dependencyManager.dependencies.config = configModule.editableConfigValues;
-        dependencyManager.dependencies.automodConfig = automodConfigModule.automodConfig;
-        dependencyManager.dependencies.checkActionProfiles = actionProfilesModule.checkActionProfiles;
-        dependencyManager.dependencies.rankDefinitions = ranksConfigModule.rankDefinitions; // Assuming this is how it's exported
+        dependencyManager.get('editableConfig').config = configModule.editableConfigValues;
+        dependencyManager.get('automodConfig').automodConfig = automodConfigModule.automodConfig;
+        dependencyManager.get('checkActionProfiles').checkActionProfiles = actionProfilesModule.checkActionProfiles;
+        dependencyManager.get('rankDefinitions').rankDefinitions = ranksConfigModule.rankDefinitions; // Assuming this is how it's exported
 
         // Now, refresh all dependencies that might rely on the reloaded config
         dependencyManager.refreshDependencies();
 
         // Re-initialize commands to apply any potential changes in command definitions or permissions
-        const newDeps = dependencyManager.getDependencies();
+        const newDeps = dependencyManager.getAll();
         newDeps.commandManager.reloadCommands(newDeps);
 
         // Validate the new configurations
