@@ -1,6 +1,4 @@
-/**
- * @file Command to list all currently online players being watched by the AntiCheat system.
- */
+// Command to list all currently online players being watched by the AntiCheat system.
 import * as mc from '@minecraft/server';
 
 /** @type {import('../types.js').CommandDefinition} */

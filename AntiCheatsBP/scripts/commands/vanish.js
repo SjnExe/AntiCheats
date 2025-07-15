@@ -1,11 +1,6 @@
-/**
- * @file Defines the !vanish command for administrators to become invisible to other players.
- * This is a basic implementation using tags and potentially gamemode changes.
- * True vanish requires more complex server-side packet manipulation not available in Bedrock Scripting API.
- */
+// Defines the !vanish command for administrators to become invisible to other players.
 import * as mc from '@minecraft/server';
 
-// Default configuration values
 const veryLongEffectDuration = 2000000;
 
 /** @type {import('../types.js').CommandDefinition} */
@@ -20,13 +15,10 @@ export const definition = {
 
 /**
  * Executes the !vanish command.
- * Toggles vanish state for the command issuer.
- * 'silent' mode attempts to suppress join/leave messages (limited effectiveness in Bedrock).
- * 'notify' mode shows fake join/leave messages.
  * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [on|off|toggle] [silent|notify].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args Command arguments: [on|off|toggle] [silent|notify].
+ * @param {import('../types.js').Dependencies} dependencies Object containing dependencies.
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {

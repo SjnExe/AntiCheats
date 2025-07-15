@@ -1,7 +1,4 @@
-/**
- * @file Defines the !tpacancel command for players to cancel their outgoing TPA requests
- * or decline incoming TPA requests.
- */
+// Defines the !tpacancel command for players to cancel their outgoing TPA requests or decline incoming TPA requests.
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'tpacancel',

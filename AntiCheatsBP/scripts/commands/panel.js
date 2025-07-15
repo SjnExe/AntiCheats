@@ -1,8 +1,4 @@
-/**
- * @file Defines the !panel command, which serves as the entry point to the main AntiCheat Admin UI Panel.
- * Also aliased as !ui.
- */
-
+// Defines the !panel command, which serves as the entry point to the main AntiCheat Admin UI Panel.
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'panel',
