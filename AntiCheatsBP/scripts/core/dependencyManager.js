@@ -1,6 +1,6 @@
 import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui';
-import { system, world } from '@minecraft/server';
+import { system } from '@minecraft/server';
 
 import { executeCheckAction } from './actionManager.js';
 import { automodConfig } from './automodConfig.js';
@@ -118,7 +118,6 @@ class DependencyManager {
                 config: configModule.editableConfigValues,
                 automodConfig,
                 checkActionProfiles,
-                mc,
                 currentTick: this.currentTick,
                 playerDataManager,
                 worldBorderManager,
