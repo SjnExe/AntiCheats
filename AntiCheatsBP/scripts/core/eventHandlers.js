@@ -514,7 +514,6 @@ function _handleEntityDieForDeathEffects(eventData, dependencies) {
     if (!config?.enableDeathEffects) {
         return;
     }
-
     const { deadEntity } = eventData;
     if (!deadEntity?.isValid()) {
         return;
@@ -954,8 +953,9 @@ export const handleItemUseOn = profileEventHandler('handleItemUseOn', _handleIte
  * @param {string|number} slot The slot that changed.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-async function _handleInventoryItemChange(player, newItemStack, oldItemStack, slot, dependencies) {
+async function _handleInventoryItemChange(eventData, dependencies) {
     const { checks, config, playerDataManager } = dependencies;
+    const { player, itemStack: newItemStack, previousItemStack: oldItemStack, slot } = eventData;
     if (!player?.isValid()) {
         return;
     }
