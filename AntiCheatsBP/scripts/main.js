@@ -56,6 +56,8 @@ const initialRetryDelayTicks = 20;
 const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
 const TPA_SYSTEM_TICK_INTERVAL = 20;
 
+let isTickLoopRunning = false;
+
 /**
  * Initializes the AntiCheat system.
  */
@@ -182,7 +184,21 @@ function validateConfigurations(dependencies) {
  * Processes all tasks for a single system tick.
  */
 function mainTick() {
-    system.runJob(mainTickGenerator());
+    if (isTickLoopRunning) {
+        // console.log('Tick loop is already running, skipping.');
+        return;
+    }
+    isTickLoopRunning = true;
+
+    system.runJob(
+        (async function* () {
+            try {
+                yield* mainTickGenerator();
+            } finally {
+                isTickLoopRunning = false;
+            }
+        })()
+    );
 }
 
 /**
