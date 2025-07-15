@@ -1,7 +1,6 @@
 /**
- * @file Implements checks for invalid player view pitch and rapid view snaps (aimbot-like behavior)
+ * @file Checks for invalid player view pitch and rapid view snaps.
  * @module AntiCheatsBP/scripts/checks/combat/viewSnapCheck
- * that can occur shortly after a player performs an attack.
  */
 
 /**
@@ -18,15 +17,10 @@ const msPerTick = 50;
 const defaultMaxPitchSnapPerTick = 75;
 
 /**
- * Checks for invalid pitch (looking too far up or down) and for excessively rapid
- * changes in view angle (pitch/yaw snaps) that occur shortly after a player attacks.
- * Player's last pitch and yaw are updated by the game or via `playerDataManager.updateTransientPlayerData`.
- * Player's last attack tick is updated in `eventHandlers.handleEntityHurt`.
- * @async
- * @param {import('@minecraft/server').Player} player - The player instance to check.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastAttackTick`, `lastPitch`, `lastYaw`.
- * @param {Dependencies} dependencies - Object containing necessary dependencies like config, playerUtils, actionManager, currentTick, etc.
- * @returns {Promise<void>}
+ * Checks for invalid pitch and rapid view snaps after an attack.
+ * @param {import('@minecraft/server').Player} player The player to check.
+ * @param {PlayerAntiCheatData} pData The player's data.
+ * @param {Dependencies} dependencies The command dependencies.
  */
 export async function checkViewSnap(player, pData, dependencies) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;

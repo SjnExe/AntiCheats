@@ -79,9 +79,8 @@ const MAX_PROFILING_HISTORY = 100;
 
 
 /**
- * Assembles and returns a standardized dependency object for use throughout the system.
- * This ensures that all modules have consistent access to core functionalities.
- * @returns {import('./types.js').Dependencies} The assembled dependencies object.
+ * Assembles and returns the standardized dependency object.
+ * @returns {import('./types.js').Dependencies} The dependencies object.
  */
 function getStandardDependencies() {
     try {
@@ -165,10 +164,10 @@ function getStandardDependencies() {
 
 
 /**
- * Validates that the core dependencies are available and of the correct type.
- * @param {import('./types.js').Dependencies} deps The dependencies object to validate.
- * @param {string} callContext The context from which this function is called.
- * @returns {boolean} True if the dependencies are valid.
+ * Validates the core dependencies object.
+ * @param {import('./types.js').Dependencies} deps The dependencies object.
+ * @param {string} callContext The context of the call.
+ * @returns {boolean} True if dependencies are valid.
  */
 function validateDependencies(deps, callContext) {
     const mainContext = `[${mainModuleName}.validateDependencies from ${callContext}]`;
@@ -224,7 +223,7 @@ const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
 const TPA_SYSTEM_TICK_INTERVAL = 20;
 
 /**
- * Performs all initializations for the AntiCheat system.
+ * Initializes the AntiCheat system.
  */
 function performInitializations() {
     const dependencies = getStandardDependencies();
@@ -243,7 +242,7 @@ function performInitializations() {
     system.runInterval(() => tpaTick(dependencies), TPA_SYSTEM_TICK_INTERVAL);
 }
 /**
- * Subscribes to all necessary Minecraft server events.
+ * Subscribes to all necessary server events.
  * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
 function subscribeToEvents(dependencies) {
@@ -464,7 +463,7 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
 
 
 /**
- * Processes TPA (Teleport Ask) system ticks.
+ * Processes TPA system ticks.
  * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
 function tpaTick(dependencies) {
@@ -483,7 +482,7 @@ function tpaTick(dependencies) {
 
 /**
  * Attempts to initialize the system, with a retry mechanism.
- * @param {number} retryCount The current retry count.
+ * @param {number} [retryCount=0] The current retry count.
  */
 function attemptInitializeSystem(retryCount = 0) {
     try {

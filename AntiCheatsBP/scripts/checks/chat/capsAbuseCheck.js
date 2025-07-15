@@ -1,7 +1,6 @@
 /**
- * @file Implements a check to detect excessive capitalization (CAPS abuse) in chat messages.
+ * @file Detects excessive capitalization in chat messages.
  * @module AntiCheatsBP/scripts/checks/chat/capsAbuseCheck
- * All actionProfileKey and checkType strings should be camelCase.
  */
 
 /**
@@ -11,12 +10,10 @@
 
 /**
  * Checks a chat message for excessive capitalization.
- * @async
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - The player's anti-cheat data.
- * @param {Dependencies} dependencies - Shared command dependencies (includes config, actionManager, etc.).
- * @returns {Promise<void>}
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData The player's anti-cheat data.
+ * @param {Dependencies} dependencies Shared command dependencies.
  */
 export async function checkCapsAbuse(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;

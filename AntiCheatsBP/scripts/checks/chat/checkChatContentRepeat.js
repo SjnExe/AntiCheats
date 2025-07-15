@@ -1,7 +1,6 @@
 /**
- * @file Implements a check to detect players repeating the same message content.
+ * @file Detects players repeating the same message content.
  * @module AntiCheatsBP/scripts/checks/chat/checkChatContentRepeat
- * All actionProfileKey and checkType strings should be camelCase.
  */
 
 /**
@@ -16,10 +15,9 @@ const maxSnippetLength = 50;
 const debugLogMessageSnippetLength = 20;
 
 /**
- * Normalizes a chat message for comparison by converting to lowercase,
- * trimming whitespace, and collapsing multiple spaces into single spaces.
- * @param {string} message - The message to normalize.
- * @returns {string} The normalized message, or an empty string if input is not a string.
+ * Normalizes a chat message for comparison.
+ * @param {string} message The message to normalize.
+ * @returns {string} The normalized message.
  */
 function normalizeMessage(message) {
     if (typeof message !== 'string') {
@@ -29,13 +27,11 @@ function normalizeMessage(message) {
 }
 
 /**
- * Checks if a player is repeating the same message content based on their recent chat history.
- * @async
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - The player's anti-cheat data, used for storing chat history.
- * @param {Dependencies} dependencies - Shared command dependencies.
- * @returns {Promise<void>}
+ * Checks if a player is repeating the same message content.
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData The player's anti-cheat data.
+ * @param {Dependencies} dependencies Shared command dependencies.
  */
 export async function checkChatContentRepeat(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;

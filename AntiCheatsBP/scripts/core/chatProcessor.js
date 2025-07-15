@@ -1,5 +1,5 @@
 /**
- * @file Handles all chat message processing, including checks and formatting.
+ * @file Handles chat message processing, checks, and formatting.
  * @module AntiCheatsBP/scripts/core/chatProcessor
  */
 import * as mc from '@minecraft/server';
@@ -7,14 +7,12 @@ const MAX_MESSAGE_SNIPPET_LENGTH = 50;
 const DEFAULT_CHAT_DURING_COMBAT_COOLDOWN_SECONDS = 4;
 const DEFAULT_MAX_MESSAGE_LENGTH = 256;
 /**
- * Processes an incoming chat message, performing various checks and formatting.
- * This function is typically called from a `beforeChatSend` event handler.
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('../types.js').PlayerAntiCheatData} pData - The AntiCheat data for the player.
- * @param {string} originalMessage - The original raw message content.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data, used for cancellation.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
- * @returns {Promise<void>}
+ * Processes an incoming chat message for checks and formatting.
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('../types.js').PlayerAntiCheatData} pData The player's data.
+ * @param {string} originalMessage The original message content.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
 export async function processChatMessage(player, pData, originalMessage, eventData, dependencies) {
     const { config, playerUtils, checks, playerDataManager, logManager, actionManager, rankManager } = dependencies;

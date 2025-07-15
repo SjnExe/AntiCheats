@@ -1,7 +1,6 @@
 /**
- * @file Implements a check to detect potential advertising in chat messages.
+ * @file Detects potential advertising in chat messages.
  * @module AntiCheatsBP/scripts/checks/chat/antiAdvertisingCheck
- * All actionProfileName and checkType strings should be camelCase.
  */
 
 /**
@@ -11,15 +10,10 @@
 
 /**
  * Checks a message for potential advertising links or patterns.
- * It first attempts to use advanced regex-based detection if enabled and configured.
- * If not, or if no advanced matches are found, it falls back to simple pattern matching.
- * Whitelisting is supported for advanced regex detection.
- * @async
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data containing the message.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {Dependencies} dependencies - Shared dependencies including config, actionManager, and playerUtils.
- * @returns {Promise<void>} A promise that resolves when the check is complete.
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
+ * @param {Dependencies} dependencies Shared dependencies.
  */
 export async function checkAntiAdvertising(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;

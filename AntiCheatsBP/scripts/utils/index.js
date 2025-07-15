@@ -1,6 +1,5 @@
 /**
- * @file Barrel file for exporting all utility modules.
- * This allows other parts of the system to import utilities from a single, consolidated source.
+ * @file Exports all utility modules.
  * @module AntiCheatsBP/scripts/utils/index
  */
 export * from './itemUtils.js';

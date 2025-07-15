@@ -1,7 +1,6 @@
 /**
- * @file Manages the registration, parsing, and execution of chat-based commands for the AntiCheat system.
+ * @file Manages the registration, parsing, and execution of chat-based commands.
  * @module AntiCheatsBP/scripts/core/commandManager
- * It dynamically loads command modules on-demand to improve performance and reduce memory usage.
  */
 import { commandFilePaths, commandAliases } from './commandRegistry.js';
 import { loadCommand } from './dynamicCommandLoader.js';
@@ -14,8 +13,7 @@ export const commandDefinitionMap = new Map();
 export const commandExecutionMap = new Map();
 
 /**
- * Initializes the command manager, preparing it for dynamic command loading.
- * This function clears any existing command data and sets up the alias map.
+ * Initializes the command manager.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export function initializeCommands(dependencies) {
@@ -32,7 +30,7 @@ export function initializeCommands(dependencies) {
 }
 
 /**
- * IIFE for initial command system setup on script startup.
+ * IIFE for initial command system setup.
  */
 (() => {
     const initialLoadDeps = {
@@ -50,7 +48,6 @@ export function initializeCommands(dependencies) {
 
 /**
  * Handles incoming chat messages to check for and execute commands.
- * It dynamically loads commands upon their first use.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
@@ -147,10 +144,10 @@ export async function handleChatCommand(eventData, dependencies) {
 }
 
 /**
- * Checks if a command is enabled, considering both its definition and global config overrides.
- * @param {string} commandName - The name of the command.
- * @param {import('../types.js').CommandDefinition} commandDef - The command's definition object.
- * @param {import('../types.js').Config} config - The system's configuration object.
+ * Checks if a command is enabled.
+ * @param {string} commandName The name of the command.
+ * @param {import('../types.js').CommandDefinition} commandDef The command's definition.
+ * @param {import('../types.js').Config} config The system's configuration.
  * @returns {boolean} True if the command is enabled, false otherwise.
  */
 function isCommandEnabled(commandName, commandDef, config) {
@@ -162,8 +159,7 @@ function isCommandEnabled(commandName, commandDef, config) {
 }
 
 /**
- * Gets a list of all available command names from the registry.
- * Note: This does not mean they are all loaded into memory.
+ * Gets a list of all registered command names.
  * @returns {string[]} An array of command names.
  */
 export function getAllRegisteredCommandNames() {

@@ -1,14 +1,5 @@
 /**
- * @file Implements a check to detect if a player is attacking entities from an excessive distance.
- *
- * The check calculates distance to the target entity's origin and then subtracts a fixed value
- * (`playerHitboxAdjustment` or `defaultEntityHitboxAdjustment`) to approximate the distance
- * to the hitbox edge. This hitbox adjustment is a simplification. More precise methods like
- * raycasting against entity bounding boxes are generally too performance-intensive for
- * frequent checks. However, this approximation could be a source of minor inaccuracies,
- * especially with entities of varying sizes. It should be considered a potential area for
- * future precision improvement if performance allows or if specific false positives/negatives
- * due to entity size variations become problematic.
+ * @file Detects if a player is attacking entities from an excessive distance.
  * @module AntiCheatsBP/scripts/checks/combat/reachCheck
  */
 import * as mc from '@minecraft/server';
@@ -29,15 +20,11 @@ const defaultReachBuffer = 0.5;
 const violationDetailDecimalPlaces = 2;
 
 /**
- * Checks if a player is attacking an entity from an excessive distance (Reach).
- * Calculates the distance between the player's eye location and the target entity's bounding box,
- * then compares it against configured maximums based on game mode, with a buffer.
- * @async
- * @param {import('@minecraft/server').Player} player - The attacking player instance.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data for the attacker.
- * @param {Dependencies} dependencies - Object containing necessary dependencies.
- * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `targetEntity` and `gameMode`.
- * @returns {Promise<void>}
+ * Checks if a player is attacking an entity from an excessive distance.
+ * @param {import('@minecraft/server').Player} player The attacking player.
+ * @param {PlayerAntiCheatData} pData The attacker's data.
+ * @param {Dependencies} dependencies The command dependencies.
+ * @param {EventSpecificData} eventSpecificData Event-specific data.
  */
 export async function checkReach(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;

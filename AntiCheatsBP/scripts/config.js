@@ -1,17 +1,14 @@
 /**
- * @file Anti-Cheat Configuration File
+ * @file Defines all configurable settings for the AntiCheat system.
  * @module AntiCheatsBP/scripts/config
- * This file contains all configurable settings for the AntiCheat system.
- * It defines constants for various features, checks, and system behaviors.
- * It also includes a mechanism for runtime updates to certain configuration values.
  */
 
 /**
  * @typedef {object} UpdateConfigValueResult
- * @property {boolean} success - Whether the update was successful.
- * @property {string} message - A message describing the result.
- * @property {unknown} [oldValue] - The old value of the configuration key.
- * @property {unknown} [newValue] - The new value of the configuration key.
+ * @property {boolean} success Whether the update was successful.
+ * @property {string} message A message describing the result.
+ * @property {unknown} [oldValue] The old value of the key.
+ * @property {unknown} [newValue] The new value of the key.
  */
 
 const defaultConfigSettings = {
@@ -337,9 +334,8 @@ export const editableConfigValues = { ...defaultConfigSettings };
 
 /**
  * Updates a configuration value at runtime.
- * This is a simplified implementation. A more robust version would handle nested objects.
- * @param {string} key - The configuration key to update.
- * @param {unknown} value - The new value.
+ * @param {string} key The configuration key to update.
+ * @param {unknown} value The new value.
  * @returns {UpdateConfigValueResult} Object indicating success and a message.
  */
 export function updateConfigValue(key, value) {

@@ -1,7 +1,6 @@
 /**
- * @file Implements swear word detection in chat messages with obfuscation resistance
+ * @file Detects swear words in chat messages.
  * @module AntiCheatsBP/scripts/checks/chat/swearCheck
- * using exact normalized matching. All actionProfileKey and checkType strings should be camelCase.
  */
 
 /**
@@ -16,11 +15,9 @@ const defaultLeetMap = {
 
 /**
  * Normalizes a word for swear checking.
- * Converts to lowercase, removes common separators, collapses consecutive identical characters,
- * and optionally applies leet speak conversion.
- * @param {string} word - The word to normalize.
- * @param {Dependencies} dependencies - For accessing config.
- * @returns {string} Normalized word, or empty string if input is invalid/empty after normalization.
+ * @param {string} word The word to normalize.
+ * @param {Dependencies} dependencies For accessing config.
+ * @returns {string} The normalized word.
  */
 function normalizeWordForSwearCheck(word, dependencies) {
     const { config } = dependencies;
@@ -75,19 +72,17 @@ function normalizeWordForSwearCheck(word, dependencies) {
 
 /**
  * Checks a chat message for swear words.
- * @async
- * @param {import('@minecraft/server').Player} player - The player sending the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {Dependencies} dependencies - Full dependencies object.
- * @returns {Promise<void>}
+ * @param {import('@minecraft/server').Player} player The player sending the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
+ * @param {Dependencies} dependencies Full dependencies object.
  */
 let normalizedSwearWordSet = new Set();
 let lastSwearList;
 
 /**
  * Initializes or updates the swear word list from the config.
- * @param {Dependencies} dependencies - The dependencies object.
+ * @param {Dependencies} dependencies The dependencies object.
  */
 function initializeSwearList(dependencies) {
     const { config } = dependencies;
@@ -107,10 +102,10 @@ function initializeSwearList(dependencies) {
 
 /**
  * Checks a chat message for swear words.
- * @param {import('@minecraft/server').Player} player - The player sending the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {Dependencies} dependencies - Full dependencies object.
+ * @param {import('@minecraft/server').Player} player The player sending the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
+ * @param {Dependencies} dependencies Full dependencies object.
  */
 export async function checkSwear(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;

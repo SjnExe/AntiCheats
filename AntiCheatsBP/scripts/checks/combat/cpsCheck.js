@@ -1,5 +1,5 @@
 /**
- * @file Checks for abnormally high Clicks Per Second (CPS) or attack rates.
+ * @file Checks for abnormally high Clicks Per Second (CPS).
  * @module AntiCheatsBP/scripts/checks/combat/cpsCheck
  */
 
@@ -12,12 +12,10 @@
 const defaultMaxCpsThreshold = 20;
 
 /**
- * Checks if a player is clicking or attacking at an abnormally high rate (CPS).
- * @async
- * @param {import('@minecraft/server').Player} player - The player instance to check.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `attackEvents`.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies like config, playerUtils, actionManager, etc.
- * @returns {Promise<void>}
+ * Checks if a player is clicking at an abnormally high rate (CPS).
+ * @param {import('@minecraft/server').Player} player The player to check.
+ * @param {PlayerAntiCheatData} pData The player's data.
+ * @param {CommandDependencies} dependencies The command dependencies.
  */
 export async function checkCps(player, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;

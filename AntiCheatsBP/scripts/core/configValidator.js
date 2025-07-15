@@ -1,13 +1,11 @@
 /**
- * @file Configuration Validator
+ * @file Validates the structure and values of configuration files.
  * @module AntiCheatsBP/scripts/core/configValidator
- * This file contains functions to validate the structure and values of configuration files
- * for the AntiCheat system. It helps prevent runtime errors due to misconfigurations.
  */
 
 /**
  * Checks if a value is a string.
- * @param {*} value - The value to check.
+ * @param {*} value The value to check.
  * @returns {boolean}
  */
 function isString(value) {
@@ -15,7 +13,7 @@ function isString(value) {
 }
 /**
  * Checks if a value is a number.
- * @param {*} value - The value to check.
+ * @param {*} value The value to check.
  * @returns {boolean}
  */
 function isNumber(value) {
@@ -23,7 +21,7 @@ function isNumber(value) {
 }
 /**
  * Checks if a value is a boolean.
- * @param {*} value - The value to check.
+ * @param {*} value The value to check.
  * @returns {boolean}
  */
 function isBoolean(value) {
@@ -31,7 +29,7 @@ function isBoolean(value) {
 }
 /**
  * Checks if a value is an array.
- * @param {*} value - The value to check.
+ * @param {*} value The value to check.
  * @returns {boolean}
  */
 function isArray(value) {
@@ -39,22 +37,20 @@ function isArray(value) {
 }
 /**
  * Checks if a value is an object.
- * @param {*} value - The value to check.
+ * @param {*} value The value to check.
  * @returns {boolean}
  */
 function isObject(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 /**
- *
- * @param colorCode
+ * @param {*} colorCode
  */
 function isValidColorCode(colorCode) {
     return isString(colorCode) && /^§[0-9a-fk-or]$/.test(colorCode);
 }
 /**
- *
- * @param str
+ * @param {*} str
  */
 function isValidCamelCase(str) {
     if (!isString(str) || str.length === 0) {
@@ -63,22 +59,19 @@ function isValidCamelCase(str) {
     return /^[a-z]+([A-Z][a-z0-9]*)*$/.test(str);
 }
 /**
- *
- * @param num
+ * @param {*} num
  */
 function isPositiveNumber(num) {
     return isNumber(num) && num > 0;
 }
 /**
- *
- * @param num
+ * @param {*} num
  */
 function isNonNegativeNumber(num) {
     return isNumber(num) && num >= 0;
 }
 /**
- *
- * @param durationStr
+ * @param {*} durationStr
  */
 function isValidDurationString(durationStr) {
     if (!isString(durationStr)) {
@@ -87,11 +80,10 @@ function isValidDurationString(durationStr) {
     return /^\d+[smhd]$/.test(durationStr) || /^\d+$/.test(durationStr);
 }
 /**
- *
- * @param obj
- * @param fieldDefs
- * @param context
- * @param errors
+ * @param {object} obj
+ * @param {Array<object>} fieldDefs
+ * @param {string} context
+ * @param {Array<string>} errors
  */
 function ensureFields(obj, fieldDefs, context, errors) {
     if (!isObject(obj)) {
@@ -205,12 +197,12 @@ function ensureFields(obj, fieldDefs, context, errors) {
     return allFieldsValidOverall;
 }
 /**
- * Validates the main configuration object (from config.js).
- * @param {object} config - The `defaultConfigSettings` object from `config.js`.
- * @param {object} actionProfiles - The `checkActionProfiles` object from `actionProfiles.js`.
- * @param {string[]} knownCommands - An array of known command names from `commandRegistry.js`.
- * @param {object} [commandAliasesMap] - Optional. The `commandAliases` object from `config.js`.
- * @returns {string[]} An array of error messages. Empty if no errors.
+ * Validates the main configuration object.
+ * @param {object} config The `defaultConfigSettings` object.
+ * @param {object} actionProfiles The `checkActionProfiles` object.
+ * @param {string[]} knownCommands An array of known command names.
+ * @param {object} [commandAliasesMap] Optional command aliases map.
+ * @returns {string[]} An array of error messages.
  */
 export function validateMainConfig(config, actionProfiles, knownCommands, commandAliasesMap) {
     const errors = [];
@@ -499,9 +491,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
     return errors;
 }
 /**
- * Validates the checkActionProfiles object from actionProfiles.js.
- * @param {object} actionProfiles - The `checkActionProfiles` object.
- * @returns {string[]} An array of error messages. Empty if no errors.
+ * Validates the checkActionProfiles object.
+ * @param {object} actionProfiles The `checkActionProfiles` object.
+ * @returns {string[]} An array of error messages.
  */
 export function validateActionProfiles(actionProfiles) {
     const errors = [];
@@ -587,9 +579,9 @@ export function validateActionProfiles(actionProfiles) {
 }
 /**
  * Validates the automodConfig object.
- * @param {object} autoModConfig - The `automodConfig` object.
- * @param {object} actionProfiles - The `checkActionProfiles` object from `actionProfiles.js` for cross-referencing checkTypes.
- * @returns {string[]} An array of error messages. Empty if no errors.
+ * @param {object} autoModConfig The `automodConfig` object.
+ * @param {object} actionProfiles The `checkActionProfiles` object.
+ * @returns {string[]} An array of error messages.
  */
 export function validateAutoModConfig(autoModConfig, actionProfiles) {
     const errors = [];
@@ -686,10 +678,10 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
 }
 /**
  * Validates the ranksConfig object.
- * @param {object} ranksConfig - The object containing rank definitions and defaults from `ranksConfig.js`.
- * @param {string} mainConfigOwnerName - The `ownerPlayerName` from `config.js` for 'ownerName' condition validation.
- * @param {string} mainConfigAdminTag - The `adminTag` from `config.js` for 'adminTag' condition validation.
- * @returns {string[]} An array of error messages. Empty if no errors.
+ * @param {object} ranksConfig The ranks configuration object.
+ * @param {string} mainConfigOwnerName The owner's name from the main config.
+ * @param {string} mainConfigAdminTag The admin tag from the main config.
+ * @returns {string[]} An array of error messages.
  */
 export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfigAdminTag) {
     const errors = [];
