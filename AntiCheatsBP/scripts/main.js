@@ -36,6 +36,7 @@ import {
     updateTransientPlayerData,
     clearExpiredItemUseStates,
     saveDirtyPlayerData,
+    getActivePlayers,
 } from './core/playerDataManager.js';
 import { initializeRanks } from './core/rankManager.js';
 import { initializeReportCache, persistReportsToDisk } from './core/reportManager.js';
@@ -222,15 +223,19 @@ async function processTick() {
         }
     }
 
-    const allPlayers = world.getAllPlayers();
-    cleanupActivePlayerData(allPlayers, dependencies);
+    const onlinePlayers = world.getAllPlayers();
+    cleanupActivePlayerData(onlinePlayers, dependencies);
 
-    for (const player of allPlayers) {
-        await processPlayer(player, dependencies, dependencies.currentTick);
+    const activePlayerData = getActivePlayers();
+    for (const pData of activePlayerData) {
+        const player = world.getPlayer(pData.playerId);
+        if (player) {
+            await processPlayer(player, dependencies, dependencies.currentTick);
+        }
     }
 
     if (dependencies.currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
-        await handlePeriodicDataPersistence(allPlayers, dependencies);
+        await handlePeriodicDataPersistence(onlinePlayers, dependencies);
     }
 }
 /**
