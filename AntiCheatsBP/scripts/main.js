@@ -270,6 +270,9 @@ function subscribeToEvents(dependencies) {
         'playerBreakBlock': handlePlayerBreakBlockAfterEvent,
         'playerPlaceBlock': handlePlayerPlaceBlockAfterEvent,
         'playerDimensionChange': handlePlayerDimensionChangeAfterEvent,
+        /**
+         *
+         */
         'entityDie': (eventData) => {
             if (eventData.deadEntity.typeId === 'minecraft:player') {
                 handlePlayerDeath(eventData, dependencies);
@@ -280,6 +283,9 @@ function subscribeToEvents(dependencies) {
         },
         'entitySpawn': handleEntitySpawnEventAntiGrief,
         'pistonActivate': handlePistonActivateAntiGrief,
+        /**
+         *
+         */
         'playerInventorySlotChange': (eventData) => handleInventoryItemChange(eventData.player, eventData.itemStack, eventData.previousItemStack, eventData.slot, dependencies),
     };
 

@@ -1,6 +1,7 @@
 import eslintJs from '@eslint/js';
 import globals from 'globals';
 import eslintPluginJsonc from 'eslint-plugin-jsonc';
+import jsdoc from 'eslint-plugin-jsdoc';
 
 export default [
     {
@@ -16,6 +17,7 @@ export default [
     },
     {
         files: ['AntiCheatsBP/scripts/**/*.js'],
+        ...jsdoc.configs['flat/recommended'],
         languageOptions: {
             ecmaVersion: 2022,
             sourceType: 'module',
@@ -37,6 +39,15 @@ export default [
             'indent': ['error', 4],
             'comma-dangle': ['error', 'always-multiline'],
             'object-curly-spacing': ['error', 'always'],
+            'jsdoc/require-jsdoc': ['warn', {
+                'require': {
+                    'FunctionDeclaration': true,
+                    'MethodDefinition': true,
+                    'ClassDeclaration': true,
+                    'ArrowFunctionExpression': true,
+                    'FunctionExpression': true
+                }
+            }]
         },
     },
     ...eslintPluginJsonc.configs['flat/recommended-with-jsonc'],

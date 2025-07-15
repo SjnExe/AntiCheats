@@ -668,7 +668,7 @@ function _handlePlayerDeath(eventData, dependencies) {
         const deathCoordsMsgKey = config.deathCoordsMessageKey || 'message.deathCoords';
         pData.deathMessageToShowOnSpawn = {
             translate: deathCoordsMsgKey,
-            with: { x: x.toString(), y: y.toString(), z: z.toString(), dimensionId }
+            with: { x: x.toString(), y: y.toString(), z: z.toString(), dimensionId },
         };
         pData.isDirtyForSave = true;
     }

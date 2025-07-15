@@ -296,6 +296,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         },
         {
             name: 'maxWordsSpamActionProfileName', type: 'string',
+            /**
+             *
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -305,6 +308,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         },
         {
             name: 'chatContentRepeatActionProfileName', type: 'string',
+            /**
+             *
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -314,6 +320,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         },
         {
             name: 'unicodeAbuseActionProfileName', type: 'string',
+            /**
+             *
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -323,6 +332,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         },
         {
             name: 'gibberishActionProfileName', type: 'string',
+            /**
+             *
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -332,6 +344,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         },
         {
             name: 'mentionsActionProfileName', type: 'string',
+            /**
+             *
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -341,6 +356,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         },
         {
             name: 'impersonationActionProfileName', type: 'string',
+            /**
+             *
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -389,6 +407,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         },
         {
             name: 'soundEvents', type: 'object',
+            /**
+             *
+             */
             validator: (soundEventsObj, sePath, seErrs) => {
                 let overallSoundEventsValid = true;
                 for (const eventName in soundEventsObj) {
@@ -404,6 +425,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                         { name: 'pitch', type: 'number', optional: true },
                         {
                             name: 'target', type: 'string', optional: true,
+                            /**
+                             *
+                             */
                             validator: (val, p, e) => {
                                 const validTargets = ['player', 'admin', 'targetPlayer', 'global'];
                                 if (val && !validTargets.includes(val)) {
@@ -428,6 +452,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         },
         {
             name: 'commandSettings', type: 'object',
+            /**
+             *
+             */
             validator: (cmdSettingsObj, csPath, csErrs) => {
                 let overallIsValid = true;
                 for (const cmdName of Object.keys(cmdSettingsObj)) {
@@ -541,6 +568,9 @@ export function validateActionProfiles(actionProfiles) {
             { name: 'cancelEvent', type: 'boolean', optional: true },
             {
                 name: 'customAction', type: 'string', optional: true,
+                /**
+                 *
+                 */
                 validator: (val, path, errs) => {
                     if (!validCustomActions.includes(val)) {
                         errs.push(`${path}: Invalid customAction "${val}". Expected one of ${validCustomActions.join(', ')}.`);
@@ -601,6 +631,9 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
         const ruleSetFieldDefs = [
             {
                 name: 'checkType', type: 'string',
+                /**
+                 *
+                 */
                 validator: (val, path, errs) => {
                     if (!isValidCamelCase(val) && !knownActionProfileNames.includes(val)) {
                         errs.push(`${path}: checkType "${val}" is not a valid camelCase string or a known actionProfile name.`);
@@ -622,6 +655,9 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                     { name: 'flagThreshold', type: 'positiveNumber' },
                     {
                         name: 'actionType', type: 'string',
+                        /**
+                         *
+                         */
                         validator: (val, path, errs) => {
                             if (!validAutoModActions.includes(val)) {
                                 errs.push(`${path}: Invalid actionType "${val}". Expected one of ${validAutoModActions.join(', ')}.`);
@@ -721,6 +757,9 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
         const rankDefFields = [
             {
                 name: 'id', type: 'string',
+                /**
+                 *
+                 */
                 validator: (val, path, errs) => {
                     if (val !== val.toLowerCase()) {
                         errs.push(`${path}: Rank ID "${val}" must be lowercase.`);
@@ -746,6 +785,9 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
             { name: 'conditions', type: 'array' },
             {
                 name: 'priority', type: 'number',
+                /**
+                 *
+                 */
                 validator: (val, path, errs) => {
                     if (rankPriorities.has(val)) {
                         errs.push(`${path}: Duplicate priority ${val} found. Priorities must be unique.`);
@@ -767,6 +809,9 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                 const conditionFieldDefs = [
                     {
                         name: 'type', type: 'string',
+                        /**
+                         *
+                         */
                         validator: (val, path, errs) => {
                             if (!validConditionTypes.includes(val)) {
                                 errs.push(`${path}: Invalid condition type "${val}". Expected one of ${validConditionTypes.join(', ')}.`);
