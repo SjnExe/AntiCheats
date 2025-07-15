@@ -107,41 +107,41 @@ function ensureFields(obj, fieldDefs, context, errors) {
             let typeMatch = false;
             for (const type of expectedTypes) {
                 switch (type) {
-                    case 'string': if (isString(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'number': if (isNumber(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'boolean': if (isBoolean(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'array': if (isArray(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'object': if (isObject(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'positiveNumber': if (isPositiveNumber(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'nonNegativeNumber': if (isNonNegativeNumber(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'durationString': if (isValidDurationString(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'colorCode': if (isValidColorCode(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'camelCaseString': if (isValidCamelCase(value)) {
-                        typeMatch = true;
-                    } break;
-                    case 'any': typeMatch = true; break;
-                    default:
-                        errors.push(`${fieldPath}: Unknown expected type '${type}' in field definition.`);
-                        allFieldsValidOverall = false;
-                        break;
+                case 'string': if (isString(value)) {
+                    typeMatch = true;
+                } break;
+                case 'number': if (isNumber(value)) {
+                    typeMatch = true;
+                } break;
+                case 'boolean': if (isBoolean(value)) {
+                    typeMatch = true;
+                } break;
+                case 'array': if (isArray(value)) {
+                    typeMatch = true;
+                } break;
+                case 'object': if (isObject(value)) {
+                    typeMatch = true;
+                } break;
+                case 'positiveNumber': if (isPositiveNumber(value)) {
+                    typeMatch = true;
+                } break;
+                case 'nonNegativeNumber': if (isNonNegativeNumber(value)) {
+                    typeMatch = true;
+                } break;
+                case 'durationString': if (isValidDurationString(value)) {
+                    typeMatch = true;
+                } break;
+                case 'colorCode': if (isValidColorCode(value)) {
+                    typeMatch = true;
+                } break;
+                case 'camelCaseString': if (isValidCamelCase(value)) {
+                    typeMatch = true;
+                } break;
+                case 'any': typeMatch = true; break;
+                default:
+                    errors.push(`${fieldPath}: Unknown expected type '${type}' in field definition.`);
+                    allFieldsValidOverall = false;
+                    break;
                 }
                 if (typeMatch) {
                     break;
@@ -164,19 +164,19 @@ function ensureFields(obj, fieldDefs, context, errors) {
                 const elementPath = `${fieldPath}[${i}]`;
                 let elementMatch = false;
                 switch (field.arrayElementType) {
-                    case 'string': if (isString(element)) {
-                        elementMatch = true;
-                    } break;
-                    case 'number': if (isNumber(element)) {
-                        elementMatch = true;
-                    } break;
-                    case 'object': if (isObject(element)) {
-                        elementMatch = true;
-                    } break;
-                    default:
-                        errors.push(`${elementPath}: Unknown expected array element type '${field.arrayElementType}' in field definition.`);
-                        allFieldsValidOverall = false;
-                        break;
+                case 'string': if (isString(element)) {
+                    elementMatch = true;
+                } break;
+                case 'number': if (isNumber(element)) {
+                    elementMatch = true;
+                } break;
+                case 'object': if (isObject(element)) {
+                    elementMatch = true;
+                } break;
+                default:
+                    errors.push(`${elementPath}: Unknown expected array element type '${field.arrayElementType}' in field definition.`);
+                    allFieldsValidOverall = false;
+                    break;
                 }
                 if (!elementMatch) {
                     errors.push(`${elementPath}: Invalid array element type. Expected ${field.arrayElementType}, but got ${typeof element}.`);

@@ -48,16 +48,16 @@ export async function execute(player, args, dependencies) {
     let targetVanishState;
 
     switch (action) {
-        case 'on':
-            targetVanishState = true;
-            break;
-        case 'off':
-            targetVanishState = false;
-            break;
-        case 'toggle':
-        default:
-            targetVanishState = !isCurrentlyVanished;
-            break;
+    case 'on':
+        targetVanishState = true;
+        break;
+    case 'off':
+        targetVanishState = false;
+        break;
+    case 'toggle':
+    default:
+        targetVanishState = !isCurrentlyVanished;
+        break;
     }
 
     pData.vanishMode = mode;

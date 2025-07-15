@@ -193,7 +193,7 @@ export const stringDB = {
     // Player Data Manager specific (used by its functions, not directly UI)
     'playerData.mute.defaultReason': 'Muted by system.',
     'playerData.ban.defaultReason': 'Banned by system.',
-    'playerDataManager.offlinePurgeCompleteNotification': "Your player flags and violation history were automatically purged by an administrator's request upon joining.",
+    'playerDataManager.offlinePurgeCompleteNotification': 'Your player flags and violation history were automatically purged by an administrator\'s request upon joining.',
 
     // TPA Manager Messages
     'tpa.manager.error.targetOfflineOnAccept': '§cTarget player {offlinePlayerName} went offline. TPA cancelled.',

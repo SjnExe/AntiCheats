@@ -119,7 +119,7 @@ export function execute(
             player.sendMessage(successMessage);
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
         } else {
-            console.log(`[UnmuteCommand] ${successMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
+            // console.log(`[UnmuteCommand] ${successMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
         }
 
         const logDetails = programmaticUnmuteReason

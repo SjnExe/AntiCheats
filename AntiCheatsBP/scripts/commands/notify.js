@@ -48,34 +48,34 @@ export function execute(player, args, dependencies) {
     let responseMessageKey;
 
     switch (subCommand) {
-        case 'on':
-            newPreference = true;
-            responseMessageKey = 'command.notify.enabled';
-            break;
-        case 'off':
-            newPreference = false;
-            responseMessageKey = 'command.notify.disabled';
-            break;
-        case 'toggle':
-            newPreference = !currentPreference;
-            responseMessageKey = newPreference ? 'command.notify.enabled' : 'command.notify.disabled';
-            break;
-        case 'status': {
-            const statusText = currentPreference ? getString('common.boolean.yes').toUpperCase() : getString('common.boolean.no').toUpperCase();
-            const sourceTextKey = typeof pData[pDataKeyForNotifications] === 'boolean' ?
-                'command.notify.status.source.explicit' :
-                'command.notify.status.source.default';
-            player.sendMessage(getString('command.notify.status', { statusText, sourceText: getString(sourceTextKey) }));
-            logManager?.addLog({
-                adminName,
-                actionType: 'notifyStatusChecked',
-                details: `Checked own notification status: ${statusText} (${getString(sourceTextKey)})`,
-            }, dependencies);
-            return;
-        }
-        default:
-            player.sendMessage(`§cUsage: ${prefix}notify <on|off|toggle|status>`);
-            return;
+    case 'on':
+        newPreference = true;
+        responseMessageKey = 'command.notify.enabled';
+        break;
+    case 'off':
+        newPreference = false;
+        responseMessageKey = 'command.notify.disabled';
+        break;
+    case 'toggle':
+        newPreference = !currentPreference;
+        responseMessageKey = newPreference ? 'command.notify.enabled' : 'command.notify.disabled';
+        break;
+    case 'status': {
+        const statusText = currentPreference ? getString('common.boolean.yes').toUpperCase() : getString('common.boolean.no').toUpperCase();
+        const sourceTextKey = typeof pData[pDataKeyForNotifications] === 'boolean' ?
+            'command.notify.status.source.explicit' :
+            'command.notify.status.source.default';
+        player.sendMessage(getString('command.notify.status', { statusText, sourceText: getString(sourceTextKey) }));
+        logManager?.addLog({
+            adminName,
+            actionType: 'notifyStatusChecked',
+            details: `Checked own notification status: ${statusText} (${getString(sourceTextKey)})`,
+        }, dependencies);
+        return;
+    }
+    default:
+        player.sendMessage(`§cUsage: ${prefix}notify <on|off|toggle|status>`);
+        return;
     }
 
     try {
