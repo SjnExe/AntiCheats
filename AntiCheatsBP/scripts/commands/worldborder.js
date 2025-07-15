@@ -35,20 +35,20 @@ function parseDimensionArgument(dimensionArg, player, dependencies) {
     if (dimensionArg) {
         const lowerDimArg = dimensionArg.toLowerCase().replace('minecraft:', '');
         switch (lowerDimArg) {
-            case 'overworld':
-                dimensionId = mc.DimensionTypes.overworld.id;
-                dimensionName = 'overworld';
-                break;
-            case 'nether':
-                dimensionId = mc.DimensionTypes.nether.id;
-                dimensionName = 'nether';
-                break;
-            case 'the_end':
-                dimensionId = mc.DimensionTypes.theEnd.id;
-                dimensionName = 'the_end';
-                break;
-            default:
-                return { dimensionId: null, dimensionName: null, error: getString('command.worldborder.invalidDimension', { dimensionName: dimensionArg }) };
+        case 'overworld':
+            dimensionId = mc.DimensionTypes.overworld.id;
+            dimensionName = 'overworld';
+            break;
+        case 'nether':
+            dimensionId = mc.DimensionTypes.nether.id;
+            dimensionName = 'nether';
+            break;
+        case 'the_end':
+            dimensionId = mc.DimensionTypes.theEnd.id;
+            dimensionName = 'the_end';
+            break;
+        default:
+            return { dimensionId: null, dimensionName: null, error: getString('command.worldborder.invalidDimension', { dimensionName: dimensionArg }) };
         }
     }
     return { dimensionId, dimensionName };
@@ -106,171 +106,171 @@ export async function execute(player, args, dependencies) {
 
     try {
         switch (subCommand) {
-            case 'set': {
-                if (subArgs.length < minArgsWbSet) {
-                    player.sendMessage(getString('command.worldborder.set.usage', { prefix }));
-                    player.sendMessage(getString('command.worldborder.set.noteSize'));
-                    return;
-                }
-                const shape = subArgs[0].toLowerCase();
-                const centerX = parseFloat(subArgs[1]);
-                const centerZ = parseFloat(subArgs[2]);
-                const size = parseFloat(subArgs[3]);
-                dimParseResult = parseDimensionArgument(subArgs[4], player, dependencies);
-
-                if (dimParseResult.error) {
-                    player.sendMessage(dimParseResult.error); return;
-                }
-                dimensionId = dimParseResult.dimensionId;
-                dimensionName = dimParseResult.dimensionName;
-
-                if (shape !== 'square' && shape !== 'circle') {
-                    player.sendMessage(getString('command.worldborder.set.invalidShape')); return;
-                }
-                if (isNaN(centerX) || isNaN(centerZ) || isNaN(size)) {
-                    player.sendMessage(getString('command.worldborder.set.invalidNumbers')); return;
-                }
-                if (size <= 0) {
-                    player.sendMessage(getString('command.worldborder.set.sizePositive')); return;
-                }
-
-                const newSettings = {
-                    dimensionId,
-                    enabled: true,
-                    shape,
-                    centerX,
-                    centerZ,
-                    ...(wbManager.getBorderSettings(dimensionId, dependencies) || {}),
-                    isResizing: false,
-                };
-                if (shape === 'square') {
-                    newSettings.halfSize = size;
-                } else {
-                    newSettings.radius = size;
-                }
-
-                success = await wbManager.saveBorderSettings(dimensionId, newSettings, dependencies); // Set success
-                if (success) {
-                    let message = `${getString('command.worldborder.set.successHeader', { dimensionName }) }\n`;
-                    const sizeDisplay = shape === 'square' ? `${size} (Diameter: ${size * 2})` : `${size}`;
-                    message += `${getString('command.worldborder.set.successDetails', { shape, centerX: centerX.toString(), centerZ: centerZ.toString(), sizeDisplay }) }\n`;
-                    const damageStatus = newSettings.enableDamage
-                        ? getString('command.worldborder.set.damage.on', { damageAmount: (newSettings.damageAmount ?? defaultWbDamageAmount).toString(), damageIntervalTicks: (newSettings.damageIntervalTicks ?? defaultWbDamageIntervalTicks).toString(), teleportAfterNumDamageEvents: (newSettings.teleportAfterNumDamageEvents ?? defaultWbTeleportAfterDamageEvents).toString() })
-                        : getString('command.worldborder.set.damage.off');
-                    message += getString('command.worldborder.set.successDamage', { damageStatus });
-                    if (newSettings.wasResizing) {
-                        message += `\n${ getString('command.worldborder.set.resizeCancelled')}`;
-                    }
-
-                    player.sendMessage(message);
-                    logManager?.addLog({ adminName, actionType: 'worldBorderSet', targetName: dimensionName, details: `Set to ${shape}, C:(${centerX},${centerZ}), Size:${size}` }, dependencies);
-                } else {
-                    player.sendMessage(getString('command.worldborder.set.failSave'));
-                }
-                break;
+        case 'set': {
+            if (subArgs.length < minArgsWbSet) {
+                player.sendMessage(getString('command.worldborder.set.usage', { prefix }));
+                player.sendMessage(getString('command.worldborder.set.noteSize'));
+                return;
             }
-            case 'get': {
-                dimParseResult = parseDimensionArgument(subArgs[0], player, dependencies);
-                if (dimParseResult.error) {
-                    player.sendMessage(dimParseResult.error); return;
-                }
-                dimensionId = dimParseResult.dimensionId;
-                dimensionName = dimParseResult.dimensionName;
+            const shape = subArgs[0].toLowerCase();
+            const centerX = parseFloat(subArgs[1]);
+            const centerZ = parseFloat(subArgs[2]);
+            const size = parseFloat(subArgs[3]);
+            dimParseResult = parseDimensionArgument(subArgs[4], player, dependencies);
 
-                borderSettings = wbManager.getBorderSettings(dimensionId, dependencies);
-                if (!borderSettings || !borderSettings.enabled) {
-                    player.sendMessage(getString('command.worldborder.get.noBorder', { dimensionName, prefix }));
-                    return;
-                }
-                let getMsg = `${getString('command.worldborder.get.header', { dimensionName }) }\n`;
-                getMsg += `${getString('command.worldborder.get.enabled', { status: borderSettings.enabled ? getString('common.boolean.yes') : getString('common.boolean.no') }) }\n`;
-                getMsg += `${getString('command.worldborder.get.shape', { shape: borderSettings.shape }) }\n`;
-                getMsg += `${getString('command.worldborder.get.center', { centerX: borderSettings.centerX.toString(), centerZ: borderSettings.centerZ.toString() }) }\n`;
-                if (borderSettings.shape === 'square') {
-                    const diameter = (borderSettings.halfSize ?? 0) * 2;
-                    getMsg += `${getString('command.worldborder.get.square.halfSize', { halfSize: (borderSettings.halfSize ?? 0).toString(), diameter: diameter.toString() }) }\n`;
-                    const minX = borderSettings.centerX - (borderSettings.halfSize ?? 0);
-                    const maxX = borderSettings.centerX + (borderSettings.halfSize ?? 0);
-                    const minZ = borderSettings.centerZ - (borderSettings.halfSize ?? 0);
-                    const maxZ = borderSettings.centerZ + (borderSettings.halfSize ?? 0);
-                    getMsg += `${getString('command.worldborder.get.square.bounds', { minX: minX.toString(), maxX: maxX.toString(), minZ: minZ.toString(), maxZ: maxZ.toString() }) }\n`;
-                } else {
-                    getMsg += `${getString('command.worldborder.get.circle.radius', { radius: (borderSettings.radius ?? 0).toString() }) }\n`;
-                }
-                player.sendMessage(getMsg.trim());
-                break;
+            if (dimParseResult.error) {
+                player.sendMessage(dimParseResult.error); return;
             }
-            case 'toggle': {
-                if (subArgs.length < 1) {
-                    player.sendMessage(getString('command.worldborder.toggle.usage', { prefix })); return;
-                }
-                const toggleState = subArgs[0].toLowerCase();
-                dimParseResult = parseDimensionArgument(subArgs[1], player, dependencies);
+            dimensionId = dimParseResult.dimensionId;
+            dimensionName = dimParseResult.dimensionName;
 
-                if (dimParseResult.error) {
-                    player.sendMessage(dimParseResult.error); return;
-                }
-                dimensionId = dimParseResult.dimensionId;
-                dimensionName = dimParseResult.dimensionName;
-
-                if (toggleState !== 'on' && toggleState !== 'off') {
-                    player.sendMessage(getString('command.worldborder.toggle.invalidState')); return;
-                }
-
-                borderSettings = wbManager.getBorderSettings(dimensionId, dependencies);
-                if (!borderSettings) {
-                    player.sendMessage(getString('command.worldborder.toggle.noBorder', { dimensionName })); return;
-                }
-
-                const newState = toggleState === 'on';
-                if (borderSettings.enabled === newState) {
-                    player.sendMessage(getString('command.worldborder.toggle.alreadyState', { dimensionName, state: toggleState }));
-                    return;
-                }
-                borderSettings.enabled = newState;
-                let resizeCancelledMessage = '';
-                if (!newState && borderSettings.isResizing) {
-                    borderSettings.isResizing = false;
-                    resizeCancelledMessage = ` ${ getString('command.worldborder.set.resizeCancelled')}`;
-                }
-
-                success = await wbManager.saveBorderSettings(dimensionId, borderSettings, dependencies); // Set success
-                if (success) {
-                    player.sendMessage(getString('command.worldborder.toggle.success', { dimensionName, state: toggleState, resizeCancelledMessage }));
-                    logManager?.addLog({ adminName, actionType: newState ? 'worldBorderEnabled' : 'worldBorderDisabled', targetName: dimensionName, details: `Border ${toggleState}` }, dependencies);
-                } else {
-                    player.sendMessage(getString('command.worldborder.toggle.fail'));
-                }
-                break;
+            if (shape !== 'square' && shape !== 'circle') {
+                player.sendMessage(getString('command.worldborder.set.invalidShape')); return;
             }
-            case 'remove': {
-                const confirmArg = subArgs[subArgs.length - 1]?.toLowerCase();
-                const dimArgIndex = subArgs.length > 1 ? 0 : -1;
-                dimParseResult = parseDimensionArgument(dimArgIndex !== -1 ? subArgs[dimArgIndex] : undefined, player, dependencies);
-
-                if (dimParseResult.error) {
-                    player.sendMessage(dimParseResult.error); return;
-                }
-                dimensionId = dimParseResult.dimensionId;
-                dimensionName = dimParseResult.dimensionName;
-
-                if (confirmArg !== 'confirm') {
-                    const dimDisplay = dimensionId === player.dimension.id ? getString('command.worldborder.remove.confirmNeeded.currentDimension', { dimensionName }) : dimensionName;
-                    player.sendMessage(getString('command.worldborder.remove.confirmNeeded', { dimensionDisplayName: dimDisplay, confirmCommand: `${prefix}wb remove ${dimensionId === player.dimension.id ? '' : `${dimensionName } `}confirm` }));
-                    return;
-                }
-                success = await wbManager.clearBorderSettings(dimensionId, dependencies); // Set success
-                if (success) {
-                    player.sendMessage(getString('command.worldborder.remove.success', { dimensionName, resizeCancelledMessage: ' Any active resize was also cancelled.' }));
-                    logManager?.addLog({ adminName, actionType: 'worldBorderRemoved', targetName: dimensionName, details: 'Border removed' }, dependencies);
-                } else {
-                    player.sendMessage(getString('command.worldborder.remove.fail', { dimensionName }));
-                }
-                break;
+            if (isNaN(centerX) || isNaN(centerZ) || isNaN(size)) {
+                player.sendMessage(getString('command.worldborder.set.invalidNumbers')); return;
             }
-            default:
-                player.sendMessage(getString('command.worldborder.invalidSubcommand', { subCommand, prefix }));
-                break;
+            if (size <= 0) {
+                player.sendMessage(getString('command.worldborder.set.sizePositive')); return;
+            }
+
+            const newSettings = {
+                dimensionId,
+                enabled: true,
+                shape,
+                centerX,
+                centerZ,
+                ...(wbManager.getBorderSettings(dimensionId, dependencies) || {}),
+                isResizing: false,
+            };
+            if (shape === 'square') {
+                newSettings.halfSize = size;
+            } else {
+                newSettings.radius = size;
+            }
+
+            success = await wbManager.saveBorderSettings(dimensionId, newSettings, dependencies); // Set success
+            if (success) {
+                let message = `${getString('command.worldborder.set.successHeader', { dimensionName }) }\n`;
+                const sizeDisplay = shape === 'square' ? `${size} (Diameter: ${size * 2})` : `${size}`;
+                message += `${getString('command.worldborder.set.successDetails', { shape, centerX: centerX.toString(), centerZ: centerZ.toString(), sizeDisplay }) }\n`;
+                const damageStatus = newSettings.enableDamage
+                    ? getString('command.worldborder.set.damage.on', { damageAmount: (newSettings.damageAmount ?? defaultWbDamageAmount).toString(), damageIntervalTicks: (newSettings.damageIntervalTicks ?? defaultWbDamageIntervalTicks).toString(), teleportAfterNumDamageEvents: (newSettings.teleportAfterNumDamageEvents ?? defaultWbTeleportAfterDamageEvents).toString() })
+                    : getString('command.worldborder.set.damage.off');
+                message += getString('command.worldborder.set.successDamage', { damageStatus });
+                if (newSettings.wasResizing) {
+                    message += `\n${ getString('command.worldborder.set.resizeCancelled')}`;
+                }
+
+                player.sendMessage(message);
+                logManager?.addLog({ adminName, actionType: 'worldBorderSet', targetName: dimensionName, details: `Set to ${shape}, C:(${centerX},${centerZ}), Size:${size}` }, dependencies);
+            } else {
+                player.sendMessage(getString('command.worldborder.set.failSave'));
+            }
+            break;
+        }
+        case 'get': {
+            dimParseResult = parseDimensionArgument(subArgs[0], player, dependencies);
+            if (dimParseResult.error) {
+                player.sendMessage(dimParseResult.error); return;
+            }
+            dimensionId = dimParseResult.dimensionId;
+            dimensionName = dimParseResult.dimensionName;
+
+            borderSettings = wbManager.getBorderSettings(dimensionId, dependencies);
+            if (!borderSettings || !borderSettings.enabled) {
+                player.sendMessage(getString('command.worldborder.get.noBorder', { dimensionName, prefix }));
+                return;
+            }
+            let getMsg = `${getString('command.worldborder.get.header', { dimensionName }) }\n`;
+            getMsg += `${getString('command.worldborder.get.enabled', { status: borderSettings.enabled ? getString('common.boolean.yes') : getString('common.boolean.no') }) }\n`;
+            getMsg += `${getString('command.worldborder.get.shape', { shape: borderSettings.shape }) }\n`;
+            getMsg += `${getString('command.worldborder.get.center', { centerX: borderSettings.centerX.toString(), centerZ: borderSettings.centerZ.toString() }) }\n`;
+            if (borderSettings.shape === 'square') {
+                const diameter = (borderSettings.halfSize ?? 0) * 2;
+                getMsg += `${getString('command.worldborder.get.square.halfSize', { halfSize: (borderSettings.halfSize ?? 0).toString(), diameter: diameter.toString() }) }\n`;
+                const minX = borderSettings.centerX - (borderSettings.halfSize ?? 0);
+                const maxX = borderSettings.centerX + (borderSettings.halfSize ?? 0);
+                const minZ = borderSettings.centerZ - (borderSettings.halfSize ?? 0);
+                const maxZ = borderSettings.centerZ + (borderSettings.halfSize ?? 0);
+                getMsg += `${getString('command.worldborder.get.square.bounds', { minX: minX.toString(), maxX: maxX.toString(), minZ: minZ.toString(), maxZ: maxZ.toString() }) }\n`;
+            } else {
+                getMsg += `${getString('command.worldborder.get.circle.radius', { radius: (borderSettings.radius ?? 0).toString() }) }\n`;
+            }
+            player.sendMessage(getMsg.trim());
+            break;
+        }
+        case 'toggle': {
+            if (subArgs.length < 1) {
+                player.sendMessage(getString('command.worldborder.toggle.usage', { prefix })); return;
+            }
+            const toggleState = subArgs[0].toLowerCase();
+            dimParseResult = parseDimensionArgument(subArgs[1], player, dependencies);
+
+            if (dimParseResult.error) {
+                player.sendMessage(dimParseResult.error); return;
+            }
+            dimensionId = dimParseResult.dimensionId;
+            dimensionName = dimParseResult.dimensionName;
+
+            if (toggleState !== 'on' && toggleState !== 'off') {
+                player.sendMessage(getString('command.worldborder.toggle.invalidState')); return;
+            }
+
+            borderSettings = wbManager.getBorderSettings(dimensionId, dependencies);
+            if (!borderSettings) {
+                player.sendMessage(getString('command.worldborder.toggle.noBorder', { dimensionName })); return;
+            }
+
+            const newState = toggleState === 'on';
+            if (borderSettings.enabled === newState) {
+                player.sendMessage(getString('command.worldborder.toggle.alreadyState', { dimensionName, state: toggleState }));
+                return;
+            }
+            borderSettings.enabled = newState;
+            let resizeCancelledMessage = '';
+            if (!newState && borderSettings.isResizing) {
+                borderSettings.isResizing = false;
+                resizeCancelledMessage = ` ${ getString('command.worldborder.set.resizeCancelled')}`;
+            }
+
+            success = await wbManager.saveBorderSettings(dimensionId, borderSettings, dependencies); // Set success
+            if (success) {
+                player.sendMessage(getString('command.worldborder.toggle.success', { dimensionName, state: toggleState, resizeCancelledMessage }));
+                logManager?.addLog({ adminName, actionType: newState ? 'worldBorderEnabled' : 'worldBorderDisabled', targetName: dimensionName, details: `Border ${toggleState}` }, dependencies);
+            } else {
+                player.sendMessage(getString('command.worldborder.toggle.fail'));
+            }
+            break;
+        }
+        case 'remove': {
+            const confirmArg = subArgs[subArgs.length - 1]?.toLowerCase();
+            const dimArgIndex = subArgs.length > 1 ? 0 : -1;
+            dimParseResult = parseDimensionArgument(dimArgIndex !== -1 ? subArgs[dimArgIndex] : undefined, player, dependencies);
+
+            if (dimParseResult.error) {
+                player.sendMessage(dimParseResult.error); return;
+            }
+            dimensionId = dimParseResult.dimensionId;
+            dimensionName = dimParseResult.dimensionName;
+
+            if (confirmArg !== 'confirm') {
+                const dimDisplay = dimensionId === player.dimension.id ? getString('command.worldborder.remove.confirmNeeded.currentDimension', { dimensionName }) : dimensionName;
+                player.sendMessage(getString('command.worldborder.remove.confirmNeeded', { dimensionDisplayName: dimDisplay, confirmCommand: `${prefix}wb remove ${dimensionId === player.dimension.id ? '' : `${dimensionName } `}confirm` }));
+                return;
+            }
+            success = await wbManager.clearBorderSettings(dimensionId, dependencies); // Set success
+            if (success) {
+                player.sendMessage(getString('command.worldborder.remove.success', { dimensionName, resizeCancelledMessage: ' Any active resize was also cancelled.' }));
+                logManager?.addLog({ adminName, actionType: 'worldBorderRemoved', targetName: dimensionName, details: 'Border removed' }, dependencies);
+            } else {
+                player.sendMessage(getString('command.worldborder.remove.fail', { dimensionName }));
+            }
+            break;
+        }
+        default:
+            player.sendMessage(getString('command.worldborder.invalidSubcommand', { subCommand, prefix }));
+            break;
         }
         if (success || ['get', 'status', 'help'].includes(subCommand)) {
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);

@@ -229,7 +229,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
      */
-generateOnlinePlayerItems: (player, dependencies) => {
+    generateOnlinePlayerItems: (player, dependencies) => {
         const { mc, playerDataManager } = dependencies;
         const items = [];
         const onlinePlayers = mc.world.getAllPlayers();
@@ -516,24 +516,24 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
     const originalValue = config[keyName]; // This is the live value from config, which is what we want to compare against.
     // context.currentValue is what was displayed on the list, which is also the original value.
     switch (keyType) {
-        case 'boolean':
-            modal.toggle(`New value for ${keyName}:`, typeof context.currentValue === 'boolean' ? context.currentValue : false);
-            break;
-        case 'number':
-            modal.textField(`New value for ${keyName} (number):`, String(context.currentValue ?? '0'));
-            break;
-        case 'string':
-            modal.textField(`New value for ${keyName} (string):`, String(context.currentValue ?? ''));
-            break;
-        case 'arrayString': // Represents a simple array to be edited as a JSON string
-            modal.textField(`New value for ${keyName} (JSON array string, e.g., ["a","b",1]):`, JSON.stringify(context.currentValue ?? []));
-            break;
-        default:
-            player.sendMessage(`§cError: Unsupported config type "${keyType}" for UI editing of key "${keyName}".`);
-            if (parentPanelForEdit) {
-                await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit);
-            }
-            return;
+    case 'boolean':
+        modal.toggle(`New value for ${keyName}:`, typeof context.currentValue === 'boolean' ? context.currentValue : false);
+        break;
+    case 'number':
+        modal.textField(`New value for ${keyName} (number):`, String(context.currentValue ?? '0'));
+        break;
+    case 'string':
+        modal.textField(`New value for ${keyName} (string):`, String(context.currentValue ?? ''));
+        break;
+    case 'arrayString': // Represents a simple array to be edited as a JSON string
+        modal.textField(`New value for ${keyName} (JSON array string, e.g., ["a","b",1]):`, JSON.stringify(context.currentValue ?? []));
+        break;
+    default:
+        player.sendMessage(`§cError: Unsupported config type "${keyType}" for UI editing of key "${keyName}".`);
+        if (parentPanelForEdit) {
+            await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit);
+        }
+        return;
     }
     try {
         const response = await modal.show(player);
@@ -543,48 +543,48 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
         const newValue = response.formValues[0];
         let updateSuccess = false;
         switch (keyType) {
-            case 'boolean': config[keyName] = !!newValue; updateSuccess = true; break;
-            case 'number': {
-                const numVal = parseFloat(newValue);
-                if (!isNaN(numVal)) {
-                    config[keyName] = numVal;
-                    updateSuccess = true;
-                    player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
-                    logManager?.addLog({ adminName: player.nameTag, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
-                    await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
-                } else {
-                    player.sendMessage('§cError: Invalid number entered. Please try again.');
-                    // Re-show the same edit form instead of going back to the list.
-                    // The current context already contains keyName, keyType, parentPanelForEdit, etc.
-                    // We need to ensure 'currentValue' in context reflects the *original* value for placeholder, not the bad input.
-                    // The 'context' object was passed in and shouldn't have been mutated by the bad input.
-                    await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context);
-                    return; // Important to prevent falling through to showConfigCategoriesList
-                }
-                break;
-            }
-            case 'string':
-                config[keyName] = String(newValue);
+        case 'boolean': config[keyName] = !!newValue; updateSuccess = true; break;
+        case 'number': {
+            const numVal = parseFloat(newValue);
+            if (!isNaN(numVal)) {
+                config[keyName] = numVal;
                 updateSuccess = true;
-                // For strings, success message and navigation handled below to keep it DRY
-                break;
-            case 'arrayString':
-                try {
-                    const parsedArray = JSON.parse(newValue);
-                    if (Array.isArray(parsedArray) && parsedArray.every(el => typeof el === 'string' || typeof el === 'number' || typeof el === 'boolean')) {
-                        config[keyName] = parsedArray;
-                        updateSuccess = true;
-                    } else {
-                        player.sendMessage('§cError: Invalid input. Value must be a valid JSON array of strings, numbers, or booleans (e.g., ["a", "b", 123, true]). Please try again.');
-                        await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
-                        return;
-                    }
-                } catch (parseError) {
-                    player.sendMessage(`§cError: Invalid JSON format for array: ${parseError.message}. Please try again.`);
+                player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
+                logManager?.addLog({ adminName: player.nameTag, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
+                await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
+            } else {
+                player.sendMessage('§cError: Invalid number entered. Please try again.');
+                // Re-show the same edit form instead of going back to the list.
+                // The current context already contains keyName, keyType, parentPanelForEdit, etc.
+                // We need to ensure 'currentValue' in context reflects the *original* value for placeholder, not the bad input.
+                // The 'context' object was passed in and shouldn't have been mutated by the bad input.
+                await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context);
+                return; // Important to prevent falling through to showConfigCategoriesList
+            }
+            break;
+        }
+        case 'string':
+            config[keyName] = String(newValue);
+            updateSuccess = true;
+            // For strings, success message and navigation handled below to keep it DRY
+            break;
+        case 'arrayString':
+            try {
+                const parsedArray = JSON.parse(newValue);
+                if (Array.isArray(parsedArray) && parsedArray.every(el => typeof el === 'string' || typeof el === 'number' || typeof el === 'boolean')) {
+                    config[keyName] = parsedArray;
+                    updateSuccess = true;
+                } else {
+                    player.sendMessage('§cError: Invalid input. Value must be a valid JSON array of strings, numbers, or booleans (e.g., ["a", "b", 123, true]). Please try again.');
                     await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
                     return;
                 }
-                break;
+            } catch (parseError) {
+                player.sendMessage(`§cError: Invalid JSON format for array: ${parseError.message}. Please try again.`);
+                await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
+                return;
+            }
+            break;
         }
 
         if (updateSuccess) { // Common success handling for boolean, string, arrayString
@@ -683,7 +683,7 @@ async function confirmLagClearImpl(player, dependencies) {
         if (lagClearCommand) {
             await lagClearCommand(player, [], dependencies);
         } else {
-            player.sendMessage("§eNo 'lagclear' command configured. Performing basic item clear as fallback.");
+            player.sendMessage('§eNo \'lagclear\' command configured. Performing basic item clear as fallback.');
             try {
                 await player.runCommandAsync('kill @e[type=item]');
                 player.sendMessage('§aSuccess: Ground items cleared.');
@@ -1430,7 +1430,7 @@ const UI_ACTION_FUNCTIONS = {
             // The originalContext should be the context of the panel we are returning to.
             await showPanel(player, originalPanelId, dependencies, originalContext || {});
         } else {
-            playerUtils.debugLog(`Cannot return to original panel: originalPanelId missing from context.`, player.nameTag, dependencies);
+            playerUtils.debugLog('Cannot return to original panel: originalPanelId missing from context.', player.nameTag, dependencies);
             player.sendMessage('§cError: Could not determine panel to return to.');
             // Fallback to a default panel if necessary, though this indicates a setup error.
             // For user panels, mainUserPanel is a safe bet.
@@ -1496,7 +1496,7 @@ const UI_ACTION_FUNCTIONS = {
         const { playerUtils, config, getString, mc, logManager, playerDataManager, reportManager } = dependencies;
         const viewingPlayerName = player.nameTag;
         playerUtils?.debugLog(`[UiManager.displaySystemInfoModal] Requested by ${viewingPlayerName}`, viewingPlayerName, dependencies);
-        let infoText = `§g--- System Information ---\n§r`;
+        let infoText = '§g--- System Information ---\n§r';
         infoText += `AntiCheat Version: §e${config.addonVersion}\n`;
         infoText += `Server Time: §e${new Date().toLocaleTimeString()}\n`;
         infoText += `Current Game Tick: §e${mc.system.currentTick}\n`;

@@ -11,6 +11,7 @@ export default [
             'package-lock.json',
             '.gitignore',
             'Dev/',
+            'AntiCheatsRP/font/'
         ],
     },
     {
@@ -29,7 +30,23 @@ export default [
         rules: {
             ...eslintJs.configs.recommended.rules,
             'semi': ['error', 'always'],
+            'no-unused-vars': 'warn',
+            'no-undef': 'error',
+            'no-console': 'warn',
+            'quotes': ['error', 'single'],
+            'no-trailing-spaces': 'error',
+            'indent': ['error', 4],
+            'comma-dangle': ['error', 'always-multiline'],
+            'object-curly-spacing': ['error', 'always'],
         },
     },
     ...eslintPluginJsonc.configs['flat/recommended-with-jsonc'],
+    {
+        files: ['**/*.json'],
+        rules: {
+            'jsonc/indent': ['error', 4],
+            'jsonc/object-curly-spacing': ['error', 'always'],
+            'jsonc/array-bracket-spacing': ['error', 'never'],
+        },
+    },
 ];

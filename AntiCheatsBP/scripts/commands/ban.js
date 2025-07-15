@@ -122,7 +122,7 @@ export function execute(
             player.sendMessage(successMessage);
             playerUtils.playSoundForEvent(player, 'commandSuccess', dependencies);
         } else {
-            console.log(`[BanCommand.execute] ${successMessage.replace(/§[a-f0-9]/g, '')}`);
+            // console.log(`[BanCommand.execute] ${successMessage.replace(/§[a-f0-9]/g, '')}`);
         }
 
         const targetPData = playerDataManager?.getPlayerData(targetOnlinePlayer.id);

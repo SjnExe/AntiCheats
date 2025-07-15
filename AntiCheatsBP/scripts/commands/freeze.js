@@ -91,40 +91,40 @@ export function execute(
     let targetFreezeState;
 
     switch (subCommand) {
-        case 'on':
-        case 'lock':
-            targetFreezeState = true;
-            break;
-        case 'off':
-        case 'unlock':
-            targetFreezeState = false;
-            break;
-        case 'toggle':
-            if (invokedBy !== 'PlayerCommand') { // System/AutoMod should specify on/off
-                console.warn(`[FreezeCommand.execute] ${issuerName} call used 'toggle'. Defaulting to 'on' if not frozen, 'off' if frozen.`);
-                targetFreezeState = !currentFreezeState; // Still allow toggle for safety but log warning
-            } else {
-                targetFreezeState = !currentFreezeState;
-            }
-            break;
-        case 'status': {
-            if (player) { // Status is only for player query
-                const statusMessage = currentFreezeState ?
-                    getString('command.freeze.status.isFrozen', { playerName: targetPlayer.nameTag }) :
-                    getString('command.freeze.status.notFrozen', { playerName: targetPlayer.nameTag });
-                player.sendMessage(statusMessage);
-            } else {
-                console.warn(`[FreezeCommand.execute] ${issuerName} call attempted 'status' subcommand.`);
-            }
-            return;
+    case 'on':
+    case 'lock':
+        targetFreezeState = true;
+        break;
+    case 'off':
+    case 'unlock':
+        targetFreezeState = false;
+        break;
+    case 'toggle':
+        if (invokedBy !== 'PlayerCommand') { // System/AutoMod should specify on/off
+            console.warn(`[FreezeCommand.execute] ${issuerName} call used 'toggle'. Defaulting to 'on' if not frozen, 'off' if frozen.`);
+            targetFreezeState = !currentFreezeState; // Still allow toggle for safety but log warning
+        } else {
+            targetFreezeState = !currentFreezeState;
         }
-        default:
-            if (player) {
-                player.sendMessage(getString('command.freeze.invalidArg'));
-            } else {
-                console.warn(`[FreezeCommand.execute] ${issuerName} call with invalid subcommand: ${subCommand}`);
-            }
-            return;
+        break;
+    case 'status': {
+        if (player) { // Status is only for player query
+            const statusMessage = currentFreezeState ?
+                getString('command.freeze.status.isFrozen', { playerName: targetPlayer.nameTag }) :
+                getString('command.freeze.status.notFrozen', { playerName: targetPlayer.nameTag });
+            player.sendMessage(statusMessage);
+        } else {
+            console.warn(`[FreezeCommand.execute] ${issuerName} call attempted 'status' subcommand.`);
+        }
+        return;
+    }
+    default:
+        if (player) {
+            player.sendMessage(getString('command.freeze.invalidArg'));
+        } else {
+            console.warn(`[FreezeCommand.execute] ${issuerName} call with invalid subcommand: ${subCommand}`);
+        }
+        return;
     }
 
     if (targetFreezeState === true && !currentFreezeState) {
@@ -139,7 +139,7 @@ export function execute(
                 player.sendMessage(successMsg);
                 playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
             } else {
-                console.log(`[FreezeCommand] ${successMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
+                // console.log(`[FreezeCommand] ${successMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
             }
 
             if (config?.notifyOnAdminUtilCommandUsage !== false && invokedBy === 'PlayerCommand') {
@@ -182,7 +182,7 @@ export function execute(
                 player.sendMessage(successMsg);
                 playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
             } else {
-                console.log(`[FreezeCommand] ${successMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
+                // console.log(`[FreezeCommand] ${successMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
             }
 
             if (config?.notifyOnAdminUtilCommandUsage !== false && invokedBy === 'PlayerCommand') {

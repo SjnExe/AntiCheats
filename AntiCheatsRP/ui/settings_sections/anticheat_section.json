@@ -1,28 +1,28 @@
 {
-  "anticheat_section": {
-    "type": "panel",
-    "size": [
-      "100%",
-      "100%cm"
-    ],
-    "controls": [
-      {
-        "title@world_section.level_seed_selector": {
-          "type": "label",
-          "text": "AntiCheats Settings",
-          "color": [
-            0.6,
-            0.6,
-            0.6
-          ],
-          "anchor_from": "top_left",
-          "anchor_to": "top_left",
-          "offset": [
-            0,
-            0
-          ]
-        }
-      }
-    ]
-  }
+    "anticheat_section": {
+        "type": "panel",
+        "size": [
+            "100%",
+            "100%cm"
+        ],
+        "controls": [
+            {
+                "title@world_section.level_seed_selector": {
+                    "type": "label",
+                    "text": "AntiCheats Settings",
+                    "color": [
+                        0.6,
+                        0.6,
+                        0.6
+                    ],
+                    "anchor_from": "top_left",
+                    "anchor_to": "top_left",
+                    "offset": [
+                        0,
+                        0
+                    ]
+                }
+            }
+        ]
+    }
 }

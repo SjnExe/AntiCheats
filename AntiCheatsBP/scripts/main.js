@@ -447,7 +447,7 @@ async function processPlayer(player, dependencies) {
  * @param {import('./types.js').Dependencies} dependencies
  */
 async function handlePeriodicDataPersistence(allPlayers, dependencies) {
-    dependencies.playerUtils.debugLog(`Performing periodic data persistence.`, 'System', dependencies);
+    dependencies.playerUtils.debugLog('Performing periodic data persistence.', 'System', dependencies);
     for (const player of allPlayers) {
         if (!player.isValid()) {
             continue;
@@ -493,7 +493,7 @@ function attemptInitializeSystem(retryCount = 0) {
         const tempStartupDepsForLog = getStandardDependencies();
         validateDependencies(tempStartupDepsForLog, `attemptInitializeSystem - pre-check - attempt ${retryCount}`);
 
-        console.log(`[${mainModuleName}] APIs ready, initializing...`);
+        // console.log(`[${mainModuleName}] APIs ready, initializing...`);
         performInitializations();
     } catch (e) {
         const delay = initialRetryDelayTicks * Math.pow(2, retryCount);

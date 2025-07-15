@@ -57,7 +57,7 @@ export function execute(
             player.sendMessage(usageMessage);
         } else {
             console.warn(`[KickCommand.execute] System call missing arguments. Usage: ${prefix}${definition.name} ${definition.syntax}`);
-            playerUtils?.debugLog(`[KickCommand.execute] System call missing target player name.`, null, dependencies);
+            playerUtils?.debugLog('[KickCommand.execute] System call missing target player name.', null, dependencies);
         }
         return;
     }
@@ -98,7 +98,7 @@ export function execute(
             player.sendMessage(successMessage);
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
         } else {
-            console.log(`[KickCommand] ${successMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
+            // console.log(`[KickCommand] ${successMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
         }
 
         const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);

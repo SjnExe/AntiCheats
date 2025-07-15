@@ -118,7 +118,7 @@ export function execute(
             player.sendMessage(successMessage);
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
         } else {
-            console.log(`[UnbanCommand] ${successMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
+            // console.log(`[UnbanCommand] ${successMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
         }
 
         const logDetails = programmaticUnbanReason
