@@ -363,12 +363,27 @@ function attemptInitializeSystem(retryCount = 0) {
         performInitializations();
     } catch (e) {
         const delay = initialRetryDelayTicks * Math.pow(2, retryCount);
-        console.warn(`[Main] Initialization failed. Retrying in ${delay / 20}s. Attempt ${retryCount + 1}/${maxInitRetries}. Error: ${e.message}`);
+        const errorMessage = `[Main] Initialization failed. Retrying in ${delay / 20}s. Attempt ${retryCount + 1}/${maxInitRetries}. Error: ${e.message}`;
+        const dependencies = dependencyManager.getDependenciesUnsafe();
+        if (dependencies) {
+            dependencies.playerUtils.debugLog(errorMessage, 'SystemError', dependencies);
+            addLog({ actionType: 'error.main.initialization.retry', context: 'Main.attemptInitializeSystem', details: { message: e.message, stack: e.stack, retryCount: retryCount + 1 } }, dependencies);
+        } else {
+            console.warn(errorMessage); // Fallback if dependencies not available
+        }
+
 
         if (retryCount < maxInitRetries) {
             system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            console.error('[Main] CRITICAL: MAX RETRIES REACHED. System will not initialize.');
+            const criticalErrorMsg = '[Main] CRITICAL: MAX RETRIES REACHED. System will not initialize.';
+            if (dependencies) {
+                dependencies.playerUtils.debugLog(criticalErrorMsg, 'SystemCritical', dependencies);
+                addLog({ actionType: 'error.main.initialization.critical', context: 'Main.attemptInitializeSystem', details: { message: 'Max retries reached', retryCount: retryCount + 1 } }, dependencies);
+                dependencies.playerUtils.notifyAdmins(criticalErrorMsg, 'SystemCritical', dependencies, true);
+            } else {
+                console.error(criticalErrorMsg); // Fallback
+            }
         }
     }
 }
