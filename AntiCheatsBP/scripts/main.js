@@ -71,8 +71,8 @@ function performInitializations() {
     initializeModules(dependencies);
     validateConfigurations(dependencies);
 
-    world.sendMessage({ translate: 'system.core.initialized', with: { version: configModule.acVersion } });
-    dependencies.playerUtils.debugLog(`[Main] Anti-Cheat Core System Initialized. Tick loop active.`, 'System', dependencies);
+    world.sendMessage({ 'translate': 'system.core.initialized', 'with': { 'version': configModule.acVersion } });
+    dependencies.playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Tick loop active.', 'System', dependencies);
 
     system.runInterval(() => mainTick(), 1);
     system.runInterval(() => tpaTick(), TPA_SYSTEM_TICK_INTERVAL);
@@ -82,6 +82,7 @@ function performInitializations() {
  * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
 function subscribeToEvents(dependencies) {
+    const mainModuleName = 'CoreSystem';
     dependencies.playerUtils.debugLog(`[${mainModuleName}] Subscribing to events...`, 'System', dependencies);
 
     world.beforeEvents.chatSend.subscribe(async (eventData) => {
@@ -94,27 +95,27 @@ function subscribeToEvents(dependencies) {
     });
 
     const beforeEventSubscriptions = {
-        'playerBreakBlock': handlePlayerBreakBlockBeforeEvent,
-        'itemUse': handleItemUse,
-        'playerPlaceBlock': handlePlayerPlaceBlockBefore,
+        playerBreakBlock: handlePlayerBreakBlockBeforeEvent,
+        itemUse: handleItemUse,
+        playerPlaceBlock: handlePlayerPlaceBlockBefore,
     };
 
     const afterEventSubscriptions = {
-        'playerSpawn': handlePlayerSpawn,
-        'playerLeave': handlePlayerLeave,
-        'entityHurt': handleEntityHurt,
-        'playerBreakBlock': handlePlayerBreakBlockAfterEvent,
-        'playerPlaceBlock': handlePlayerPlaceBlockAfterEvent,
-        'playerDimensionChange': handlePlayerDimensionChangeAfterEvent,
-        'playerDeath': (eventData) => handlePlayerDeath(eventData, dependencies),
-        'entityDie': (eventData) => {
+        playerSpawn: handlePlayerSpawn,
+        playerLeave: handlePlayerLeave,
+        entityHurt: handleEntityHurt,
+        playerBreakBlock: handlePlayerBreakBlockAfterEvent,
+        playerPlaceBlock: handlePlayerPlaceBlockAfterEvent,
+        playerDimensionChange: handlePlayerDimensionChangeAfterEvent,
+        playerDeath: (eventData) => handlePlayerDeath(eventData, dependencies),
+        entityDie: (eventData) => {
             if (dependencies.config.enableDeathEffects) {
                 handleEntityDieForDeathEffects(eventData, dependencies);
             }
         },
-        'entitySpawn': handleEntitySpawnEventAntiGrief,
-        'pistonActivate': handlePistonActivateAntiGrief,
-        'playerInventorySlotChange': (eventData) => handleInventoryItemChange(eventData.player, eventData.itemStack, eventData.previousItemStack, eventData.slot, dependencies),
+        entitySpawn: handleEntitySpawnEventAntiGrief,
+        pistonActivate: handlePistonActivateAntiGrief,
+        playerInventorySlotChange: (eventData) => handleInventoryItemChange(eventData.player, eventData.itemStack, eventData.previousItemStack, eventData.slot, dependencies),
     };
 
     for (const eventName in beforeEventSubscriptions) {
@@ -130,6 +131,7 @@ function subscribeToEvents(dependencies) {
  * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
 function initializeModules(dependencies) {
+    const mainModuleName = 'CoreSystem';
     dependencies.playerUtils.debugLog(`[${mainModuleName}] Initializing modules...`, 'System', dependencies);
 
     initializeCommands(dependencies);
@@ -148,6 +150,7 @@ function initializeModules(dependencies) {
  * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
 function validateConfigurations(dependencies) {
+    const mainModuleName = 'CoreSystem';
     dependencies.playerUtils.debugLog(`[${mainModuleName}] Validating configurations...`, 'System', dependencies);
     const allValidationErrors = [];
     const knownCommands = getAllRegisteredCommandNames();
@@ -181,28 +184,25 @@ function validateConfigurations(dependencies) {
 /**
  * Processes all tasks for a single system tick.
  */
-function mainTick() {
+async function mainTick() {
     if (isTickLoopRunning) {
-        // console.log('Tick loop is already running, skipping.');
+        // console.warn('[MainTick] Tick processing is overlapping.');
         return;
     }
     isTickLoopRunning = true;
-
-    system.runJob(
-        (async function* () {
-            try {
-                yield* mainTickGenerator();
-            } finally {
-                isTickLoopRunning = false;
-            }
-        })()
-    );
+    try {
+        await processTick();
+    } catch (e) {
+        console.error(`[MainTick] Unhandled error in tick processing: ${e?.message}\n${e?.stack}`);
+    } finally {
+        isTickLoopRunning = false;
+    }
 }
 
 /**
- * Generator function for the main tick loop.
+ * Processes a single tick of the main loop.
  */
-async function* mainTickGenerator() {
+async function processTick() {
     const dependencies = dependencyManager.getDependencies();
     dependencyManager.updateCurrentTick(dependencies.currentTick + 1);
 
@@ -219,12 +219,10 @@ async function* mainTickGenerator() {
     cleanupActivePlayerData(allPlayers, dependencies);
 
     for (const player of allPlayers) {
-        yield; // Yield to the next iteration of the generator
         await processPlayer(player, dependencies, dependencies.currentTick);
     }
 
     if (dependencies.currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
-        yield; // Yield before this potentially long-running task
         await handlePeriodicDataPersistence(allPlayers, dependencies);
     }
 }
@@ -370,7 +368,7 @@ function attemptInitializeSystem(retryCount = 0) {
         if (retryCount < maxInitRetries) {
             system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            console.error(`[Main] CRITICAL: MAX RETRIES REACHED. System will not initialize.`);
+            console.error('[Main] CRITICAL: MAX RETRIES REACHED. System will not initialize.');
         }
     }
 }
