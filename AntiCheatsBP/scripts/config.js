@@ -28,7 +28,7 @@ const defaultConfigSettings = {
         /** @type {number} Interval in game ticks to log performance profile data if enabled. Default: 1200 (60 seconds). */
         logPerformanceProfileIntervalTicks: 1200,
         /** @type {number} Number of ticks to stagger checks over. Higher numbers reduce tick load but increase detection time. 1 = no stagger. */
-        checkStaggerTicks: 1,
+        checkStaggerTicks: 5,
     },
 
     /** @type {object} Settings related to player status effects and tags. */
@@ -301,28 +301,35 @@ Rule 6: Have fun and contribute to a positive community!`,
 
     /** @type {object} Master toggles for various check categories. */
     checks: {
-        reach: { enabled: false, intervalTicks: 1 },
-        cps: { enabled: false, intervalTicks: 1 },
-        viewSnap: { enabled: false, intervalTicks: 1 },
-        multiTarget: { enabled: false, intervalTicks: 1 },
-        stateConflict: { enabled: false, intervalTicks: 1 },
-        fly: { enabled: false, intervalTicks: 1 },
-        speed: { enabled: false, intervalTicks: 1 },
-        nofall: { enabled: false, intervalTicks: 1 },
-        nuker: { enabled: false, intervalTicks: 1 },
-        illegalItem: { enabled: false, intervalTicks: 1 },
-        selfHurt: { enabled: false, intervalTicks: 1 },
-        netherRoof: { enabled: false, intervalTicks: 20 },
-        noSlow: { enabled: false, intervalTicks: 1 },
-        invalidSprint: { enabled: false, intervalTicks: 1 },
-        autoTool: { enabled: false, intervalTicks: 1 },
-        instaBreak: { enabled: false, intervalTicks: 1 },
-        nameSpoof: { enabled: false, intervalTicks: 100 },
+        // Combat
+        reach: { enabled: false, intervalTicks: 4 }, // Frequent, but not every tick
+        cps: { enabled: false, intervalTicks: 20 }, // Measured over 1 second (20 ticks)
+        viewSnap: { enabled: false, intervalTicks: 5 },
+        multiTarget: { enabled: false, intervalTicks: 5 },
+        selfHurt: { enabled: false, intervalTicks: 4 },
+        autoTool: { enabled: false, intervalTicks: 10 },
+
+        // Movement
+        fly: { enabled: false, intervalTicks: 2 }, // High frequency needed
+        speed: { enabled: false, intervalTicks: 2 }, // High frequency needed
+        nofall: { enabled: false, intervalTicks: 2 },
+        noSlow: { enabled: false, intervalTicks: 2 },
+        invalidSprint: { enabled: false, intervalTicks: 4 },
+        tower: { enabled: false, intervalTicks: 2 },
+        netherRoof: { enabled: false, intervalTicks: 40 }, // Low frequency is fine
+
+        // World
+        nuker: { enabled: false, intervalTicks: 5 },
+        instaBreak: { enabled: false, intervalTicks: 2 },
+        fastPlace: { enabled: false, intervalTicks: 2 },
+        fastUse: { enabled: false, intervalTicks: 2 },
+
+        // Player
+        illegalItem: { enabled: false, intervalTicks: 100 }, // Infrequent check is okay
+        nameSpoof: { enabled: false, intervalTicks: 200 }, // Very infrequent check
+        stateConflict: { enabled: false, intervalTicks: 10 },
         antiGmc: { enabled: false, intervalTicks: 40 },
-        inventoryMod: { enabled: false, intervalTicks: 1 },
-        tower: { enabled: false, intervalTicks: 1 },
-        fastUse: { enabled: false, intervalTicks: 1 },
-        fastPlace: { enabled: false, intervalTicks: 1 },
+        inventoryMod: { enabled: false, intervalTicks: 20 },
     },
 };
 
