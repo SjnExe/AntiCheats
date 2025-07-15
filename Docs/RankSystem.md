@@ -35,8 +35,7 @@ This file allows you to define an array of `rankDefinitions`. Each definition ty
 *   `name` (string): A user-friendly display name (e.g., "Owner", "Administrator", "VIP", "Member").
 *   `permissionLevel` (number): A numeric level determining privileges. **Lower numbers mean higher privileges** (e.g., Owner = 0, Admin = 1, Member = 1024). This is crucial for command access and feature usage.
 *   `chatFormatting` (object, optional): Customizes how chat messages from players with this rank appear.
-    *   `prefixText` (string): Text before the player's name (e.g., "§c[Owner] ").
-    *   `prefixColor` (string): Color code for the prefix.
+    *   `prefixText` (string): Text before the player's name (e.g., "§8[§cOwner§8] ").
     *   `nameColor` (string): Color code for the player's name.
     *   `messageColor` (string): Color code for the actual message content.
     *   Defaults are provided in `ranksConfig.js` if not specified per rank.
@@ -47,8 +46,10 @@ This file allows you to define an array of `rankDefinitions`. Each definition ty
     *   `type: 'tag', tag: 'your_custom_tag'`: Matches if the player has the specified custom tag.
     *   `type: 'manualTagPrefix', prefix: 'rank_'`: Matches if the player has a tag like `rank_vip` (where `vip` is the rank `id`).
     *   `type: 'default'`: A fallback, typically used for the base "Member" rank.
-*   `priority` (number): Determines which rank applies if a player meets conditions for multiple ranks. **Lower numbers have higher priority.**
-*   `assignableBy` (number, optional): The permission level required for another player (e.g., an Admin) to assign or remove this rank using commands like `!addrank` or `!removerank`.
+*   `assignableBy` (number, optional): The permission level required for another player (e.g., an Admin) to assign or remove this rank using commands like `!rank add` or `!rank remove`.
+
+### Rank Precedence
+If a player meets the conditions for multiple ranks, the rank with the **lowest `permissionLevel` number** (which signifies the highest privilege) will be considered their primary rank. This primary rank determines their command permissions, chat formatting, and nametag prefix.
 
 ### Example Structure (Conceptual from `ranksConfig.js`):
 ```javascript
@@ -58,7 +59,6 @@ export const rankDefinitions = [
         name: 'Owner',
         permissionLevel: 0,
         conditions: [{ type: 'ownerName' }],
-        priority: 0,
         // ... other properties
     },
     {
@@ -66,7 +66,6 @@ export const rankDefinitions = [
         name: 'Admin',
         permissionLevel: 1,
         conditions: [{ type: 'adminTag' }],
-        priority: 10,
         assignableBy: 0,
         // ... other properties
     },
@@ -77,7 +76,6 @@ export const rankDefinitions = [
     //     permissionLevel: 100,
     //     chatFormatting: { prefixText: '§a[Mod] ', nameColor: '§a' },
     //     conditions: [{ type: 'tag', tag: 'mod_rank' }],
-    //     priority: 50,
     //     assignableBy: 1, // Admins can assign Mod
     // },
     {
@@ -85,7 +83,6 @@ export const rankDefinitions = [
         name: 'Member',
         permissionLevel: 1024, // Default level
         conditions: [{ type: 'default' }],
-        priority: 1000,
         // ... other properties
     }
 ];

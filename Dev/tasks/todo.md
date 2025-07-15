@@ -24,7 +24,7 @@ This file lists the tasks for improving the AntiCheat addon.
     - [ ] Add a system for displaying in-game notifications.
 - [ ] **Add new features:**
     - [ ] Add a command to view the current configuration.
-    - [ ] Add a command to reload the configuration without restarting the server.
+    - [x] Add a command to reload the configuration without restarting the server.
 
 ## Extensibility
 

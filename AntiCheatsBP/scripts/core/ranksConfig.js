@@ -6,7 +6,6 @@
 /**
  * @typedef {object} ChatFormatting
  * @property {string} [prefixText=''] The text part of the rank prefix.
- * @property {string} [prefixColor='§7'] The color code for the prefix text.
  * @property {string} [nameColor='§7'] The color code for the player's name.
  * @property {string} [messageColor='§f'] The color code for the player's chat message.
  */
@@ -26,7 +25,6 @@
  * @property {ChatFormatting} [chatFormatting] Optional chat formatting overrides.
  * @property {string} [nametagPrefix] Optional nametag prefix override.
  * @property {RankCondition[]} conditions Conditions for this rank.
- * @property {number} priority Determines precedence if multiple conditions match.
  * @property {number} [assignableBy] Permission level required to assign/remove this rank.
  */
 
@@ -35,8 +33,7 @@
  * @type {Required<ChatFormatting>}
  */
 export const defaultChatFormatting = {
-    prefixText: '§7[Member] ',
-    prefixColor: '§7', // Grey
+    prefixText: '§8[§7Member§8] ',
     nameColor: '§7',   // Grey
     messageColor: '§f', // White
 };
@@ -66,8 +63,7 @@ export const rankDefinitions = [
         name: 'Owner',
         permissionLevel: 0, // Highest permission
         chatFormatting: {
-            prefixText: '§c[Owner] ',
-            prefixColor: '§c', // Red
+            prefixText: '§8[§cOwner§8] ',
             nameColor: '§c',   // Red
             messageColor: '§f', // White
         },
@@ -75,15 +71,13 @@ export const rankDefinitions = [
         conditions: [
             { type: 'ownerName' }, // Relies on config.ownerPlayerName
         ],
-        priority: 0, // Highest
     },
     {
         id: 'admin', // lowercase
         name: 'Admin',
         permissionLevel: 1,
         chatFormatting: {
-            prefixText: '§b[Admin] ',
-            prefixColor: '§b', // Aqua
+            prefixText: '§8[§bAdmin§8] ',
             nameColor: '§b',   // Aqua
             messageColor: '§f', // White
         },
@@ -91,7 +85,6 @@ export const rankDefinitions = [
         conditions: [
             { type: 'adminTag' }, // Relies on config.adminTag
         ],
-        priority: 10,
         assignableBy: 0, // Only Owner can assign/remove Admin by default
     },
     {
@@ -103,6 +96,5 @@ export const rankDefinitions = [
         conditions: [
             { type: 'default' }, // This should always be last or have the highest priority number
         ],
-        priority: 1000, // Lowest priority
     },
 ];

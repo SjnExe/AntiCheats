@@ -27,7 +27,7 @@ function initializeRankSystem(dependencies) {
 
     // Ensure all rank IDs in definitions are lowercase for consistent internal use.
     const standardizedRankDefinitions = rankDefinitions.map(rd => ({ ...rd, id: rd.id.toLowerCase() }));
-    sortedRankDefinitions = [...standardizedRankDefinitions].sort((a, b) => (a.priority ?? Infinity) - (b.priority ?? Infinity));
+    sortedRankDefinitions = [...standardizedRankDefinitions].sort((a, b) => (a.permissionLevel ?? Infinity) - (b.permissionLevel ?? Infinity));
 
     const newPermissionLevels = {};
     for (const rankDef of sortedRankDefinitions) {
@@ -145,7 +145,7 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
     const prefixText = chatFormatting.prefixText ?? defaultChatFormatting.prefixText ?? ''; // Ensure prefixText is always a string
 
     return {
-        fullPrefix: (chatFormatting.prefixColor ?? defaultChatFormatting.prefixColor) + prefixText,
+        fullPrefix: prefixText,
         nameColor: chatFormatting.nameColor ?? defaultChatFormatting.nameColor,
         messageColor: chatFormatting.messageColor ?? defaultChatFormatting.messageColor,
     };
