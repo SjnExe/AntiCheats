@@ -83,12 +83,12 @@ function subscribeToEvents(dependencies) {
     const mainModuleName = 'CoreSystem';
     dependencies.playerUtils.debugLog(`[${mainModuleName}] Subscribing to events...`, 'System', dependencies);
 
-    world.beforeEvents.chatSend.subscribe(async (eventData) => {
+    world.beforeEvents.chatSend.subscribe((eventData) => {
         if (eventData.message.startsWith(dependencies.config.prefix)) {
             const commandHandlingDependencies = { ...dependencies, commandDefinitionMap, commandExecutionMap };
-            await handleChatCommand(eventData, commandHandlingDependencies);
+            system.run(() => handleChatCommand(eventData, commandHandlingDependencies));
         } else {
-            await handleBeforeChatSend(eventData, dependencies);
+            system.run(() => handleBeforeChatSend(eventData, dependencies));
         }
     });
 
