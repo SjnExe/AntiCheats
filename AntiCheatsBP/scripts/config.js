@@ -336,6 +336,30 @@ Rule 6: Have fun and contribute to a positive community!`,
 // --- System & Versioning (Not part of editableConfigValues by default) ---
 export const acVersion = 'v__VERSION_STRING__';
 
+/**
+ * Maps command aliases to their main command names.
+ * @type {Map<string, string>}
+ */
+export const commandAliases = new Map([
+    ['b', 'ban'],
+    ['cc', 'clearchat'],
+    ['i', 'inspect'],
+    ['inv', 'invsee'],
+    ['lr', 'listranks'],
+    ['lw', 'listwatched'],
+    ['m', 'mute'],
+    ['p', 'panel'],
+    ['pr', 'purgerank'],
+    ['rr', 'removerank'],
+    ['v', 'vanish'],
+    ['ver', 'version'],
+    ['vr', 'viewreports'],
+    ['w', 'watch'],
+    ['wb', 'worldborder'],
+    ['xray', 'xraynotify'],
+    // Add other aliases here
+]);
+
 // --- Editable Configuration Values ---
 export const editableConfigValues = { ...defaultConfigSettings };
 

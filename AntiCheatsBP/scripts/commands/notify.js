@@ -4,7 +4,6 @@ export const definition = {
     name: 'notify',
     syntax: '[on|off|toggle|status]',
     description: 'Manages your AntiCheat system notification preferences.',
-    aliases: ['noti', 'notifications'],
     permissionLevel: 1, // admin
     enabled: true,
 };

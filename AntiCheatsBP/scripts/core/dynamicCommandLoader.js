@@ -3,8 +3,8 @@
  * @module AntiCheatsBP/scripts/core/dynamicCommandLoader
  */
 
-import { commandFilePaths, commandAliases } from './commandRegistry.js';
-import { commandDefinitionMap, commandExecutionMap } from './commandManager.js';
+import { commandAliases } from '../config.js';
+import { commandDefinitionMap, commandExecutionMap, commandFilePaths } from './commandManager.js';
 
 /**
  * Dynamically loads a command module by name.

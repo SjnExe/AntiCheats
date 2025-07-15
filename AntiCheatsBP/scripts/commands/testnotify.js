@@ -6,7 +6,6 @@ export const definition = {
     name: 'testnotify',
     syntax: '[message...]',
     description: 'Sends a test notification to all online administrators/owners.',
-    aliases: ['tn'],
     permissionLevel: 1, // admin
     enabled: true,
 };

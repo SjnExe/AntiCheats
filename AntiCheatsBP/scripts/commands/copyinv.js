@@ -9,7 +9,6 @@ export const definition = {
     name: 'copyinv',
     syntax: '<playername>',
     description: 'Copies another player\'s inventory to your own. This overwrites your current inventory.',
-    aliases: ['ci'],
     permissionLevel: 1, // admin
     enabled: true,
 };

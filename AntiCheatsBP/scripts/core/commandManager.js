@@ -2,7 +2,7 @@
  * @file Manages the registration, parsing, and execution of chat-based commands.
  * @module AntiCheatsBP/scripts/core/commandManager
  */
-import { commandAliases } from './commandRegistry.js';
+import { commandAliases } from '../config.js';
 import { loadCommand } from './dynamicCommandLoader.js';
 import { CommandError } from '../types.js';
 

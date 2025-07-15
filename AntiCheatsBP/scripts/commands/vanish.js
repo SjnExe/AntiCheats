@@ -8,7 +8,6 @@ export const definition = {
     name: 'vanish',
     syntax: '[on|off|toggle] [silent|notify]',
     description: 'Makes you invisible to other players. Optional mode: silent (no join/leave msgs) or notify.',
-    aliases: ['vsh'],
     permissionLevel: 1, // admin
     enabled: true,
 };

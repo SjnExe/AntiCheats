@@ -7,7 +7,6 @@ import { dependencyManager } from '../core/dependencyManager.js';
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'reload',
-    aliases: ['rl'],
     description: 'Reloads the addon configuration from source files.',
     permissionLevel: 0, // owner
     enabled: true,

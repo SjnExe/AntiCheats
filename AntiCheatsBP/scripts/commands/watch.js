@@ -6,7 +6,6 @@ export const definition = {
     name: 'watch',
     syntax: '<playername> [on|off|toggle]',
     description: 'Manages watch status for a player. Toggles if no state [on|off] is specified.',
-    aliases: ['w'],
     permissionLevel: 1, // admin
     enabled: true,
 };
