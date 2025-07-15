@@ -155,7 +155,7 @@ async function _handlePlayerSpawn(eventData, dependencies) {
         if (!pData) {
             console.error(`[EvtHdlr.Spawn CRITICAL] pData null for ${playerName}. Aborting spawn logic.`);
             player.sendMessage({ translate: 'error.playerDataLoadFailedKick' });
-            player.kick(playerUtils.getString('error.playerDataLoadFailedKickReason', dependencies));
+            player.kick(playerUtils.getString('error.playerDataLoadFailedKickReason', dependencies), { reason: playerUtils.getString('error.playerDataLoadFailedKickReason', dependencies) });
             return;
         }
 
@@ -185,7 +185,7 @@ async function _handlePlayerSpawn(eventData, dependencies) {
             if (config.serverInfo.discordLink && config.serverInfo.discordLink.trim() !== '' && !config.serverInfo.discordLink.includes('example.com')) {
                 kickReason += `\n${playerUtils.getString('ban.kickMessage.discord', dependencies, { discordLink: config.serverInfo.discordLink })}`;
             }
-            player.kick(kickReason);
+            player.kick(kickReason, { reason: kickReason });
             return;
         }
 
