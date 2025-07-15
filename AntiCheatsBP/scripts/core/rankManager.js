@@ -145,7 +145,7 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
     const prefixText = chatFormatting.prefixText ?? defaultChatFormatting.prefixText ?? ''; // Ensure prefixText is always a string
 
     return {
-        fullPrefix: (chatFormatting.prefixColor ?? defaultChatFormatting.prefixColor) + prefixText,
+        fullPrefix: prefixText,
         nameColor: chatFormatting.nameColor ?? defaultChatFormatting.nameColor,
         messageColor: chatFormatting.messageColor ?? defaultChatFormatting.messageColor,
     };

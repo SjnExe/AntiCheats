@@ -3,6 +3,14 @@
 This document is an archive of completed tasks.
 
 ---
+- **Jules (AI Assistant):** Merge rank priority into permissionLevel. (Completed on 2024-05-24)
+  - **Summary:** Merged the `priority` field into the `permissionLevel` field in the rank configuration.
+  - **Work Done:**
+    - Removed the `priority` field from `ranksConfig.js`.
+    - Updated `rankManager.js` to use `permissionLevel` for rank precedence.
+    - Updated `Docs/RankSystem.md` to reflect the changes.
+  - **Submission:** Changes were submitted on branch `refactor/merge-rank-priority`.
+
 - **Jules (AI Assistant):** Consolidate rank commands. (Completed on 2024-05-24)
   - **Summary:** Consolidated `!addrank` and `!removerank` into a single `!rank` command.
   - **Work Done:**

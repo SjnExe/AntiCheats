@@ -35,8 +35,7 @@ This file allows you to define an array of `rankDefinitions`. Each definition ty
 *   `name` (string): A user-friendly display name (e.g., "Owner", "Administrator", "VIP", "Member").
 *   `permissionLevel` (number): A numeric level determining privileges. **Lower numbers mean higher privileges** (e.g., Owner = 0, Admin = 1, Member = 1024). This is crucial for command access and feature usage.
 *   `chatFormatting` (object, optional): Customizes how chat messages from players with this rank appear.
-    *   `prefixText` (string): Text before the player's name (e.g., "§c[Owner] ").
-    *   `prefixColor` (string): Color code for the prefix.
+    *   `prefixText` (string): Text before the player's name (e.g., "§8[§cOwner§8] ").
     *   `nameColor` (string): Color code for the player's name.
     *   `messageColor` (string): Color code for the actual message content.
     *   Defaults are provided in `ranksConfig.js` if not specified per rank.
