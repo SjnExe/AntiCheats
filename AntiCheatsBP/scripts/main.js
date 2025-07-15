@@ -179,28 +179,42 @@ function validateConfigurations(dependencies) {
  * Processes all tasks for a single system tick.
  */
 async function mainTick() {
-    const dependencies = dependencyManager.getDependenciesUnsafe(); // Unsafe is acceptable here for logging
     if (isTickLoopRunning) {
-        if (dependencies) {
+        const deps = dependencyManager.getDependenciesUnsafe();
+        if (deps) {
             addLog({
                 actionType: 'warning.main.tickOverlap',
                 context: 'Main.TickLoop',
                 details: { message: 'Tick processing is overlapping.' },
-            }, dependencies);
+            }, deps);
         }
         return;
     }
+
     isTickLoopRunning = true;
+
     try {
         await processTick();
     } catch (e) {
-        if (dependencies) {
-            addLog({
-                actionType: 'error.main.tick.unhandled',
-                context: 'Main.TickLoop',
-                details: { errorMessage: e?.message, stack: e?.stack },
-            }, dependencies);
+        // Attempt to get dependencies again for logging, in case the initial call failed.
+        // This is a last-ditch effort to ensure critical errors are logged.
+        try {
+            const depsForError = dependencyManager.getDependenciesUnsafe();
+            if (depsForError) {
+                addLog({
+                    actionType: 'error.main.tick.unhandled',
+                    context: 'Main.TickLoop',
+                    details: { errorMessage: e?.message, stack: e?.stack },
+                }, depsForError);
+            } else {
+                // Fallback if even unsafe dependency access fails
+                console.error('[AntiCheat] CRITICAL: Unhandled error in main tick and unable to get dependencies for logging.');
+            }
+        } catch (loggingError) {
+            // Absolute fallback if logging itself fails
+            console.error(`[AntiCheat] CRITICAL: Further error during logging of main tick error: ${loggingError.message}`);
         }
+        console.error(`[AntiCheat] Unhandled error in main tick: ${e?.message}\n${e?.stack}`);
     } finally {
         isTickLoopRunning = false;
     }
