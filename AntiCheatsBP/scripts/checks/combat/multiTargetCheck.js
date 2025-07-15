@@ -1,5 +1,5 @@
 /**
- * @file Implements a check to detect Killaura-like behavior where a player rapidly hits multiple distinct targets.
+ * @file Detects Killaura-like behavior (hitting multiple targets rapidly).
  * @module AntiCheatsBP/scripts/checks/combat/multiTargetCheck
  */
 
@@ -16,15 +16,10 @@ const distinctTargetsSampleLimitMulti = 5;
 
 /**
  * Checks for Multi-Target Killaura by analyzing recent hit entity patterns.
- * It tracks entities hit by the player within a configured time window and flags
- * if the number of distinct entities exceeds a threshold.
- * This check is typically triggered by an entity hurt event where the damager is a player.
- * @async
- * @param {import('@minecraft/server').Player} player - The attacking player.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `recentHits`.
- * @param {Dependencies} dependencies - Object containing necessary dependencies.
- * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `targetEntity`.
- * @returns {Promise<void>}
+ * @param {import('@minecraft/server').Player} player The attacking player.
+ * @param {PlayerAntiCheatData} pData The player's data.
+ * @param {Dependencies} dependencies The command dependencies.
+ * @param {EventSpecificData} eventSpecificData Event-specific data.
  */
 export async function checkMultiTarget(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;

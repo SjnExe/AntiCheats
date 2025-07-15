@@ -1,5 +1,5 @@
 /**
- * @file Implements a check to detect Unicode abuse (e.g., Zalgo text with excessive diacritics).
+ * @file Detects Unicode abuse (e.g., Zalgo text) in chat messages.
  * @module AntiCheatsBP/scripts/checks/chat/checkUnicodeAbuse
  */
 
@@ -14,13 +14,11 @@ const LOCAL_ELLIPSIS_LENGTH_UNICODE = 3;
 const DEBUG_LOG_UNICODE_SNIPPET_LENGTH = 20;
 
 /**
- * Checks a message for Unicode abuse, specifically excessive combining diacritical marks.
- * @async
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - Player's anti-cheat data (used for watched status).
- * @param {Dependencies} dependencies - Shared command dependencies.
- * @returns {Promise<void>}
+ * Checks a message for Unicode abuse (excessive diacritics).
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData The player's anti-cheat data.
+ * @param {Dependencies} dependencies Shared command dependencies.
  */
 export async function checkUnicodeAbuse(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;

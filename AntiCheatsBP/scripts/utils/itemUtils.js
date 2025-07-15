@@ -1,23 +1,10 @@
 /**
- * IMPORTANT: This module is a server-side approximation of complex client-side game mechanics.
- * It is intended for use in contexts where exact client-side behavior is not critical
- * but a reasonable estimation is needed for server-side logic (e.g., anti-cheat checks).
- * Discrepancies may exist between the calculations here and actual in-game block breaking times.
- *
- * MAINTENANCE: The internal data maps (blockHardnessMap, toolMaterialMultipliersMap, etc.)
- * and constants within this file require periodic review and updates to align with new
- * Minecraft releases. Changes in game mechanics, block properties, or tool behaviors
- * can impact the accuracy of these approximations.
- *
- * RISK: This utility, especially functions like getExpectedBreakTicks and
- * calculateRelativeBlockBreakingPower, is highly sensitive to changes in Minecraft's
- * block breaking mechanics. Any updates to the game that alter how block hardness,
- * tool speeds, enchantments, or player effects interact will likely necessitate
- * modifications to this file to maintain reasonable accuracy.
- * @file Provides utility functions related to items, blocks, and their interactions,
- * primarily for calculating block breaking speeds and determining optimal tools.
- * Includes simplified models for game mechanics like block hardness and tool effectiveness.
+ * @file Provides server-side approximations of client-side game mechanics for anti-cheat checks.
  * @module AntiCheatsBP/scripts/utils/itemUtils
+ * @description This module contains utility functions for item, block, and interaction calculations,
+ * focusing on block breaking speeds and optimal tool determination. It uses simplified models
+ * for game mechanics like block hardness and tool effectiveness, which may not be perfectly
+ * accurate to in-game behavior. Regular updates are needed to align with new Minecraft releases.
  */
 import * as mc from '@minecraft/server';
 
@@ -194,64 +181,39 @@ const correctToolForBlockMap = {
 
 /**
  * Gets the generic tool type from an item's type ID.
- * @param {string} itemTypeId - The item's type ID (e.g., 'minecraft:diamond_pickaxe').
- * @returns {string | null} The tool type ('pickaxe', 'axe', 'shovel', 'hoe', 'shears', 'sword') or null if not a recognized tool.
+ * @param {string} itemTypeId The item's type ID (e.g., 'minecraft:diamond_pickaxe').
+ * @returns {string|null} The tool type or null if not a recognized tool.
  */
 function getToolType(itemTypeId) {
-    if (itemTypeId.includes('_pickaxe')) {
-        return 'pickaxe';
-    }
-    if (itemTypeId.includes('_axe')) {
-        return 'axe';
-    }
-    if (itemTypeId.includes('_shovel')) {
-        return 'shovel';
-    }
-    if (itemTypeId.includes('_hoe')) {
-        return 'hoe';
-    }
-    if (itemTypeId === 'minecraft:shears') {
-        return 'shears';
-    }
-    if (itemTypeId.includes('_sword')) {
-        return 'sword';
-    }
+    if (itemTypeId.includes('_pickaxe')) return 'pickaxe';
+    if (itemTypeId.includes('_axe')) return 'axe';
+    if (itemTypeId.includes('_shovel')) return 'shovel';
+    if (itemTypeId.includes('_hoe')) return 'hoe';
+    if (itemTypeId === 'minecraft:shears') return 'shears';
+    if (itemTypeId.includes('_sword')) return 'sword';
     return null;
 }
 
 /**
  * Gets the material of a tool from an item's type ID.
- * @param {string} itemTypeId - The item's type ID (e.g., 'minecraft:diamond_pickaxe').
- * @returns {string | null} The tool material ('wooden', 'stone', 'iron', 'golden', 'diamond', 'netherite') or null if not a recognized material.
+ * @param {string} itemTypeId The item's type ID (e.g., 'minecraft:diamond_pickaxe').
+ * @returns {string|null} The tool material or null if not a recognized material.
  */
 function getToolMaterial(itemTypeId) {
-    if (itemTypeId.startsWith('minecraft:wooden_')) {
-        return 'wooden';
-    }
-    if (itemTypeId.startsWith('minecraft:stone_')) {
-        return 'stone';
-    }
-    if (itemTypeId.startsWith('minecraft:iron_')) {
-        return 'iron';
-    }
-    if (itemTypeId.startsWith('minecraft:golden_')) {
-        return 'golden';
-    }
-    if (itemTypeId.startsWith('minecraft:diamond_')) {
-        return 'diamond';
-    }
-    if (itemTypeId.startsWith('minecraft:netherite_')) {
-        return 'netherite';
-    }
+    if (itemTypeId.startsWith('minecraft:wooden_')) return 'wooden';
+    if (itemTypeId.startsWith('minecraft:stone_')) return 'stone';
+    if (itemTypeId.startsWith('minecraft:iron_')) return 'iron';
+    if (itemTypeId.startsWith('minecraft:golden_')) return 'golden';
+    if (itemTypeId.startsWith('minecraft:diamond_')) return 'diamond';
+    if (itemTypeId.startsWith('minecraft:netherite_')) return 'netherite';
     return null;
 }
 
 /**
- * Calculates the relative breaking power of a player against a specific block with a given item.
- * Higher numbers mean faster breaking. Considers tool type, material, enchantments, and player effects.
- * @param {import('@minecraft/server').Player} player - The player breaking the block.
- * @param {import('@minecraft/server').BlockPermutation} blockPermutation - The permutation of the block.
- * @param {import('@minecraft/server').ItemStack | undefined} itemStack - The item used, or undefined for hand.
+ * Calculates the relative breaking power of a player against a block.
+ * @param {import('@minecraft/server').Player} player The player breaking the block.
+ * @param {import('@minecraft/server').BlockPermutation} blockPermutation The permutation of the block.
+ * @param {import('@minecraft/server').ItemStack | undefined} itemStack The item used, or undefined for hand.
  * @returns {number} Relative breaking power.
  */
 export function calculateRelativeBlockBreakingPower(player, blockPermutation, itemStack) {
@@ -316,10 +278,10 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
 }
 
 /**
- * Finds the optimal tool in the player's hotbar for breaking a given block.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('@minecraft/server').BlockPermutation} blockPermutation - The block permutation to check against.
- * @returns {{slotIndex: number, itemStack: import('@minecraft/server').ItemStack, speed: number} | null} The optimal tool info or null if no suitable tool.
+ * Finds the optimal tool in the player's hotbar for breaking a block.
+ * @param {import('@minecraft/server').Player} player The player.
+ * @param {import('@minecraft/server').BlockPermutation} blockPermutation The block permutation to check against.
+ * @returns {{slotIndex: number, itemStack: import('@minecraft/server').ItemStack, speed: number}|null} The optimal tool info or null.
  */
 export function getOptimalToolForBlock(player, blockPermutation) {
     const inventory = player.getComponent(mc.EntityComponentTypes.Inventory);
@@ -349,12 +311,11 @@ export function getOptimalToolForBlock(player, blockPermutation) {
 
 /**
  * Calculates the expected number of game ticks to break a block.
- * Considers player's tool, enchantments, effects, and block properties.
- * @param {import('@minecraft/server').Player} player - The player breaking the block.
- * @param {import('@minecraft/server').BlockPermutation} blockPermutation - The permutation of the block being broken.
- * @param {import('@minecraft/server').ItemStack | undefined} itemStack - The item stack used, or undefined if hand.
- * @param {import('../types.js').CommandDependencies} dependencies - The standard dependencies object.
- * @returns {number} The expected number of ticks to break the block. Returns Infinity for unbreakable blocks.
+ * @param {import('@minecraft/server').Player} player The player breaking the block.
+ * @param {import('@minecraft/server').BlockPermutation} blockPermutation The permutation of the block being broken.
+ * @param {import('@minecraft/server').ItemStack | undefined} itemStack The item stack used, or undefined if hand.
+ * @param {import('../types.js').CommandDependencies} dependencies The standard dependencies object.
+ * @returns {number} The expected number of ticks to break the block, or Infinity for unbreakable blocks.
  */
 export function getExpectedBreakTicks(player, blockPermutation, itemStack, dependencies) {
     const blockTypeId = blockPermutation.type.id;

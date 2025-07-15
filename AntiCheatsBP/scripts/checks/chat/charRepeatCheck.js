@@ -1,5 +1,5 @@
 /**
- * @file Implements a check to detect excessive repetition of the same character in chat messages.
+ * @file Detects excessive character repetition in chat messages.
  * @module AntiCheatsBP/scripts/checks/chat/charRepeatCheck
  */
 
@@ -10,12 +10,10 @@
 
 /**
  * Checks a chat message for excessive character repetition.
- * @async
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - The player's anti-cheat data.
- * @param {Dependencies} dependencies - Shared command dependencies (includes config, actionManager, etc.).
- * @returns {Promise<void>}
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData The player's anti-cheat data.
+ * @param {Dependencies} dependencies Shared command dependencies.
  */
 export async function checkCharRepeat(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;

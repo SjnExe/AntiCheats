@@ -1,13 +1,10 @@
 /**
- * @file Central registry for all command modules. This file provides mappings
+ * @file Central registry for all command modules.
  * @module AntiCheatsBP/scripts/core/commandRegistry
- * for command names to their module paths and for aliases to their main command names.
- * This setup facilitates dynamic command loading.
  */
 
 /**
- * A map where keys are lowercase command names and values are the paths to the command modules.
- * This allows the commandManager to dynamically import a command only when it's first used.
+ * Maps command names to their module paths for dynamic loading.
  * @type {Map<string, string>}
  */
 export const commandFilePaths = new Map([
@@ -57,8 +54,7 @@ export const commandFilePaths = new Map([
 ]);
 
 /**
- * A map where keys are lowercase aliases and values are their corresponding main command names (also lowercase).
- * This map is loaded at startup to allow for immediate alias resolution without needing to load the command module itself.
+ * Maps command aliases to their main command names.
  * @type {Map<string, string>}
  */
 export const commandAliases = new Map([

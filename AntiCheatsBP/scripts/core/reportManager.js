@@ -1,9 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/core/reportManager.js
+ * @file Manages player-submitted reports.
  * @module AntiCheatsBP/scripts/core/reportManager
- * Manages player-submitted reports. Reports are stored in a world dynamic property
- * with an in-memory cache for performance. This includes adding reports, retrieving them,
- * and clearing reports. All actionType strings should be camelCase.
  */
 
 /** @constant {string} The dynamic property key for storing player reports. */
@@ -29,14 +26,12 @@ let reportsAreDirty = false;
  * @returns {string} A unique report ID.
  */
 function generateReportId() {
-    // Timestamp + random component for uniqueness
     return `${Date.now().toString(alphanumericRadix)}-${Math.random().toString(alphanumericRadix).substring(2, 2 + randomIdComponentLength)}`;
 }
 
 /**
  * Loads reports from dynamic properties into the in-memory cache.
- * Called once during script initialization.
- * @param {CommandDependencies} dependencies - Standard dependencies object.
+ * @param {CommandDependencies} dependencies Standard dependencies object.
  */
 export function initializeReportCache(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
@@ -59,9 +54,9 @@ export function initializeReportCache(dependencies) {
 }
 
 /**
- * Persists the in-memory report cache to dynamic properties if changes exist.
- * @param {CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if successful or no changes needed, false on error.
+ * Persists the in-memory report cache to dynamic properties.
+ * @param {CommandDependencies} dependencies Standard dependencies object.
+ * @returns {boolean} True on success, false on error.
  */
 export function persistReportsToDisk(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
@@ -81,8 +76,8 @@ export function persistReportsToDisk(dependencies) {
 }
 
 /**
- * Retrieves reports from the in-memory cache, sorted newest first.
- * @returns {ReportEntry[]} A new array of report objects, sorted by timestamp descending.
+ * Retrieves reports from the cache, sorted newest first.
+ * @returns {ReportEntry[]} An array of report objects, sorted by timestamp descending.
  */
 export function getReports() {
     return [...reportsInMemory].sort((a, b) => b.timestamp - a.timestamp); // Newest first
@@ -90,11 +85,11 @@ export function getReports() {
 
 /**
  * Adds a new report to the system.
- * @param {import('@minecraft/server').Player} reporterPlayer - The player making the report.
- * @param {string} reportedPlayerName - The name of the player being reported.
- * @param {string} reason - The reason for the report.
- * @param {CommandDependencies} dependencies - Standard dependencies object.
- * @returns {ReportEntry | null} The created report entry, or null if failed.
+ * @param {import('@minecraft/server').Player} reporterPlayer The player making the report.
+ * @param {string} reportedPlayerName The name of the player being reported.
+ * @param {string} reason The reason for the report.
+ * @param {CommandDependencies} dependencies Standard dependencies object.
+ * @returns {ReportEntry|null} The created report entry, or null on failure.
  */
 export function addReport(reporterPlayer, reportedPlayerName, reason, dependencies) {
     const { playerUtils, logManager, getString } = dependencies; // Removed config, mc: minecraftSystem. Added getString (used later)
@@ -152,7 +147,7 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
 
 /**
  * Clears all reports from the system.
- * @param {CommandDependencies} dependencies - Standard dependencies object.
+ * @param {CommandDependencies} dependencies Standard dependencies object.
  * @returns {number} The number of reports cleared.
  */
 export function clearAllReports(dependencies) {
@@ -173,9 +168,9 @@ export function clearAllReports(dependencies) {
 
 /**
  * Clears a specific report by its ID.
- * @param {string} reportId - The ID of the report to clear.
- * @param {CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the report was found and cleared, false otherwise.
+ * @param {string} reportId The ID of the report to clear.
+ * @param {CommandDependencies} dependencies Standard dependencies object.
+ * @returns {boolean} True if the report was cleared, false otherwise.
  */
 export function clearReportById(reportId, dependencies) {
     const { playerUtils, logManager } = dependencies;
@@ -197,9 +192,9 @@ export function clearReportById(reportId, dependencies) {
 }
 
 /**
- * Clears all reports associated with a specific player (either as reporter or reported).
- * @param {string} playerNameOrId - The nameTag or ID of the player whose reports to clear.
- * @param {CommandDependencies} dependencies - Standard dependencies object.
+ * Clears all reports associated with a specific player.
+ * @param {string} playerNameOrId The nameTag or ID of the player.
+ * @param {CommandDependencies} dependencies Standard dependencies object.
  * @returns {number} The number of reports cleared.
  */
 export function clearReportsForPlayer(playerNameOrId, dependencies) {

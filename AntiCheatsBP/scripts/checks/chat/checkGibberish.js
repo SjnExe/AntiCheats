@@ -1,5 +1,5 @@
 /**
- * @file Implements a check to detect gibberish or keyboard-mashed messages.
+ * @file Detects gibberish or keyboard-mashed messages.
  * @module AntiCheatsBP/scripts/checks/chat/checkGibberish
  */
 
@@ -13,13 +13,11 @@ const LOCAL_ELLIPSIS_LENGTH = 3;
 const DEBUG_LOG_GIBBERISH_SNIPPET_LENGTH = 20;
 
 /**
- * Checks a message for gibberish patterns based on character ratios and consecutive consonants.
- * @async
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - Player's anti-cheat data (used for watched status).
- * @param {Dependencies} dependencies - Shared command dependencies.
- * @returns {Promise<void>}
+ * Checks a message for gibberish patterns.
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData The player's anti-cheat data.
+ * @param {Dependencies} dependencies Shared command dependencies.
  */
 export async function checkGibberish(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;

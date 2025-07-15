@@ -1,7 +1,6 @@
 /**
- * @file Manages player ranks, permission levels, and their display properties (chat/nametag prefixes).
+ * @file Manages player ranks, permissions, and display properties.
  * @module AntiCheatsBP/scripts/core/rankManager
- * Ranks are defined in `ranksConfig.js` and processed here. All rank IDs are handled case-insensitively (lowerCased).
  */
 import * as mc from '@minecraft/server';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './ranksConfig.js';
@@ -13,9 +12,8 @@ export let permissionLevels = {};
 let sortedRankDefinitions = [];
 
 /**
- * Initializes the rank system by sorting rank definitions and generating the `permissionLevels` mapping.
- * This function should be called once at script startup via `initializeRanks`.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Initializes the rank system.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 function initializeRankSystem(dependencies) {
     const { playerUtils } = dependencies; // Removed config
@@ -57,12 +55,10 @@ function initializeRankSystem(dependencies) {
 }
 
 /**
- * Internal helper to get the player's highest priority rank definition and effective permission level.
- * @param {import('@minecraft/server').Player} player - The player instance.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {{ rankDefinition: import('./ranksConfig.js').RankDefinition | null, permissionLevel: number, rankId: string | null }}
- * Object containing matched rank definition, permission level, and rank ID (lowerCase).
- * Returns default/member level if no specific rank matches.
+ * Gets the player's highest priority rank and permission level.
+ * @param {import('@minecraft/server').Player} player The player instance.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
+ * @returns {{rankDefinition: import('./ranksConfig.js').RankDefinition|null, permissionLevel: number, rankId: string|null}} The player's rank details.
  */
 function getPlayerRankAndPermissions(player, dependencies) {
     const { config, playerUtils } = dependencies; // Removed getString
@@ -125,9 +121,9 @@ function getPlayerRankAndPermissions(player, dependencies) {
 }
 
 /**
- * Gets the effective permission level for a player.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Gets the permission level for a player.
+ * @param {import('@minecraft/server').Player} player The player.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  * @returns {number} The player's permission level.
  */
 export function getPlayerPermissionLevel(player, dependencies) {
@@ -136,9 +132,9 @@ export function getPlayerPermissionLevel(player, dependencies) {
 }
 
 /**
- * Gets the formatted chat prefix, name color, and message color for a player based on their rank.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Gets the formatted chat elements for a player based on their rank.
+ * @param {import('@minecraft/server').Player} player The player.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  * @returns {{fullPrefix: string, nameColor: string, messageColor: string}} The chat formatting elements.
  */
 export function getPlayerRankFormattedChatElements(player, dependencies) {
@@ -156,9 +152,9 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
 }
 
 /**
- * Updates a player's nametag based on their current rank and vanish status.
- * @param {import('@minecraft/server').Player} player - The player whose nametag to update.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Updates a player's nametag based on their rank and vanish status.
+ * @param {import('@minecraft/server').Player} player The player to update.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function updatePlayerNametag(player, dependencies) {
     const { config, playerUtils, getString } = dependencies;
@@ -225,17 +221,17 @@ export function updatePlayerNametag(player, dependencies) {
 }
 
 /**
- * Initializes the rank system. This must be called from `main.js` after all dependencies are available.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Initializes the rank system.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function initializeRanks(dependencies) {
     initializeRankSystem(dependencies);
 }
 
 /**
- * Retrieves a rank definition object by its unique ID.
- * @param {string} rankId - The ID (case-insensitive) of the rank to retrieve.
- * @returns {import('./ranksConfig.js').RankDefinition | undefined} The rank definition object if found, otherwise undefined.
+ * Retrieves a rank definition by its ID.
+ * @param {string} rankId The ID of the rank (case-insensitive).
+ * @returns {import('./ranksConfig.js').RankDefinition|undefined} The rank definition or undefined if not found.
  */
 export function getRankById(rankId) {
     if (typeof rankId !== 'string' || !rankId) {
@@ -246,16 +242,12 @@ export function getRankById(rankId) {
 }
 
 /**
- * Checks if an issuer has permission to perform an administrative action on a target player.
- * This considers rank hierarchy (e.g., Admins cannot action Owners).
- * @param {import('@minecraft/server').Player} issuerPlayer - The player attempting the action.
- * @param {import('@minecraft/server').Player} targetPlayer - The player being targeted by the action.
- * @param {string} actionContext - A string describing the action (e.g., 'ban', 'kick', 'mute') for logging/messaging.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
- * @returns {{allowed: boolean, messageKey?: string, messageParams?: Record<string, string>}}
- * `allowed` is true if permission is granted.
- * If false, `messageKey` provides a textDatabase key for the denial reason,
- * and `messageParams` provides parameters for that message.
+ * Checks if an issuer can perform an admin action on a target player based on rank hierarchy.
+ * @param {import('@minecraft/server').Player} issuerPlayer The player attempting the action.
+ * @param {import('@minecraft/server').Player} targetPlayer The player being targeted.
+ * @param {string} actionContext A string describing the action (e.g., 'ban').
+ * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @returns {{allowed: boolean, messageKey?: string, messageParams?: Record<string, string>}} An object indicating if the action is allowed and providing a message key on denial.
  */
 export function canAdminActionTarget(issuerPlayer, targetPlayer, actionContext, dependencies) {
     const { playerUtils, permissionLevels: depPermLevels } = dependencies; // Removed getString, assuming getString is part of playerUtils or top-level in dependencies

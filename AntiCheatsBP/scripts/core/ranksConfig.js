@@ -1,43 +1,33 @@
 /**
- * @file Configuration for all server ranks, their properties, and conditions.
+ * @file Configuration for server ranks, properties, and conditions.
  * @module AntiCheatsBP/scripts/core/ranksConfig
- * Rank IDs should be defined in `camelCase` (e.g., `superAdmin`, `vipPlus`) but will be handled
- * case-insensitively (converted to lowercase) by the RankManager.
- * It's recommended to define IDs in lowercase here for simplicity and directness,
- * as they are effectively treated as such by the manager.
  */
 
 /**
  * @typedef {object} ChatFormatting
- * @property {string} [prefixText=''] - The text part of the rank prefix (e.g., "[Admin] ").
- * @property {string} [prefixColor='§7'] - Minecraft color code for the prefix text (e.g., "§c").
- * @property {string} [nameColor='§7'] - Minecraft color code for the player's name (e.g., "§b").
- * @property {string} [messageColor='§f'] - Minecraft color code for the player's chat message (e.g., "§f").
+ * @property {string} [prefixText=''] The text part of the rank prefix.
+ * @property {string} [prefixColor='§7'] The color code for the prefix text.
+ * @property {string} [nameColor='§7'] The color code for the player's name.
+ * @property {string} [messageColor='§f'] The color code for the player's chat message.
  */
 
 /**
  * @typedef {object} RankCondition
- * @property {('ownerName'|'adminTag'|'manualTagPrefix'|'tag'|'default')} type - The type of condition (camelCase).
- * - `ownerName`: Matches if player's nameTag equals `config.ownerPlayerName`.
- * - `adminTag`: Matches if player has the tag specified in `config.adminTag`.
- * - `manualTagPrefix`: Matches if player has a tag like `prefix` + `rankId` (e.g., 'rank_vip').
- * - `tag`: Matches if player has the specified `tag` string.
- * - `default`: A fallback condition, usually for the 'member' rank.
- * @property {string} [prefix] - Required if type is 'manualTagPrefix'. The prefix for the rank tag (e.g., 'rank_').
- * @property {string} [tag] - Required if type is 'tag'. The specific tag to check for.
+ * @property {('ownerName'|'adminTag'|'manualTagPrefix'|'tag'|'default')} type The type of condition.
+ * @property {string} [prefix] The prefix for the rank tag (for 'manualTagPrefix').
+ * @property {string} [tag] The specific tag to check for (for 'tag').
  */
 
 /**
  * @typedef {object} RankDefinition
- * @property {string} id - Unique identifier for the rank (e.g., 'owner', 'admin', 'vip').
- * Should be `camelCase` or `lowercase`. It will be processed as lowercase by RankManager.
- * @property {string} name - Display name for the rank (e.g., "Owner", "Administrator").
- * @property {number} permissionLevel - Numeric permission level. Lower is higher privilege (0 = Owner).
- * @property {ChatFormatting} [chatFormatting] - Optional chat formatting overrides.
- * @property {string} [nametagPrefix] - Optional nametag prefix override (e.g., '§cOwner §f\n').
- * @property {RankCondition[]} conditions - Conditions for this rank.
- * @property {number} priority - Determines precedence if multiple conditions match (lower number = higher priority).
- * @property {number} [assignableBy] - Optional. Permission level required to assign/remove this rank.
+ * @property {string} id Unique identifier for the rank.
+ * @property {string} name Display name for the rank.
+ * @property {number} permissionLevel Numeric permission level (lower is higher).
+ * @property {ChatFormatting} [chatFormatting] Optional chat formatting overrides.
+ * @property {string} [nametagPrefix] Optional nametag prefix override.
+ * @property {RankCondition[]} conditions Conditions for this rank.
+ * @property {number} priority Determines precedence if multiple conditions match.
+ * @property {number} [assignableBy] Permission level required to assign/remove this rank.
  */
 
 /**

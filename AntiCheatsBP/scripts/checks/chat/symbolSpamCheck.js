@@ -1,7 +1,6 @@
 /**
- * @file Implements a check to detect excessive symbol usage (non-alphanumeric, excluding spaces) in chat messages.
+ * @file Detects excessive symbol usage in chat messages.
  * @module AntiCheatsBP/scripts/checks/chat/symbolSpamCheck
- * All actionProfileKey and checkType strings should be camelCase.
  */
 
 /**
@@ -11,13 +10,10 @@
 
 /**
  * Checks a chat message for excessive symbol usage.
- * Symbols are defined as non-alphanumeric characters, excluding spaces.
- * @async
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - The player's anti-cheat data.
- * @param {Dependencies} dependencies - Shared command dependencies.
- * @returns {Promise<void>}
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData The player's anti-cheat data.
+ * @param {Dependencies} dependencies Shared command dependencies.
  */
 export async function checkSymbolSpam(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;

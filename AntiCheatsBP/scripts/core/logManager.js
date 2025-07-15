@@ -1,8 +1,6 @@
 /**
- * @file Manages the storage and retrieval of action logs, such as administrative commands (ban, mute, kick)
+ * @file Manages the storage and retrieval of action logs.
  * @module AntiCheatsBP/scripts/core/logManager
- * and significant system events. Logs are persisted using world dynamic properties with an
- * in-memory cache for performance. All `actionType` strings should be `camelCase`.
  */
 
 /** @type {string} The dynamic property key used for storing action logs. */
@@ -18,9 +16,8 @@ let logsInMemory = [];
 let logsAreDirty = false;
 
 /**
- * Loads logs from the dynamic property into the in-memory cache.
- * Must be called once during script initialization.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Loads logs from dynamic properties into the cache.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function initializeLogCache(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies; // mc provided via dependencies
@@ -43,10 +40,9 @@ export function initializeLogCache(dependencies) {
 }
 
 /**
- * Persists the current in-memory log cache to dynamic properties if `logsAreDirty` is true,
- * or if the dynamic property doesn't exist yet (first save).
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if successful or not needed, false on error.
+ * Persists the log cache to dynamic properties if dirty.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
+ * @returns {Promise<boolean>} True on success, false on error.
  */
 export async function persistLogCacheToDisk(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
@@ -67,24 +63,9 @@ export async function persistLogCacheToDisk(dependencies) {
 }
 
 /**
- * Adds a new log entry to the in-memory cache and marks logs as dirty.
- * Manages log rotation to stay within `maxLogEntriesCount`.
- * Ensures `actionType` uses `camelCase`.
- * Standard for Error Log Entries:
- * When logging errors (e.g., actionType starts with 'error.' or is 'system_error'), the `details` object
- * within the `LogEntry` should follow this structure for consistency and better analysis:
- * ```
- * details: {
- * errorCode: string,    // REQUIRED: A unique, short, UPPER_SNAKE_CASE string code (e.g., 'PDM_DP_DATA_PARSE_FAIL', 'CMD_EXEC_FAIL').
- * message: string,      // REQUIRED: The primary error message (usually error.message).
- * rawErrorStack?: string, // OPTIONAL (but recommended): The full stack trace (error.stack).
- * meta?: object          // OPTIONAL: An object for any other context-specific key-value pairs relevant to this specific error.
- * }
- * ```
- * The `actionType` for errors should also follow a pattern like `error.<module>.<optional_sub_context>` (e.g., `error.pdm.dp`, `error.cmd.exec`).
- * The main `LogEntry.context` string should still provide the specific function/module path where the error originated.
- * @param {import('../types.js').LogEntry} logEntry - The log entry object. Must contain `actionType`. `timestamp` and `adminName` default if not provided.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Adds a new log entry to the cache and handles log rotation.
+ * @param {import('../types.js').LogEntry} logEntry The log entry object.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function addLog(logEntry, dependencies) {
     const { playerUtils } = dependencies;
@@ -123,9 +104,9 @@ export function addLog(logEntry, dependencies) {
 }
 
 /**
- * Retrieves logs from the in-memory cache.
- * @param {number} [count] - Optional. The number of most recent logs to retrieve. If not provided or invalid, all logs are returned.
- * @returns {Array<import('../types.js').LogEntry>} An array of log objects (a copy of the cache or a slice of it).
+ * Retrieves logs from the cache.
+ * @param {number} [count] The number of most recent logs to retrieve.
+ * @returns {Array<import('../types.js').LogEntry>} An array of log objects.
  */
 export function getLogs(count) {
     // Ensure count is a positive number if provided

@@ -1,7 +1,6 @@
 /**
- * @file Implements a check to detect simple impersonation attempts in chat,
+ * @file Detects simple impersonation attempts in chat.
  * @module AntiCheatsBP/scripts/checks/chat/checkSimpleImpersonation
- * such as mimicking server announcements.
  */
 
 /**
@@ -14,14 +13,11 @@ const LOCAL_ELLIPSIS_LENGTH_SIMP_IMP = 3;
 const DEBUG_LOG_SIMP_IMP_SNIPPET_LENGTH = 50;
 
 /**
- * Checks a message for simple impersonation patterns (e.g., mimicking server announcements).
- * Exempts players with a permission level at or below `config.impersonationExemptPermissionLevel`.
- * @async
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - Player's anti-cheat data (used for watched status).
- * @param {Dependencies} dependencies - Should include config, playerUtils, actionManager, rankManager, and permissionLevels.
- * @returns {Promise<void>}
+ * Checks a message for simple impersonation patterns.
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData The player's anti-cheat data.
+ * @param {Dependencies} dependencies Shared command dependencies.
  */
 export async function checkSimpleImpersonation(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;

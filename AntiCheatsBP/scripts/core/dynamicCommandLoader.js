@@ -1,21 +1,16 @@
 /**
- * @file Handles the dynamic loading of command modules for the AntiCheat system.
+ * @file Handles the dynamic loading of command modules.
  * @module AntiCheatsBP/scripts/core/dynamicCommandLoader
- * This approach defers the loading of command code until it's actually needed,
- * improving startup performance and reducing the initial memory footprint.
  */
 
 import { commandFilePaths, commandAliases } from './commandRegistry.js';
 import { commandDefinitionMap, commandExecutionMap } from './commandManager.js';
 
 /**
- * Dynamically loads a command module by its name.
- * If the command is already loaded, it retrieves it from the cache.
- * Otherwise, it imports the module and caches its definition and execute function.
- * @param {string} commandName - The name of the command to load (case-insensitive).
- * @param {import('../types.js').Dependencies} dependencies - The dependencies object.
- * @returns {Promise<{definition: import('../types.js').CommandDefinition, execute: import('../types.js').CommandExecuteFunction}|null>}
- *          A promise that resolves with the command's definition and execute function, or null if loading fails.
+ * Dynamically loads a command module by name.
+ * @param {string} commandName The name of the command to load (case-insensitive).
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @returns {Promise<{definition: import('../types.js').CommandDefinition, execute: import('../types.js').CommandExecuteFunction}|null>} The command's definition and execute function, or null if loading fails.
  */
 export async function loadCommand(commandName, dependencies) {
     const { playerUtils } = dependencies;

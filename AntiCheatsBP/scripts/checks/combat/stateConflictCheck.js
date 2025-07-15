@@ -1,7 +1,6 @@
 /**
- * @file Implements checks for players attacking while in states that should normally prevent combat actions,
+ * @file Checks for players attacking while in states that should prevent combat.
  * @module AntiCheatsBP/scripts/checks/combat/stateConflictCheck
- * such as sleeping, using consumables, charging bows, or using shields.
  */
 
 /**
@@ -11,14 +10,11 @@
  */
 
 /**
- * Checks if the player is attacking while in a sleeping state.
- * Player's sleep state is determined by `player.isSleeping`.
- * @async
- * @param {import('@minecraft/server').Player} player - The player instance to check.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {Dependencies} dependencies - Object containing necessary dependencies.
- * @param {EventSpecificData} [eventSpecificData] - Optional event-specific data (e.g., targetEntity).
- * @returns {Promise<void>}
+ * Checks if the player is attacking while sleeping.
+ * @param {import('@minecraft/server').Player} player The player to check.
+ * @param {PlayerAntiCheatData} pData The player's data.
+ * @param {Dependencies} dependencies The command dependencies.
+ * @param {EventSpecificData} [eventSpecificData] Optional event-specific data.
  */
 export async function checkAttackWhileSleeping(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
@@ -48,15 +44,11 @@ export async function checkAttackWhileSleeping(player, pData, dependencies, even
 }
 
 /**
- * Checks if the player is attacking while using an item (consumable, bow, shield).
- * Relies on state flags in `pData` (e.g., `isUsingConsumable`, `isChargingBow`, `isUsingShield`).
- * These flags are expected to be managed by other parts of the system (e.g., eventHandlers.js).
- * @async
- * @param {import('@minecraft/server').Player} player - The player instance to check.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {Dependencies} dependencies - Object containing necessary dependencies.
- * @param {EventSpecificData} [eventSpecificData] - Optional event-specific data (e.g., targetEntity).
- * @returns {Promise<void>}
+ * Checks if the player is attacking while using an item.
+ * @param {import('@minecraft/server').Player} player The player to check.
+ * @param {PlayerAntiCheatData} pData The player's data.
+ * @param {Dependencies} dependencies The command dependencies.
+ * @param {EventSpecificData} [eventSpecificData] Optional event-specific data.
  */
 export async function checkAttackWhileUsingItem(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;

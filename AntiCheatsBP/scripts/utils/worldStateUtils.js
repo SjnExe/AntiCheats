@@ -1,7 +1,6 @@
 /**
- * @file Provides utility functions for managing global world states like dimension locks
+ * @file Manages global world states like dimension locks.
  * @module AntiCheatsBP/scripts/utils/worldStateUtils
- * using world dynamic properties.
  */
 import * as mc from '@minecraft/server';
 
@@ -9,8 +8,8 @@ const netherLockedPropertyKey = 'anticheat:netherLocked';
 const endLockedPropertyKey = 'anticheat:endLocked';
 
 /**
- * Checks if the Nether dimension is currently locked.
- * @returns {boolean} True if the Nether is locked, false otherwise.
+ * Checks if the Nether dimension is locked.
+ * @returns {boolean} True if locked, false otherwise.
  */
 export function isNetherLocked() {
     try {
@@ -24,8 +23,8 @@ export function isNetherLocked() {
 
 /**
  * Sets the lock state for the Nether dimension.
- * @param {boolean} newLockState - True to lock the Nether, false to unlock.
- * @returns {boolean} True if the state was set successfully, false otherwise.
+ * @param {boolean} newLockState True to lock, false to unlock.
+ * @returns {boolean} True on success, false on failure.
  */
 export function setNetherLocked(newLockState) {
     if (typeof newLockState !== 'boolean') {
@@ -42,8 +41,8 @@ export function setNetherLocked(newLockState) {
 }
 
 /**
- * Checks if The End dimension is currently locked.
- * @returns {boolean} True if The End is locked, false otherwise.
+ * Checks if The End dimension is locked.
+ * @returns {boolean} True if locked, false otherwise.
  */
 export function isEndLocked() {
     try {
@@ -57,8 +56,8 @@ export function isEndLocked() {
 
 /**
  * Sets the lock state for The End dimension.
- * @param {boolean} newLockState - True to lock The End, false to unlock.
- * @returns {boolean} True if the state was set successfully, false otherwise.
+ * @param {boolean} newLockState True to lock, false to unlock.
+ * @returns {boolean} True on success, false on failure.
  */
 export function setEndLocked(newLockState) {
     if (typeof newLockState !== 'boolean') {

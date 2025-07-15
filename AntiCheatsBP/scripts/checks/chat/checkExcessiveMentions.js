@@ -1,5 +1,5 @@
 /**
- * @file Implements a check to detect excessive user mentions in chat messages.
+ * @file Detects excessive user mentions in chat messages.
  * @module AntiCheatsBP/scripts/checks/chat/checkExcessiveMentions
  */
 
@@ -14,14 +14,11 @@ const ELLIPSIS_LENGTH = 3;
 const DEBUG_LOG_SNIPPET_LENGTH_MENTIONS = 20;
 
 /**
- * Checks a message for excessive user mentions (e.g., @PlayerName).
- * Considers both the number of unique users mentioned and the frequency of mentions for a single user.
- * @async
- * @param {import('@minecraft/server').Player} player - The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - Player's anti-cheat data (used for watched status).
- * @param {Dependencies} dependencies - Shared command dependencies.
- * @returns {Promise<void>}
+ * Checks a message for excessive user mentions.
+ * @param {import('@minecraft/server').Player} player The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData The player's anti-cheat data.
+ * @param {Dependencies} dependencies Shared command dependencies.
  */
 export async function checkExcessiveMentions(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;

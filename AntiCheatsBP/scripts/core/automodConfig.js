@@ -1,17 +1,14 @@
 /**
  * @file Stores the configuration for the AutoMod system.
  * @module AntiCheatsBP/scripts/core/automodConfig
- * This includes rules for automated actions based on flag counts,
- * (with rule-specific message templates) and per-check type toggles for AutoMod.
- * All `checkType` keys and `actionType` string literals must be in `camelCase`.
  * @typedef {import('../types.js').AutoModActionParameters} AutoModActionParameters
  * @typedef {import('../types.js').AutoModTierRule} AutoModTierRule
  * @typedef {object} AutoModRuleDef
- * @property {string} checkType - The type of check this rule applies to.
- * @property {boolean} enabled - Whether this rule is enabled.
- * @property {string} [description] - A description of the rule.
- * @property {number} [resetFlagsAfterSeconds] - The number of seconds after which to reset the flags for this rule.
- * @property {AutoModTierRule[]} tiers - The tiers of actions to take based on the flag count.
+ * @property {string} checkType The type of check this rule applies to.
+ * @property {boolean} enabled Whether this rule is enabled.
+ * @property {string} [description] A description of the rule.
+ * @property {number} [resetFlagsAfterSeconds] The number of seconds after which to reset the flags for this rule.
+ * @property {AutoModTierRule[]} tiers The tiers of actions to take based on the flag count.
  */
 /** @type {{ automodRuleSets: AutoModRuleDef[] }} */
 export const automodConfig = {

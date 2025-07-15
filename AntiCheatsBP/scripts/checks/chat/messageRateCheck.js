@@ -1,5 +1,5 @@
 /**
- * @file Implements a check to detect players sending chat messages too frequently (spamming).
+ * @file Detects players sending chat messages too frequently.
  * @module AntiCheatsBP/scripts/checks/chat/messageRateCheck
  */
 
@@ -14,13 +14,10 @@ const LOCAL_ELLIPSIS_LENGTH_MSG_RATE = 3;
 
 /**
  * Checks if a player is sending messages too frequently.
- * If a violation is detected, configured actions (flagging, logging, message cancellation) are executed.
- * @async
- * @param {import('@minecraft/server').Player} player - The player sending the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data, used for message content and cancellation.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastChatMessageTimestamp`.
- * @param {Dependencies} dependencies - The full dependencies object.
- * @returns {Promise<void>} A promise that resolves when the check is complete.
+ * @param {import('@minecraft/server').Player} player The player sending the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {PlayerAntiCheatData} pData The player's data.
+ * @param {Dependencies} dependencies The full dependencies object.
  */
 export async function checkMessageRate(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
