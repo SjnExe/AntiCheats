@@ -146,6 +146,14 @@ export function getPlayerData(playerId) {
 }
 
 /**
+ * Retrieves all active player data from the cache.
+ * @returns {Array<import('../types.js').PlayerAntiCheatData>} An array of all active player data.
+ */
+export function getActivePlayers() {
+    return Array.from(activePlayerData.values());
+}
+
+/**
  * Ensures a player's data is loaded into the cache.
  * @param {import('@minecraft/server').Player} player The player object.
  * @param {number} currentTick The current server tick.
