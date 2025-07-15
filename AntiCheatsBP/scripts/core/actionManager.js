@@ -34,24 +34,26 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
     if (!template) {
         return '';
     }
-    let message = template;
-    message = message.replace(/{playerName}/g, playerName);
-    message = message.replace(/{checkType}/g, checkType);
-    message = message.replace(/{detailsString}/g, formatViolationDetails(violationDetails));
-    if (violationDetails && typeof violationDetails === 'object') {
-        for (const key in violationDetails) {
-            if (Object.prototype.hasOwnProperty.call(violationDetails, key)) {
-                const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const placeholderRegex = new RegExp(`{${escapedKey}}`, 'g');
-                let valueStr = String(violationDetails[key]);
-                if (typeof violationDetails[key] === 'number' && !Number.isInteger(violationDetails[key])) {
-                    valueStr = violationDetails[key].toFixed(DECIMAL_PLACES_FOR_VIOLATION_DETAILS);
-                }
-                message = message.replace(placeholderRegex, valueStr);
+
+    const detailsString = formatViolationDetails(violationDetails);
+
+    const replacements = {
+        playerName,
+        checkType,
+        detailsString,
+        ...violationDetails
+    };
+
+    return template.replace(/{(\w+)}/g, (placeholder, key) => {
+        const value = replacements[key];
+        if (value !== undefined) {
+            if (typeof value === 'number' && !Number.isInteger(value)) {
+                return value.toFixed(DECIMAL_PLACES_FOR_VIOLATION_DETAILS);
             }
+            return String(value);
         }
-    }
-    return message;
+        return placeholder;
+    });
 }
 /**
  * Executes configured actions for a detected cheat/violation based on predefined profiles.
@@ -63,92 +65,112 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  * @returns {Promise<void>}
  */
-export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
-    const { playerDataManager, playerUtils, logManager, checkActionProfiles, config } = dependencies;
-    const playerNameForLog = player?.nameTag ?? 'System';
-    if (!checkActionProfiles) {
-        playerUtils?.debugLog(`[ActionManager.executeCheckAction CRITICAL] checkActionProfiles not found in dependencies. Cannot process action for ${checkType}. Context: ${playerNameForLog}`, null, dependencies);
+async function _handleFlagging(player, profile, flagReasonMessage, checkType, dependencies, violationDetails) {
+    if (!player || !profile.flag) {
+        if (!player && profile.flag) {
+            dependencies.playerUtils?.debugLog(`[ActionManager] Skipping flagging for checkType '${checkType}' (player is null).`, null, dependencies);
+        }
         return;
     }
+
+    const flagType = profile.flag.type || checkType;
+    const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
+    for (let i = 0; i < increment; i++) {
+        await dependencies.playerDataManager?.addFlag(player, flagType, flagReasonMessage, dependencies, violationDetails);
+    }
+    dependencies.playerUtils?.debugLog(`[ActionManager] Flagged ${player.nameTag} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.nameTag, dependencies);
+}
+
+function _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies) {
+    if (!profile.log) return;
+
+    const { logManager } = dependencies;
+    const playerNameForLog = player?.nameTag ?? 'System';
+    const logActionType = profile.log.actionType || `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
+    let logDetailsString = profile.log.detailsPrefix || '';
+    if (profile.log.includeViolationDetails !== false) {
+        logDetailsString += formatViolationDetails(violationDetails);
+    }
+
+    logManager?.addLog({
+        adminName: 'System',
+        actionType: logActionType,
+        targetName: playerNameForLog,
+        targetId: player?.id,
+        details: logDetailsString.trim() || 'N/A',
+        reason: flagReasonMessage,
+        checkType,
+        location: player?.location,
+        dimensionId: player?.dimension?.id,
+    }, dependencies);
+}
+
+function _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies) {
+    if (!profile.notifyAdmins?.message || dependencies.config.notifyOnPlayerFlagged === false) return;
+
+    const { playerUtils, playerDataManager } = dependencies;
+    const playerNameForLog = player?.nameTag ?? 'System';
+    const notifyMsg = formatActionMessage(profile.notifyAdmins.message, playerNameForLog, checkType, violationDetails);
+    const pDataAfterAwait = player?.isValid() ? playerDataManager?.getPlayerData(player.id) : null;
+    playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pDataAfterAwait);
+}
+
+function _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies) {
+    if (!player || !violationDetails || Object.keys(violationDetails).length === 0) {
+        if (!player && violationDetails && Object.keys(violationDetails).length > 0) {
+            dependencies.playerUtils?.debugLog(`[ActionManager] Skipping violation details storage for '${checkType}' (player is null).`, null, dependencies);
+        }
+        return;
+    }
+
+    if (!player.isValid()) {
+        dependencies.playerUtils?.debugLog(`[ActionManager] Player ${player.nameTag} became invalid. Skipping details map update.`, null, dependencies);
+        return;
+    }
+
+    const { playerDataManager, playerUtils } = dependencies;
+    const currentPData = playerDataManager?.getPlayerData(player.id);
+    if (currentPData) {
+        currentPData.lastViolationDetailsMap ??= {};
+        const detailsToStore = {
+            timestamp: Date.now(),
+            details: formatViolationDetails(violationDetails),
+            ...(violationDetails.itemTypeId && { itemTypeId: violationDetails.itemTypeId }),
+            ...(typeof violationDetails.quantityFound === 'number' && { quantityFound: violationDetails.quantityFound }),
+        };
+        currentPData.lastViolationDetailsMap[checkType] = detailsToStore;
+        currentPData.isDirtyForSave = true;
+        playerUtils?.debugLog(`[ActionManager] Stored violation details for check '${checkType}' for ${player.nameTag}: ${JSON.stringify(detailsToStore)}`, player.nameTag, dependencies);
+    } else {
+        playerUtils?.debugLog(`[ActionManager] Could not store violation details for '${checkType}' (pData not found for ${player.nameTag} after await).`, player.nameTag, dependencies);
+    }
+}
+
+export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
+    const { playerUtils, checkActionProfiles } = dependencies;
+    const playerNameForLog = player?.nameTag ?? 'System';
+
+    if (!checkActionProfiles) {
+        playerUtils?.debugLog(`[ActionManager CRITICAL] checkActionProfiles not found. Cannot process action for ${checkType}.`, null, dependencies);
+        return;
+    }
+
     const profile = checkActionProfiles[checkType];
     if (!profile) {
-        playerUtils?.debugLog(`[ActionManager.executeCheckAction] No action profile found for checkType: '${checkType}'. Context: ${playerNameForLog}`, null, dependencies);
+        playerUtils?.debugLog(`[ActionManager] No action profile for checkType: '${checkType}'.`, null, dependencies);
         return;
     }
+
     if (!profile.enabled) {
-        playerUtils?.debugLog(`[ActionManager.executeCheckAction] Actions for checkType '${checkType}' are disabled. Context: ${playerNameForLog}`, null, dependencies);
+        playerUtils?.debugLog(`[ActionManager] Actions for '${checkType}' are disabled.`, null, dependencies);
         return;
     }
+
     const baseReasonTemplate = profile.flag?.reason || `Triggered ${checkType}`;
-    const flagReasonMessage = formatActionMessage(
-        baseReasonTemplate,
-        playerNameForLog,
-        checkType,
-        violationDetails,
-    );
-    if (player && profile.flag) {
-        const flagType = profile.flag.type || checkType;
-        const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
-        for (let i = 0; i < increment; i++) {
-            await playerDataManager?.addFlag(player, flagType, flagReasonMessage, dependencies, violationDetails);
-        }
-        playerUtils?.debugLog(`[ActionManager.executeCheckAction] Flagged ${playerNameForLog} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player?.nameTag, dependencies);
-    } else if (!player && profile.flag) {
-        playerUtils?.debugLog(`[ActionManager.executeCheckAction] Skipping flagging for checkType '${checkType}' (player is null).`, null, dependencies);
-    }
-    if (profile.log) {
-        const logActionType = profile.log.actionType || `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
-        let logDetailsString = profile.log.detailsPrefix || '';
-        if (profile.log.includeViolationDetails !== false) {
-            logDetailsString += formatViolationDetails(violationDetails);
-        }
-        logManager?.addLog({
-            adminName: 'System',
-            actionType: logActionType,
-            targetName: playerNameForLog,
-            targetId: player?.id,
-            details: logDetailsString.trim() || 'N/A',
-            reason: flagReasonMessage,
-            checkType,
-            location: player?.location,
-            dimensionId: player?.dimension?.id,
-        }, dependencies);
-    }
-    if (profile.notifyAdmins?.message) {
-        const notifyMsg = formatActionMessage(
-            profile.notifyAdmins.message,
-            playerNameForLog,
-            checkType,
-            violationDetails,
-        );
-        const pDataAfterAwait = player && player.isValid() ? playerDataManager?.getPlayerData(player.id) : null;
-        if (config.notifyOnPlayerFlagged !== false) {
-            playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pDataAfterAwait);
-        }
-    }
-    if (player && player.isValid() && violationDetails && Object.keys(violationDetails).length > 0) {
-        const currentPData = playerDataManager?.getPlayerData(player.id);
-        if (currentPData) {
-            currentPData.lastViolationDetailsMap ??= {};
-            const detailsToStore = {
-                timestamp: Date.now(),
-                details: formatViolationDetails(violationDetails),
-            };
-            if (violationDetails.itemTypeId) {
-                detailsToStore.itemTypeId = violationDetails.itemTypeId;
-            }
-            if (typeof violationDetails.quantityFound === 'number') {
-                detailsToStore.quantityFound = violationDetails.quantityFound;
-            }
-            currentPData.lastViolationDetailsMap[checkType] = detailsToStore;
-            currentPData.isDirtyForSave = true;
-            playerUtils?.debugLog(`[ActionManager.executeCheckAction] Stored violation details for check '${checkType}' for ${playerNameForLog}: ${JSON.stringify(detailsToStore)}`, player?.nameTag, dependencies);
-        } else {
-            playerUtils?.debugLog(`[ActionManager.executeCheckAction] Could not store violation details for '${checkType}' (pData not found for ${playerNameForLog} after await).`, player?.nameTag, dependencies);
-        }
-    } else if (player && !player.isValid() && violationDetails && Object.keys(violationDetails).length > 0) {
-        playerUtils?.debugLog(`[ActionManager.executeCheckAction] Player ${playerNameForLog} became invalid. Skipping details map update.`, null, dependencies);
-    } else if (!player && violationDetails && Object.keys(violationDetails).length > 0) {
-        playerUtils?.debugLog(`[ActionManager.executeCheckAction] Skipping violation details storage for '${checkType}' (player is null).`, null, dependencies);
-    }
+    const flagReasonMessage = formatActionMessage(baseReasonTemplate, playerNameForLog, checkType, violationDetails);
+
+    await _handleFlagging(player, profile, flagReasonMessage, checkType, dependencies, violationDetails);
+    _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies);
+    _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies);
+    _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies);
 }

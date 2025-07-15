@@ -593,8 +593,8 @@ async function _handleEntityHurt(eventData, dependencies) {
                     attackerPData.lastCombatInteractionTime = Date.now();
                     attackerPData.isDirtyForSave = true;
 
-                    attackerPData.attackEventsTimestamps ??= [];
-                    attackerPData.attackEventsTimestamps.push(Date.now());
+                    attackerPData.attackEvents ??= [];
+                    attackerPData.attackEvents.push(Date.now());
                     attackerPData.lastAttackTick = currentTick;
                     attackerPData.lastPitch = attackerPlayer.getRotation().pitch;
                     attackerPData.lastYaw = attackerPlayer.getRotation().yaw;
@@ -768,13 +768,15 @@ async function _handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
             return;
         }
 
-        if (config?.enableInstaBreakSpeedCheck) {
+        if (config?.enableInstaBreakSpeedCheck || config?.enableAutoToolCheck) {
             const expectedTicks = getExpectedBreakTicks(player, block.permutation, itemStack, dependencies);
             currentPData.breakStartTickGameTime = currentTick;
             currentPData.expectedBreakDurationTicks = expectedTicks;
             currentPData.breakingBlockTypeId = block.typeId;
             currentPData.breakingBlockLocation = { x: block.location.x, y: block.location.y, z: block.location.z };
             currentPData.toolUsedForBreakAttempt = itemStack?.typeId;
+            currentPData.slotAtBreakAttemptStart = player.selectedSlot;
+            currentPData.isAttemptingBlockBreak = true;
             currentPData.isDirtyForSave = true;
         }
     }
@@ -800,6 +802,12 @@ async function _handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
         return;
     }
 
+    if (config?.enableNukerCheck) {
+        pData.blockBreakEvents = pData.blockBreakEvents || [];
+        pData.blockBreakEvents.push(Date.now());
+        pData.isDirtyForSave = true;
+    }
+
     if (checks?.checkXray && config?.xrayDetectionNotifyOnOreMineEnabled) {
         await checks.checkXray(player, block, brokenBlockPermutation.type, pData, dependencies);
     }
@@ -814,6 +822,9 @@ async function _handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
             brokenBlockLocation: block.location,
             player,
         };
+        pData.lastBreakCompleteTick = dependencies.currentTick;
+        pData.blockBrokenWithOptimalTypeId = brokenBlockPermutation.type.id;
+        pData.isAttemptingBlockBreak = false;
         await checks.checkAutoTool(player, pData, dependencies, autoToolEventData);
     }
 
@@ -874,7 +885,7 @@ async function _handleItemUse(eventData, dependencies) {
     }
 
     const itemFoodComponent = itemStack.type?.getComponent(mc.ItemComponentTypes.Food);
-    if (itemFoodComponent && config?.enableChatDuringItemUseCheck) {
+    if (itemFoodComponent && config?.enableStateConflictCheck) {
         pData.isUsingConsumable = true;
         pData.isDirtyForSave = true;
         const foodUseDurationTicks = (itemFoodComponent.usingConvertsTo === undefined)
@@ -891,11 +902,34 @@ async function _handleItemUse(eventData, dependencies) {
         }, Math.max(minTimeoutDelayTicks, Math.round(foodUseDurationTicks)));
     }
 
-    if (itemStack.typeId === mc.MinecraftItemTypes.bow.id || itemStack.typeId === mc.MinecraftItemTypes.crossbow.id) {
-        if (config?.enableChatDuringItemUseCheck) {
-            pData.isChargingBow = true;
-            pData.isDirtyForSave = true;
-        }
+    if ((itemStack.typeId === mc.MinecraftItemTypes.bow.id || itemStack.typeId === mc.MinecraftItemTypes.crossbow.id) && config?.enableStateConflictCheck) {
+        pData.isChargingBow = true;
+        pData.isDirtyForSave = true;
+        // Reset after a reasonable time if the player stops using the item without firing
+        minecraftSystem?.system?.runTimeout(() => {
+            if (player.isValid()) {
+                const currentPData = playerDataManager?.getPlayerData(player.id);
+                if (currentPData?.isChargingBow) {
+                    currentPData.isChargingBow = false;
+                    currentPData.isDirtyForSave = true;
+                }
+            }
+        }, 3 * ticksPerSecond); // 3 seconds
+    }
+
+    if (itemStack.typeId === mc.MinecraftItemTypes.shield.id && config?.enableStateConflictCheck) {
+        pData.isUsingShield = true;
+        pData.isDirtyForSave = true;
+        // Reset after a reasonable time if the player stops using the item
+        minecraftSystem?.system?.runTimeout(() => {
+            if (player.isValid()) {
+                const currentPData = playerDataManager?.getPlayerData(player.id);
+                if (currentPData?.isUsingShield) {
+                    currentPData.isUsingShield = false;
+                    currentPData.isDirtyForSave = true;
+                }
+            }
+        }, 3 * ticksPerSecond); // 3 seconds
     }
 
 
