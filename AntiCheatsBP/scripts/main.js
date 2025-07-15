@@ -386,7 +386,6 @@ function attemptInitializeSystem(retryCount = 0) {
             } else {
                 // Attempt to log directly if dependencies are not available
                 addLog({ actionType: 'error.main.initialization.critical.unsafe', context: 'Main.attemptInitializeSystem', details: { message: 'Max retries reached', retryCount: retryCount + 1 } }, { mc: { system, world } });
-                console.error(criticalErrorMsg);
             }
         }
     }
