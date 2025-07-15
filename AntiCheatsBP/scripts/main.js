@@ -1,6 +1,4 @@
 import { system, world } from '@minecraft/server';
-import * as mc from '@minecraft/server';
-import * as mcui from '@minecraft/server-ui';
 
 import { automodConfig } from './core/automodConfig.js';
 import { checkActionProfiles } from './core/actionProfiles.js';

@@ -2,7 +2,6 @@
  * @file Manages the display of dynamic, hierarchical UI panels and modal forms.
  * @module AntiCheatsBP/scripts/core/uiManager
  */
-import * as mc from '@minecraft/server';
 import { world } from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from '../core/panelLayoutConfig.js';
@@ -230,7 +229,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
  * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
      */
     generateOnlinePlayerItems: (player, dependencies) => {
-        const { mc, playerDataManager } = dependencies;
+        const { playerDataManager } = dependencies;
         const items = [];
         const onlinePlayers = world.getAllPlayers();
 
@@ -280,7 +279,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
  * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
      */
     generateWatchedPlayerItems: (player, dependencies) => {
-        const { mc, playerDataManager } = dependencies;
+        const { playerDataManager } = dependencies;
         const items = [];
         const onlinePlayers = world.getAllPlayers();
 
@@ -1477,7 +1476,7 @@ const UI_ACTION_FUNCTIONS = {
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
      */
     displaySystemInfoModal: async (player, dependencies) => {
-        const { playerUtils, config, getString, mc, logManager, playerDataManager, reportManager } = dependencies;
+        const { playerUtils, config, getString, logManager, playerDataManager, reportManager, system } = dependencies;
         const viewingPlayerName = player.name;
         playerUtils?.debugLog(`[UiManager.displaySystemInfoModal] Requested by ${viewingPlayerName}`, viewingPlayerName, dependencies);
         let infoText = '§g--- System Information ---\n§r';
@@ -1862,7 +1861,7 @@ const UI_ACTION_FUNCTIONS = {
  * @param {object} context Context object with target player details.
      */
     confirmClearPlayerInventory: async (player, dependencies, context) => {
-        const { playerUtils, getString, commandExecutionMap, mc, logManager } = dependencies; // logManager is used by callback
+        const { playerUtils, getString, commandExecutionMap, logManager } = dependencies; // logManager is used by callback
         const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
 

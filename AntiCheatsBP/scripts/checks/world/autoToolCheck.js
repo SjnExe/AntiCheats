@@ -4,7 +4,6 @@
  * to an optimal tool just before breaking a block and potentially switch back immediately after.
  * Relies on various `pData` fields being updated by block break event handlers and the main tick loop.
  */
-import * as mc from '@minecraft/server';
 import { getOptimalToolForBlock, calculateRelativeBlockBreakingPower } from '../../utils/index.js';
 
 // Constants for magic numbers
