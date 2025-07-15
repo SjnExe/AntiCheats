@@ -6,7 +6,6 @@ export const definition = {
     name: 'listwatched',
     syntax: '',
     description: 'Lists all online players currently being watched.',
-    aliases: ['lw', 'watchedlist', 'lsw'],
     permissionLevel: 1, // admin
     enabled: true,
 };

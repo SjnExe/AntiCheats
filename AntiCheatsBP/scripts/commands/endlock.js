@@ -9,7 +9,6 @@ export const definition = {
     name: 'endlock',
     syntax: '<on|off|status>',
     description: 'Manages End dimension access. "on" locks, "off" unlocks, "status" checks.',
-    aliases: ['el'],
     permissionLevel: 1, // admin
     enabled: true,
 };

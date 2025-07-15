@@ -6,7 +6,6 @@ export const definition = {
     name: 'xraynotify',
     syntax: '[on|off|toggle|status]',
     description: 'Toggles your personal X-Ray ore mining notifications if the feature is enabled server-wide.',
-    aliases: ['xn'],
     permissionLevel: 1, // admin
     enabled: true,
 };

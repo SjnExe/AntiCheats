@@ -10,7 +10,6 @@ export const definition = {
     name: 'invsee',
     syntax: '<playername>',
     description: 'Views a player\'s inventory.',
-    aliases: ['is'],
     permissionLevel: 1, // admin
     enabled: true,
 };

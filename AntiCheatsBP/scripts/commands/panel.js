@@ -4,7 +4,6 @@ export const definition = {
     name: 'panel',
     syntax: '',
     description: 'Opens the main AntiCheat UI panel. Content varies by permission (admin tools for staff, user info for regular players).',
-    aliases: ['ui'],
     permissionLevel: 1024, // member
     enabled: true,
 };

@@ -4,7 +4,6 @@ export const definition = {
     name: 'warnings',
     syntax: '<playername>',
     description: 'Displays a summary of a player\'s AntiCheat flags (warnings).',
-    aliases: ['warns', 'flags'],
     permissionLevel: 1, // admin
     enabled: true,
 };

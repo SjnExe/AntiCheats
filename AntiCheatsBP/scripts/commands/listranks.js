@@ -8,7 +8,6 @@ export const definition = {
     name: 'listranks',
     syntax: '',
     description: 'Lists all defined ranks and their basic properties.',
-    aliases: ['lr'],
     permissionLevel: 1024, // member
     enabled: true,
 };

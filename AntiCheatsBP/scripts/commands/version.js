@@ -9,7 +9,6 @@ export const definition = {
     name: 'version',
     syntax: '',
     description: 'Displays the current version of the AntiCheat addon.',
-    aliases: ['ver', 'v'],
     permissionLevel: 1024, // member
     enabled: true,
 };

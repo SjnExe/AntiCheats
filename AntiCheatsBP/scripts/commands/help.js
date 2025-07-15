@@ -7,7 +7,6 @@ export const definition = {
     name: 'help',
     syntax: '[commandName]',
     description: 'command.help.description',
-    aliases: ['h'],
     permissionLevel: 1024, // member
     enabled: true,
 };
