@@ -53,22 +53,6 @@ export function initializeCommands(dependencies) {
     debugLog(`[CommandManager.initializeCommands] Command system initialized. ${commandFilePaths.size} commands available, ${dependencies.aliasToCommandMap.size} aliases registered.`, null, dependencies);
 }
 
-/**
- * IIFE for initial command system setup.
- */
-(() => {
-    const initialLoadDeps = {
-        playerUtils: {
-            debugLog: () => {}, // console.log(`[CommandManagerInitialLoad] ${msg}`)
-        },
-    // aliasToCommandMap will be initialized within initializeCommands
-    };
-    try {
-        initializeCommands(initialLoadDeps);
-    } catch (e) {
-        console.error(`[CommandManagerInitialLoad CRITICAL] Error during initial command setup: ${e.stack || e}`);
-    }
-})();
 
 /**
  * Handles incoming chat messages to check for and execute commands.
