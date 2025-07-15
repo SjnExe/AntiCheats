@@ -32,7 +32,6 @@ export default [
             'semi': ['error', 'always'],
             'no-unused-vars': 'warn',
             'no-undef': 'error',
-            'no-console': 'warn',
             'quotes': ['error', 'single'],
             'no-trailing-spaces': 'error',
             'indent': ['error', 4],
