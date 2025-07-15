@@ -105,15 +105,11 @@ function subscribeToEvents(dependencies) {
         playerBreakBlock: handlePlayerBreakBlockAfterEvent,
         playerPlaceBlock: handlePlayerPlaceBlockAfterEvent,
         playerDimensionChange: handlePlayerDimensionChangeAfterEvent,
-        playerDeath: (eventData) => handlePlayerDeath(eventData, dependencies),
-        entityDie: (eventData) => {
-            if (dependencies.config.enableDeathEffects) {
-                handleEntityDieForDeathEffects(eventData, dependencies);
-            }
-        },
+        playerDeath: handlePlayerDeath,
+        entityDie: handleEntityDieForDeathEffects,
         entitySpawn: handleEntitySpawnEventAntiGrief,
         pistonActivate: handlePistonActivateAntiGrief,
-        playerInventorySlotChange: (eventData) => handleInventoryItemChange(eventData.player, eventData.itemStack, eventData.previousItemStack, eventData.slot, dependencies),
+        playerInventorySlotChange: handleInventoryItemChange,
     };
 
     for (const eventName in beforeEventSubscriptions) {
