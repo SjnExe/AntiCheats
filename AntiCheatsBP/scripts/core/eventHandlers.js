@@ -155,7 +155,7 @@ async function _handlePlayerSpawn(eventData, dependencies) {
         if (!pData) {
             console.error(`[EvtHdlr.Spawn CRITICAL] pData null for ${playerName}. Aborting spawn logic.`);
             player.sendMessage({ translate: 'error.playerDataLoadFailedKick' });
-            player.kick(playerUtils.getString('error.playerDataLoadFailedKickReason', dependencies), { reason: playerUtils.getString('error.playerDataLoadFailedKickReason', dependencies) });
+            player.kick(playerUtils.getString('error.playerDataLoadFailedKickReason', dependencies));
             return;
         }
 
