@@ -1,4 +1,4 @@
-import { system } from '@minecraft/server';
+import { system, world } from '@minecraft/server';
 import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui';
 
@@ -235,7 +235,7 @@ function performInitializations() {
     initializeModules(dependencies);
     validateConfigurations(dependencies);
 
-    mc.world.sendMessage(dependencies.playerUtils.getString('system.core.initialized', { version: configModule.acVersion }));
+    world.sendMessage({ translate: 'system.core.initialized', with: { version: configModule.acVersion } });
     dependencies.playerUtils.debugLog(`[${mainModuleName}] Anti-Cheat Core System Initialized. Tick loop active.`, 'System', dependencies);
 
     system.runInterval(() => mainTick(dependencies), 1);
@@ -248,7 +248,7 @@ function performInitializations() {
 function subscribeToEvents(dependencies) {
     dependencies.playerUtils.debugLog(`[${mainModuleName}] Subscribing to events...`, 'System', dependencies);
 
-    mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
+    world.beforeEvents.chatSend.subscribe(async (eventData) => {
         if (eventData.message.startsWith(dependencies.config.prefix)) {
             const commandHandlingDependencies = { ...dependencies, commandDefinitionMap, commandExecutionMap };
             await handleChatCommand(eventData, commandHandlingDependencies);
@@ -271,7 +271,7 @@ function subscribeToEvents(dependencies) {
         'playerPlaceBlock': handlePlayerPlaceBlockAfterEvent,
         'playerDimensionChange': handlePlayerDimensionChangeAfterEvent,
         'entityDie': (eventData) => {
-            if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
+            if (eventData.deadEntity.typeId === 'minecraft:player') {
                 handlePlayerDeath(eventData, dependencies);
             }
             if (dependencies.config.enableDeathEffects) {
@@ -280,15 +280,15 @@ function subscribeToEvents(dependencies) {
         },
         'entitySpawn': handleEntitySpawnEventAntiGrief,
         'pistonActivate': handlePistonActivateAntiGrief,
-        'playerInventoryItemChange': (eventData) => handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, dependencies),
+        'playerInventorySlotChange': (eventData) => handleInventoryItemChange(eventData.player, eventData.itemStack, eventData.previousItemStack, eventData.slot, dependencies),
     };
 
     for (const eventName in beforeEventSubscriptions) {
-        mc.world.beforeEvents[eventName].subscribe((eventData) => beforeEventSubscriptions[eventName](eventData, dependencies));
+        world.beforeEvents[eventName].subscribe((eventData) => beforeEventSubscriptions[eventName](eventData, dependencies));
     }
 
     for (const eventName in afterEventSubscriptions) {
-        mc.world.afterEvents[eventName].subscribe((eventData) => afterEventSubscriptions[eventName](eventData, dependencies));
+        world.afterEvents[eventName].subscribe((eventData) => afterEventSubscriptions[eventName](eventData, dependencies));
     }
 }
 /**
@@ -349,28 +349,31 @@ function validateConfigurations(dependencies) {
  * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
 async function mainTick(dependencies) {
-    currentTick++;
-    dependencies.currentTick = currentTick;
+    const tickJob = system.runJob(async function* () {
+        currentTick++;
+        dependencies.currentTick = currentTick;
 
-    if (dependencies.config.enableWorldBorderSystem) {
-        try {
-            processWorldBorderResizing(dependencies);
-        } catch (e) {
-            dependencies.playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', dependencies);
-            addLog({ actionType: 'errorMainWorldBorderResize', context: 'Main.TickLoop.worldBorderResizing', details: { errorMessage: e.message, stack: e.stack } }, dependencies);
+        if (dependencies.config.enableWorldBorderSystem) {
+            try {
+                processWorldBorderResizing(dependencies);
+            } catch (e) {
+                dependencies.playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', dependencies);
+                addLog({ actionType: 'errorMainWorldBorderResize', context: 'Main.TickLoop.worldBorderResizing', details: { errorMessage: e.message, stack: e.stack } }, dependencies);
+            }
         }
-    }
 
-    const allPlayers = mc.world.getAllPlayers();
-    cleanupActivePlayerData(allPlayers, dependencies);
+        const allPlayers = world.getAllPlayers();
+        cleanupActivePlayerData(allPlayers, dependencies);
 
-    for (const player of allPlayers) {
-        await processPlayer(player, dependencies);
-    }
+        for (const player of allPlayers) {
+            yield; // Yield to the next iteration of the generator
+            await processPlayer(player, dependencies);
+        }
 
-    if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
-        await handlePeriodicDataPersistence(allPlayers, dependencies);
-    }
+        if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
+            await handlePeriodicDataPersistence(allPlayers, dependencies);
+        }
+    });
 }
 /**
  * Processes all checks and updates for a single player.
@@ -386,7 +389,7 @@ async function processPlayer(player, dependencies) {
     try {
         pData = await ensurePlayerDataInitialized(player, currentTick, dependencies);
     } catch (e) {
-        dependencies.playerUtils.debugLog(`[TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, dependencies);
+        dependencies.playerUtils.debugLog(`[TickLoop] Error in ensurePlayerDataInitialized for ${player?.name}: ${e.message}`, player?.name, dependencies);
         return;
     }
 
@@ -419,12 +422,12 @@ async function processPlayer(player, dependencies) {
                 try {
                     await checkFunction(player, pData, dependencies);
                 } catch (checkError) {
-                    const errorMessage = `[TickLoop] Error during ${checkName} for ${player?.nameTag}: ${checkError?.message ?? 'Unknown error'}`;
-                    dependencies.playerUtils.debugLog(errorMessage, player?.nameTag, dependencies);
+                    const errorMessage = `[TickLoop] Error during ${checkName} for ${player?.name}: ${checkError?.message ?? 'Unknown error'}`;
+                    dependencies.playerUtils.debugLog(errorMessage, player?.name, dependencies);
                     addLog({
                         actionType: 'error.main.playerTick.checkFail',
                         context: 'Main.TickLoop.playerChecks',
-                        targetName: player?.nameTag || 'UnknownPlayer',
+                        targetName: player?.name || 'UnknownPlayer',
                         details: {
                             check: checkName,
                             message: checkError?.message ?? 'N/A',
@@ -486,7 +489,7 @@ function tpaTick(dependencies) {
  */
 function attemptInitializeSystem(retryCount = 0) {
     try {
-        if (!mc.world || !mc.world.beforeEvents || !mc.world.afterEvents || !mc.system) {
+        if (!world || !world.beforeEvents || !world.afterEvents || !system) {
             throw new Error('Core Minecraft APIs not ready');
         }
 

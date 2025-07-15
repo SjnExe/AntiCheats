@@ -25,11 +25,11 @@ export async function checkCps(player, pData, dependencies) {
     }
 
     if (!pData || !Array.isArray(pData.attackEvents)) {
-        playerUtils.debugLog(`[CpsCheck] Skipping for ${player.nameTag}: pData or pData.attackEvents is invalid.`, player.nameTag, dependencies);
+        playerUtils.debugLog(`[CpsCheck] Skipping for ${player.name}: pData or pData.attackEvents is invalid.`, player.name, dependencies);
         return;
     }
 
-    const watchedPrefix = pData.isWatched ? player.nameTag : null;
+    const watchedPrefix = pData.isWatched ? player.name : null;
     const now = Date.now();
     const calculationWindowMs = config.cpsCalculationWindowMs ?? 1000;
     const windowStartTime = now - calculationWindowMs;
@@ -44,7 +44,7 @@ export async function checkCps(player, pData, dependencies) {
     const eventsInWindow = pData.attackEvents.length;
 
     if (pData.isWatched && eventsInWindow > 0) {
-        playerUtils.debugLog(`[CpsCheck] Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix, dependencies);
+        playerUtils.debugLog(`[CpsCheck] Processing for ${player.name}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix, dependencies);
     }
 
     const maxThreshold = config.maxCpsThreshold ?? defaultMaxCpsThreshold;

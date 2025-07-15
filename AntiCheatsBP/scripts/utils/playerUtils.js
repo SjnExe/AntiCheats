@@ -111,9 +111,9 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
     if (player && pData && pData.flags && typeof pData.flags.totalFlags === 'number') {
         const flagType = pData.lastFlagType || 'N/A';
         const specificFlagCount = (flagType !== 'N/A' && pData.flags[flagType]) ? pData.flags[flagType].count : 0;
-        fullMessage += ` §7(Player: §e${player.nameTag}§7, Flags: §b${pData.flags.totalFlags}§7, Last: §b${flagType}§7[§b${specificFlagCount}§7])§r`;
+        fullMessage += ` §7(Player: §e${player.name}§7, Flags: §b${pData.flags.totalFlags}§7, Last: §b${flagType}§7[§b${specificFlagCount}§7])§r`;
     } else if (player) {
-        fullMessage += ` §7(Player: §e${player.nameTag}§7)§r`;
+        fullMessage += ` §7(Player: §e${player.name}§7)§r`;
     }
 
     const allPlayers = mc.world.getAllPlayers();
@@ -130,8 +130,8 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
                     p.sendMessage(fullMessage);
                     playSoundForEvent(p, 'adminNotificationReceived', dependencies, null);
                 } catch (e) {
-                    console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
-                    debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, dependencies, p.nameTag);
+                    console.error(`[playerUtils] Failed to send notification to admin ${p.name}: ${e}`);
+                    debugLog(`Failed to send AC notification to admin ${p.name}: ${e}`, dependencies, p.name);
                 }
             }
         }
@@ -161,7 +161,7 @@ export function findPlayer(playerName) {
         return null;
     }
     const nameToFind = playerName.toLowerCase();
-    return mc.world.getAllPlayers().find(p => p.nameTag.toLowerCase() === nameToFind) || null;
+    return mc.world.getAllPlayers().find(p => p.name.toLowerCase() === nameToFind) || null;
 }
 
 /**
@@ -323,8 +323,8 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
             try {
                 playerInstance.playSound(soundConfig.soundId, soundOptions);
             } catch (e) {
-                console.warn(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.nameTag}: ${e.message}`);
-                // playerUtils?.debugLog(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.nameTag}: ${e.stack}`, playerInstance.nameTag, dependencies);
+                console.warn(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.name}: ${e.message}`);
+                // playerUtils?.debugLog(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.nameTag}: ${e.stack}`, playerInstance.name, dependencies);
             }
         }
     };

@@ -4,6 +4,7 @@
  */
 // eslint-disable-next-line no-unused-vars
 import * as mc from '@minecraft/server';
+import { world } from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from '../core/panelLayoutConfig.js';
 
@@ -232,7 +233,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
     generateOnlinePlayerItems: (player, dependencies) => {
         const { mc, playerDataManager } = dependencies;
         const items = [];
-        const onlinePlayers = mc.world.getAllPlayers();
+        const onlinePlayers = world.getAllPlayers();
 
         if (onlinePlayers.length === 0) {
             // Handled by showPanel's generic "no items" message if this is the only generator
@@ -244,7 +245,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
             const playerData = playerDataManager?.getPlayerData(p.id);
             const isPlayerFrozen = playerData?.isFrozen ?? false;
             const flagCount = playerData?.flags?.totalFlags ?? 0;
-            let buttonText = p.nameTag;
+            let buttonText = p.name;
             if (flagCount > 0) {
                 buttonText += ` §7(Flags: §c${flagCount}§7)§r`;
             }
@@ -262,7 +263,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
                 actionValue: 'playerActionsPanel',
                 initialContext: {
                     targetPlayerId: p.id,
-                    targetPlayerName: p.nameTag,
+                    targetPlayerName: p.name,
                     isTargetFrozen: isPlayerFrozen,
                     // Any other context from onlinePlayersPanel itself (via 'context' param)
                     // will be passed if actionContextVars is omitted or if it's explicitly included.
@@ -282,14 +283,14 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
     generateWatchedPlayerItems: (player, dependencies) => {
         const { mc, playerDataManager } = dependencies;
         const items = [];
-        const onlinePlayers = mc.world.getAllPlayers();
+        const onlinePlayers = world.getAllPlayers();
 
         onlinePlayers.forEach((p, index) => {
             const playerData = playerDataManager?.getPlayerData(p.id);
             if (playerData?.isWatched) {
                 const isPlayerFrozen = playerData?.isFrozen ?? false;
                 const flagCount = playerData?.flags?.totalFlags ?? 0;
-                let buttonText = p.nameTag;
+                let buttonText = p.name;
                 if (flagCount > 0) {
                     buttonText += ` §7(Flags: §c${flagCount}§7)§r`;
                 }
@@ -307,7 +308,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
                     actionValue: 'playerActionsPanel',
                     initialContext: {
                         targetPlayerId: p.id,
-                        targetPlayerName: p.nameTag,
+                        targetPlayerName: p.name,
                         isTargetFrozen: isPlayerFrozen,
                     },
                 });
@@ -326,7 +327,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
  */
 async function showResetFlagsFormImpl(player, dependencies, context) {
     const { playerUtils, getString, commandExecutionMap, logManager } = dependencies;
-    const adminPlayerName = player.nameTag;
+    const adminPlayerName = player.name;
     playerUtils?.debugLog(`[UiManager.showResetFlagsFormImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
     const modalForm = new ModalFormData().title('§l§eReset Player Flags§r').textField('Player Name to Reset Flags For:', 'Enter exact player name').toggle('§cConfirm Resetting All Flags', false);
     try {
@@ -382,7 +383,7 @@ async function showResetFlagsFormImpl(player, dependencies, context) {
  */
 async function showConfigCategoriesListImpl(player, dependencies) {
     const { playerUtils, config, getString } = dependencies;
-    playerUtils.debugLog(`[UiManager.showConfigCategoriesListImpl] Called by ${player.nameTag}`, player.nameTag, dependencies);
+    playerUtils.debugLog(`[UiManager.showConfigCategoriesListImpl] Called by ${player.name}`, player.name, dependencies);
     const form = new ActionFormData().title('Edit Configuration Key');
 
     // Dynamically discovers editable configuration keys from dependencies.config.
@@ -501,7 +502,7 @@ async function showConfigCategoriesListImpl(player, dependencies) {
 async function showEditSingleConfigValueFormImpl(player, dependencies, context) {
     const { playerUtils, config, getString, logManager } = dependencies;
     const { keyName, keyType, parentPanelForEdit, parentContextForEdit } = context; // currentValue is the actual value from config
-    playerUtils.debugLog(`[UiManager.showEditSingleConfigValueFormImpl] Editing ${keyName} (type: ${keyType}) for ${player.nameTag}`, player.nameTag, dependencies);
+    playerUtils.debugLog(`[UiManager.showEditSingleConfigValueFormImpl] Editing ${keyName} (type: ${keyType}) for ${player.name}`, player.name, dependencies);
 
     // keyType can be 'boolean', 'number', 'string', or 'arrayString'.
     // For 'arrayString', currentValue is the actual array, and it's edited as a JSON string.
@@ -550,7 +551,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
                 config[keyName] = numVal;
                 updateSuccess = true;
                 player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
-                logManager?.addLog({ adminName: player.nameTag, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
+                logManager?.addLog({ adminName: player.name, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
                 await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
             } else {
                 player.sendMessage('§cError: Invalid number entered. Please try again.');
@@ -589,7 +590,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
 
         if (updateSuccess) { // Common success handling for boolean, string, arrayString
             player.sendMessage(`§aSuccess: Config "${keyName}" updated to: ${JSON.stringify(config[keyName])}`);
-            logManager?.addLog({ adminName: player.nameTag, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
+            logManager?.addLog({ adminName: player.name, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
             await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
         }
         // Note: 'number' type handles its own success message and navigation due to the re-prompt logic on failure.
@@ -615,7 +616,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
  */
 async function _showConfirmationModal(adminPlayer, titleString, bodyString, confirmToggleLabelString, onConfirmCallback, dependencies, bodyParams = {}) {
     const { playerUtils, logManager, getString } = dependencies;
-    const playerName = adminPlayer?.nameTag ?? 'UnknownAdmin';
+    const playerName = adminPlayer?.name ?? 'UnknownAdmin';
     let processedBody = bodyString;
     if (bodyParams) {
         for (const placeholder in bodyParams) {
@@ -651,7 +652,7 @@ async function _showConfirmationModal(adminPlayer, titleString, bodyString, conf
  */
 async function confirmClearChatImpl(player, dependencies) {
     const { playerUtils, getString, commandExecutionMap } = dependencies;
-    const adminPlayerName = player.nameTag;
+    const adminPlayerName = player.name;
     playerUtils?.debugLog(`[UiManager.confirmClearChatImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
     await _showConfirmationModal(player, '§l§cConfirm Clear Chat§r', 'Are you sure you want to clear the global chat for all players?', '§cConfirm Clear Chat', async () => {
         const clearChatCommand = commandExecutionMap?.get('clearchat');
@@ -676,7 +677,7 @@ async function confirmClearChatImpl(player, dependencies) {
  */
 async function confirmLagClearImpl(player, dependencies) {
     const { playerUtils, commandExecutionMap } = dependencies;
-    const adminPlayerName = player.nameTag;
+    const adminPlayerName = player.name;
     playerUtils?.debugLog(`[UiManager.confirmLagClearImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
     await _showConfirmationModal(player, '§l§cConfirm Lag Clear§r', 'Are you sure you want to clear all ground items and non-player/non-persistent entities? This may cause lag temporarily.', '§cConfirm Lag Clear', async () => {
         const lagClearCommand = commandExecutionMap?.get('lagclear');
@@ -708,7 +709,7 @@ async function confirmLagClearImpl(player, dependencies) {
  */
 async function displayActionLogsModalImpl(player, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;
-    const adminPlayerName = player.nameTag;
+    const adminPlayerName = player.name;
     playerUtils?.debugLog(`[UiManager.displayActionLogsModalImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
     let logText = '§g--- All Action Logs ---\n§r';
     const logs = logManager.getLogs ? logManager.getLogs() : [];
@@ -782,7 +783,7 @@ async function displayActionLogsModalImpl(player, dependencies) {
  */
 async function showModLogFilterModalImpl(player, dependencies, context) {
     const { playerUtils, getString, logManager, config } = dependencies;
-    const adminPlayerName = player.nameTag;
+    const adminPlayerName = player.name;
     playerUtils?.debugLog(`[UiManager.showModLogFilterModalImpl] Requested by ${adminPlayerName}, current context: ${JSON.stringify(context)}`, adminPlayerName, dependencies);
     const modal = new ModalFormData().title(getString('ui.modLogSelect.filterModal.title')).textField(getString('ui.modLogSelect.filterModal.textField.label'), getString('ui.modLogSelect.filterModal.textField.placeholder'), context.playerNameFilter || '');
     try {
@@ -840,7 +841,7 @@ async function showModLogFilterModalImpl(player, dependencies, context) {
  */
 async function displaySpecificLogsPageImpl(player, dependencies, context) {
     const { playerUtils, getString, logManager, config } = dependencies;
-    const adminPlayerName = player.nameTag;
+    const adminPlayerName = player.name;
     playerUtils.debugLog(`[UiManager.displaySpecificLogsPageImpl] For ${adminPlayerName}, Context: ${JSON.stringify(context)}`, adminPlayerName, dependencies);
 
     const {
@@ -930,7 +931,7 @@ async function displaySpecificLogsPageImpl(player, dependencies, context) {
  */
 async function showPanel(player, panelId, dependencies, currentContext = {}) {
     const { playerUtils, logManager, getString, rankManager, config } = dependencies;
-    const viewingPlayerName = player.nameTag;
+    const viewingPlayerName = player.name;
 
     playerUtils?.debugLog(`[UiManager.showPanel] Player: ${viewingPlayerName}, PanelID: ${panelId}, Context: ${JSON.stringify(currentContext)}`, viewingPlayerName, dependencies);
 
@@ -1309,7 +1310,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showMyStatsPageContent: async (player, dependencies, context) => {
         const { playerUtils, playerDataManager, getString } = dependencies;
-        playerUtils.debugLog(`Action: showMyStatsPageContent for ${player.nameTag}`, player.nameTag, dependencies);
+        playerUtils.debugLog(`Action: showMyStatsPageContent for ${player.name}`, player.name, dependencies);
         const pData = playerDataManager.getPlayerData(player.id);
         const totalFlags = pData?.flags?.totalFlags ?? 0;
         let bodyText = totalFlags === 0 ? 'You currently have no flags!' : `You have ${totalFlags} flags.`;
@@ -1339,7 +1340,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showServerRulesPageContent: async (player, dependencies, context) => {
         const { playerUtils, config, getString } = dependencies;
-        playerUtils.debugLog(`Action: showServerRulesPageContent for ${player.nameTag}`, player.nameTag, dependencies);
+        playerUtils.debugLog(`Action: showServerRulesPageContent for ${player.name}`, player.name, dependencies);
         const serverRules = config?.serverRules ?? [];
         const bodyText = serverRules.length === 0 ? 'No server rules have been defined by the admin yet.' : serverRules.join('\n');
         const modal = new ModalFormData().title('§l§eServer Rules§r').content(bodyText);
@@ -1362,7 +1363,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showHelpfulLinksPageContent: async (player, dependencies) => {
         const { playerUtils } = dependencies; // _config as helpfulLinks is not used
-        playerUtils.debugLog(`Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
+        playerUtils.debugLog(`Action: showHelpfulLinksPageContent for ${player.name}`, player.name, dependencies);
         // const helpfulLinks = config?.helpfulLinks ?? []; // Unused variable
         // This function is no longer used by helpfulLinksPanel, which now dynamically generates items.
         // It can be removed or kept for other potential uses if any. For this refactor, we'll remove it.
@@ -1386,7 +1387,7 @@ const UI_ACTION_FUNCTIONS = {
         const { playerUtils, getString } = dependencies;
         const { linkUrl, linkTitle, originalPanelIdForDisplayLink, originalContextForDisplayLink } = context;
 
-        playerUtils.debugLog(`Action: displayLinkInChat for ${player.nameTag}: ${linkTitle} - ${linkUrl}`, player.nameTag, dependencies);
+        playerUtils.debugLog(`Action: displayLinkInChat for ${player.name}: ${linkTitle} - ${linkUrl}`, player.name, dependencies);
 
         if (linkUrl && linkTitle) {
             // Minecraft typically makes full URLs clickable in chat.
@@ -1424,7 +1425,7 @@ const UI_ACTION_FUNCTIONS = {
         const { playerUtils } = dependencies;
         const { originalPanelId, originalContext } = context;
 
-        playerUtils.debugLog(`Action: returnToCallingPanel for ${player.nameTag}. Returning to Panel ID: ${originalPanelId}`, player.nameTag, dependencies);
+        playerUtils.debugLog(`Action: returnToCallingPanel for ${player.name}. Returning to Panel ID: ${originalPanelId}`, player.name, dependencies);
 
         if (originalPanelId) {
             // The originalContext should be the context of the panel we are returning to.
@@ -1445,7 +1446,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     refreshOnlinePlayersPanelAction: async (player, dependencies, context) => {
         const { playerUtils } = dependencies;
-        playerUtils.debugLog(`Action: refreshOnlinePlayersPanelAction for ${player.nameTag}`, player.nameTag, dependencies);
+        playerUtils.debugLog(`Action: refreshOnlinePlayersPanelAction for ${player.name}`, player.name, dependencies);
         // context here is the context of the onlinePlayersPanel itself.
         // Re-showing the panel will trigger its dynamicItemGeneratorKey again.
         await showPanel(player, 'onlinePlayersPanel', dependencies, context);
@@ -1458,7 +1459,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     refreshWatchedPlayersPanelAction: async (player, dependencies, context) => {
         const { playerUtils } = dependencies;
-        playerUtils.debugLog(`Action: refreshWatchedPlayersPanelAction for ${player.nameTag}`, player.nameTag, dependencies);
+        playerUtils.debugLog(`Action: refreshWatchedPlayersPanelAction for ${player.name}`, player.name, dependencies);
         await showPanel(player, 'watchedPlayersPanel', dependencies, context);
     },
     /**
@@ -1469,7 +1470,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showGeneralTipsPageContent: async (player, dependencies, context) => {
         const { playerUtils, config, getString } = dependencies;
-        playerUtils.debugLog(`Action: showGeneralTipsPageContent for ${player.nameTag}`, player.nameTag, dependencies);
+        playerUtils.debugLog(`Action: showGeneralTipsPageContent for ${player.name}`, player.name, dependencies);
         const generalTips = config?.generalTips ?? [];
         const bodyText = generalTips.length === 0 ? 'No general tips available at the moment.' : generalTips.join('\n\n---\n\n');
         const modal = new ModalFormData().title('General Tips').content(bodyText);
@@ -1494,13 +1495,13 @@ const UI_ACTION_FUNCTIONS = {
      */
     displaySystemInfoModal: async (player, dependencies) => {
         const { playerUtils, config, getString, mc, logManager, playerDataManager, reportManager } = dependencies;
-        const viewingPlayerName = player.nameTag;
+        const viewingPlayerName = player.name;
         playerUtils?.debugLog(`[UiManager.displaySystemInfoModal] Requested by ${viewingPlayerName}`, viewingPlayerName, dependencies);
         let infoText = '§g--- System Information ---\n§r';
         infoText += `AntiCheat Version: §e${config.addonVersion}\n`;
         infoText += `Server Time: §e${new Date().toLocaleTimeString()}\n`;
-        infoText += `Current Game Tick: §e${mc.system.currentTick}\n`;
-        const onlinePlayersInstance = mc.world.getAllPlayers();
+        infoText += `Current Game Tick: §e${system.currentTick}\n`;
+        const onlinePlayersInstance = world.getAllPlayers();
         infoText += `Online Players: §e${onlinePlayersInstance.length}\n`;
         if (playerDataManager?.getAllPlayerDataCount) {
             infoText += `Cached PlayerData Entries: §e${playerDataManager.getAllPlayerDataCount()}\n`;
@@ -1562,7 +1563,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     displayDetailedFlagsModal: async (player, dependencies, context) => {
         const { playerUtils, logManager, getString, playerDataManager } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerId, targetPlayerName } = context;
         if (!targetPlayerName) {
             player.sendMessage('§cTarget player not specified for viewing flags.'); await showPanel(player, 'playerActionsPanel', dependencies, context); return;
@@ -1607,7 +1608,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showBanFormForPlayer: async (player, dependencies, context) => {
         const { playerUtils, logManager, getString, config, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
         if (!targetPlayerName) {
             player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'ban' })); // Assumes new string
@@ -1659,7 +1660,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showKickFormForPlayer: async (player, dependencies, context) => {
         const { playerUtils, logManager, getString, config, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
         if (!targetPlayerName) {
             player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'kick' }));
@@ -1703,7 +1704,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showMuteFormForPlayer: async (player, dependencies, context) => {
         const { playerUtils, logManager, getString, config, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
         if (!targetPlayerName) {
             player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'mute' }));
@@ -1752,7 +1753,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     toggleFreezePlayer: async (player, dependencies, context) => {
         const { playerUtils, getString, commandExecutionMap, logManager } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context;
         if (!targetPlayerName) {
             player.sendMessage('§cTarget player not specified for freeze toggle.'); await showPanel(player, 'playerActionsPanel', dependencies, context); return;
@@ -1778,7 +1779,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     teleportAdminToPlayer: async (player, dependencies, context) => {
         const { playerUtils, logManager, getString } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context;
         if (!targetPlayerName) {
             player.sendMessage('§cTarget player not specified for teleport.'); await showPanel(player, 'playerActionsPanel', dependencies, context); return;
@@ -1807,7 +1808,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     teleportPlayerToAdmin: async (player, dependencies, context) => {
         const { playerUtils, logManager, getString } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context;
         if (!targetPlayerName) {
             player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'teleport here' }));
@@ -1839,7 +1840,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showUnmuteFormForPlayer: async (player, dependencies, context) => {
         const { playerUtils, getString, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
 
         if (!targetPlayerName) {
@@ -1879,7 +1880,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     confirmClearPlayerInventory: async (player, dependencies, context) => {
         const { playerUtils, getString, commandExecutionMap, mc, logManager } = dependencies; // logManager is used by callback
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
 
         if (!targetPlayerName) {
@@ -1901,7 +1902,7 @@ const UI_ACTION_FUNCTIONS = {
                 } else {
                     playerUtils.debugLog(`[UiManager.confirmClearPlayerInventory] No 'clearinv' command in map, using vanilla /clear for ${targetPlayerName}`, adminPlayerName, dependencies);
                     try {
-                        const targetPlayerObject = mc.world.getAllPlayers().find(p => p.nameTag === targetPlayerName);
+                        const targetPlayerObject = world.getAllPlayers().find(p => p.name === targetPlayerName);
                         if (targetPlayerObject) {
                             await targetPlayerObject.runCommandAsync('clear @s');
                             player.sendMessage(getString('ui.playerActions.clearInventory.success', { targetPlayerName }));
@@ -1930,7 +1931,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showUnbanFormForPlayer: async (player, dependencies, context) => {
         const { playerUtils, getString, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context;
 
         if (!targetPlayerName) {
@@ -1966,7 +1967,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     confirmResetPlayerFlagsForPlayer: async (player, dependencies, context) => {
         const { playerUtils, getString, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
 
         if (!targetPlayerName) {
@@ -2002,7 +2003,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     showPlayerInventoryFromPanel: async (player, dependencies, context) => {
         const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
 
         if (!targetPlayerName) {
@@ -2052,7 +2053,7 @@ const UI_ACTION_FUNCTIONS = {
      */
     toggleWatchPlayerFromPanel: async (player, dependencies, context) => {
         const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.nameTag;
+        const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
 
         if (!targetPlayerName) {
@@ -2130,7 +2131,7 @@ async function goToPrevLogPage(player, dependencies, context) {
  */
 async function showInspectPlayerForm(adminPlayer, dependencies, context) {
     const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
-    const adminName = adminPlayer?.nameTag ?? 'UnknownAdmin';
+    const adminName = adminPlayer?.name ?? 'UnknownAdmin';
     playerUtils?.debugLog(`[UiManager.showInspectPlayerForm] Requested by ${adminName}`, adminName, dependencies);
 
     const modalForm = new ModalFormData()

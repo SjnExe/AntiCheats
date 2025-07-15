@@ -43,7 +43,7 @@ const genericDecimalPlacesFly = 2;
  */
 export async function checkFly(player, pData, dependencies) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableFlyCheck && !config?.enableHighYVelocityCheck) {
         return;
