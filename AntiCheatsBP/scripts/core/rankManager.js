@@ -27,7 +27,7 @@ function initializeRankSystem(dependencies) {
 
     // Ensure all rank IDs in definitions are lowercase for consistent internal use.
     const standardizedRankDefinitions = rankDefinitions.map(rd => ({ ...rd, id: rd.id.toLowerCase() }));
-    sortedRankDefinitions = [...standardizedRankDefinitions].sort((a, b) => (a.priority ?? Infinity) - (b.priority ?? Infinity));
+    sortedRankDefinitions = [...standardizedRankDefinitions].sort((a, b) => (a.permissionLevel ?? Infinity) - (b.permissionLevel ?? Infinity));
 
     const newPermissionLevels = {};
     for (const rankDef of sortedRankDefinitions) {

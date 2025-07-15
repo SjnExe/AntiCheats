@@ -26,7 +26,6 @@
  * @property {ChatFormatting} [chatFormatting] Optional chat formatting overrides.
  * @property {string} [nametagPrefix] Optional nametag prefix override.
  * @property {RankCondition[]} conditions Conditions for this rank.
- * @property {number} priority Determines precedence if multiple conditions match.
  * @property {number} [assignableBy] Permission level required to assign/remove this rank.
  */
 
@@ -75,7 +74,6 @@ export const rankDefinitions = [
         conditions: [
             { type: 'ownerName' }, // Relies on config.ownerPlayerName
         ],
-        priority: 0, // Highest
     },
     {
         id: 'admin', // lowercase
@@ -91,7 +89,6 @@ export const rankDefinitions = [
         conditions: [
             { type: 'adminTag' }, // Relies on config.adminTag
         ],
-        priority: 10,
         assignableBy: 0, // Only Owner can assign/remove Admin by default
     },
     {
@@ -103,6 +100,5 @@ export const rankDefinitions = [
         conditions: [
             { type: 'default' }, // This should always be last or have the highest priority number
         ],
-        priority: 1000, // Lowest priority
     },
 ];
