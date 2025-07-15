@@ -348,32 +348,39 @@ function validateConfigurations(dependencies) {
  * Processes all tasks for a single system tick.
  * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
-async function mainTick(dependencies) {
-    const tickJob = system.runJob(async function* () {
-        currentTick++;
-        dependencies.currentTick = currentTick;
+function mainTick(dependencies) {
+    system.runJob(mainTickGenerator(dependencies));
+}
 
-        if (dependencies.config.enableWorldBorderSystem) {
-            try {
-                processWorldBorderResizing(dependencies);
-            } catch (e) {
-                dependencies.playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', dependencies);
-                addLog({ actionType: 'errorMainWorldBorderResize', context: 'Main.TickLoop.worldBorderResizing', details: { errorMessage: e.message, stack: e.stack } }, dependencies);
-            }
+/**
+ * Generator function for the main tick loop.
+ * @param {import('./types.js').Dependencies} dependencies
+ */
+async function* mainTickGenerator(dependencies) {
+    currentTick++;
+    dependencies.currentTick = currentTick;
+
+    if (dependencies.config.enableWorldBorderSystem) {
+        try {
+            processWorldBorderResizing(dependencies);
+        } catch (e) {
+            dependencies.playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', dependencies);
+            addLog({ actionType: 'errorMainWorldBorderResize', context: 'Main.TickLoop.worldBorderResizing', details: { errorMessage: e.message, stack: e.stack } }, dependencies);
         }
+    }
 
-        const allPlayers = world.getAllPlayers();
-        cleanupActivePlayerData(allPlayers, dependencies);
+    const allPlayers = world.getAllPlayers();
+    cleanupActivePlayerData(allPlayers, dependencies);
 
-        for (const player of allPlayers) {
-            yield; // Yield to the next iteration of the generator
-            await processPlayer(player, dependencies);
-        }
+    for (const player of allPlayers) {
+        yield; // Yield to the next iteration of the generator
+        await processPlayer(player, dependencies);
+    }
 
-        if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
-            await handlePeriodicDataPersistence(allPlayers, dependencies);
-        }
-    });
+    if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
+        yield; // Yield before this potentially long-running task
+        await handlePeriodicDataPersistence(allPlayers, dependencies);
+    }
 }
 /**
  * Processes all checks and updates for a single player.
