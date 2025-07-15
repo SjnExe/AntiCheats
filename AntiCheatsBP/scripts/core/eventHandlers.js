@@ -37,7 +37,24 @@ function profileEventHandler(handlerName, handlerFunction) {
                 }
             }
         } else {
-            await handlerFunction.apply(null, args);
+            try {
+                await handlerFunction.apply(null, args);
+            } catch (e) {
+                console.error(`[EventHandler.${handlerName}] Unhandled error (profiling disabled): ${e?.message}\n${e?.stack}`);
+                const player = args[0]?.player ?? args[0]?.source ?? args[0]?.damagingEntity ?? args[0]?.hurtEntity;
+                if (dependencies?.logManager) {
+                    dependencies.logManager.addLog({
+                        actionType: `error.event.${handlerName}`,
+                        context: `eventHandlers.${handlerName}`,
+                        targetName: player?.name,
+                        targetId: player?.id,
+                        details: {
+                            message: e?.message ?? 'N/A',
+                            rawErrorStack: e?.stack ?? 'N/A',
+                        },
+                    }, dependencies);
+                }
+            }
         }
     };
 }
