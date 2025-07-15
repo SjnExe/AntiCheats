@@ -243,9 +243,20 @@ async function processPlayer(player, dependencies, currentTick) {
     const checkNames = Object.keys(checks);
     const staggerTicks = dependencies.config.checkStaggerTicks || 1;
     const checksPerTick = Math.ceil(checkNames.length / staggerTicks);
-    // Use a player-specific value for the offset to ensure distribution
-    const playerTickOffset = (currentTick + parseInt(player.id, 10)) % staggerTicks;
-    const checksToRun = checkNames.slice(playerTickOffset * checksPerTick, (playerTickOffset + 1) * checksPerTick);
+
+    // Use a player-specific, but consistent, value for the offset to ensure distribution
+    const playerIdHash = Array.from(player.id).reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0);
+    const playerTickOffset = (currentTick + playerIdHash) % staggerTicks;
+
+    const startIndex = (playerTickOffset * checksPerTick) % checkNames.length;
+    const checksToRun = [];
+    for (let i = 0; i < checksPerTick; i++) {
+        const nextIndex = (startIndex + i) % checkNames.length;
+        // Avoid adding duplicates if checksPerTick > checkNames.length
+        if (checksToRun.length < checkNames.length && !checksToRun.includes(checkNames[nextIndex])) {
+            checksToRun.push(checkNames[nextIndex]);
+        }
+    }
 
     for (const checkName of checksToRun) {
         const checkFunction = checks[checkName];
