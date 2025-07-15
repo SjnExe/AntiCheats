@@ -4,10 +4,6 @@ This file lists the tasks for improving the AntiCheat addon.
 
 ## Code Quality and Maintainability
 
-- [x] **Refactor all JSDoc comments:**
-    - [x] Refactor all existing JSDoc comments to the new compact style.
-    - [x] Ensure that all single-line comments are not using multi-line comment style.
-    - [x] Remove all unnecessary comments and empty lines.
 - [ ] **Add unit tests:**
     - [ ] Write unit tests for critical components, such as the command manager and the configuration loader.
     - [ ] Set up a continuous integration (CI) pipeline to run tests automatically.
