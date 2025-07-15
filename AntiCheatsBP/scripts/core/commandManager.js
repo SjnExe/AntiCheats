@@ -2,15 +2,38 @@
  * @file Manages the registration, parsing, and execution of chat-based commands.
  * @module AntiCheatsBP/scripts/core/commandManager
  */
-import { commandFilePaths, commandAliases } from './commandRegistry.js';
+import { commandAliases } from './commandRegistry.js';
 import { loadCommand } from './dynamicCommandLoader.js';
 import { CommandError } from '../types.js';
+
+/** @type {Map<string, string>} */
+export const commandFilePaths = new Map();
 
 /** @type {Map<string, import('../types.js').CommandDefinition>} */
 export const commandDefinitionMap = new Map();
 
 /** @type {Map<string, import('../types.js').CommandExecuteFunction>} */
 export const commandExecutionMap = new Map();
+
+/**
+ * Dynamically discovers and registers command files.
+ * This function should be updated if the file structure changes.
+ */
+function discoverCommands() {
+    const commandFiles = [
+        'ban.js', 'clearchat.js', 'clearreports.js', 'copyinv.js', 'endlock.js', 'freeze.js', 'gma.js', 'gmc.js', 'gms.js',
+        'gmsp.js', 'help.js', 'inspect.js', 'invsee.js', 'kick.js', 'listranks.js', 'listwatched.js', 'mute.js', 'myflags.js',
+        'netherlock.js', 'notify.js', 'panel.js', 'purgeflags.js', 'rank.js', 'reload.js', 'report.js', 'resetflags.js', 'rules.js',
+        'testnotify.js', 'tp.js', 'tpa.js', 'tpacancel.js', 'tpaccept.js', 'tpahere.js', 'tpastatus.js', 'unban.js', 'unmute.js',
+        'vanish.js', 'version.js', 'viewreports.js', 'warnings.js', 'watch.js', 'worldborder.js', 'xraynotify.js'
+    ];
+
+    commandFilePaths.clear();
+    for (const file of commandFiles) {
+        const commandName = file.slice(0, -3); // remove .js
+        commandFilePaths.set(commandName, `../commands/${file}`);
+    }
+}
 
 /**
  * Initializes the command manager.
@@ -20,6 +43,7 @@ export function initializeCommands(dependencies) {
     const { playerUtils } = dependencies;
     const { debugLog } = playerUtils;
 
+    discoverCommands();
     commandDefinitionMap.clear();
     commandExecutionMap.clear();
 

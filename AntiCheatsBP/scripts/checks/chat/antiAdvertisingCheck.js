@@ -15,6 +15,28 @@
  * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
  * @param {Dependencies} dependencies Shared dependencies.
  */
+function isWhitelisted(text, config, playerUtils, playerName, watchedPlayerName, dependencies) {
+    if (Array.isArray(config.advertisingWhitelistPatterns) && config.advertisingWhitelistPatterns.length > 0) {
+        for (const wlPattern of config.advertisingWhitelistPatterns) {
+            if (typeof wlPattern !== 'string' || wlPattern.trim() === '') {
+                continue;
+            }
+            try {
+                if (new RegExp(wlPattern, 'i').test(text)) {
+                    playerUtils?.debugLog(`[AntiAdv] Text '${text}' for ${playerName} whitelisted by regex: '${wlPattern}'.`, watchedPlayerName, dependencies);
+                    return true;
+                }
+            } catch (eRegexWl) {
+                if (text.toLowerCase().includes(wlPattern.toLowerCase())) {
+                    playerUtils?.debugLog(`[AntiAdv] Text '${text}' for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 export async function checkAntiAdvertising(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
@@ -38,30 +60,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                 const match = regex.exec(message);
                 if (match) {
                     const detectedLink = match[0];
-                    let isWhitelisted = false;
-
-                    if (Array.isArray(config.advertisingWhitelistPatterns) && config.advertisingWhitelistPatterns.length > 0) {
-                        for (const wlPattern of config.advertisingWhitelistPatterns) {
-                            if (typeof wlPattern !== 'string' || wlPattern.trim() === '') {
-                                continue;
-                            }
-                            try {
-                                if (new RegExp(wlPattern, 'i').test(detectedLink)) {
-                                    isWhitelisted = true;
-                                    playerUtils?.debugLog(`[AntiAdv] Link '${detectedLink}' for ${playerName} whitelisted by regex: '${wlPattern}'.`, watchedPlayerName, dependencies);
-                                    break;
-                                }
-                            } catch (eRegexWl) {
-                                if (detectedLink.toLowerCase().includes(wlPattern.toLowerCase())) {
-                                    isWhitelisted = true;
-                                    playerUtils?.debugLog(`[AntiAdv] Link '${detectedLink}' for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    if (isWhitelisted) {
+                    if (isWhitelisted(detectedLink, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
                         playerUtils?.debugLog(`[AntiAdvertisingCheck] Whitelisted link '${detectedLink}' for ${playerName}. Continuing scan with other regex patterns.`, watchedPlayerName, dependencies);
                         continue;
                     }
@@ -94,23 +93,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                 continue;
             }
 
-            let isSimplePatternWhitelisted = false;
-            if (Array.isArray(config.advertisingWhitelistPatterns) && config.advertisingWhitelistPatterns.length > 0) {
-                for (const wlPattern of config.advertisingWhitelistPatterns) {
-                    if (typeof wlPattern !== 'string' || wlPattern.trim() === '') {
-                        continue;
-                    }
-
-
-
-                    if (wlPattern.toLowerCase().includes(pattern.toLowerCase())) {
-                        isSimplePatternWhitelisted = true;
-                        playerUtils?.debugLog(`[AntiAdvertisingCheck] Simple pattern '${pattern}' considered whitelisted due to presence in whitelist entry '${wlPattern}'.`, watchedPlayerName, dependencies);
-                        break;
-                    }
-                }
-            }
-            if (isSimplePatternWhitelisted) {
+            if (isWhitelisted(pattern, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
                 continue;
             }
 

@@ -87,7 +87,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     }
 
     if (flagReasonTexts.length > 0) {
-        const messageSnippetLimit = 75; // This is a local const, might be better at top or from config if shared
+        const messageSnippetLimit = 75;
         const violationDetails = {
             messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - ELLIPSIS_LENGTH) }...` : rawMessageContent,
             totalMentionsFound: allMentions.length.toString(),

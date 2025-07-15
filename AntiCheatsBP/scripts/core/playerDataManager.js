@@ -14,12 +14,39 @@ const minecraftFallingVelocity = -0.0784;
  */
 const activePlayerData = new Map();
 
+const scheduledFlagPurgesKey = 'anticheat:scheduled_flag_purges';
+
 /**
- * A set to keep track of player names for whom a flag purge is scheduled.
- * Purges are executed upon their next join.
- * @type {Set<string>}
+ * Loads the list of scheduled flag purges from a world dynamic property.
+ * @param {import('../types.js').Dependencies} dependencies
+ * @returns {Promise<Set<string>>}
  */
-const scheduledFlagPurges = new Set();
+async function _loadScheduledFlagPurges(dependencies) {
+    const { world } = dependencies;
+    try {
+        const data = world.getDynamicProperty(scheduledFlagPurgesKey);
+        if (typeof data === 'string') {
+            return new Set(JSON.parse(data));
+        }
+    } catch (e) {
+        console.error(`[PlayerDataManager] Failed to load scheduled flag purges: ${e}`);
+    }
+    return new Set();
+}
+
+/**
+ * Saves the list of scheduled flag purges to a world dynamic property.
+ * @param {Set<string>} purges
+ * @param {import('../types.js').Dependencies} dependencies
+ */
+async function _saveScheduledFlagPurges(purges, dependencies) {
+    const { world } = dependencies;
+    try {
+        world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(Array.from(purges)));
+    } catch (e) {
+        console.error(`[PlayerDataManager] Failed to save scheduled flag purges: ${e}`);
+    }
+}
 
 
 // --- Data Initialization and Default Structure ---
@@ -79,12 +106,12 @@ export function initializeDefaultPlayerData(player, currentTick) {
         lastAttackedEntityId: null,
 
         // Block Interactions
-        blockBreakTimestamps: [],
+        blockBreakTimestamps: [], // Capped at a reasonable limit
         lastBlockPlacedTimestamp: 0,
 
         // Chat and Communication
         lastChatMessageTimestamp: 0,
-        chatMessageTimestamps: [],
+        chatMessageTimestamps: [], // Capped at a reasonable limit
 
         // Miscellaneous and Transient Data (Not Saved)
         transient: {
@@ -144,6 +171,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         }
 
         // Handle scheduled flag purges
+        const scheduledFlagPurges = await _loadScheduledFlagPurges(dependencies);
         if (scheduledFlagPurges.has(player.nameTag)) {
             const defaultFlags = initializeDefaultPlayerData(player, currentTick, dependencies).flags;
             pData.flags = defaultFlags;
@@ -152,6 +180,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
             pData.automodState = {};
             pData.isDirtyForSave = true;
             scheduledFlagPurges.delete(player.nameTag);
+            await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
             playerUtils.debugLog(`[PlayerDataManager] Executed scheduled flag purge for ${player.nameTag} upon join.`, player.nameTag, dependencies);
             logManager.addLog({ actionType: 'flagsPurgedOnJoin', targetName: player.nameTag, targetId: player.id, context: 'PlayerDataManager.ensurePlayerDataInitialized' }, dependencies);
         }
@@ -202,6 +231,14 @@ export function saveDirtyPlayerData(player, dependencies) {
         // Create a savable copy, excluding transient data
         const dataToSave = { ...pData };
         delete dataToSave.transient;
+
+        // Cap arrays to prevent unbounded growth
+        if (dataToSave.blockBreakTimestamps.length > 50) {
+            dataToSave.blockBreakTimestamps = dataToSave.blockBreakTimestamps.slice(-50);
+        }
+        if (dataToSave.chatMessageTimestamps.length > 50) {
+            dataToSave.chatMessageTimestamps = dataToSave.chatMessageTimestamps.slice(-50);
+        }
 
         const serializedData = JSON.stringify(dataToSave);
 
@@ -354,6 +391,46 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         transient.ticksInAir = 0;
         transient.ticksSinceLastOnGround = 0;
         transient.fallDistance = 0;
+
+        const blockBelow = player.dimension.getBlock(player.location.offset(0, -1, 0));
+        if (blockBelow && blockBelow.typeId === 'minecraft:slime') {
+            pData.lastOnSlimeBlockTick = currentTick;
+        }
+    }
+
+    // Update effects
+    pData.speedAmplifier = -1;
+    pData.jumpBoostAmplifier = -1;
+    pData.hasSlowFalling = false;
+    pData.hasLevitation = false;
+    pData.blindnessTicks = 0;
+
+    const effects = player.getEffects();
+    for (const effect of effects) {
+        switch (effect.typeId) {
+            case 'speed':
+                pData.speedAmplifier = effect.amplifier;
+                break;
+            case 'jump_boost':
+                pData.jumpBoostAmplifier = effect.amplifier;
+                break;
+            case 'slow_falling':
+                pData.hasSlowFalling = true;
+                break;
+            case 'levitation':
+                pData.hasLevitation = true;
+                break;
+            case 'blindness':
+                pData.blindnessTicks = effect.duration;
+                break;
+        }
+    }
+
+    if (pData.lastSelectedSlot !== player.selectedSlot) {
+        pData.lastSelectedSlotChangeTick = currentTick;
+        pData.previousSelectedSlot = pData.lastSelectedSlot;
+        pData.lastSelectedSlot = player.selectedSlot;
+        pData.isDirtyForSave = true;
     }
 
     pData.lastTickUpdated = currentTick;
@@ -386,11 +463,27 @@ export function cleanupActivePlayerData(allPlayers, dependencies) {
     for (const [playerId, pData] of activePlayerData.entries()) {
         if (!onlinePlayerIds.has(playerId)) {
             pData.isOnline = false;
-            // Optionally, trigger a final save on logout
-            // saveDirtyPlayerData(player, dependencies); // This is tricky as player object is gone
+            // This is a placeholder for the player object, as it's not available here.
+            // The save function needs a player object to set the dynamic property.
+            // This will be handled by a new function `handlePlayerLeave`.
             activePlayerData.delete(playerId);
             dependencies.playerUtils.debugLog(`[PlayerDataManager] Cleaned up and removed cached data for logged-out player ${pData.playerNameTag}.`, null, dependencies);
         }
+    }
+}
+
+/**
+ * Handles player leave events to ensure data is saved.
+ * @param {import('@minecraft/server').Player} player The player who left.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
+export async function handlePlayerLeave(player, dependencies) {
+    const pData = getPlayerData(player.id);
+    if (pData) {
+        pData.isOnline = false;
+        pData.isDirtyForSave = true; // Ensure data is saved on leave
+        await saveDirtyPlayerData(player, dependencies);
+        activePlayerData.delete(player.id);
     }
 }
 
@@ -403,12 +496,12 @@ export function cleanupActivePlayerData(allPlayers, dependencies) {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @returns {Promise<boolean>} True if scheduled successfully.
  */
-export function scheduleFlagPurge(playerName, dependencies) {
-    // This is a simplified implementation. A robust version might involve
-    // saving this to a world dynamic property to persist across server restarts.
+export async function scheduleFlagPurge(playerName, dependencies) {
+    const scheduledFlagPurges = await _loadScheduledFlagPurges(dependencies);
     scheduledFlagPurges.add(playerName);
+    await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
     dependencies.playerUtils.debugLog(`[PlayerDataManager] Scheduled flag purge for offline player: ${playerName}`, null, dependencies);
-    return Promise.resolve(true);
+    return true;
 }
 
 /**
