@@ -54,6 +54,11 @@ Below are links to specific sections particularly relevant for Add-On developmen
 *   **Mojang Minecraft Scripting Libraries**:
     *   [https://github.com/Mojang/minecraft-scripting-libraries](https://github.com/Mojang/minecraft-scripting-libraries)
 
+## Community Documentation
+*   **Bedrock.dev**:
+    *   [https://bedrock.dev/](https://bedrock.dev/)
+    *   A community-driven documentation website for Minecraft Bedrock Edition. It provides detailed information on various aspects of addon development, including blocks, items, entities, and more.
+
 ## Community Anti-Cheat Projects & Resources
 
 These are community-driven open-source anti-cheat projects that serve as excellent examples and learning resources:

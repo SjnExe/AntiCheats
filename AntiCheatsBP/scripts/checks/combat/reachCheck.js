@@ -11,16 +11,17 @@ import * as mc from '@minecraft/server';
  */
 
 // Constants for magic numbers
-const playerHitboxAdjustment = 0.4;
-const defaultEntityHitboxAdjustment = 0.5;
 const loggingDecimalPlaces = 3;
 const defaultCreativeReach = 6.0;
 const defaultSurvivalReach = 3.0;
-const defaultReachBuffer = 0.5;
+const defaultReachBuffer = 0.5; // Combined buffer for latency and minor movement
 const violationDetailDecimalPlaces = 2;
+const maxRaycastDistance = 10; // Max distance to raycast for entities.
 
 /**
  * Checks if a player is attacking an entity from an excessive distance.
+ * This check uses a raycast from the player's view to find the first entity.
+ * If the attacked entity is not the first one in the line of sight, it could indicate a reach violation.
  * @param {import('@minecraft/server').Player} player The attacking player.
  * @param {PlayerAntiCheatData} pData The attacker's data.
  * @param {Dependencies} dependencies The command dependencies.
@@ -32,28 +33,13 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
     const gameMode = eventSpecificData?.gameMode;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config?.enableReachCheck) {
-        return;
-    }
+    if (!config?.enableReachCheck) return;
 
     const watchedPlayerName = pData?.isWatched ? playerName : null;
 
-    if (!player?.isValid() || !targetEntity?.isValid() || !player.location || !targetEntity.location || typeof player.getHeadLocation !== 'function' || typeof gameMode === 'undefined') {
-        playerUtils?.debugLog(`[ReachCheck] Prerequisites for ${playerName} not met (player, targetEntity, locations, getHeadLocation method, or gameMode invalid/undefined).`, watchedPlayerName, dependencies);
+    if (!player?.isValid() || !targetEntity?.isValid() || typeof gameMode === 'undefined') {
+        playerUtils?.debugLog(`[ReachCheck] Prerequisites for ${playerName} not met (player, targetEntity, or gameMode invalid/undefined).`, watchedPlayerName, dependencies);
         return;
-    }
-
-    const eyeLocation = player.getHeadLocation();
-
-    const vectorToTarget = mc.Vector.subtract(targetEntity.location, eyeLocation);
-    let distanceToTargetOrigin = vectorToTarget.length();
-
-    const approximateHitboxAdjustment = targetEntity.typeId === 'minecraft:player' ? playerHitboxAdjustment : defaultEntityHitboxAdjustment;
-    distanceToTargetOrigin = Math.max(0, distanceToTargetOrigin - approximateHitboxAdjustment); // 0 is fine
-
-
-    if (pData?.isWatched) {
-        playerUtils?.debugLog(`[ReachCheck] ${playerName} distance to ${targetEntity.typeId} origin (adjusted): ${distanceToTargetOrigin.toFixed(loggingDecimalPlaces)}. Mode: ${mc.GameMode[gameMode]}. Eye: ${eyeLocation.x.toFixed(1)},${eyeLocation.y.toFixed(1)},${eyeLocation.z.toFixed(1)}. TargetLoc: ${targetEntity.location.x.toFixed(1)},${targetEntity.location.y.toFixed(1)},${targetEntity.location.z.toFixed(1)}`, watchedPlayerName, dependencies);
     }
 
     let maxReachDistBase;
@@ -73,23 +59,39 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
     const reachBuffer = config?.reachBuffer ?? defaultReachBuffer;
     const maxAllowedReach = maxReachDistBase + reachBuffer;
 
+    const eyeLocation = player.getHeadLocation();
+    const distanceToTarget = Math.sqrt(eyeLocation.distance(targetEntity.location));
+
     if (pData?.isWatched) {
-        playerUtils?.debugLog(`[ReachCheck] ${playerName}: BaseReach: ${maxReachDistBase.toFixed(2)}, Buffer: ${reachBuffer.toFixed(2)}, MaxAllowedReach: ${maxAllowedReach.toFixed(loggingDecimalPlaces)}, ActualAdjustedDist: ${distanceToTargetOrigin.toFixed(loggingDecimalPlaces)}`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[ReachCheck] ${playerName}: GameMode: ${mc.GameMode[gameMode]}, MaxAllowed: ${maxAllowedReach.toFixed(2)}, ActualDist: ${distanceToTarget.toFixed(2)}`, watchedPlayerName, dependencies);
     }
 
-    if (distanceToTargetOrigin > maxAllowedReach) {
-        const violationDetails = {
-            distance: distanceToTargetOrigin.toFixed(loggingDecimalPlaces),
-            maxAllowed: maxAllowedReach.toFixed(loggingDecimalPlaces),
-            baseMax: maxReachDistBase.toFixed(violationDetailDecimalPlaces),
-            buffer: reachBuffer.toFixed(violationDetailDecimalPlaces),
-            targetEntityType: targetEntity.typeId,
-            targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''),
-            playerGameMode: mc.GameMode[gameMode] ?? String(gameMode),
-        };
-        const actionProfileKey = config?.reachCheckActionProfileName ?? 'combatReachAttack';
+    // Primary Check: Simple distance check. This is a first-pass filter.
+    if (distanceToTarget > maxAllowedReach) {
+        // Secondary Check: Raycasting for more accuracy if the simple check fails.
+        const viewEntities = player.getEntitiesFromViewDirection({ maxDistance: maxRaycastDistance });
+        const firstEntity = viewEntities.length > 0 ? viewEntities[0].entity : null;
 
-        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[ReachCheck] Flagged ${playerName} for reach. Distance: ${distanceToTargetOrigin.toFixed(loggingDecimalPlaces)}, Max: ${maxAllowedReach.toFixed(loggingDecimalPlaces)}`, watchedPlayerName, dependencies);
+        if (pData?.isWatched) {
+            playerUtils?.debugLog(`[ReachCheck] ${playerName} initial distance check failed. Raycasting... First entity in view: ${firstEntity?.typeId ?? 'None'}. Target: ${targetEntity.typeId}`, watchedPlayerName, dependencies);
+        }
+
+        // If there's an entity in the view direction and it's not the one being attacked, it's a potential violation.
+        if (!firstEntity || firstEntity.id !== targetEntity.id) {
+            const violationDetails = {
+                distance: distanceToTarget.toFixed(loggingDecimalPlaces),
+                maxAllowed: maxAllowedReach.toFixed(loggingDecimalPlaces),
+                baseMax: maxReachDistBase.toFixed(violationDetailDecimalPlaces),
+                buffer: reachBuffer.toFixed(violationDetailDecimalPlaces),
+                targetEntityType: targetEntity.typeId,
+                targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''),
+                playerGameMode: mc.GameMode[gameMode] ?? String(gameMode),
+                firstEntityInView: firstEntity ? `${firstEntity.typeId} (ID: ${firstEntity.id})` : 'None',
+            };
+            const actionProfileKey = config?.reachCheckActionProfileName ?? 'combatReachAttack';
+
+            await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+            playerUtils?.debugLog(`[ReachCheck] Flagged ${playerName} for reach. Distance: ${distanceToTarget.toFixed(loggingDecimalPlaces)}, Max: ${maxAllowedReach.toFixed(loggingDecimalPlaces)}. Target was not the first entity in view.`, watchedPlayerName, dependencies);
+        }
     }
 }
