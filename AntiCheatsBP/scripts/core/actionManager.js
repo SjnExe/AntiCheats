@@ -41,7 +41,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
         playerName,
         checkType,
         detailsString,
-        ...violationDetails
+        ...violationDetails,
     };
 
     return template.replace(/{(\w+)}/g, (placeholder, key) => {
