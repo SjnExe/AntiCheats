@@ -1,4 +1,4 @@
-import { world, system } from '@minecraft/server';
+import { world } from '@minecraft/server';
 import * as mc from '@minecraft/server';
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked, formatSessionDuration } from '../utils/index.js';
 const defaultCombatLogThresholdSeconds = 15;
@@ -137,7 +137,7 @@ export const handlePlayerLeave = profileEventHandler('handlePlayerLeave', _handl
  */
 async function _handlePlayerSpawn(eventData, dependencies) {
     const { player, initialSpawn } = eventData;
-    const { playerDataManager, playerUtils, config, logManager, checks, rankManager, mc: minecraftSystem } = dependencies;
+    const { playerDataManager, playerUtils, config, logManager, checks, rankManager, system } = dependencies;
     const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!player?.isValid()) {
@@ -146,7 +146,7 @@ async function _handlePlayerSpawn(eventData, dependencies) {
     }
 
     playerUtils?.debugLog(
-        `[EvtHdlr.Spawn] Processing for ${playerName} (Initial: ${initialSpawn}). Tick: ${minecraftSystem.system.currentTick}`,
+        `[EvtHdlr.Spawn] Processing for ${playerName} (Initial: ${initialSpawn}). Tick: ${system.currentTick}`,
         playerName, dependencies,
     );
 
@@ -330,7 +330,7 @@ export const handlePistonActivateAntiGrief = profileEventHandler('handlePistonAc
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
 async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
-    const { config, playerUtils, actionManager, playerDataManager, checks, mc: minecraftSystem, logManager } = dependencies;
+    const { config, playerUtils, actionManager, playerDataManager, checks, logManager, system } = dependencies;
     const { entity, cause } = eventData;
 
     if (!entity?.isValid()) {
@@ -364,7 +364,7 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
         }
     } else if (config?.checks?.entitySpam?.enabled && (entity.typeId === 'minecraft:snow_golem' || entity.typeId === 'minecraft:iron_golem')) {
         playerUtils?.debugLog(
-            `[EvtHdlr.EntSpawn] ${entityName} spawned. Checking attribution. Tick: ${minecraftSystem?.system?.currentTick}`,
+            `[EvtHdlr.EntSpawn] ${entityName} spawned. Checking attribution. Tick: ${system?.currentTick}`,
             null, dependencies,
         );
         const players = world.getAllPlayers();
@@ -374,7 +374,7 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
             }
             const pData = playerDataManager?.getPlayerData(player.id);
             const expectedTick = pData?.expectingConstructedEntity?.tick ?? 0;
-            const currentSystemTick = minecraftSystem?.system?.currentTick ?? 0;
+            const currentSystemTick = system?.currentTick ?? 0;
             if (pData?.expectingConstructedEntity?.type === entity.typeId &&
         Math.abs(expectedTick - currentSystemTick) < golemConstructionCheckTickWindow) {
                 const playerName = player.name;
@@ -686,7 +686,7 @@ export const handlePlayerDeath = profileEventHandler('handlePlayerDeath', _handl
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
 function _subscribeToCombatLogEvents(dependencies) {
-    const { config, playerDataManager, mc: minecraftSystem } = dependencies;
+    const { config, playerDataManager } = dependencies;
     if (!config?.enableCombatLogDetection) {
         return;
     }
@@ -843,7 +843,7 @@ export const handlePlayerBreakBlockAfterEvent = profileEventHandler('handlePlaye
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
 async function _handleItemUse(eventData, dependencies) {
-    const { checks, config, playerUtils, playerDataManager, mc: minecraftSystem, actionManager } = dependencies;
+    const { checks, config, playerUtils, playerDataManager, actionManager } = dependencies;
     const { source: player, itemStack } = eventData;
 
     if (!player?.isValid() || !itemStack?.typeId) {

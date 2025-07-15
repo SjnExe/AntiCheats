@@ -23,7 +23,7 @@ export const definition = {
  */
 export function execute(player, args, dependencies) {
     const { commandDefinitionMap, config, permissionLevels: depPermLevels, rankManager, getString, playerUtils } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!player?.isValid()) {
         console.warn('[HelpCommand] Invalid player object.');
