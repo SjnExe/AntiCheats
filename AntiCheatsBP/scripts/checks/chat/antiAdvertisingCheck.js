@@ -15,7 +15,7 @@
  * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
  * @param {Dependencies} dependencies Shared dependencies.
  */
-function isWhitelisted(text, config, playerUtils, playerName, watchedPlayerName, dependencies) {
+function isWhitelisted(text, message, config, playerUtils, playerName, watchedPlayerName, dependencies) {
     if (Array.isArray(config.advertisingWhitelistPatterns) && config.advertisingWhitelistPatterns.length > 0) {
         for (const wlPattern of config.advertisingWhitelistPatterns) {
             if (typeof wlPattern !== 'string' || wlPattern.trim() === '') {
@@ -27,8 +27,8 @@ function isWhitelisted(text, config, playerUtils, playerName, watchedPlayerName,
                     return true;
                 }
             } catch (eRegexWl) {
-                if (text.toLowerCase().includes(wlPattern.toLowerCase())) {
-                    playerUtils?.debugLog(`[AntiAdv] Text '${text}' for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
+                if (message.toLowerCase().includes(wlPattern.toLowerCase())) {
+                    playerUtils?.debugLog(`[AntiAdv] Text in message for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
                     return true;
                 }
             }
@@ -60,7 +60,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                 const match = regex.exec(message);
                 if (match) {
                     const detectedLink = match[0];
-                    if (isWhitelisted(detectedLink, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
+                    if (isWhitelisted(detectedLink, message, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
                         playerUtils?.debugLog(`[AntiAdvertisingCheck] Whitelisted link '${detectedLink}' for ${playerName}. Continuing scan with other regex patterns.`, watchedPlayerName, dependencies);
                         continue;
                     }
@@ -93,7 +93,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                 continue;
             }
 
-            if (isWhitelisted(pattern, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
+            if (isWhitelisted(pattern, message, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
                 continue;
             }
 
