@@ -263,11 +263,11 @@ async function processPlayer(player, dependencies, currentTick) {
     const staggerTicks = dependencies.config.checkStaggerTicks || 1;
 
     // Use a player-specific, but consistent, value for the offset to ensure distribution
-    const playerIdHash = Array.from(player.id).reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0);
+    const playerNameHash = Array.from(player.name).reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0);
 
     for (const checkName of checkNames) {
         const checkIndex = checkNames.indexOf(checkName);
-        if ((currentTick + playerIdHash + checkIndex) % staggerTicks !== 0) {
+        if ((currentTick + playerNameHash + checkIndex) % staggerTicks !== 0) {
             continue;
         }
         const checkFunction = checks[checkName];
