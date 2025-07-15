@@ -30,10 +30,6 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
 ## Admin Commands
 *(Typically Permission Level 1)*
 
-*   **`!addrank`** (Alias: `!ar`)
-    *   **Syntax:** `!addrank <playername> <rankId>`
-    *   **Description:** Assigns a manual rank to a player by adding the associated tag.
-    *   **Permission:** Admin
 *   **`!ban`** (Alias: `!b`)
     *   **Syntax:** `!ban <playername> [duration] [reason]`
     *   **Description:** Bans a player. Duration e.g., `30m`, `2h`, `7d`, `perm`.
@@ -106,9 +102,9 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Syntax:** `!purgeflags <playername>`
     *   **Description:** Completely purges all flags, violation history, and AutoMod state for a player.
     *   **Permission:** Admin
-*   **`!removerank`** (Alias: `!rr`)
-    *   **Syntax:** `!removerank <playerName> <rankId>`
-    *   **Description:** Removes a manually assigned rank from a player.
+*   **`!rank`**
+    *   **Syntax:** `!rank <add|remove> <playername> <rankId>`
+    *   **Description:** Assigns or removes a manual rank from a player.
     *   **Permission:** Admin
 *   **`!resetflags`** (Aliases: `!rf`, `!cw`, `!clearwarnings`)
     *   **Syntax:** `!resetflags <playername>`
