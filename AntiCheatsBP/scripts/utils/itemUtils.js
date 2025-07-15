@@ -249,7 +249,7 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
     }
 
     let efficiencyLevel = 0;
-    const enchantComp = itemStack.getComponent(mc.ItemComponentTypes.Enchantable);
+    const enchantComp = itemStack.getComponent('enchantable');
     if (enchantComp) {
         const efficiency = enchantComp.getEnchantment('efficiency');
         if (efficiency) {
@@ -395,9 +395,9 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
     }
 
     let hasAquaAffinity = false;
-    const headArmor = player.getComponent(mc.EntityComponentTypes.Equippable)?.getEquipmentSlot(mc.EquipmentSlot.Head);
+    const headArmor = player.getComponent('equippable')?.getEquipmentSlot(mc.EquipmentSlot.Head);
     if (headArmor?.hasItem()) {
-        const enchantComp = headArmor.getItem().getComponent(mc.ItemComponentTypes.Enchantable);
+        const enchantComp = headArmor.getItem().getComponent('enchantable');
         if (enchantComp?.getEnchantment('aqua_affinity')) {
             hasAquaAffinity = true;
         }

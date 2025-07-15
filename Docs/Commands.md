@@ -31,7 +31,7 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
 *(Typically Permission Level 1)*
 
 *   **`!ban`** (Alias: `!b`)
-    *   **Syntax:** `!ban <playername> [duration] [reason]`
+    *   **Syntax:** `!ban <playerName> [duration] [reason]`
     *   **Description:** Bans a player. Duration e.g., `30m`, `2h`, `7d`, `perm`.
     *   **Permission:** Admin
 *   **`!clearchat`** (Alias: `!clrchat`)
@@ -39,11 +39,11 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Description:** Clears the global chat for all players.
     *   **Permission:** Admin
 *   **`!clearreports`** (Alias: `!cr`)
-    *   **Syntax:** `!clearreports <report_id|player_name|all>`
+    *   **Syntax:** `!clearreports <report_id|playerName|all>`
     *   **Description:** Clears player reports by ID, player name, or all reports.
     *   **Permission:** Admin
 *   **`!copyinv`** (Alias: `!ci`)
-    *   **Syntax:** `!copyinv <playername>`
+    *   **Syntax:** `!copyinv <playerName>`
     *   **Description:** Copies another player's inventory to your own (requires confirmation).
     *   **Permission:** Admin
 *   **`!endlock`** (Alias: `!el`)
@@ -51,35 +51,35 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Description:** Manages End dimension access lock.
     *   **Permission:** Admin
 *   **`!freeze`** (Alias: `!frz`)
-    *   **Syntax:** `!freeze <playername> [on|off|toggle|status]`
+    *   **Syntax:** `!freeze <playerName> [on|off|toggle|status]`
     *   **Description:** Freezes or unfreezes a player, preventing movement.
     *   **Permission:** Admin
 *   **`!gma`**
-    *   **Syntax:** `!gma [playername]`
+    *   **Syntax:** `!gma [playerName]`
     *   **Description:** Sets a player's gamemode to Adventure.
     *   **Permission:** Admin
 *   **`!gmc`**
-    *   **Syntax:** `!gmc [playername]`
+    *   **Syntax:** `!gmc [playerName]`
     *   **Description:** Sets a player's gamemode to Creative.
     *   **Permission:** Admin
 *   **`!gms`**
-    *   **Syntax:** `!gms [playername]`
+    *   **Syntax:** `!gms [playerName]`
     *   **Description:** Sets a player's gamemode to Survival.
     *   **Permission:** Admin
 *   **`!gmsp`**
-    *   **Syntax:** `!gmsp [playername]`
+    *   **Syntax:** `!gmsp [playerName]`
     *   **Description:** Sets a player's gamemode to Spectator.
     *   **Permission:** Admin
 *   **`!inspect`** (Alias: `!i`)
-    *   **Syntax:** `!inspect <playername>`
+    *   **Syntax:** `!inspect <playerName>`
     *   **Description:** Views a player's AntiCheat data, flags, and status.
     *   **Permission:** Admin
 *   **`!invsee`** (Alias: `!is`)
-    *   **Syntax:** `!invsee <playername>`
+    *   **Syntax:** `!invsee <playerName>`
     *   **Description:** Views a player's inventory through a UI.
     *   **Permission:** Admin
 *   **`!kick`** (Alias: `!k`)
-    *   **Syntax:** `!kick <playername> [reason]`
+    *   **Syntax:** `!kick <playerName> [reason]`
     *   **Description:** Kicks a player from the server.
     *   **Permission:** Admin
 *   **`!listwatched`** (Aliases: `!lsw`, `!lw`, `!watchedlist`)
@@ -87,7 +87,7 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Description:** Lists all online players currently being watched.
     *   **Permission:** Admin
 *   **`!mute`** (Alias: `!m`)
-    *   **Syntax:** `!mute <playername> [duration] [reason]`
+    *   **Syntax:** `!mute <playerName> [duration] [reason]`
     *   **Description:** Mutes a player. Duration e.g., `30m`, `1h`, `perm`.
     *   **Permission:** Admin
 *   **`!netherlock`** (Alias: `!nl`)
@@ -99,15 +99,15 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Description:** Manages your AntiCheat system notification preferences.
     *   **Permission:** Admin
 *   **`!purgeflags`** (Alias: `!pf`)
-    *   **Syntax:** `!purgeflags <playername>`
+    *   **Syntax:** `!purgeflags <playerName>`
     *   **Description:** Completely purges all flags, violation history, and AutoMod state for a player.
     *   **Permission:** Admin
 *   **`!rank`**
-    *   **Syntax:** `!rank <add|remove> <playername> <rankId>`
+    *   **Syntax:** `!rank <add|remove> <playerName> <rankId>`
     *   **Description:** Assigns or removes a manual rank from a player.
     *   **Permission:** Admin
 *   **`!resetflags`** (Aliases: `!rf`, `!cw`, `!clearwarnings`)
-    *   **Syntax:** `!resetflags <playername>`
+    *   **Syntax:** `!resetflags <playerName>`
     *   **Description:** Clears a player's AntiCheat flags and violation data.
     *   **Permission:** Admin
 *   **`!tp`**
@@ -117,11 +117,11 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Description:** Teleports a player to another player or to specific coordinates.
     *   **Permission:** Admin
 *   **`!unban`** (Alias: `!ub`)
-    *   **Syntax:** `!unban <playername>`
+    *   **Syntax:** `!unban <playerName>`
     *   **Description:** Removes an active ban for a player.
     *   **Permission:** Admin
 *   **`!unmute`** (Alias: `!um`)
-    *   **Syntax:** `!unmute <playername>`
+    *   **Syntax:** `!unmute <playerName>`
     *   **Description:** Removes an active mute for a player.
     *   **Permission:** Admin
 *   **`!vanish`** (Alias: `!vsh`)
@@ -129,15 +129,15 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Description:** Toggles your visibility and related effects (invisibility, no item pickup, etc.).
     *   **Permission:** Admin
 *   **`!viewreports`** (Alias: `!vr`)
-    *   **Syntax:** `!viewreports [report_id|player_name|all] [page_number]`
+    *   **Syntax:** `!viewreports [report_id|playerName|all] [page_number]`
     *   **Description:** Views player-submitted reports. Supports filtering and pagination.
     *   **Permission:** Admin
 *   **`!warnings`** (Alias: `!warns`)
-    *   **Syntax:** `!warnings <playername>`
+    *   **Syntax:** `!warnings <playerName>`
     *   **Description:** Views a player's AntiCheat flags (similar to inspect).
     *   **Permission:** Admin
 *   **`!watch`** (Alias: `!w`)
-    *   **Syntax:** `!watch <playername> [on|off|toggle]`
+    *   **Syntax:** `!watch <playerName> [on|off|toggle]`
     *   **Description:** Manages watch status for a player. Toggles if no state [on|off] is specified.
     *   **Permission:** Admin
 *   **`!worldborder`** (Aliases: `!wb`, `!worldb`)
@@ -155,7 +155,7 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
 *(Typically Permission Level 1024 or as configured for the default rank)*
 
 *   **`!help`** (Alias: `!h`)
-    *   **Syntax:** `!help [command_name]`
+    *   **Syntax:** `!help [commandName]`
     *   **Description:** Shows available commands or help for a specific command.
     *   **Permission:** Member
 *   **`!listranks`** (Alias: `!lr`)
@@ -171,7 +171,7 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Description:** Opens the main AntiCheat UI panel (content varies by permission; admin tools for staff, user info for regular players).
     *   **Permission:** Member
 *   **`!report`** (Alias: `!rep`)
-    *   **Syntax:** `!report <playername> <reason...>`
+    *   **Syntax:** `!report <playerName> <reason...>`
     *   **Description:** Reports a player to administrators for review. Reason is mandatory.
     *   **Permission:** Member
 *   **`!rules`** (Alias: `!r`)

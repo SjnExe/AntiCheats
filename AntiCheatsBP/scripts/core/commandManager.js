@@ -59,6 +59,9 @@ export function initializeCommands(dependencies) {
 (() => {
     const initialLoadDeps = {
         playerUtils: {
+            /**
+             *
+             */
             debugLog: () => {}, // console.log(`[CommandManagerInitialLoad] ${msg}`)
         },
     // aliasToCommandMap will be initialized within initializeCommands
@@ -83,7 +86,7 @@ export async function handleChatCommand(eventData, dependencies) {
     const { addLog } = logManager;
     const { getPlayerPermissionLevel } = rankManager;
 
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
     if (!player?.isValid()) {
         console.warn('[CommandManager.handleChatCommand] Invalid player object in eventData.');
         eventData.cancel = true;

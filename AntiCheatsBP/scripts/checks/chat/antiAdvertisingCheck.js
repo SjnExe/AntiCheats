@@ -37,10 +37,13 @@ function isWhitelisted(text, config, playerUtils, playerName, watchedPlayerName,
     return false;
 }
 
+/**
+ *
+ */
 export async function checkAntiAdvertising(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableAntiAdvertisingCheck && !config?.enableAdvancedLinkDetection) {
         return;

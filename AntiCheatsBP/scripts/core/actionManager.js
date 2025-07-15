@@ -81,6 +81,9 @@ async function _handleFlagging(player, profile, flagReasonMessage, checkType, de
     dependencies.playerUtils?.debugLog(`[ActionManager] Flagged ${player.nameTag} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.nameTag, dependencies);
 }
 
+/**
+ *
+ */
 function _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies) {
     if (!profile.log) return;
 
@@ -105,16 +108,22 @@ function _handleLogging(player, profile, flagReasonMessage, checkType, violation
     }, dependencies);
 }
 
+/**
+ *
+ */
 function _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies) {
     if (!profile.notifyAdmins?.message || dependencies.config.notifyOnPlayerFlagged === false) return;
 
     const { playerUtils, playerDataManager } = dependencies;
-    const playerNameForLog = player?.nameTag ?? 'System';
+    const playerNameForLog = player?.name ?? 'System';
     const notifyMsg = formatActionMessage(profile.notifyAdmins.message, playerNameForLog, checkType, violationDetails);
     const pDataAfterAwait = player?.isValid() ? playerDataManager?.getPlayerData(player.id) : null;
     playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pDataAfterAwait);
 }
 
+/**
+ *
+ */
 function _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies) {
     if (!player || !violationDetails || Object.keys(violationDetails).length === 0) {
         if (!player && violationDetails && Object.keys(violationDetails).length > 0) {
@@ -124,7 +133,7 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
     }
 
     if (!player.isValid()) {
-        dependencies.playerUtils?.debugLog(`[ActionManager] Player ${player.nameTag} became invalid. Skipping details map update.`, null, dependencies);
+        dependencies.playerUtils?.debugLog(`[ActionManager] Player ${player.name} became invalid. Skipping details map update.`, null, dependencies);
         return;
     }
 
@@ -140,15 +149,18 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
         };
         currentPData.lastViolationDetailsMap[checkType] = detailsToStore;
         currentPData.isDirtyForSave = true;
-        playerUtils?.debugLog(`[ActionManager] Stored violation details for check '${checkType}' for ${player.nameTag}: ${JSON.stringify(detailsToStore)}`, player.nameTag, dependencies);
+        playerUtils?.debugLog(`[ActionManager] Stored violation details for check '${checkType}' for ${player.name}: ${JSON.stringify(detailsToStore)}`, player.name, dependencies);
     } else {
-        playerUtils?.debugLog(`[ActionManager] Could not store violation details for '${checkType}' (pData not found for ${player.nameTag} after await).`, player.nameTag, dependencies);
+        playerUtils?.debugLog(`[ActionManager] Could not store violation details for '${checkType}' (pData not found for ${player.name} after await).`, player.name, dependencies);
     }
 }
 
+/**
+ *
+ */
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
     const { playerUtils, checkActionProfiles } = dependencies;
-    const playerNameForLog = player?.nameTag ?? 'System';
+    const playerNameForLog = player?.name ?? 'System';
 
     if (!checkActionProfiles) {
         playerUtils?.debugLog(`[ActionManager CRITICAL] checkActionProfiles not found. Cannot process action for ${checkType}.`, null, dependencies);

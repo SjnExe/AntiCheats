@@ -3,7 +3,6 @@
  * @module AntiCheatsBP/scripts/core/textDatabase
  */
 
-/** */
 export const stringDB = {
     // Common UI elements
     'common.button.back': '§l§cBack§r',
