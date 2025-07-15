@@ -81,9 +81,6 @@ async function _handleFlagging(player, profile, flagReasonMessage, checkType, de
     dependencies.playerUtils?.debugLog(`[ActionManager] Flagged ${player.nameTag} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.nameTag, dependencies);
 }
 
-/**
- *
- */
 function _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies) {
     if (!profile.log) return;
 
@@ -108,9 +105,6 @@ function _handleLogging(player, profile, flagReasonMessage, checkType, violation
     }, dependencies);
 }
 
-/**
- *
- */
 function _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies) {
     if (!profile.notifyAdmins?.message || dependencies.config.notifyOnPlayerFlagged === false) return;
 
@@ -121,9 +115,6 @@ function _handleAdminNotifications(player, profile, checkType, violationDetails,
     playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pDataAfterAwait);
 }
 
-/**
- *
- */
 function _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies) {
     if (!player || !violationDetails || Object.keys(violationDetails).length === 0) {
         if (!player && violationDetails && Object.keys(violationDetails).length > 0) {
@@ -155,9 +146,6 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
     }
 }
 
-/**
- *
- */
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
     const { playerUtils, checkActionProfiles } = dependencies;
     const playerNameForLog = player?.name ?? 'System';
