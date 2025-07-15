@@ -106,10 +106,8 @@ function subscribeToEvents(dependencies) {
         'playerBreakBlock': handlePlayerBreakBlockAfterEvent,
         'playerPlaceBlock': handlePlayerPlaceBlockAfterEvent,
         'playerDimensionChange': handlePlayerDimensionChangeAfterEvent,
+        'playerDeath': (eventData) => handlePlayerDeath(eventData, dependencies),
         'entityDie': (eventData) => {
-            if (eventData.deadEntity.typeId === 'minecraft:player') {
-                handlePlayerDeath(eventData, dependencies);
-            }
             if (dependencies.config.enableDeathEffects) {
                 handleEntityDieForDeathEffects(eventData, dependencies);
             }
