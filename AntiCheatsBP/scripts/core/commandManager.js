@@ -122,7 +122,15 @@ export async function handleChatCommand(eventData, dependencies) {
     // Log admin command usage
     if (dependencies.permissionLevels?.admin !== undefined && userPermissionLevel <= dependencies.permissionLevels.admin) {
         const timestamp = new Date().toISOString();
-        console.warn(`[AdminCommandLog] ${timestamp} - Player: ${playerName} (Perm: ${userPermissionLevel}) - Command: ${message}`);
+        const logMessage = `[AdminCommandLog] ${timestamp} - Player: ${playerName} (Perm: ${userPermissionLevel}) - Command: ${message}`;
+        console.warn(logMessage);
+        addLog({
+            actionType: 'info.command.admin',
+            targetName: playerName,
+            targetId: player.id,
+            context: 'commandManager.handleChatCommand',
+            details: { command: resolvedCommandName, fullMessage: message, permissionLevel: userPermissionLevel }
+        }, dependencies);
     }
 
     // Execute the command
