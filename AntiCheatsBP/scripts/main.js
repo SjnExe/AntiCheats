@@ -369,11 +369,9 @@ function attemptInitializeSystem(retryCount = 0) {
             dependencies.playerUtils.debugLog(errorMessage, 'SystemError', dependencies);
             addLog({ actionType: 'error.main.initialization.retry', context: 'Main.attemptInitializeSystem', details: { message: e.message, stack: e.stack, retryCount: retryCount + 1 } }, dependencies);
         } else {
-            // Attempt to log directly if dependencies are not available
-            addLog({ actionType: 'error.main.initialization.retry.unsafe', context: 'Main.attemptInitializeSystem', details: { message: e.message, stack: e.stack, retryCount: retryCount + 1 } }, { mc: { system, world } });
+            // Fallback to console logging if dependency system itself has failed.
             console.warn(errorMessage);
         }
-
 
         if (retryCount < maxInitRetries) {
             system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
@@ -384,8 +382,8 @@ function attemptInitializeSystem(retryCount = 0) {
                 addLog({ actionType: 'error.main.initialization.critical', context: 'Main.attemptInitializeSystem', details: { message: 'Max retries reached', retryCount: retryCount + 1 } }, dependencies);
                 dependencies.playerUtils.notifyAdmins(criticalErrorMsg, 'SystemCritical', dependencies, true);
             } else {
-                // Attempt to log directly if dependencies are not available
-                addLog({ actionType: 'error.main.initialization.critical.unsafe', context: 'Main.attemptInitializeSystem', details: { message: 'Max retries reached', retryCount: retryCount + 1 } }, { mc: { system, world } });
+                // Fallback to console logging if dependency system itself has failed.
+                console.error(criticalErrorMsg);
             }
         }
     }
