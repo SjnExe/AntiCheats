@@ -206,7 +206,7 @@ async function* mainTickGenerator() {
 
     for (const player of allPlayers) {
         yield; // Yield to the next iteration of the generator
-        await processPlayer(player, dependencies);
+        await processPlayer(player, dependencies, dependencies.currentTick);
     }
 
     if (dependencies.currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
@@ -219,7 +219,7 @@ async function* mainTickGenerator() {
  * @param {mc.Player} player The player to process.
  * @param {import('./types.js').Dependencies} dependencies The dependencies object.
  */
-async function processPlayer(player, dependencies) {
+async function processPlayer(player, dependencies, currentTick) {
     if (!player?.isValid()) {
         return;
     }
@@ -239,11 +239,13 @@ async function processPlayer(player, dependencies) {
     updateTransientPlayerData(player, pData, dependencies);
     clearExpiredItemUseStates(pData, dependencies);
 
-    // Stagger checks across ticks
+    // Stagger checks across ticks based on player ID to distribute load
     const checkNames = Object.keys(checks);
-    const checksPerTick = Math.ceil(checkNames.length / (dependencies.config.checkStaggerTicks || 1));
-    const tickOffset = currentTick % (dependencies.config.checkStaggerTicks || 1);
-    const checksToRun = checkNames.slice(tickOffset * checksPerTick, (tickOffset + 1) * checksPerTick);
+    const staggerTicks = dependencies.config.checkStaggerTicks || 1;
+    const checksPerTick = Math.ceil(checkNames.length / staggerTicks);
+    // Use a player-specific value for the offset to ensure distribution
+    const playerTickOffset = (currentTick + parseInt(player.id, 10)) % staggerTicks;
+    const checksToRun = checkNames.slice(playerTickOffset * checksPerTick, (playerTickOffset + 1) * checksPerTick);
 
     for (const checkName of checksToRun) {
         const checkFunction = checks[checkName];
