@@ -275,7 +275,7 @@ async function processPlayer(player, dependencies, currentTick) {
     clearExpiredItemUseStates(pData, dependencies);
 
     // Stagger checks across ticks based on player ID to distribute load
-    const checkNames = Object.keys(checks);
+    const checkNames = Object.keys(checks).sort();
     const staggerTicks = dependencies.config.checkStaggerTicks || 1;
 
     // Use a player-specific, but consistent, value for the offset to ensure distribution
