@@ -236,8 +236,6 @@ async function processTick() {
         }
     }
 
-    const onlinePlayers = world.getAllPlayers();
-
     const activePlayerData = getActivePlayers();
     for (const pData of activePlayerData) {
         const player = world.getPlayer(pData.playerId);
@@ -247,6 +245,7 @@ async function processTick() {
     }
 
     if (dependencies.currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
+        const onlinePlayers = world.getAllPlayers();
         await handlePeriodicDataPersistence(onlinePlayers, dependencies);
     }
 }
