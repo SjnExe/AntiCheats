@@ -90,9 +90,9 @@ export function addLog(logEntry, dependencies) {
     logEntry.adminName = logEntry.adminName ?? 'System'; // Default to 'System'
 
     // Avoid debug log spam for very common system events unless explicitly watched or for specific debug needs.
-    // Example: if (logEntry.adminName === 'System' && !['playerJoin', 'playerLeave', 'chatMessageSent'].includes(logEntry.actionType)) {
-    //     playerUtils?.debugLog(`[LogManager.addLog] Log entry by System: ${logEntry.actionType}`, null, dependencies);
-    // }
+    if (logEntry.adminName === 'System' && !['playerJoin', 'playerLeave', 'chatMessageSent'].includes(logEntry.actionType)) {
+        playerUtils?.debugLog(`[LogManager.addLog] Log entry by System: ${logEntry.actionType}`, null, dependencies);
+    }
 
     logsInMemory.unshift(logEntry); // Add to the beginning (newest first)
 
