@@ -89,7 +89,7 @@ function subscribeToEvents(dependencies) {
         playerBreakBlock: handlePlayerBreakBlockBeforeEvent,
         itemUse: handleItemUse,
         playerPlaceBlock: handlePlayerPlaceBlockBefore,
-        playerLeaveBefore: handlePlayerLeaveBeforeEvent,
+        playerLeave: handlePlayerLeaveBeforeEvent,
     };
 
     const afterEventSubscriptions = {
@@ -102,7 +102,7 @@ function subscribeToEvents(dependencies) {
         entityDie: handleEntityDieForDeathEffects,
         entitySpawn: handleEntitySpawnEventAntiGrief,
         pistonActivate: handlePistonActivateAntiGrief,
-        inventorySlotChange: handleInventoryItemChange,
+        inventoryItemChanged: handleInventoryItemChange,
     };
 
     for (const eventName in beforeEventSubscriptions) {
@@ -163,7 +163,7 @@ function validateConfigurations(dependencies) {
 
     if (allValidationErrors.length > 0) {
         const summaryMessage = `CRITICAL: AntiCheat configuration validation failed with ${allValidationErrors.length} error(s). Check logs for details.`;
-        dependencies.playerUtils.notifyAdmins(summaryMessage, 'SystemCritical', dependencies, true);
+        dependencies.playerUtils.notifyAdmins(summaryMessage, dependencies);
     } else {
         dependencies.playerUtils.debugLog(`[${mainModuleName}] All configurations validated successfully.`, 'System', dependencies);
     }
@@ -397,7 +397,7 @@ function attemptInitializeSystem(retryCount = 0) {
 
                 if (isFinalAttempt) {
                     const criticalErrorMsg = `[Main] CRITICAL: MAX RETRIES REACHED. System will not initialize. Last error: ${e.message}`;
-                    dependencies.playerUtils.notifyAdmins(criticalErrorMsg, 'SystemCritical', dependencies, true);
+                    dependencies.playerUtils.notifyAdmins(criticalErrorMsg, dependencies);
                 }
             } else {
                 console.error('[AntiCheat] CRITICAL: Could not get dependencies for structured logging during initialization.');
