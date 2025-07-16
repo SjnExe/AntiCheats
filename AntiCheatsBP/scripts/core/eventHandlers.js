@@ -1136,36 +1136,27 @@ export const handlePlayerPlaceBlockAfterEvent = profileEventHandler('handlePlaye
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 async function handleBeforeChatSend(eventData, dependencies) {
-    const { playerDataManager, playerUtils, chatProcessor } = dependencies;
-    const { sender: player, message: originalMessage } = eventData;
+    const { playerUtils, chatProcessor, config, commandManager } = dependencies;
+    const { sender: player, message } = eventData;
 
-    if (!player?.isValid()) {
-        console.warn('[EvtHdlr.ChatSend] Invalid player object.');
-        eventData.cancel = true;
-        return;
+    if (message.startsWith(config.prefix)) {
+        await commandManager.handleChatCommand(eventData, dependencies);
+    } else {
+        const pData = dependencies.playerDataManager.getPlayerData(player.id);
+        if (!pData) {
+            playerUtils.warnPlayer(player, playerUtils.getString('error.playerDataNotFound', dependencies));
+            eventData.cancel = true;
+            return;
+        }
+
+        if (typeof chatProcessor?.processChatMessage !== 'function') {
+            playerUtils.warnPlayer(player, playerUtils.getString('error.chatProcessingUnavailable', dependencies));
+            eventData.cancel = true;
+            return;
+        }
+        await chatProcessor.processChatMessage(player, pData, message, eventData, dependencies);
     }
-
-    const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) {
-        playerUtils?.warnPlayer(player, playerUtils.getString('error.playerDataNotFound', dependencies));
-        eventData.cancel = true;
-        return;
-    }
-
-    if (typeof chatProcessor?.processChatMessage !== 'function') {
-        console.warn('[EvtHdlr.ChatSend CRITICAL] chatProcessor.processChatMessage is not available. Chat will not be processed for safety.');
-        playerUtils?.warnPlayer(player, playerUtils.getString('error.chatProcessingUnavailable', dependencies));
-        eventData.cancel = true;
-        return;
-    }
-
-    await chatProcessor.processChatMessage(player, pData, originalMessage, eventData, dependencies);
 }
-/**
- * Handles chat messages before they are sent.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
- */
 export const handleBeforeChatSend = profileEventHandler('handleBeforeChatSend', handleBeforeChatSend);
 
 /**
