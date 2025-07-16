@@ -13,7 +13,7 @@ import {
 import * as configModule from './config.js';
 import {
     handlePlayerSpawn,
-    handlePlayerLeave,
+    handlePlayerLeaveBeforeEvent,
     handleEntityHurt,
     handlePlayerBreakBlockBeforeEvent,
     handlePlayerBreakBlockAfterEvent,
@@ -89,11 +89,11 @@ function subscribeToEvents(dependencies) {
         playerBreakBlock: handlePlayerBreakBlockBeforeEvent,
         itemUse: handleItemUse,
         playerPlaceBlock: handlePlayerPlaceBlockBefore,
+        playerLeave: handlePlayerLeaveBeforeEvent,
     };
 
     const afterEventSubscriptions = {
         playerSpawn: handlePlayerSpawn,
-        playerLeave: handlePlayerLeave,
         entityHurt: handleEntityHurt,
         playerBreakBlock: handlePlayerBreakBlockAfterEvent,
         playerPlaceBlock: handlePlayerPlaceBlockAfterEvent,

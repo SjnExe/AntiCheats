@@ -232,22 +232,29 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
  * @returns {Promise<boolean>} True if data was saved, false otherwise.
  */
 export function saveDirtyPlayerData(playerLike, dependencies) {
-    const { playerUtils, logManager, config, world } = dependencies;
+    const { playerUtils, logManager, config } = dependencies;
     const pData = getPlayerData(playerLike.id);
 
     if (!pData || !pData.isDirtyForSave) {
         return Promise.resolve(false);
     }
 
-    const setDynamicProperty = (key, value) => {
-        if (typeof playerLike.setDynamicProperty === 'function') {
-            playerLike.setDynamicProperty(key, value);
-        } else {
-            // Fallback for when the full player object isn't available, e.g., on leave.
-            // This assumes a global `world` object is accessible or passed in dependencies.
-            world.setDynamicProperty(key, value);
-        }
-    };
+    // Ensure we have a valid player object with the setDynamicProperty method.
+    // This is crucial for saving data correctly, especially on player leave.
+    if (typeof playerLike.setDynamicProperty !== 'function') {
+        const errorMessage = `[PlayerDataManager CRITICAL] Attempted to save data for ${playerLike.name ?? playerLike.id} without a valid player object. Data save aborted.`;
+        console.error(errorMessage);
+        logManager.addLog({
+            actionType: 'error.pdm.dpWrite.invalidPlayerObject',
+            context: 'playerDataManager.saveDirtyPlayerData',
+            targetName: playerLike.name ?? playerLike.id,
+            details: {
+                errorCode: 'PDM_INVALID_PLAYERLIKE_OBJECT',
+                message: 'The provided player-like object does not have a setDynamicProperty method.',
+            },
+        }, dependencies);
+        return Promise.resolve(false);
+    }
 
     try {
         // Create a savable copy, excluding transient data
@@ -308,13 +315,13 @@ export function saveDirtyPlayerData(playerLike, dependencies) {
                 // Recovery Step 3: Critical failure, reset data
                 const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick, dependencies);
                 const freshSerializedData = JSON.stringify(freshData);
-                setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
+        playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
                 activePlayerData.set(playerLike.id, freshData); // Update cache with fresh data
                 return Promise.resolve(true); // Saved fresh data
             }
         }
 
-        setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
+playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
 
         pData.isDirtyForSave = false;
         pData.lastSavedTimestamp = Date.now();
@@ -511,16 +518,17 @@ export function clearExpiredItemUseStates(pData, dependencies) {
 }
 
 /**
- * Handles player leave events to ensure data is saved.
- * @param {import('@minecraft/server').Player} player The player who left.
+ * Handles player leave events to ensure data is saved before the player object becomes invalid.
+ * This should be triggered by a 'before' event.
+ * @param {import('@minecraft/server').Player} player The player who is leaving.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
-export async function handlePlayerLeave(player, dependencies) {
+export async function handlePlayerLeaveBeforeEvent(player, dependencies) {
     const pData = getPlayerData(player.id);
     if (pData) {
         pData.isOnline = false;
         pData.isDirtyForSave = true; // Ensure data is saved on leave
-        await saveDirtyPlayerData({ id: player.id, name: player.nameTag }, dependencies);
+        await saveDirtyPlayerData(player, dependencies); // Pass the full, valid player object
         activePlayerData.delete(player.id);
     }
 }
