@@ -57,13 +57,13 @@ async function _saveScheduledFlagPurges(purges, dependencies) {
  * @param {number} currentTick The current server tick.
  * @returns {import('../types.js').PlayerAntiCheatData} The default player data object.
  */
-export function initializeDefaultPlayerData(player, currentTick) {
+export function initializeDefaultPlayerData(playerLike, currentTick) {
     const now = Date.now();
 
     return {
         // Core Identifiers
-        playerId: player.id,
-        playerNameTag: player.nameTag,
+        playerId: playerLike.id,
+        playerNameTag: playerLike.name,
 
         // Session and State
         isOnline: true,
@@ -89,8 +89,8 @@ export function initializeDefaultPlayerData(player, currentTick) {
         godModeActive: false,
 
         // Movement and Teleportation
-        lastKnownLocation: { ...player.location },
-        lastKnownDimensionId: player.dimension.id,
+        lastKnownLocation: playerLike.location ? { ...playerLike.location } : { x: 0, y: 0, z: 0 },
+        lastKnownDimensionId: playerLike.dimension ? playerLike.dimension.id : 'minecraft:overworld',
         lastSignificantMovement: now,
         lastTeleportTimestamp: 0,
         isTeleporting: false,
@@ -127,8 +127,8 @@ export function initializeDefaultPlayerData(player, currentTick) {
             isSprinting: false,
             isSwimming: false,
             isGliding: false,
-            headRotation: { ...player.getHeadRotation() },
-            bodyRotation: player.bodyRotation,
+            headRotation: playerLike.getHeadRotation ? { ...playerLike.getHeadRotation() } : { x: 0, y: 0 },
+            bodyRotation: playerLike.bodyRotation || 0,
         },
     };
 }
@@ -231,13 +231,23 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @returns {Promise<boolean>} True if data was saved, false otherwise.
  */
-export function saveDirtyPlayerData(player, dependencies) {
-    const { playerUtils, logManager, config } = dependencies;
-    const pData = getPlayerData(player.id);
+export function saveDirtyPlayerData(playerLike, dependencies) {
+    const { playerUtils, logManager, config, world } = dependencies;
+    const pData = getPlayerData(playerLike.id);
 
     if (!pData || !pData.isDirtyForSave) {
         return Promise.resolve(false);
     }
+
+    const setDynamicProperty = (key, value) => {
+        if (typeof playerLike.setDynamicProperty === 'function') {
+            playerLike.setDynamicProperty(key, value);
+        } else {
+            // Fallback for when the full player object isn't available, e.g., on leave.
+            // This assumes a global `world` object is accessible or passed in dependencies.
+            world.setDynamicProperty(key, value);
+        }
+    };
 
     try {
         // Create a savable copy, excluding transient data
@@ -259,10 +269,10 @@ export function saveDirtyPlayerData(player, dependencies) {
             logManager.addLog({
                 actionType: 'warning.pdm.dpWrite.sizeLimit',
                 context: 'playerDataManager.saveDirtyPlayerData.recovery',
-                targetName: player.nameTag,
+                targetName: playerLike.name,
                 details: {
                     errorCode: 'PDM_DP_SIZE_EXCEEDED_RECOVERY_ATTEMPT',
-                    message: `Serialized player data for ${player.nameTag} exceeds size limit (${serializedData.length} > ${maxSerializedDataLength}). Attempting recovery.`,
+                    message: `Serialized player data for ${playerLike.name} exceeds size limit (${serializedData.length} > ${maxSerializedDataLength}). Attempting recovery.`,
                     meta: { originalSize: serializedData.length },
                 },
             }, dependencies);
@@ -287,42 +297,42 @@ export function saveDirtyPlayerData(player, dependencies) {
                 logManager.addLog({
                     actionType: 'error.pdm.dpWrite.recoveryFail',
                     context: 'playerDataManager.saveDirtyPlayerData.recovery',
-                    targetName: player.nameTag,
+                    targetName: playerLike.name,
                     details: {
                         errorCode: 'PDM_DP_RECOVERY_FAILED_DATA_RESET',
-                        message: `Data recovery failed for ${player.nameTag}. Size after trimming is still too large (${serializedData.length}). Resetting player data to prevent corruption.`,
+                        message: `Data recovery failed for ${playerLike.name}. Size after trimming is still too large (${serializedData.length}). Resetting player data to prevent corruption.`,
                         meta: { trimmedSize: serializedData.length },
                     },
                 }, dependencies);
 
                 // Recovery Step 3: Critical failure, reset data
-                const freshData = initializeDefaultPlayerData(player, dependencies.currentTick, dependencies);
+                const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick, dependencies);
                 const freshSerializedData = JSON.stringify(freshData);
-                player.setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
-                activePlayerData.set(player.id, freshData); // Update cache with fresh data
+                setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
+                activePlayerData.set(playerLike.id, freshData); // Update cache with fresh data
                 return Promise.resolve(true); // Saved fresh data
             }
         }
 
-        player.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
+        setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
 
         pData.isDirtyForSave = false;
         pData.lastSavedTimestamp = Date.now();
-        playerUtils.debugLog(`[PlayerDataManager] Saved data for ${player.nameTag}.`, pData.isWatched ? player.nameTag : null, dependencies);
+        playerUtils.debugLog(`[PlayerDataManager] Saved data for ${playerLike.name}.`, pData.isWatched ? playerLike.name : null, dependencies);
         return Promise.resolve(true);
 
     } catch (error) {
         logManager.addLog({
             actionType: 'error.pdm.dpWrite.generic',
             context: 'playerDataManager.saveDirtyPlayerData',
-            targetName: player.nameTag,
+            targetName: playerLike.name,
             details: {
                 errorCode: 'PDM_DP_WRITE_FAILURE',
                 message: error.message,
                 rawErrorStack: error.stack,
             },
         }, dependencies);
-        console.error(`[PlayerDataManager CRITICAL] Failed to save player data for ${player.nameTag}: ${error.stack}`);
+        console.error(`[PlayerDataManager CRITICAL] Failed to save player data for ${playerLike.name}: ${error.stack}`);
         return Promise.resolve(false);
     }
 }
@@ -510,7 +520,7 @@ export async function handlePlayerLeave(player, dependencies) {
     if (pData) {
         pData.isOnline = false;
         pData.isDirtyForSave = true; // Ensure data is saved on leave
-        await saveDirtyPlayerData(player, dependencies);
+        await saveDirtyPlayerData({ id: player.id, name: player.nameTag }, dependencies);
         activePlayerData.delete(player.id);
     }
 }
