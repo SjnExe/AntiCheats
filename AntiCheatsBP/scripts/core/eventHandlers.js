@@ -518,7 +518,7 @@ async function handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencie
         }
     }
 }
-export const handlePlayerPlaceBlockBeforeEventAntiGrief = profileEventHandler('handlePlayerPlaceBlockBeforeEventAntiGrief', handlePlayerPlaceBlockBeforeEventAntiGrief);
+const handlePlayerPlaceBlockBeforeEventAntiGrief = profileEventHandler('handlePlayerPlaceBlockBeforeEventAntiGrief', handlePlayerPlaceBlockBeforeEventAntiGrief);
 
 
 /**
