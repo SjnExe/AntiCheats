@@ -177,6 +177,7 @@ async function handlePlayerSpawn(eventData, dependencies) {
         pData.isUsingConsumable = false;
         pData.isChargingBow = false;
         pData.isUsingShield = false;
+        pData.joinTime = Date.now();
         pData.isDirtyForSave = true;
 
         const banInfo = playerDataManager.getBanInfo(player, dependencies);
@@ -209,7 +210,6 @@ async function handlePlayerSpawn(eventData, dependencies) {
         const spawnGameMode = player.gameMode ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
 
         if (initialSpawn) {
-            pData.joinTime = Date.now();
             pData.joinCount = (pData.joinCount || 0) + 1;
             pData.isDirtyForSave = true;
 
