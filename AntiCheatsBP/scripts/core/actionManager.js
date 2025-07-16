@@ -107,12 +107,13 @@ function _handleLogging(player, profile, flagReasonMessage, checkType, violation
 
 function _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies) {
     if (!profile.notifyAdmins?.message || dependencies.config.notifyOnPlayerFlagged === false) return;
+    if (!player?.isValid()) return;
 
     const { playerUtils, playerDataManager } = dependencies;
-    const playerNameForLog = player?.name ?? 'System';
+    const playerNameForLog = player.name;
     const notifyMsg = formatActionMessage(profile.notifyAdmins.message, playerNameForLog, checkType, violationDetails);
-    const pDataAfterAwait = player?.isValid() ? playerDataManager?.getPlayerData(player.id) : null;
-    playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pDataAfterAwait);
+    const pData = playerDataManager?.getPlayerData(player.id);
+    playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
 }
 
 function _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies) {
@@ -124,13 +125,18 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
     }
 
     if (!player.isValid()) {
-        dependencies.playerUtils?.debugLog(`[ActionManager] Player ${player.name} became invalid. Skipping details map update.`, null, dependencies);
+        dependencies.playerUtils?.debugLog(`[ActionManager] Player became invalid before storing violation details. Skipping for check '${checkType}'.`, null, dependencies);
         return;
     }
 
     const { playerDataManager, playerUtils } = dependencies;
     const currentPData = playerDataManager?.getPlayerData(player.id);
     if (currentPData) {
+        // Ensure player is still valid right before updating their data
+        if (!player.isValid()) {
+            playerUtils?.debugLog(`[ActionManager] Player ${currentPData.name} became invalid after getting pData. Skipping details map update.`, null, dependencies);
+            return;
+        }
         currentPData.lastViolationDetailsMap ??= {};
         const detailsToStore = {
             timestamp: Date.now(),
@@ -142,7 +148,8 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
         currentPData.isDirtyForSave = true;
         playerUtils?.debugLog(`[ActionManager] Stored violation details for check '${checkType}' for ${player.name}: ${JSON.stringify(detailsToStore)}`, player.name, dependencies);
     } else {
-        playerUtils?.debugLog(`[ActionManager] Could not store violation details for '${checkType}' (pData not found for ${player.name} after await).`, player.name, dependencies);
+        // This case might happen if the player leaves right as this is called.
+        playerUtils?.debugLog(`[ActionManager] Could not store violation details for '${checkType}' (pData not found for player).`, null, dependencies);
     }
 }
 

@@ -234,19 +234,17 @@ class DependencyManager {
     }
 }
 
-// A global symbol to store the singleton instance
-const
+let instance = null;
 
-GLOBAL_SYMBOL = Symbol.for('anticheat.dependencyManager');
-
-// Check if an instance already exists in the global scope
-if (!globalThis[GLOBAL_SYMBOL]) {
-    // If not, create a new instance and store it
-    globalThis[GLOBAL_SYMBOL] = new DependencyManager();
+function getInstance() {
+    if (!instance) {
+        instance = new DependencyManager();
+    }
+    return instance;
 }
 
 /**
  * The singleton instance of the DependencyManager.
  * @type {DependencyManager}
  */
-export const dependencyManager = globalThis[GLOBAL_SYMBOL];
+export const dependencyManager = getInstance();

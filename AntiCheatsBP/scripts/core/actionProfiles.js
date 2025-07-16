@@ -19,7 +19,19 @@ export const checkActionProfiles = {
             type: 'movementFlyHover',
         },
         notifyAdmins: {
-            message: '§e{playerName}§r flagged for §bFly (Hover)§r. Details: {detailsString}',
+            message: {
+                rawtext: [
+                    { translate: 'action.notify.prefix' },
+                    { text: ' ' },
+                    { translate: 'action.notify.player', with: { playerName: '{playerName}' } },
+                    { text: ' ' },
+                    { translate: 'action.notify.flaggedFor' },
+                    { text: ' ' },
+                    { translate: 'action.notify.check.flyHover' },
+                    { text: '. ' },
+                    { translate: 'action.notify.details', with: { detailsString: '{detailsString}' } },
+                ],
+            },
         },
         log: {
             actionType: 'detectedFlyHover',
@@ -34,7 +46,22 @@ export const checkActionProfiles = {
             type: 'movementSpeed',
         },
         notifyAdmins: {
-            message: '§e{playerName}§r flagged for §bSpeed (Ground)§r. Speed: §a{speedBps}§r BPS (Max: §a{maxAllowedBps}§r)',
+            message: {
+                rawtext: [
+                    { translate: 'action.notify.prefix' },
+                    { text: ' ' },
+                    { translate: 'action.notify.player', with: { playerName: '{playerName}' } },
+                    { text: ' ' },
+                    { translate: 'action.notify.flaggedFor' },
+                    { text: ' ' },
+                    { translate: 'action.notify.check.speedGround' },
+                    { text: '. ' },
+                    { translate: 'action.notify.speed', with: { speedBps: '{speedBps}' } },
+                    { text: ' BPS (Max: ' },
+                    { translate: 'action.notify.maxSpeed', with: { maxAllowedBps: '{maxAllowedBps}' } },
+                    { text: ')' },
+                ],
+            },
         },
         log: {
             actionType: 'detectedSpeedGround',
@@ -49,7 +76,21 @@ export const checkActionProfiles = {
             type: 'movementNoFall',
         },
         notifyAdmins: {
-            message: '§e{playerName}§r flagged for §bNoFall§r. Fall Distance: §a{fallDistance}m§r. Details: {detailsString}',
+            message: {
+                rawtext: [
+                    { translate: 'action.notify.prefix' },
+                    { text: ' ' },
+                    { translate: 'action.notify.player', with: { playerName: '{playerName}' } },
+                    { text: ' ' },
+                    { translate: 'action.notify.flaggedFor' },
+                    { text: ' ' },
+                    { translate: 'action.notify.check.noFall' },
+                    { text: '. ' },
+                    { translate: 'action.notify.fallDistance', with: { fallDistance: '{fallDistance}' } },
+                    { text: 'm. ' },
+                    { translate: 'action.notify.details', with: { detailsString: '{detailsString}' } },
+                ],
+            },
         },
         log: {
             actionType: 'detectedMovementNoFall',

@@ -15,23 +15,23 @@ export const commandDefinitionMap = new Map();
 /** @type {Map<string, import('../types.js').CommandExecuteFunction>} */
 export const commandExecutionMap = new Map();
 
+import * as commandModules from '../commands/index.js';
+
 /**
  * Dynamically discovers and registers command files.
- * This function should be updated if the file structure changes.
  */
 function discoverCommands() {
-    const commandFiles = [
-        'ban.js', 'clearchat.js', 'clearreports.js', 'copyinv.js', 'endlock.js', 'freeze.js', 'gma.js', 'gmc.js', 'gms.js',
-        'gmsp.js', 'help.js', 'inspect.js', 'invsee.js', 'kick.js', 'listranks.js', 'listwatched.js', 'mute.js', 'myflags.js',
-        'netherlock.js', 'notify.js', 'panel.js', 'purgeflags.js', 'rank.js', 'reload.js', 'report.js', 'resetflags.js', 'rules.js',
-        'testnotify.js', 'tp.js', 'tpa.js', 'tpacancel.js', 'tpaccept.js', 'tpahere.js', 'tpastatus.js', 'unban.js', 'unmute.js',
-        'vanish.js', 'version.js', 'viewreports.js', 'warnings.js', 'watch.js', 'worldborder.js', 'xraynotify.js',
-    ];
-
     commandFilePaths.clear();
-    for (const file of commandFiles) {
-        const commandName = file.slice(0, -3); // remove .js
-        commandFilePaths.set(commandName, `../commands/${file}`);
+    for (const moduleName in commandModules) {
+        const cmdModule = commandModules[moduleName];
+        if (cmdModule?.definition?.name) {
+            const commandName = cmdModule.definition.name.toLowerCase();
+            // The key in commandFilePaths should be the command name, and the value should be the path.
+            // However, dynamic import paths need to be relative to the importing file.
+            // Since we are now importing from an index, the path needs to be adjusted.
+            // Let's assume the moduleName is the file name without the .js extension.
+            commandFilePaths.set(commandName, `../commands/${moduleName}.js`);
+        }
     }
 }
 

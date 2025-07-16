@@ -126,13 +126,13 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             parsedDurationMsTempBan = defaultAutomodTempbanDurationMs;
         }
         const friendlyDurationTempBan = formatDuration(parsedDurationMsTempBan);
-        const tempBanContext = { ...baseMessageContext, duration: friendlyDurationTempBan };
-        const kickMsgTempBan = formatAutomodMessage(messageTemplate, tempBanContext);
         const banReasonForStorageTemp = `AutoMod ${checkType} - ${actionType} (${friendlyDurationTempBan})`;
         const banSuccessTemp = playerDataManager?.addBan(player, parsedDurationMsTempBan, banReasonForStorageTemp, 'AutoMod', true, checkType, dependencies);
         if (banSuccessTemp) {
             durationForLog = parsedDurationMsTempBan;
             baseMessageContext.duration = friendlyDurationTempBan;
+            const tempBanContext = { ...baseMessageContext, duration: friendlyDurationTempBan };
+            const kickMsgTempBan = formatAutomodMessage(messageTemplate, tempBanContext);
             try {
                 player?.kick(kickMsgTempBan);
                 logDetails = `Temp banned player for ${friendlyDurationTempBan}. Check: ${checkType}. Kick Reason: '${kickMsgTempBan}'. Stored Reason: ${banReasonForStorageTemp}`;
@@ -185,12 +185,12 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             parsedDurationMsMute = defaultAutomodMuteDurationMs;
         }
         const friendlyDurationMute = formatDuration(parsedDurationMsMute);
-        const muteContext = { ...baseMessageContext, duration: friendlyDurationMute };
         const muteReasonForStorage = `AutoMod ${checkType} - ${actionType} (${friendlyDurationMute})`;
         const muteSuccess = playerDataManager?.addMute(player, parsedDurationMsMute, muteReasonForStorage, 'AutoMod', true, checkType, dependencies);
         if (muteSuccess) {
             durationForLog = parsedDurationMsMute;
             baseMessageContext.duration = friendlyDurationMute;
+            const muteContext = { ...baseMessageContext, duration: friendlyDurationMute };
             const muteNotificationToPlayer = formatAutomodMessage(messageTemplate, muteContext);
             playerUtils?.warnPlayer(player, muteNotificationToPlayer, dependencies);
             logDetails = `Muted player for ${friendlyDurationMute}. Check: ${checkType}. Reason: ${muteReasonForStorage}. Notification: '${muteNotificationToPlayer}'`;
@@ -295,10 +295,6 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
         actionProcessed = true;
         break;
     }
-    default:
-        playerUtils?.debugLog(`[AutoModManager] Unknown actionType '${actionType}' for ${player?.nameTag} in _executeAutomodAction.`, player?.nameTag, dependencies);
-        logDetails = `Unknown actionType '${actionType}' for ${player?.nameTag}.`;
-        break;
     }
     const finalReasonForLog = `automod.${checkType}.${actionType}`;
     if (actionProcessed) {
