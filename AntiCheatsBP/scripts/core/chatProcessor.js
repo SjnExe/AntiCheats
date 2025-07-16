@@ -151,6 +151,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 logManager?.addLog({ actionType: 'chatMessageSentUnformatted', targetName: playerName, targetId: player.id, details: originalMessage }, dependencies);
             }
         }
+        pData.isDirtyForSave = true;
     } catch (error) {
         console.error(`[ChatProcessor.processChatMessage CRITICAL] Error processing chat for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[ChatProcessor.processChatMessage CRITICAL] Error for ${playerName}: ${error.message}`, playerName, dependencies);
