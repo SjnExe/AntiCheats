@@ -102,7 +102,7 @@ function subscribeToEvents(dependencies) {
         entityDie: handleEntityDieForDeathEffects,
         entitySpawn: handleEntitySpawnEventAntiGrief,
         pistonActivate: handlePistonActivateAntiGrief,
-        playerInventorySlotChange: handleInventoryItemChange,
+        inventorySlotChange: handleInventoryItemChange,
     };
 
     for (const eventName in beforeEventSubscriptions) {
