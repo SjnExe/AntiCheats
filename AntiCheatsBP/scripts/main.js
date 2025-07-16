@@ -344,17 +344,29 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
  * Processes TPA system ticks.
  */
 function tpaTick() {
-    const dependencies = dependencyManager.getAll();
-    if (dependencies.config.enableTpaSystem) {
-        dependencies.tpaManager.clearExpiredRequests(dependencies);
-        dependencies.tpaManager.getRequestsInWarmup().forEach(req => {
-            if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
-                dependencies.tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
-            }
-            if (req.status === 'pendingTeleportWarmup' && Date.now() >= (req.warmupExpiryTimestamp || 0)) {
-                dependencies.tpaManager.executeTeleport(req.requestId, dependencies);
-            }
-        });
+    try {
+        const dependencies = dependencyManager.getAll();
+        if (dependencies.config.enableTpaSystem) {
+            dependencies.tpaManager.clearExpiredRequests(dependencies);
+            dependencies.tpaManager.getRequestsInWarmup().forEach(req => {
+                if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
+                    dependencies.tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
+                }
+                if (req.status === 'pendingTeleportWarmup' && Date.now() >= (req.warmupExpiryTimestamp || 0)) {
+                    dependencies.tpaManager.executeTeleport(req.requestId, dependencies);
+                }
+            });
+        }
+    } catch (e) {
+        console.error(`[AntiCheat] Unhandled error in tpaTick: ${e?.message}\n${e?.stack}`);
+        const depsForError = dependencyManager.getDependenciesUnsafe();
+        if (depsForError) {
+            addLog({
+                actionType: 'error.main.tpaTick.unhandled',
+                context: 'Main.tpaTick',
+                details: { errorMessage: e?.message, stack: e?.stack },
+            }, depsForError);
+        }
     }
 }
 
