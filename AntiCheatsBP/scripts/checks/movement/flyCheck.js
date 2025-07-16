@@ -152,7 +152,7 @@ export async function checkFly(player, pData, dependencies) {
     const sustainedThreshold = config?.flySustainedVerticalSpeedThreshold ?? defaultFlySustainedVerticalSpeedThreshold;
     const sustainedTicks = config?.flySustainedOffGroundTicksThreshold ?? defaultFlySustainedOffGroundTicksThreshold;
 
-    if (!player.isOnGround && verticalSpeed > sustainedThreshold && !player.isClimbing && !pData.hasLevitation) {
+    if (!player.isOnGround && verticalSpeed > sustainedThreshold && !player.isClimbing && !pData.hasLevitation && !player.isInWater) {
         if (pData.consecutiveOffGroundTicks > sustainedTicks) {
             const violationDetails = {
                 type: 'sustainedVertical',
