@@ -66,16 +66,11 @@ async function handlePlayerLeave(eventData, dependencies) {
     const { playerDataManager, playerUtils, config, logManager, actionManager } = dependencies;
     const { getPlayerData } = playerDataManager;
     const { debugLog } = playerUtils;
-    const { player } = eventData;
-    const playerName = player?.name ?? 'UnknownPlayer';
+    const { playerName, playerId } = eventData;
 
-    if (!player?.isValid()) {
-        return;
-    }
+    debugLog(`[EventHandler.handlePlayerLeave] Player ${playerName} (${playerId}) is leaving. Processing data...`, playerName, dependencies);
 
-    debugLog(`[EventHandler.handlePlayerLeave] Player ${playerName} is leaving. Processing data...`, playerName, dependencies);
-
-    const pData = getPlayerData(player.id);
+    const pData = getPlayerData(playerId);
 
     if (pData && config?.combatLog?.enabled && pData.lastCombatInteractionTime > 0) {
         const currentTime = Date.now();
@@ -93,20 +88,20 @@ async function handlePlayerLeave(eventData, dependencies) {
             );
 
             const violationDetails = { timeSinceLastCombat: timeSinceLastCombatSeconds, incrementAmount };
-            await actionManager?.executeCheckAction(player, 'combatLog', violationDetails, dependencies);
+            await actionManager?.executeCheckAction({ id: playerId, name: playerName }, 'combatLog', violationDetails, dependencies);
         }
     }
 
-    const pDataAfterAction = playerDataManager?.getPlayerData(player.id);
+    const pDataAfterAction = playerDataManager?.getPlayerData(playerId);
 
     if (pDataAfterAction) {
         pDataAfterAction.lastLogoutTime = Date.now();
         pDataAfterAction.isOnline = false;
         pDataAfterAction.isDirtyForSave = true;
 
-        const lastLocation = pDataAfterAction.lastPosition ?? player?.location;
-        const lastDimensionId = (pDataAfterAction.lastDimensionId ?? player?.dimension?.id)?.replace('minecraft:', '');
-        const lastGameModeString = pDataAfterAction.lastGameMode ?? player?.gameMode ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
+        const lastLocation = pDataAfterAction.lastPosition;
+        const lastDimensionId = pDataAfterAction.lastDimensionId?.replace('minecraft:', '');
+        const lastGameModeString = pDataAfterAction.lastGameMode ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
         let sessionDurationString = playerUtils.getString('common.value.notApplicable', dependencies) ?? 'N/A';
         if (pDataAfterAction.joinTime && pDataAfterAction.joinTime > 0) {
             sessionDurationString = formatSessionDuration(Date.now() - pDataAfterAction.joinTime);
@@ -114,7 +109,7 @@ async function handlePlayerLeave(eventData, dependencies) {
         logManager?.addLog({
             actionType: 'playerLeave',
             targetName: playerName,
-            targetId: player.id,
+            targetId: playerId,
             details: `Last Loc: ${Math.floor(lastLocation?.x ?? 0)},${Math.floor(lastLocation?.y ?? 0)},` +
         `${Math.floor(lastLocation?.z ?? 0)} in ${lastDimensionId}. GM: ${lastGameModeString}. Session: ${sessionDurationString}.`,
             location: lastLocation ? { x: Math.floor(lastLocation.x), y: Math.floor(lastLocation.y), z: Math.floor(lastLocation.z), dimensionId: lastDimensionId } : undefined,
@@ -125,7 +120,7 @@ async function handlePlayerLeave(eventData, dependencies) {
 
     if (playerDataManager?.prepareAndSavePlayerData) {
         try {
-            await playerDataManager.prepareAndSavePlayerData(player, dependencies);
+            await playerDataManager.prepareAndSavePlayerData({ id: playerId, name: playerName }, dependencies);
             playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Data save processed for ${playerName} on leave.`, playerName, dependencies);
         } catch (error) {
             console.error(`[EventHandler.handlePlayerLeave CRITICAL] Error in prepareAndSavePlayerData for ${playerName} on leave: ${error.stack || error}`);
@@ -133,7 +128,7 @@ async function handlePlayerLeave(eventData, dependencies) {
                 actionType: 'errorEventHandlersPdataSaveOnLeave',
                 context: 'eventHandlers.handlePlayerLeave.prepareAndSavePlayerData',
                 targetName: playerName,
-                targetId: player.id,
+                targetId: playerId,
                 details: { errorMessage: error.message },
                 errorStack: error.stack,
             }, dependencies);
@@ -141,7 +136,7 @@ async function handlePlayerLeave(eventData, dependencies) {
     }
 
     if (config?.playerInfo?.enableDetailedJoinLeaveLogging) {
-        console.warn(`[LeaveLog] Player: ${playerName} (ID: ${player?.id}) left the game.`);
+        console.warn(`[LeaveLog] Player: ${playerName} (ID: ${playerId}) left the game.`);
     }
     playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Finished processing for ${playerName}.`, playerName, dependencies);
 }

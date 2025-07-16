@@ -48,7 +48,7 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
 
             // The if(shouldCancel) is now redundant as eventData.cancel is already set.
             // const shouldCancel = true; // This variable is no longer strictly needed here.
-
+            playerUtils.warnPlayer(player, `You cannot break ${blockTypeId}.`, dependencies);
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(`[InstaBreakCheck](Unbreakable): ${player.nameTag} attempt to break '${blockTypeId}' cancelled.`, watchedPrefix, dependencies);
         } else {

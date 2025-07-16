@@ -43,13 +43,16 @@ export async function checkSpeed(player, pData, dependencies) {
 
     const watchedPlayerName = pData.isWatched ? playerName : null;
 
-    if (player.isFlying || player.isGliding || player.isClimbing || player.isInWater || player.isRiding) {
+    const blockBelow = player.dimension.getBlock(player.location.offset(0, -1, 0));
+    const onIce = blockBelow && (blockBelow.typeId.includes('ice'));
+
+    if (player.isFlying || player.isGliding || player.isClimbing || player.isInWater || player.isRiding || onIce) {
         if (pData.consecutiveOnGroundSpeedingTicks > 0) {
             pData.consecutiveOnGroundSpeedingTicks = 0;
             pData.isDirtyForSave = true;
         }
         if (config?.enableDebugLogging && pData.isWatched) {
-            const exemptReason = player.isFlying ? 'Flying' : player.isGliding ? 'Gliding' : player.isClimbing ? 'Climbing' : player.isInWater ? 'InWater' : 'Riding';
+            const exemptReason = player.isFlying ? 'Flying' : player.isGliding ? 'Gliding' : player.isClimbing ? 'Climbing' : player.isInWater ? 'InWater' : player.isRiding ? 'Riding' : 'OnIce';
             playerUtils?.debugLog(`[SpeedCheck] ${playerName} in exempt state (${exemptReason}). Skipping speed check.`, watchedPlayerName, dependencies);
         }
         return;

@@ -217,6 +217,9 @@ function getToolMaterial(itemTypeId) {
  * @returns {number} Relative breaking power.
  */
 export function calculateRelativeBlockBreakingPower(player, blockPermutation, itemStack) {
+    if (player.gameMode === 'creative') {
+        return Infinity;
+    }
     const blockTypeId = blockPermutation.type.id;
     const blockHardness = blockHardnessMap[blockTypeId] || defaultBlockHardness;
     if (!itemStack) {

@@ -60,7 +60,7 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
     const maxAllowedReach = maxReachDistBase + reachBuffer;
 
     const eyeLocation = player.getHeadLocation();
-    const distanceToTarget = Math.sqrt(eyeLocation.distance(targetEntity.location));
+    const distanceToTarget = eyeLocation.distance(targetEntity.location);
 
     if (pData?.isWatched) {
         playerUtils?.debugLog(`[ReachCheck] ${playerName}: GameMode: ${mc.GameMode[gameMode]}, MaxAllowed: ${maxAllowedReach.toFixed(2)}, ActualDist: ${distanceToTarget.toFixed(2)}`, watchedPlayerName, dependencies);
