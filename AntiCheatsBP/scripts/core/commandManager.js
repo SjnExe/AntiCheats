@@ -82,9 +82,8 @@ export async function handleChatCommand(eventData, dependencies) {
 
     const args = message.substring(config.prefix.length).trim().split(/\s+/);
     const commandNameInput = args.shift()?.toLowerCase();
-    const senderPDataForLog = getPlayerData(player.id);
 
-    debugLog(`[CommandManager.handleChatCommand] Player ${playerName} command attempt: '${commandNameInput || ''}', Args: [${args.join(', ')}]`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
+    debugLog(`[CommandManager.handleChatCommand] Player ${playerName} command attempt: '${commandNameInput || ''}', Args: [${args.join(', ')}]`, getPlayerData(player.id)?.isWatched ? playerName : null, dependencies);
 
     if (!commandNameInput) {
         player?.sendMessage(getString('command.error.noCommandEntered', { prefix: config.prefix }));
@@ -136,6 +135,7 @@ export async function handleChatCommand(eventData, dependencies) {
     // Execute the command
     try {
         await commandExecute(player, args, dependencies);
+        const senderPDataForLog = getPlayerData(player.id); // Re-fetch data after execution
         debugLog(`[CommandManager.handleChatCommand] Successfully executed '${resolvedCommandName}' for ${playerName}.`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
         playSoundForEvent(player, 'commandSuccess', dependencies);
     } catch (error) {

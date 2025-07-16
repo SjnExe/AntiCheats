@@ -231,12 +231,12 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @returns {Promise<boolean>} True if data was saved, false otherwise.
  */
-export function saveDirtyPlayerData(playerLike, dependencies) {
+export async function saveDirtyPlayerData(playerLike, dependencies) {
     const { playerUtils, logManager, config } = dependencies;
     const pData = getPlayerData(playerLike.id);
 
     if (!pData || !pData.isDirtyForSave) {
-        return Promise.resolve(false);
+        return false;
     }
 
     // Ensure we have a valid player object with the setDynamicProperty method.
@@ -253,7 +253,7 @@ export function saveDirtyPlayerData(playerLike, dependencies) {
                 message: 'The provided player-like object does not have a setDynamicProperty method.',
             },
         }, dependencies);
-        return Promise.resolve(false);
+        return false;
     }
 
     try {
@@ -315,18 +315,18 @@ export function saveDirtyPlayerData(playerLike, dependencies) {
                 // Recovery Step 3: Critical failure, reset data
                 const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick, dependencies);
                 const freshSerializedData = JSON.stringify(freshData);
-        playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
+                await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
                 activePlayerData.set(playerLike.id, freshData); // Update cache with fresh data
-                return Promise.resolve(true); // Saved fresh data
+                return true; // Saved fresh data
             }
         }
 
-playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
+        await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
 
         pData.isDirtyForSave = false;
         pData.lastSavedTimestamp = Date.now();
         playerUtils.debugLog(`[PlayerDataManager] Saved data for ${playerLike.name}.`, pData.isWatched ? playerLike.name : null, dependencies);
-        return Promise.resolve(true);
+        return true;
 
     } catch (error) {
         logManager.addLog({
@@ -340,7 +340,7 @@ playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedDat
             },
         }, dependencies);
         console.error(`[PlayerDataManager CRITICAL] Failed to save player data for ${playerLike.name}: ${error.stack}`);
-        return Promise.resolve(false);
+        return false;
     }
 }
 
