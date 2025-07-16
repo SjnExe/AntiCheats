@@ -15,7 +15,6 @@ import * as configModule from '../config.js';
 import {
     ensurePlayerDataInitialized,
     getPlayerData,
-    cleanupActivePlayerData,
     updateTransientPlayerData,
     clearExpiredItemUseStates,
     saveDirtyPlayerData,
@@ -51,7 +50,6 @@ const mainModuleName = 'DependencyManager';
 const playerDataManager = {
     ensurePlayerDataInitialized,
     getPlayerData,
-    cleanupActivePlayerData,
     updateTransientPlayerData,
     clearExpiredItemUseStates,
     saveDirtyPlayerData,

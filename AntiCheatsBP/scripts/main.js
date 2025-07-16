@@ -89,7 +89,7 @@ function subscribeToEvents(dependencies) {
         playerBreakBlock: handlePlayerBreakBlockBeforeEvent,
         itemUse: handleItemUse,
         playerPlaceBlock: handlePlayerPlaceBlockBefore,
-        playerLeave: handlePlayerLeaveBeforeEvent,
+        playerLeaveBefore: handlePlayerLeaveBeforeEvent,
     };
 
     const afterEventSubscriptions = {
@@ -102,7 +102,7 @@ function subscribeToEvents(dependencies) {
         entityDie: handleEntityDieForDeathEffects,
         entitySpawn: handleEntitySpawnEventAntiGrief,
         pistonActivate: handlePistonActivateAntiGrief,
-        playerInventorySlotChange: handleInventoryItemChange,
+        inventorySlotChange: handleInventoryItemChange,
     };
 
     for (const eventName in beforeEventSubscriptions) {
