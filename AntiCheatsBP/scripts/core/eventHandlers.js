@@ -682,14 +682,14 @@ function handlePlayerDeath(eventData, dependencies) {
         pData.isDirtyForSave = true;
     }
 
-    const killerEntity = eventData.damageSource?.damagingEntity;
+    const killerEntity = eventData.damagingEntity;
     const killerName = killerEntity?.name ?? killerEntity?.typeId?.replace('minecraft:', '') ??
                        playerUtils.getString('common.value.notApplicable', dependencies) ?? 'N/A';
 
     logManager?.addLog({
         actionType: 'playerDeath',
         targetName: playerName, targetId: player.id,
-        details: `Player died. Cause: ${eventData.damageSource?.cause ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown'}. ` +
+        details: `Player died. Cause: ${eventData.cause ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown'}. ` +
                  `Killer: ${killerName}.`,
         location: { x: Math.floor(player.location.x), y: Math.floor(player.location.y), z: Math.floor(player.location.z) },
         dimensionId: player.dimension.id,
