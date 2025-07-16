@@ -57,7 +57,7 @@ export async function execute(player, args, dependencies) {
 
         if (allValidationErrors.length > 0) {
             player.sendMessage(getString('command.reload.validationErrors', { count: allValidationErrors.length }));
-            newDeps.playerUtils.notifyAdmins(`§cReload completed with ${allValidationErrors.length} validation errors. Check console.`, 'SystemCritical', newDeps, true);
+            newDeps.playerUtils.notifyAdmins(`§cReload completed with ${allValidationErrors.length} validation errors. Check console.`, newDeps);
             console.warn(`[reload] Validation errors found:\n- ${allValidationErrors.join('\n- ')}`);
         } else {
             player.sendMessage(getString('command.reload.success'));
@@ -67,6 +67,6 @@ export async function execute(player, args, dependencies) {
     } catch (error) {
         console.error(`[reload CRITICAL] Failed to reload configurations: ${error.stack}`);
         player.sendMessage(getString('command.reload.error'));
-        playerUtils.notifyAdmins('§cCRITICAL: The addon configuration failed to reload. Please check the console for errors.', 'SystemCritical', dependencies, true);
+        playerUtils.notifyAdmins('§cCRITICAL: The addon configuration failed to reload. Please check the console for errors.', dependencies);
     }
 }
