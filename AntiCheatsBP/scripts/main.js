@@ -54,7 +54,7 @@ const initialRetryDelayTicks = 20;
 const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
 const TPA_SYSTEM_TICK_INTERVAL = 20;
 
-let isTickLoopRunning = false;
+let lastProcessedTick = -1;
 
 /**
  * Initializes the AntiCheat system.
@@ -172,25 +172,17 @@ function validateConfigurations(dependencies) {
  * Processes all tasks for a single system tick.
  */
 async function mainTick() {
-    if (isTickLoopRunning) {
-        const deps = dependencyManager.getDependenciesUnsafe();
-        if (deps) {
-            addLog({
-                actionType: 'warning.main.tickOverlap',
-                context: 'Main.TickLoop',
-                details: { message: 'Tick processing is overlapping.' },
-            }, deps);
-        }
+    if (system.currentTick <= lastProcessedTick) {
         return;
     }
 
-    isTickLoopRunning = true;
+    // Immediately update the last processed tick to prevent re-entry, even if errors occur.
+    lastProcessedTick = system.currentTick;
 
     try {
         await processTick();
     } catch (e) {
         // Centralized error logging for the main tick loop.
-        // This ensures that even if dependency injection has issues, we try to log.
         const errorMessage = `[AntiCheat] Unhandled error in main tick: ${e?.message}\n${e?.stack}`;
         console.error(errorMessage); // Always log to console for immediate visibility.
 
@@ -211,8 +203,6 @@ async function mainTick() {
             // This catches errors within the addLog logic itself.
             console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during main tick error: ${loggingError.message}`);
         }
-    } finally {
-        isTickLoopRunning = false;
     }
 }
 

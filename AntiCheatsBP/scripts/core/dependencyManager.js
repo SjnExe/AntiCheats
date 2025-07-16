@@ -115,7 +115,7 @@ class DependencyManager {
     _assembleDependencies() {
         try {
             this._dependencies = {
-                config: configModule.editableConfigValues,
+                get config() { return configModule.editableConfigValues; },
                 automodConfig,
                 checkActionProfiles,
                 currentTick: this.currentTick,
