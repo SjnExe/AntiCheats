@@ -77,8 +77,8 @@ function normalizeWordForSwearCheck(word, dependencies) {
  * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
  * @param {Dependencies} dependencies Full dependencies object.
  */
-let normalizedSwearWordSet = new Set();
-let lastSwearList;
+let normalizedSwearWordSet = null;
+let lastSwearListJson = '';
 
 /**
  * Initializes or updates the swear word list from the config.
@@ -87,9 +87,10 @@ let lastSwearList;
 function initializeSwearList(dependencies) {
     const { config } = dependencies;
     const currentSwearList = config?.chatChecks?.swear?.words;
+    const currentSwearListJson = JSON.stringify(currentSwearList);
 
-    if (currentSwearList !== lastSwearList) {
-        lastSwearList = currentSwearList;
+    if (currentSwearListJson !== lastSwearListJson) {
+        lastSwearListJson = currentSwearListJson;
         if (Array.isArray(currentSwearList)) {
             normalizedSwearWordSet = new Set(
                 currentSwearList.map(sw => normalizeWordForSwearCheck(String(sw ?? ''), dependencies)).filter(Boolean),
@@ -115,7 +116,9 @@ export async function checkSwear(player, eventData, pData, dependencies) {
         return;
     }
 
-    initializeSwearList(dependencies);
+    if (normalizedSwearWordSet === null) {
+        initializeSwearList(dependencies);
+    }
 
     if (normalizedSwearWordSet.size === 0) {
         playerUtils?.debugLog(`[SwearCheck] Skipped for ${playerName}: swear word list is empty or not configured.`, pData?.isWatched ? playerName : null, dependencies);
