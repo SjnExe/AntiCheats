@@ -196,9 +196,13 @@ async function mainTick() {
     try {
         await processTick();
     } catch (e) {
-        // Attempt to get dependencies again for logging, in case the initial call failed.
-        // This is a last-ditch effort to ensure critical errors are logged.
+        // Centralized error logging for the main tick loop.
+        // This ensures that even if dependency injection has issues, we try to log.
+        const errorMessage = `[AntiCheat] Unhandled error in main tick: ${e?.message}\n${e?.stack}`;
+        console.error(errorMessage); // Always log to console for immediate visibility.
+
         try {
+            // Attempt to use the structured logging system.
             const depsForError = dependencyManager.getDependenciesUnsafe();
             if (depsForError) {
                 addLog({
@@ -207,14 +211,13 @@ async function mainTick() {
                     details: { errorMessage: e?.message, stack: e?.stack },
                 }, depsForError);
             } else {
-                // Fallback if even unsafe dependency access fails
-                console.error('[AntiCheat] CRITICAL: Unhandled error in main tick and unable to get dependencies for logging.');
+                // This fallback is crucial for when the dependency manager itself might be the issue.
+                console.error('[AntiCheat] CRITICAL: Could not get dependencies for structured logging in main tick.');
             }
         } catch (loggingError) {
-            // Absolute fallback if logging itself fails
-            console.error(`[AntiCheat] CRITICAL: Further error during logging of main tick error: ${loggingError.message}`);
+            // This catches errors within the addLog logic itself.
+            console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during main tick error: ${loggingError.message}`);
         }
-        console.error(`[AntiCheat] Unhandled error in main tick: ${e?.message}\n${e?.stack}`);
     } finally {
         isTickLoopRunning = false;
     }
@@ -373,27 +376,43 @@ function attemptInitializeSystem(retryCount = 0) {
         }
 
         dependencyManager.validateDependencies(`attemptInitializeSystem - pre-check - attempt ${retryCount}`);
-
-        // console.log(`[Main] APIs ready, initializing...`);
         performInitializations();
     } catch (e) {
         const delay = initialRetryDelayTicks * Math.pow(2, retryCount);
-        const errorMessage = `[Main] Initialization failed. Retrying in ${delay / 20}s. Attempt ${retryCount + 1}/${maxInitRetries}. Error: ${e.message}`;
-        const dependencies = dependencyManager.getDependenciesUnsafe();
-        if (dependencies) {
-            dependencies.playerUtils.debugLog(errorMessage, 'SystemError', dependencies);
-            addLog({ actionType: 'error.main.initialization.retry', context: 'Main.attemptInitializeSystem', details: { message: e.message, stack: e.stack, retryCount: retryCount + 1 } }, dependencies);
+        const isFinalAttempt = retryCount >= maxInitRetries;
+        const errorMessage = `[Main] Initialization failed on attempt ${retryCount + 1}. ${isFinalAttempt ? 'FINAL ATTEMPT FAILED.' : `Retrying in ${delay / 20}s.`} Error: ${e.message}`;
+
+        console.error(errorMessage); // Always log to console for immediate visibility.
+
+        // Attempt to use the structured logging system.
+        try {
+            const dependencies = dependencyManager.getDependenciesUnsafe();
+            if (dependencies) {
+                const logEntry = {
+                    actionType: isFinalAttempt ? 'error.main.initialization.critical' : 'error.main.initialization.retry',
+                    context: 'Main.attemptInitializeSystem',
+                    details: {
+                        message: e.message,
+                        stack: e.stack,
+                        retryCount: retryCount + 1,
+                        maxRetries: maxInitRetries,
+                    },
+                };
+                addLog(logEntry, dependencies);
+
+                if (isFinalAttempt) {
+                    const criticalErrorMsg = `[Main] CRITICAL: MAX RETRIES REACHED. System will not initialize. Last error: ${e.message}`;
+                    dependencies.playerUtils.notifyAdmins(criticalErrorMsg, 'SystemCritical', dependencies, true);
+                }
+            } else {
+                console.error('[AntiCheat] CRITICAL: Could not get dependencies for structured logging during initialization.');
+            }
+        } catch (loggingError) {
+            console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during initialization error: ${loggingError.message}`);
         }
 
-        if (retryCount < maxInitRetries) {
+        if (!isFinalAttempt) {
             system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
-        } else {
-            const criticalErrorMsg = '[Main] CRITICAL: MAX RETRIES REACHED. System will not initialize.';
-            if (dependencies) {
-                dependencies.playerUtils.debugLog(criticalErrorMsg, 'SystemCritical', dependencies);
-                addLog({ actionType: 'error.main.initialization.critical', context: 'Main.attemptInitializeSystem', details: { message: 'Max retries reached', retryCount: retryCount + 1 } }, dependencies);
-                dependencies.playerUtils.notifyAdmins(criticalErrorMsg, 'SystemCritical', dependencies, true);
-            }
         }
     }
 }
