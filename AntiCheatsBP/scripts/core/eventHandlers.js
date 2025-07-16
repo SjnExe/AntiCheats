@@ -698,7 +698,7 @@ profileEventHandler('handlePlayerDeath', handlePlayerDeath);
  * Subscribes to entityHurt events for combat log detection.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-function subscribeToCombatLogEvents(dependencies) {
+export function subscribeToCombatLogEvents(dependencies) {
     const { config, playerDataManager } = dependencies;
     if (!config?.enableCombatLogDetection) {
         return;
@@ -734,8 +734,6 @@ function subscribeToCombatLogEvents(dependencies) {
     });
     dependencies.playerUtils?.debugLog('[EvtHdlr.CombatLogSub] Subscribed to entityHurt for CombatLog detection.', null, dependencies);
 }
-
-export const subscribeToCombatLogEvents = subscribeToCombatLogEvents;
 
 
 /**
