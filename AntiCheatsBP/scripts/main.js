@@ -72,7 +72,24 @@ function performInitializations() {
     world.sendMessage({ 'translate': 'system.core.initialized', 'with': { 'version': configModule.acVersion } });
     dependencies.playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Tick loop active.', 'System', dependencies);
 
-    system.runInterval(() => mainTick(), 1);
+    system.runInterval(() => {
+        mainTick().catch(e => {
+            console.error(`[AntiCheat] Critical unhandled error in mainTick: ${e?.message}\n${e?.stack}`);
+            // Optionally, use the dependency manager to log this if it's safe
+            try {
+                const depsForError = dependencyManager.getDependenciesUnsafe();
+                if (depsForError) {
+                    depsForError.logManager.addLog({
+                        actionType: 'error.main.tick.unhandled.rejection',
+                        context: 'Main.TickLoop.TopLevel',
+                        details: { errorMessage: e?.message, stack: e?.stack },
+                    }, depsForError);
+                }
+            } catch (loggingError) {
+                console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during top-level tick error: ${loggingError.message}`);
+            }
+        });
+    }, 1);
     system.runInterval(() => tpaTick(), TPA_SYSTEM_TICK_INTERVAL);
 }
 /**
