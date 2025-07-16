@@ -307,6 +307,7 @@ async function handlePlayerSpawn(eventData, dependencies) {
                 }
             }
         }, dependencies);
+        throw error;
     }
 }
 export const handlePlayerSpawn = profileEventHandler('handlePlayerSpawn', handlePlayerSpawn);
