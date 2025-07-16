@@ -69,10 +69,10 @@ export async function checkNameSpoof(player, pData, dependencies) {
         }
     }
 
-    if (currentNameTag !== pData.lastKnownNameTag) {
-        const minIntervalTicks = config?.nameSpoofMinChangeIntervalTicks ?? defaultNameSpoofMinChangeIntervalTicks;
-        const ticksSinceLastChange = currentTick - (pData.lastNameTagChangeTick ?? 0); // 0 is fine
+    const minIntervalTicks = config?.nameSpoofMinChangeIntervalTicks ?? defaultNameSpoofMinChangeIntervalTicks;
+    const ticksSinceLastChange = currentTick - (pData.lastNameTagChangeTick ?? 0); // 0 is fine
 
+    if (currentNameTag !== pData.lastKnownNameTag) {
         if (!reasonDetailString &&
             (pData.lastNameTagChangeTick ?? 0) !== 0 &&
             ticksSinceLastChange < minIntervalTicks) {
@@ -82,6 +82,15 @@ export async function checkNameSpoof(player, pData, dependencies) {
         pData.lastKnownNameTag = currentNameTag;
         pData.lastNameTagChangeTick = currentTick;
         pData.isDirtyForSave = true;
+    } else {
+        // Even if the name is the same, check for rapid changes if the tick is different
+        if (!reasonDetailString &&
+            (pData.lastNameTagChangeTick ?? 0) !== 0 &&
+            pData.lastNameTagChangeTick !== currentTick && // Ensure it's not the same tick
+            ticksSinceLastChange < minIntervalTicks) {
+            reasonDetailString = `Name change event triggered too quickly (last change ${ticksSinceLastChange} ticks ago, min is ${minIntervalTicks}).`;
+            flaggedReasonForLog = `NameTag change event triggered too rapidly (within ${ticksSinceLastChange} ticks, min is ${minIntervalTicks}t), even with the same name.`;
+        }
     }
 
 
