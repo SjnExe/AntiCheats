@@ -465,7 +465,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
             continue;
         }
         if (!knownKeys.includes(key) && !manuallyHandledKeys.includes(key)) {
-            // unknown keys are ignored
+            errors.push(`${context}.${key}: Unknown key "${key}" found in config. It will be ignored.`);
         }
     }
     if (commandAliasesMap) {
