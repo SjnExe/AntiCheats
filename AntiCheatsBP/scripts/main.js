@@ -89,7 +89,7 @@ function subscribeToEvents(dependencies) {
         playerBreakBlock: handlePlayerBreakBlockBeforeEvent,
         itemUse: handleItemUse,
         playerPlaceBlock: handlePlayerPlaceBlockBefore,
-        playerLeave: handlePlayerLeaveBeforeEvent,
+        playerLeaveBefore: handlePlayerLeaveBeforeEvent,
     };
 
     const afterEventSubscriptions = {
