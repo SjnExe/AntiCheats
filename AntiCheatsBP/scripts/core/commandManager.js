@@ -15,22 +15,27 @@ export const commandDefinitionMap = new Map();
 /** @type {Map<string, import('../types.js').CommandExecuteFunction>} */
 export const commandExecutionMap = new Map();
 
-import * as commandModules from '../commands/index.js';
+// Import all command modules, where each key is the module name (e.g., 'ban', 'kick')
+import * as commandFiles from '../commands/index.js';
 
 /**
- * Dynamically discovers and registers command files.
+ * Dynamically discovers and registers command files from the imported modules.
  */
 function discoverCommands() {
     commandFilePaths.clear();
-    for (const moduleName in commandModules) {
-        const cmdModule = commandModules[moduleName];
+    // commandFiles is an object where keys are module names (e.g., 'ban')
+    // and values are the modules themselves.
+    for (const moduleKey in commandFiles) {
+        const cmdModule = commandFiles[moduleKey];
         if (cmdModule?.definition?.name) {
             const commandName = cmdModule.definition.name.toLowerCase();
-            // The key in commandFilePaths should be the command name, and the value should be the path.
-            // However, dynamic import paths need to be relative to the importing file.
-            // Since we are now importing from an index, the path needs to be adjusted.
-            // Let's assume the moduleName is the file name without the .js extension.
-            commandFilePaths.set(commandName, `../commands/${moduleName}.js`);
+            // The moduleKey from the import *should* correspond to the file name.
+            // Example: import * as commandFiles from './commands/index.js' -> commandFiles.ban -> ban.js
+            const filePath = `../commands/${moduleKey}.js`;
+            commandFilePaths.set(commandName, filePath);
+        } else {
+            // This can happen if index.js exports something that isn't a command module.
+            // We can ignore it or log a warning if it's unexpected.
         }
     }
 }
