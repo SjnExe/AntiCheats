@@ -83,7 +83,7 @@ export function execute(
 
     if (!targetPData) {
         const failureMsg = `${getString('command.unmute.failure', { playerName: targetOnlinePlayer.nameTag }) } (No data)`;
-        if (player) {
+        if (player && player.isValid()) {
             player.sendMessage(failureMsg);
         } else {
             console.warn(`[UnmuteCommand.execute] ${issuerName} call: ${failureMsg}`);
