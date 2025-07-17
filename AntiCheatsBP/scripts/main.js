@@ -57,7 +57,6 @@ const STALE_PURGE_CLEANUP_INTERVAL_TICKS = 72000; // Once per hour
 const TPA_SYSTEM_TICK_INTERVAL = 20;
 
 let lastProcessedTick = -1;
-let isProcessingTick = false;
 
 /**
  * Initializes the AntiCheat system.
@@ -192,11 +191,6 @@ function validateConfigurations(dependencies) {
  * Processes all tasks for a single system tick.
  */
 async function mainTick() {
-    if (isProcessingTick) {
-        return;
-    }
-    isProcessingTick = true;
-
     try {
         const currentTick = system.currentTick;
         if (currentTick > lastProcessedTick) {
@@ -221,8 +215,6 @@ async function mainTick() {
         } catch (loggingError) {
             console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during main tick error: ${loggingError.message}`);
         }
-    } finally {
-        isProcessingTick = false;
     }
 }
 
