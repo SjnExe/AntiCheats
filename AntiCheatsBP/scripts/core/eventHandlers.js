@@ -216,15 +216,9 @@ export async function handlePlayerSpawn(eventData, dependencies) {
 
             if (config.playerInfo.enableWelcomer) {
                 const message = { translate: 'welcome.joinMessage', with: { playerName: player.name } };
-                system.runTimeout(() => {
-                    try {
-                        if (player.isValid()) {
-                            player.sendMessage(message);
-                        }
-                    } catch (e) {
-                        console.warn(`[EventHandler.handlePlayerSpawn] Failed to send welcome to ${playerName}: ${e.message}`);
-                    }
-                }, welcomeMessageDelayTicks);
+                if (player.isValid()) {
+                    player.sendMessage(message);
+                }
             }
 
             logManager?.addLog({
