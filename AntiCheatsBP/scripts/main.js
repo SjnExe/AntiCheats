@@ -192,23 +192,22 @@ function validateConfigurations(dependencies) {
  * Processes all tasks for a single system tick.
  */
 async function mainTick() {
-    if (isProcessingTick || system.currentTick <= lastProcessedTick) {
+    if (isProcessingTick) {
         return;
     }
-
-    // Immediately update the last processed tick to prevent re-entry from simple tick skips.
-    lastProcessedTick = system.currentTick;
     isProcessingTick = true;
 
     try {
-        await processTick();
+        const currentTick = system.currentTick;
+        if (currentTick > lastProcessedTick) {
+            await processTick();
+            lastProcessedTick = currentTick;
+        }
     } catch (e) {
-        // Centralized error logging for the main tick loop.
-        const errorMessage = `[AntiCheat] Unhandled error in main tick: ${e?.message}\n${e?.stack}`;
-        console.error(errorMessage); // Always log to console for immediate visibility.
+        const errorMessage = `[AntiCheat] Unhandled error in main tick processing: ${e?.message}\n${e?.stack}`;
+        console.error(errorMessage);
 
         try {
-            // Attempt to use the structured logging system.
             const depsForError = dependencyManager.getDependenciesUnsafe();
             if (depsForError) {
                 addLog({
@@ -217,11 +216,9 @@ async function mainTick() {
                     details: { errorMessage: e?.message, stack: e?.stack },
                 }, depsForError);
             } else {
-                // This fallback is crucial for when the dependency manager itself might be the issue.
                 console.error('[AntiCheat] CRITICAL: Could not get dependencies for structured logging in main tick.');
             }
         } catch (loggingError) {
-            // This catches errors within the addLog logic itself.
             console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during main tick error: ${loggingError.message}`);
         }
     } finally {

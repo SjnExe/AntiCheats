@@ -188,25 +188,27 @@ export function updatePlayerNametag(player, dependencies) {
     let baseName = player.name ?? getString('common.value.player'); // Default to system name
     const currentNameTag = player.nameTag;
 
-    if (currentNameTag && typeof currentNameTag === 'string' && currentNameTag.length > 0) {
-        let currentTagSeemsPrefixed = false;
-        // Check against all known rank prefixes to strip existing one if present
+    if (currentNameTag && typeof currentNameTag === 'string' && currentNameTag.length > 0 && currentNameTag !== baseName) {
+        // Find the longest matching prefix to avoid issues with overlapping prefixes (e.g., "admin" and "superadmin")
+        let longestPrefix = '';
         for (const def of sortedRankDefinitions) {
-            if (def.nametagPrefix && currentNameTag.startsWith(def.nametagPrefix)) {
-                const potentialBase = currentNameTag.substring(def.nametagPrefix.length);
-                if (potentialBase.length > 0) { // Ensure stripping prefix doesn't leave an empty name
-                    baseName = potentialBase;
-                    currentTagSeemsPrefixed = true;
-                }
-                break;
+            if (def.nametagPrefix && currentNameTag.startsWith(def.nametagPrefix) && def.nametagPrefix.length > longestPrefix.length) {
+                longestPrefix = def.nametagPrefix;
             }
         }
-        // If no known prefix was stripped, but nameTag is different from system name, use nameTag as base.
-        // This handles cases where a name might have been set by other means or an unknown prefix.
-        if (!currentTagSeemsPrefixed && currentNameTag !== baseName) {
+
+        if (longestPrefix.length > 0) {
+            const potentialBase = currentNameTag.substring(longestPrefix.length);
+            if (potentialBase.length > 0) {
+                baseName = potentialBase;
+            }
+        } else {
+            // If no known prefix matches, but the nametag is different, assume the entire nametag is the intended base name.
+            // This handles custom names set by other plugins or commands.
             baseName = currentNameTag;
         }
     }
+
     // If after all checks baseName is empty (e.g. player.name was empty), default again.
     if (!baseName || baseName.trim() === '') {
         baseName = getString('common.value.player');

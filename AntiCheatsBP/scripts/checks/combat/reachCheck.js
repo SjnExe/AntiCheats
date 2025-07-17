@@ -59,7 +59,7 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
     const reachBuffer = config?.reachBuffer ?? defaultReachBuffer;
     const maxAllowedReach = maxReachDistBase + reachBuffer;
 
-    const eyeLocation = player.getHeadLocation();
+    const eyeLocation = player.getEyeLocation();
     const distanceToTarget = eyeLocation.distance(targetEntity.location);
 
     if (pData?.isWatched) {

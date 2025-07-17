@@ -368,7 +368,7 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
  * @param {string} [defaultReasonKey='common.value.noReasonProvided'] Default reason key.
  * @returns {{targetPlayerName: string|undefined, reason: string}} Parsed player name and reason.
  */
-export function parsePlayerAndReasonArgs(args, dependencies, reasonStartIndex = 1, defaultReasonKey = 'common.value.noReasonProvided') {
+export function parsePlayerAndReasonArgs(args, reasonStartIndex = 1, defaultReasonKey = 'common.value.noReasonProvided', dependencies) {
     const { getString } = dependencies; // playerUtils was unused here, getString is directly on dependencies or via playerUtils from caller
 
     const targetPlayerName = args[0];

@@ -54,6 +54,8 @@ export function execute(
 
     const targetOnlinePlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'ban' });
     if (!targetOnlinePlayer) {
+        // The validate function already sends a message to the player if they exist.
+        // We just need to log it for system calls.
         if (!player) {
             console.warn(`[BanCommand.execute] System call: Target player '${targetPlayerName}' not found or invalid.`);
         }
