@@ -529,29 +529,29 @@ export function handleEntityDieForDeathEffects(eventData, dependencies) {
 
     const entityName = deadEntity.name ?? deadEntity.typeId ?? 'UnknownEntity';
 
-    if (!(deadEntity instanceof mc.Player)) {
-        return;
-    }
+    if (deadEntity instanceof mc.Player) {
+        handlePlayerDeath(eventData, dependencies);
 
-    playerUtils?.debugLog(`[EvtHdlr.DeathFx] Player ${entityName} died. Processing effects.`, entityName, dependencies);
-    try {
-        const location = deadEntity.location;
-        const dimension = deadEntity.dimension;
+        playerUtils?.debugLog(`[EvtHdlr.DeathFx] Player ${entityName} died. Processing effects.`, entityName, dependencies);
+        try {
+            const location = deadEntity.location;
+            const dimension = deadEntity.dimension;
 
-        if (config.deathEffectParticleName) {
-            dimension.spawnParticle(config.deathEffectParticleName, location);
+            if (config.deathEffectParticleName) {
+                dimension.spawnParticle(config.deathEffectParticleName, location);
+            }
+            if (config.deathEffectSoundId) {
+                dimension.playSound(config.deathEffectSoundId, location);
+            }
+        } catch (e) {
+            console.warn(`[EvtHdlr.DeathFx CRITICAL] Error applying death effect for ${entityName}: ${e.message}`);
+            logManager?.addLog({
+                actionType: 'errorEventHandlersDeathEffect', context: 'eventHandlers.handleEntityDieForDeathEffects',
+                targetName: entityName, targetId: deadEntity.id,
+                details: { particleName: config.deathEffectParticleName, soundId: config.deathEffectSoundId, errorMessage: e.message },
+                errorStack: e.stack,
+            }, dependencies);
         }
-        if (config.deathEffectSoundId) {
-            dimension.playSound(config.deathEffectSoundId, location);
-        }
-    } catch (e) {
-        console.warn(`[EvtHdlr.DeathFx CRITICAL] Error applying death effect for ${entityName}: ${e.message}`);
-        logManager?.addLog({
-            actionType: 'errorEventHandlersDeathEffect', context: 'eventHandlers.handleEntityDieForDeathEffects',
-            targetName: entityName, targetId: deadEntity.id,
-            details: { particleName: config.deathEffectParticleName, soundId: config.deathEffectSoundId, errorMessage: e.message },
-            errorStack: e.stack,
-        }, dependencies);
     }
 }
 profileEventHandler('handleEntityDieForDeathEffects', handleEntityDieForDeathEffects);

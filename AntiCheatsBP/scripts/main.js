@@ -117,26 +117,17 @@ function subscribeToEvents(dependencies) {
         playerBreakBlock: handlePlayerBreakBlockAfterEvent,
         playerPlaceBlock: handlePlayerPlaceBlockAfterEvent,
         playerDimensionChange: handlePlayerDimensionChangeAfterEvent,
-        playerDeath: handlePlayerDeath,
         entityDie: handleEntityDieForDeathEffects,
         entitySpawn: handleEntitySpawnEventAntiGrief,
         pistonActivate: handlePistonActivateAntiGrief,
-        inventorySlotChanged: handleInventoryItemChange,
+        inventoryItemChanged: handleInventoryItemChange,
     };
 
     for (const eventName in beforeEventSubscriptions) {
-        if (!world.beforeEvents[eventName]) {
-            console.error(`[AntiCheat] Event world.beforeEvents.${eventName} is undefined!`);
-            continue;
-        }
         world.beforeEvents[eventName].subscribe((eventData) => beforeEventSubscriptions[eventName](eventData, dependencies));
     }
 
     for (const eventName in afterEventSubscriptions) {
-        if (!world.afterEvents[eventName]) {
-            console.error(`[AntiCheat] Event world.afterEvents.${eventName} is undefined!`);
-            continue;
-        }
         world.afterEvents[eventName].subscribe((eventData) => afterEventSubscriptions[eventName](eventData, dependencies));
     }
 }
