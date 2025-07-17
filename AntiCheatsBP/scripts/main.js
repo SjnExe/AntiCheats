@@ -352,17 +352,41 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
 function tpaTick() {
     try {
         const dependencies = dependencyManager.getAll();
-        if (dependencies.config.enableTpaSystem) {
-            dependencies.tpaManager.clearExpiredRequests(dependencies);
-            dependencies.tpaManager.getRequestsInWarmup().forEach(req => {
-                if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
-                    dependencies.tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
-                }
-                if (req.status === 'pendingTeleportWarmup' && Date.now() >= (req.warmupExpiryTimestamp || 0)) {
-                    dependencies.tpaManager.executeTeleport(req.requestId, dependencies);
-                }
-            });
+        if (!dependencies.config.enableTpaSystem) {
+            return;
         }
+
+        dependencies.tpaManager.clearExpiredRequests(dependencies);
+
+        dependencies.tpaManager.getRequestsInWarmup().forEach(req => {
+            const requester = world.getPlayer(req.requesterName);
+            const target = world.getPlayer(req.targetName);
+
+            if (!requester?.isValid() || !target?.isValid()) {
+                const invalidPlayerName = !requester?.isValid() ? req.requesterName : req.targetName;
+                const reasonMsgKey = 'tpa.manager.error.teleportWarmupTargetInvalid';
+                const reasonLog = `A player (${invalidPlayerName}) involved in TPA request ${req.requestId} went offline during warmup.`;
+                dependencies.tpaManager.cancelTeleport(req.requestId, reasonMsgKey, reasonLog, dependencies);
+                return; // Skip to the next request
+            }
+
+            // If the request is still valid after a potential cancellation above
+            if (req.status !== 'pendingTeleportWarmup') {
+                return;
+            }
+
+            if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
+                dependencies.tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
+                // checkPlayerMovementDuringWarmup might cancel the request, so we check status again.
+                if (req.status !== 'pendingTeleportWarmup') {
+                    return;
+                }
+            }
+
+            if (Date.now() >= (req.warmupExpiryTimestamp || 0)) {
+                dependencies.tpaManager.executeTeleport(req.requestId, dependencies);
+            }
+        });
     } catch (e) {
         console.error(`[AntiCheat] Unhandled error in tpaTick: ${e?.message}\n${e?.stack}`);
         const depsForError = dependencyManager.getDependenciesUnsafe();
