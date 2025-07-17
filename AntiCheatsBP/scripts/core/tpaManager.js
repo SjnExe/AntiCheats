@@ -239,52 +239,51 @@ export async function executeTeleport(requestId, dependencies) {
         return;
     }
 
+    let teleportSuccessful = false;
     try {
-        let teleportSuccessful = false;
         if (request.requestType === 'tpa') {
             const targetDimension = minecraftSystem?.world?.getDimension(request.targetDimensionId);
-            if (!targetDimension) {
-                throw new Error(`Invalid target dimension: ${request.targetDimensionId}`);
-            }
+            if (!targetDimension) throw new Error(`Invalid target dimension: ${request.targetDimensionId}`);
+
             await requesterPlayer.teleport(request.targetLocation, { dimension: targetDimension });
+            teleportSuccessful = true; // Assume success if no error is thrown
             requesterPlayer.sendMessage(getString('tpa.manager.teleport.successToTarget', { targetPlayerName: targetPlayer.nameTag }));
             targetPlayer.sendMessage(getString('tpa.manager.teleport.successTargetNotified', { requesterPlayerName: requesterPlayer.nameTag }));
-            teleportSuccessful = true;
+
         } else if (request.requestType === 'tpahere') {
             const requesterDimension = minecraftSystem?.world?.getDimension(request.requesterDimensionId);
-            if (!requesterDimension) {
-                throw new Error(`Invalid requester dimension: ${request.requesterDimensionId}`);
-            }
+            if (!requesterDimension) throw new Error(`Invalid requester dimension: ${request.requesterDimensionId}`);
+
             await targetPlayer.teleport(request.requesterLocation, { dimension: requesterDimension });
+            teleportSuccessful = true; // Assume success
             targetPlayer.sendMessage(getString('tpa.manager.teleport.successToRequester', { requesterPlayerName: requesterPlayer.nameTag }));
             requesterPlayer.sendMessage(getString('tpa.manager.teleport.successRequesterNotified', { targetPlayerName: targetPlayer.nameTag }));
-            teleportSuccessful = true;
         } else {
             playerUtils?.debugLog(`[TpaManager.executeTeleport] Unknown type: ${request.requestType} for request ${requestId}`, request.requesterName, dependencies);
         }
 
-        const requestToUpdateStatus = request; // Re-affirm request reference
-        requestToUpdateStatus.status = teleportSuccessful ? 'completed' : 'cancelled';
-        playerUtils?.debugLog(`[TpaManager.executeTeleport] Request ${requestId} status: ${requestToUpdateStatus.status}. Type: ${requestToUpdateStatus.requestType}`, requestToUpdateStatus.requesterName, dependencies);
+        request.status = 'completed';
+        playerUtils?.debugLog(`[TpaManager.executeTeleport] Request ${requestId} completed successfully.`, request.requesterName, dependencies);
+
     } catch (e) {
-        const requestToCancelOnError = activeRequests.get(requestId); // Re-fetch or use original if confident
-        if (requestToCancelOnError) {
-            requestToCancelOnError.status = 'cancelled';
-        }
+        request.status = 'cancelled';
         console.error(`[TpaManager.executeTeleport] Error for request ${requestId}: ${e.stack || e}`);
-        try {
-            if (requesterPlayer?.isValid()) {
-                requesterPlayer.sendMessage(getString('tpa.manager.error.teleportGenericErrorToRequester'));
-            }
-            if (targetPlayer?.isValid()) {
-                targetPlayer.sendMessage(getString('tpa.manager.error.teleportGenericErrorToTarget', { otherPlayerName: requesterPlayer?.nameTag ?? request.requesterName }));
-            }
-        } catch (notifyError) {
-            playerUtils?.debugLog(`[TpaManager.executeTeleport] Failed to notify players on error: ${notifyError.stack || notifyError}`, request.requesterName, dependencies);
+        if (requesterPlayer?.isValid()) {
+            requesterPlayer.sendMessage(getString('tpa.manager.error.teleportGenericErrorToRequester'));
+        }
+        if (targetPlayer?.isValid()) {
+            targetPlayer.sendMessage(getString('tpa.manager.error.teleportGenericErrorToTarget', { otherPlayerName: requesterPlayer?.nameTag ?? request.requesterName }));
         }
     } finally {
+        logManager?.addLog({
+            actionType: 'tpaTeleportFinalized',
+            targetName: targetPlayer?.nameTag || request.targetName,
+            adminName: requesterPlayer?.nameTag || request.requesterName,
+            details: `Status: ${request.status}, Type: ${request.requestType}, ID: ${requestId}`
+        }, dependencies);
+
+        // Now it's safe to remove the request, regardless of outcome.
         removeRequest(requestId, dependencies);
-        logManager?.addLog({ actionType: 'tpaTeleportFinalized', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `Status: ${request.status}, Type: ${request.requestType}, ID: ${requestId}` }, dependencies);
     }
 }
 
