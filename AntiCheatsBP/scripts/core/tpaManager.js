@@ -55,8 +55,8 @@ export function addRequest(requester, target, type, dependencies) {
     const requesterName = requester?.nameTag ?? 'UnknownRequester';
     const targetName = target?.nameTag ?? 'UnknownTarget';
 
-    if (lastPlayerRequestTimestamp.has(requester.name)) { // Use player.name as key for consistency with other maps
-        const elapsedTime = now - (lastPlayerRequestTimestamp.get(requester.name) ?? 0);
+    if (lastPlayerRequestTimestamp.has(requester.nameTag)) { // Use player.name as key for consistency with other maps
+        const elapsedTime = now - (lastPlayerRequestTimestamp.get(requester.nameTag) ?? 0);
         const cooldownMs = (config?.tpaRequestCooldownSeconds ?? defaultTpaRequestCooldownSeconds) * 1000;
         if (elapsedTime < cooldownMs) {
             const remainingSeconds = Math.ceil((cooldownMs - elapsedTime) / 1000);
