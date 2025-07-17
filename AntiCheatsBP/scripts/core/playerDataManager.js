@@ -53,7 +53,7 @@ async function _saveScheduledFlagPurges(purges, dependencies) {
 
 /**
  * Initializes the default data structure for a new player.
- * @param {import('@minecraft/server').Player} player The player object.
+ * @param {object} playerLike An object with player-like properties (id, name, location, dimension, etc.).
  * @param {number} currentTick The current server tick.
  * @returns {import('../types.js').PlayerAntiCheatData} The default player data object.
  */
@@ -171,7 +171,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         let pData = await _loadPlayerDataFromDynamicProperties(player, dependencies);
 
         if (!pData) {
-            pData = initializeDefaultPlayerData(player, currentTick, dependencies);
+            pData = initializeDefaultPlayerData(player, currentTick);
             playerUtils.debugLog(`[PlayerDataManager] No existing data found for ${player.nameTag}. Initialized new default data.`, player.nameTag, dependencies);
             logManager.addLog({ actionType: 'playerInitialJoin', targetName: player.nameTag, targetId: player.id }, dependencies);
         } else {
@@ -181,7 +181,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         // Handle scheduled flag purges
         const scheduledFlagPurges = await _loadScheduledFlagPurges(dependencies);
         if (scheduledFlagPurges.has(player.nameTag)) {
-            const defaultFlags = initializeDefaultPlayerData(player, currentTick, dependencies).flags;
+            const defaultFlags = initializeDefaultPlayerData(player, currentTick).flags;
             pData.flags = defaultFlags;
             pData.lastFlagType = '';
             pData.lastViolationDetailsMap = {};
@@ -196,6 +196,10 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         pData.isOnline = true;
         pData.joinTick = currentTick;
         pData.sessionStartTime = Date.now();
+
+        // Immediately populate transient data so it's available for the first tick
+        updateTransientPlayerData(player, pData, dependencies);
+
         activePlayerData.set(player.id, pData);
         return pData;
 
@@ -313,7 +317,7 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
                 }, dependencies);
 
                 // Recovery Step 3: Critical failure, reset data
-                const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick, dependencies);
+                const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick);
                 const freshSerializedData = JSON.stringify(freshData);
                 await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
                 activePlayerData.set(playerLike.id, freshData); // Update cache with fresh data
@@ -377,8 +381,9 @@ function _loadPlayerDataFromDynamicProperties(player, dependencies) {
             return Promise.resolve(null);
         }
 
-        // Re-initialize transient data as it's not saved
-        pData.transient = initializeDefaultPlayerData(player, 0, dependencies).transient;
+        // Transient data is not saved; it will be populated by updateTransientPlayerData.
+        // We just need to ensure the object structure is present.
+        pData.transient = {};
         return Promise.resolve(pData);
 
     } catch (error) {
