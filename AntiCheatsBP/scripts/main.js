@@ -55,6 +55,7 @@ const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
 const TPA_SYSTEM_TICK_INTERVAL = 20;
 
 let lastProcessedTick = -1;
+let isProcessingTick = false;
 
 /**
  * Initializes the AntiCheat system.
@@ -189,12 +190,13 @@ function validateConfigurations(dependencies) {
  * Processes all tasks for a single system tick.
  */
 async function mainTick() {
-    if (system.currentTick <= lastProcessedTick) {
+    if (isProcessingTick || system.currentTick <= lastProcessedTick) {
         return;
     }
 
-    // Immediately update the last processed tick to prevent re-entry, even if errors occur.
+    // Immediately update the last processed tick to prevent re-entry from simple tick skips.
     lastProcessedTick = system.currentTick;
+    isProcessingTick = true;
 
     try {
         await processTick();
@@ -220,6 +222,8 @@ async function mainTick() {
             // This catches errors within the addLog logic itself.
             console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during main tick error: ${loggingError.message}`);
         }
+    } finally {
+        isProcessingTick = false;
     }
 }
 
