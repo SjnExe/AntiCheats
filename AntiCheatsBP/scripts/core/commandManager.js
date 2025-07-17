@@ -134,9 +134,8 @@ export async function handleChatCommand(eventData, dependencies) {
 
     // Execute the command
     try {
+        debugLog(`[CommandManager.handleChatCommand] Executing '${resolvedCommandName}' for ${playerName}.`, getPlayerData(player.id)?.isWatched ? playerName : null, dependencies);
         await commandExecute(player, args, dependencies);
-        const senderPDataForLog = getPlayerData(player.id); // Re-fetch data after execution
-        debugLog(`[CommandManager.handleChatCommand] Successfully executed '${resolvedCommandName}' for ${playerName}.`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
         playSoundForEvent(player, 'commandSuccess', dependencies);
     } catch (error) {
         if (error instanceof CommandError) {

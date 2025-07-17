@@ -17,34 +17,99 @@ const activePlayerData = new Map();
 const scheduledFlagPurgesKey = 'anticheat:scheduled_flag_purges';
 
 /**
- * Loads the list of scheduled flag purges from a world dynamic property.
+ * @typedef {Object} ScheduledPurge
+ * @property {string} playerName
+ * @property {number} timestamp
+ */
+
+/**
+ * Loads the map of scheduled flag purges from a world dynamic property.
  * @param {import('../types.js').Dependencies} dependencies
- * @returns {Promise<Set<string>>}
+ * @returns {Promise<Map<string, ScheduledPurge>>}
  */
 async function _loadScheduledFlagPurges(dependencies) {
     const { world } = dependencies;
     try {
         const data = world.getDynamicProperty(scheduledFlagPurgesKey);
         if (typeof data === 'string') {
-            return new Set(JSON.parse(data));
+            const parsed = JSON.parse(data);
+            // Convert array of objects to Map for easier lookup
+            if (Array.isArray(parsed)) {
+                return new Map(parsed.map(item => [item.playerName, item]));
+            }
+            // For backward compatibility with old Set<string> format
+            if (parsed.values) {
+                const newMap = new Map();
+                for (const playerName of parsed.values()) {
+                    newMap.set(playerName, { playerName, timestamp: Date.now() });
+                }
+                return newMap;
+            }
         }
     } catch (e) {
         console.error(`[PlayerDataManager] Failed to load scheduled flag purges: ${e}`);
     }
-    return new Set();
+    return new Map();
 }
 
+
 /**
- * Saves the list of scheduled flag purges to a world dynamic property.
- * @param {Set<string>} purges
+ * Saves the map of scheduled flag purges to a world dynamic property.
+ * @param {Map<string, ScheduledPurge>} purges
  * @param {import('../types.js').Dependencies} dependencies
  */
 async function _saveScheduledFlagPurges(purges, dependencies) {
     const { world } = dependencies;
     try {
-        world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(Array.from(purges)));
+        // Convert Map values to an array for JSON serialization
+        const arrayToSave = Array.from(purges.values());
+        world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(arrayToSave));
     } catch (e) {
         console.error(`[PlayerDataManager] Failed to save scheduled flag purges: ${e}`);
+    }
+}
+
+
+/**
+ * Periodically cleans up stale entries from the scheduled flag purges.
+ * @param {import('../types.js').Dependencies} dependencies
+ */
+export async function cleanupStaleScheduledFlagPurges(dependencies) {
+    const { config, playerUtils, logManager } = dependencies;
+    const maxAgeDays = config.scheduledFlagPurgeMaxAgeDays ?? 30;
+    if (maxAgeDays <= 0) return; // Feature disabled
+
+    const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    let purgesModified = false;
+
+    const scheduledFlagPurges = await _loadScheduledFlagPurges(dependencies);
+    if (scheduledFlagPurges.size === 0) return;
+
+    const purgesToDelete = [];
+    for (const [playerName, purgeInfo] of scheduledFlagPurges.entries()) {
+        if (now - purgeInfo.timestamp > maxAgeMs) {
+            purgesToDelete.push(playerName);
+            purgesModified = true;
+        }
+    }
+
+    if (purgesModified) {
+        for (const playerName of purgesToDelete) {
+            scheduledFlagPurges.delete(playerName);
+        }
+        await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
+
+        playerUtils.debugLog(`[PlayerDataManager] Cleaned up ${purgesToDelete.length} stale scheduled flag purges.`, 'System', dependencies);
+        logManager.addLog({
+            actionType: 'system.pdm.cleanup.stalePurges',
+            context: 'PlayerDataManager.cleanup',
+            details: {
+                count: purgesToDelete.length,
+                stalePlayerNames: purgesToDelete,
+                maxAgeDays,
+            },
+        }, dependencies);
     }
 }
 
@@ -549,7 +614,7 @@ export async function handlePlayerLeaveBeforeEvent(player, dependencies) {
  */
 export async function scheduleFlagPurge(playerName, dependencies) {
     const scheduledFlagPurges = await _loadScheduledFlagPurges(dependencies);
-    scheduledFlagPurges.add(playerName);
+    scheduledFlagPurges.set(playerName, { playerName, timestamp: Date.now() });
     await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
     dependencies.playerUtils.debugLog(`[PlayerDataManager] Scheduled flag purge for offline player: ${playerName}`, null, dependencies);
     return true;

@@ -122,7 +122,7 @@ export function execute(
 
     } catch (e) {
         const errorMessage = getString('command.kick.error', { playerName: targetPlayerName, errorMessage: e.message });
-        if (player) {
+        if (player && player.isValid()) {
             player.sendMessage(errorMessage);
             playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         } else {

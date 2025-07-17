@@ -58,17 +58,11 @@ export async function checkFly(player, pData, dependencies) {
     if (player.isGliding) {
         pData.lastUsedElytraTick = currentTick;
         pData.isDirtyForSave = true;
-        playerUtils?.debugLog(`[FlyCheck] ${playerName} is gliding. Standard fly checks bypassed. Fall distance reset.`, watchedPlayerName, dependencies);
-        if (pData.fallDistance > 0) {
-            pData.fallDistance = 0; pData.isDirtyForSave = true;
-        }
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} is gliding. Standard fly checks bypassed.`, watchedPlayerName, dependencies);
         return;
     }
     if (player.isFlying) {
-        playerUtils?.debugLog(`[FlyCheck] ${playerName} is legitimately flying (isFlying=true). Standard fly checks bypassed. Fall distance reset.`, watchedPlayerName, dependencies);
-        if (pData.fallDistance > 0) {
-            pData.fallDistance = 0; pData.isDirtyForSave = true;
-        }
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} is legitimately flying (isFlying=true). Standard fly checks bypassed.`, watchedPlayerName, dependencies);
         return;
     }
 

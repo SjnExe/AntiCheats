@@ -36,6 +36,7 @@ import {
     clearExpiredItemUseStates,
     saveDirtyPlayerData,
     getActivePlayers,
+    cleanupStaleScheduledFlagPurges,
 } from './core/playerDataManager.js';
 import { initializeRanks } from './core/rankManager.js';
 import { initializeReportCache, persistReportsToDisk } from './core/reportManager.js';
@@ -52,6 +53,7 @@ import { dependencyManager } from './core/dependencyManager.js';
 const maxInitRetries = 3;
 const initialRetryDelayTicks = 20;
 const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
+const STALE_PURGE_CLEANUP_INTERVAL_TICKS = 72000; // Once per hour
 const TPA_SYSTEM_TICK_INTERVAL = 20;
 
 let lastProcessedTick = -1;
@@ -254,6 +256,10 @@ async function processTick() {
     if (dependencies.currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
         const onlinePlayers = world.getAllPlayers();
         await handlePeriodicDataPersistence(onlinePlayers, dependencies);
+    }
+
+    if (dependencies.currentTick % STALE_PURGE_CLEANUP_INTERVAL_TICKS === 0) {
+        await cleanupStaleScheduledFlagPurges(dependencies);
     }
 }
 /**
