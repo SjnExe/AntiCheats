@@ -104,33 +104,21 @@ function subscribeToEvents(dependencies) {
     dependencies.playerUtils.debugLog(`[${mainModuleName}] Subscribing to events...`, 'System', dependencies);
 
     world.beforeEvents.chatSend.subscribe((eventData) => handleBeforeChatSend(eventData, dependencies));
+    world.beforeEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockBeforeEvent(eventData, dependencies));
+    world.beforeEvents.itemUse.subscribe((eventData) => handleItemUse(eventData, dependencies));
+    world.beforeEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockBefore(eventData, dependencies));
+    world.beforeEvents.playerLeave.subscribe((eventData) => handlePlayerLeaveBeforeEvent(eventData, dependencies));
 
-    const beforeEventSubscriptions = {
-        playerBreakBlock: handlePlayerBreakBlockBeforeEvent,
-        itemUse: handleItemUse,
-        playerPlaceBlock: handlePlayerPlaceBlockBefore,
-        playerLeave: handlePlayerLeaveBeforeEvent,
-    };
-
-    const afterEventSubscriptions = {
-        playerSpawn: handlePlayerSpawn,
-        entityHurt: handleEntityHurt,
-        playerBreakBlock: handlePlayerBreakBlockAfterEvent,
-        playerPlaceBlock: handlePlayerPlaceBlockAfterEvent,
-        playerDimensionChange: handlePlayerDimensionChangeAfterEvent,
-        entityDie: handleEntityDieForDeathEffects,
-        entitySpawn: handleEntitySpawnEventAntiGrief,
-        pistonActivate: handlePistonActivateAntiGrief,
-        inventorySlotChanged: handleInventoryItemChange,
-    };
-
-    for (const eventName in beforeEventSubscriptions) {
-        world.beforeEvents[eventName].subscribe((eventData) => beforeEventSubscriptions[eventName](eventData, dependencies));
-    }
-
-    for (const eventName in afterEventSubscriptions) {
-        world.afterEvents[eventName].subscribe((eventData) => afterEventSubscriptions[eventName](eventData, dependencies));
-    }
+    world.afterEvents.playerSpawn.subscribe((eventData) => handlePlayerSpawn(eventData, dependencies));
+    world.afterEvents.entityHurt.subscribe((eventData) => handleEntityHurt(eventData, dependencies));
+    world.afterEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockAfterEvent(eventData, dependencies));
+    world.afterEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockAfterEvent(eventData, dependencies));
+    world.afterEvents.playerDimensionChange.subscribe((eventData) => handlePlayerDimensionChangeAfterEvent(eventData, dependencies));
+    world.afterEvents.entityDie.subscribe((eventData) => handleEntityDieForDeathEffects(eventData, dependencies));
+    world.afterEvents.entitySpawn.subscribe((eventData) => handleEntitySpawnEventAntiGrief(eventData, dependencies));
+    world.afterEvents.pistonActivate.subscribe((eventData) => handlePistonActivateAntiGrief(eventData, dependencies));
+    world.afterEvents.inventoryItemChanged.subscribe((eventData) => handleInventoryItemChange(eventData, dependencies));
+    world.afterEvents.entityHitEntity.subscribe((eventData) => handlePlayerHitEntityEvent(eventData, dependencies));
 }
 /**
  * Initializes all core modules.
