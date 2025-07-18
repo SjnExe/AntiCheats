@@ -19,6 +19,13 @@
             "version": "__VERSION_ARRAY__"
         },
         {
+            "description": "Functions for Anti Cheats.",
+            "type": "data",
+            "uuid": "8a9a0d7e-2d4a-4b6d-9b6a-9a8d7e2d4a4b",
+            "version": "__VERSION_ARRAY__",
+            "entry": "functions"
+        },
+        {
             "description": "Core scripting module for Anti Cheats.",
             "type": "script",
             "language": "javascript",

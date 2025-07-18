@@ -218,6 +218,12 @@ async function mainTick() {
     }
 }
 
+system.afterEvents.scriptEventReceive.subscribe((event) => {
+    if (event.id === 'ac:init') {
+        performInitializations();
+    }
+});
+
 /**
  * Processes a single tick of the main loop.
  */
@@ -400,56 +406,3 @@ function tpaTick() {
     }
 }
 
-/**
- * Attempts to initialize the system, with a retry mechanism.
- * @param {number} [retryCount=0] The current retry count.
- */
-function attemptInitializeSystem(retryCount = 0) {
-    try {
-        if (!world || !world.beforeEvents || !world.afterEvents || !system) {
-            throw new Error('Core Minecraft APIs not ready');
-        }
-
-        dependencyManager.validateDependencies(`attemptInitializeSystem - pre-check - attempt ${retryCount}`);
-        performInitializations();
-    } catch (e) {
-        const delay = initialRetryDelayTicks * Math.pow(2, retryCount);
-        const isFinalAttempt = retryCount >= maxInitRetries;
-        const errorMessage = `[Main] Initialization failed on attempt ${retryCount + 1}. ${isFinalAttempt ? 'FINAL ATTEMPT FAILED.' : `Retrying in ${delay / 20}s.`} Error: ${e.message}`;
-
-        console.error(errorMessage); // Always log to console for immediate visibility.
-
-        // Attempt to use the structured logging system.
-        try {
-            const dependencies = dependencyManager.getDependenciesUnsafe();
-            if (dependencies) {
-                const logEntry = {
-                    actionType: isFinalAttempt ? 'error.main.initialization.critical' : 'error.main.initialization.retry',
-                    context: 'Main.attemptInitializeSystem',
-                    details: {
-                        message: e.message,
-                        stack: e.stack,
-                        retryCount: retryCount + 1,
-                        maxRetries: maxInitRetries,
-                    },
-                };
-                addLog(logEntry, dependencies);
-
-                if (isFinalAttempt) {
-                    const criticalErrorMsg = `[Main] CRITICAL: MAX RETRIES REACHED. System will not initialize. Last error: ${e.message}`;
-                    dependencies.playerUtils.notifyAdmins(criticalErrorMsg, dependencies);
-                }
-            } else {
-                console.error('[AntiCheat] CRITICAL: Could not get dependencies for structured logging during initialization.');
-            }
-        } catch (loggingError) {
-            console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during initialization error: ${loggingError.message}`);
-        }
-
-        if (!isFinalAttempt) {
-            system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
-        }
-    }
-}
-
-system.runTimeout(() => attemptInitializeSystem(), initialRetryDelayTicks);
