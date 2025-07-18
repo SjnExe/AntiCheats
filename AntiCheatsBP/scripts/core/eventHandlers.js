@@ -959,20 +959,10 @@ profileEventHandler('handleItemUseOn', handleItemUseOn);
  * @param {string|number} slot The slot that changed.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-async function handleInventoryItemChange(eventData, dependencies) {
-    const { checks, config, playerDataManager } = dependencies;
-    const { player, itemStack: newItemStack, previousItemStack: oldItemStack, slot } = eventData;
-    if (!player?.isValid()) {
-        return;
-    }
-
-    const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) {
-        return;
-    }
+async function handleInventoryItemChange(player, pData, dependencies, inventoryChangeData) {
+    const { checks, config } = dependencies;
 
     if (checks?.checkInventoryMoveWhileActionLocked && config?.enableInventoryModCheck) {
-        const inventoryChangeData = { newItemStack, oldItemStack, inventorySlot: slot.toString() };
         await checks.checkInventoryMoveWhileActionLocked(player, pData, dependencies, inventoryChangeData);
     }
 }
@@ -1237,20 +1227,20 @@ profileEventHandler('handlePlayerDimensionChangeAfterEvent', handlePlayerDimensi
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 async function handlePlayerHitEntityEvent(eventData, dependencies) {
-    const { checks, config, playerDataManager, mc } = dependencies;
     const { damagingEntity, hitEntity } = eventData;
+    if (!damagingEntity || !hitEntity) return;
 
-    if (!damagingEntity?.isValid() || !hitEntity?.isValid()) {
-        return;
-    }
+    if (damagingEntity.typeId === 'minecraft:player') {
+        const { checks, config, playerDataManager } = dependencies;
+        if (!checks || !config || !playerDataManager) return;
 
-    if (damagingEntity instanceof mc.Player && config.enableNoSwingCheck && checks?.checkNoSwing) {
         const pData = playerDataManager.getPlayerData(damagingEntity.id);
-        if (pData) {
+        if (!pData) return;
+
+        if (config.enableNoSwingCheck && checks.checkNoSwing) {
             await checks.checkNoSwing(damagingEntity, pData, dependencies, eventData);
         }
     }
-    dependencies.playerUtils.debugLog(`[EvtHdlr.HitEnt] _handlePlayerHitEntityEvent called for ${damagingEntity?.name} hitting ${hitEntity?.name}. Add actual implementation if missing.`, damagingEntity?.name, dependencies);
 }
 
 profileEventHandler('handlePlayerHitEntityEvent', handlePlayerHitEntityEvent);
