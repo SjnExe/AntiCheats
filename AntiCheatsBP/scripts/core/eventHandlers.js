@@ -63,7 +63,7 @@ function profileEventHandler(handlerName, handlerFunction) {
  * @param {import('@minecraft/server').PlayerLeaveBeforeEvent} eventData
  * @param {import('../types.js').Dependencies} dependencies
  */
-export async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
+async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
     const { playerDataManager, playerUtils, config, logManager, actionManager } = dependencies;
     const { player } = eventData;
     const { name: playerName, id: playerId } = player;
@@ -148,7 +148,7 @@ profileEventHandler('handlePlayerLeaveBeforeEvent', handlePlayerLeaveBeforeEvent
  * @param {import('@minecraft/server').PlayerSpawnAfterEvent} eventData The player spawn event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handlePlayerSpawn(eventData, dependencies) {
+async function handlePlayerSpawn(eventData, dependencies) {
     const { player, initialSpawn } = eventData;
     const { playerDataManager, playerUtils, config, logManager, checks, rankManager, system } = dependencies;
     const playerName = player?.name ?? 'UnknownPlayer';
@@ -312,7 +312,7 @@ profileEventHandler('handlePlayerSpawn', handlePlayerSpawn);
  * @param {import('@minecraft/server').PistonActivateAfterEvent} eventData The piston activation event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handlePistonActivateAntiGrief(eventData, dependencies) {
+async function handlePistonActivateAntiGrief(eventData, dependencies) {
     const { config, playerUtils, checks } = dependencies;
     if (!config?.checks?.pistonLag?.enabled) {
         return;
@@ -337,7 +337,7 @@ profileEventHandler('handlePistonActivateAntiGrief', handlePistonActivateAntiGri
  * @param {import('@minecraft/server').EntitySpawnAfterEvent} eventData The entity spawn event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handleEntitySpawnEventAntiGrief(eventData, dependencies) {
+async function handleEntitySpawnEventAntiGrief(eventData, dependencies) {
     const { config, playerUtils, actionManager, playerDataManager, checks, logManager, system } = dependencies;
     const { entity, cause } = eventData;
 
@@ -437,7 +437,7 @@ profileEventHandler('handleEntitySpawnEventAntiGrief', handleEntitySpawnEventAnt
  * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData The player place block event data.
  * @param {import('../types.js').Dependencies} dependencies The standard dependencies object.
  */
-export async function handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencies) {
+async function handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;
     const { player, itemStack, block } = eventData;
     const playerName = player?.name ?? 'UnknownPlayer';
@@ -517,7 +517,7 @@ profileEventHandler('handlePlayerPlaceBlockBeforeEventAntiGrief', handlePlayerPl
  * @param {import('@minecraft/server').EntityDieAfterEvent} eventData The entity death event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export function handleEntityDieForDeathEffects(eventData, dependencies) {
+function handleEntityDieForDeathEffects(eventData, dependencies) {
     const { config, playerUtils, logManager } = dependencies;
     if (!config?.enableDeathEffects) {
         return;
@@ -561,7 +561,7 @@ profileEventHandler('handleEntityDieForDeathEffects', handleEntityDieForDeathEff
  * @param {import('@minecraft/server').EntityHurtAfterEvent} eventData The entity hurt event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handleEntityHurt(eventData, dependencies) {
+async function handleEntityHurt(eventData, dependencies) {
     const { playerDataManager, checks, config, currentTick } = dependencies;
     const { hurtEntity, damageSource, damagingEntity: directDamagingEntity } = eventData;
 
@@ -643,7 +643,7 @@ profileEventHandler('handleEntityHurt', handleEntityHurt);
  * @param {import('@minecraft/server').PlayerDeathAfterEvent} eventData The player death event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export function handlePlayerDeath(eventData, dependencies) {
+function handlePlayerDeath(eventData, dependencies) {
     const { player } = eventData;
     const { playerDataManager, config, logManager, playerUtils } = dependencies; // Added playerUtils
     const playerName = player?.name ?? 'UnknownPlayer';
@@ -692,7 +692,7 @@ profileEventHandler('handlePlayerDeath', handlePlayerDeath);
  * Subscribes to entityHurt events for combat log detection.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export function subscribeToCombatLogEvents(dependencies) {
+function subscribeToCombatLogEvents(dependencies) {
     const { config, playerDataManager } = dependencies;
     if (!config?.enableCombatLogDetection) {
         return;
@@ -735,7 +735,7 @@ export function subscribeToCombatLogEvents(dependencies) {
  * @param {import('@minecraft/server').PlayerBreakBlockBeforeEvent} eventData The player break block event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
+async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
     const { checks, config, playerDataManager, currentTick } = dependencies;
     const { player, block, itemStack } = eventData;
 
@@ -785,7 +785,7 @@ profileEventHandler('handlePlayerBreakBlockBeforeEvent', handlePlayerBreakBlockB
  * @param {import('@minecraft/server').PlayerBreakBlockAfterEvent} eventData The player break block event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
+async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
     const { config, playerDataManager, checks } = dependencies;
     const { player, block, brokenBlockPermutation } = eventData;
 
@@ -847,7 +847,7 @@ profileEventHandler('handlePlayerBreakBlockAfterEvent', handlePlayerBreakBlockAf
  * @param {import('@minecraft/server').ItemUseBeforeEvent} eventData The item use event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handleItemUse(eventData, dependencies) {
+async function handleItemUse(eventData, dependencies) {
     const { checks, config, playerUtils, playerDataManager, actionManager } = dependencies;
     const { source: player, itemStack } = eventData;
 
@@ -945,7 +945,7 @@ profileEventHandler('handleItemUse', handleItemUse);
  * @param {import('@minecraft/server').ItemUseOnBeforeEvent} eventData
  * @param {import('../types.js').Dependencies} dependencies
  */
-export function handleItemUseOn(eventData, dependencies) {
+function handleItemUseOn(eventData, dependencies) {
     const { playerUtils } = dependencies;
     playerUtils?.debugLog('[EvtHdlr.ItemUseOn] ItemUseOn event triggered. This event might be unstable.', eventData.source?.name, dependencies);
 }
@@ -959,7 +959,7 @@ profileEventHandler('handleItemUseOn', handleItemUseOn);
  * @param {string|number} slot The slot that changed.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handleInventoryItemChange(eventData, dependencies) {
+async function handleInventoryItemChange(eventData, dependencies) {
     const { checks, config, playerDataManager } = dependencies;
     const { player, itemStack: newItemStack, previousItemStack: oldItemStack, slot } = eventData;
     if (!player?.isValid()) {
@@ -983,7 +983,7 @@ profileEventHandler('handleInventoryItemChange', handleInventoryItemChange);
  * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData The player place block event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
+async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
     const { checks, config, playerDataManager, playerUtils } = dependencies; // Added playerUtils
     const { player, block, itemStack } = eventData;
 
@@ -1102,7 +1102,7 @@ async function processPlayerPlaceBlockAfterEffects(player, pData, block, depende
  * @param {import('@minecraft/server').PlayerPlaceBlockAfterEvent} eventData The player place block event data.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
-export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) {
+async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) {
     const { playerDataManager } = dependencies;
     const { player, block } = eventData;
 
@@ -1124,7 +1124,7 @@ profileEventHandler('handlePlayerPlaceBlockAfterEvent', handlePlayerPlaceBlockAf
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
-export async function handleBeforeChatSend(eventData, dependencies) {
+async function handleBeforeChatSend(eventData, dependencies) {
     const { playerUtils, chatProcessor, config, commandManager } = dependencies;
     const { sender: player, message } = eventData;
 
@@ -1153,7 +1153,7 @@ profileEventHandler('handleBeforeChatSend', handleBeforeChatSend);
  * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData The event data.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
-export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
+async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
     const { playerUtils, rankManager, permissionLevels, logManager, config, playerDataManager: pdm } = dependencies;
     const playerName = player?.name ?? 'UnknownPlayer';
@@ -1236,7 +1236,7 @@ profileEventHandler('handlePlayerDimensionChangeAfterEvent', handlePlayerDimensi
  * @param {import('@minecraft/server').EntityHitEntityAfterEvent} eventData The event data.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
-export async function handlePlayerHitEntityEvent(eventData, dependencies) {
+async function handlePlayerHitEntityEvent(eventData, dependencies) {
     const { checks, config, playerDataManager, mc } = dependencies;
     const { damagingEntity, hitEntity } = eventData;
 
@@ -1254,3 +1254,25 @@ export async function handlePlayerHitEntityEvent(eventData, dependencies) {
 }
 
 profileEventHandler('handlePlayerHitEntityEvent', handlePlayerHitEntityEvent);
+
+export {
+    handlePlayerLeaveBeforeEvent,
+    handlePlayerSpawn,
+    handlePistonActivateAntiGrief,
+    handleEntitySpawnEventAntiGrief,
+    handlePlayerPlaceBlockBeforeEventAntiGrief,
+    handleEntityDieForDeathEffects,
+    handleEntityHurt,
+    handlePlayerDeath,
+    subscribeToCombatLogEvents,
+    handlePlayerBreakBlockBeforeEvent,
+    handlePlayerBreakBlockAfterEvent,
+    handleItemUse,
+    handleItemUseOn,
+    handleInventoryItemChange,
+    handlePlayerPlaceBlockBefore,
+    handlePlayerPlaceBlockAfterEvent,
+    handleBeforeChatSend,
+    handlePlayerDimensionChangeAfterEvent,
+    handlePlayerHitEntityEvent
+};

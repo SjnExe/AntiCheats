@@ -27,6 +27,7 @@ import {
     handleEntitySpawnEventAntiGrief,
     handlePistonActivateAntiGrief,
     handleBeforeChatSend,
+    handlePlayerHitEntityEvent
 } from './core/eventHandlers.js';
 import { initializeLogCache, addLog, persistLogCacheToDisk } from './core/logManager.js';
 import {
@@ -120,7 +121,7 @@ function subscribeToEvents(dependencies) {
         entityDie: handleEntityDieForDeathEffects,
         entitySpawn: handleEntitySpawnEventAntiGrief,
         pistonActivate: handlePistonActivateAntiGrief,
-        inventoryItemChanged: handleInventoryItemChange,
+        inventorySlotChanged: handleInventoryItemChange,
     };
 
     for (const eventName in beforeEventSubscriptions) {
