@@ -27,6 +27,7 @@ import {
     handleEntitySpawnEventAntiGrief,
     handlePistonActivateAntiGrief,
     handleBeforeChatSend,
+    handlePlayerHitEntityEvent
 } from './core/eventHandlers.js';
 import { initializeLogCache, addLog, persistLogCacheToDisk } from './core/logManager.js';
 import {
@@ -117,7 +118,6 @@ function subscribeToEvents(dependencies) {
         playerBreakBlock: handlePlayerBreakBlockAfterEvent,
         playerPlaceBlock: handlePlayerPlaceBlockAfterEvent,
         playerDimensionChange: handlePlayerDimensionChangeAfterEvent,
-        playerDeath: handlePlayerDeath,
         entityDie: handleEntityDieForDeathEffects,
         entitySpawn: handleEntitySpawnEventAntiGrief,
         pistonActivate: handlePistonActivateAntiGrief,
