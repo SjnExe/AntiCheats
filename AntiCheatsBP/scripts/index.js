@@ -452,4 +452,14 @@ function attemptInitializeSystem(retryCount = 0) {
     }
 }
 
-system.runTimeout(() => attemptInitializeSystem(), initialRetryDelayTicks);
+world.afterEvents.worldInitialize.subscribe((e) => {
+    try {
+        dependencyManager.validateDependencies('worldInitialize');
+        performInitializations();
+        console.log("AntiCheat Addon Initialized Successfully.");
+    } catch (error) {
+        console.error("Failed to initialize AntiCheat Addon:");
+        console.error(error.stack);
+        world.sendMessage(`§cAntiCheat Addon failed to initialize: ${error.message}`);
+    }
+});

@@ -7,42 +7,34 @@
         "min_engine_version": [
             1,
             21,
-            90
+            0
         ],
-        "version": "__VERSION_ARRAY__"
+        "version": [ 1, 0, 0 ]
     },
     "modules": [
         {
             "description": "Behavior pack data and functions.",
             "type": "data",
             "uuid": "623bbed8-14c8-45c3-893b-c0492855b668",
-            "version": "__VERSION_ARRAY__"
+            "version": [ 1, 0, 0 ]
         },
         {
             "description": "Core scripting module for Anti Cheats.",
             "type": "script",
             "language": "javascript",
-            "entry": "scripts/main.js",
+            "entry": "scripts/index.js",
             "uuid": "ecb49e35-ade4-459d-83ff-85c3770c1e74",
-            "version": "__VERSION_ARRAY__"
+            "version": [ 1, 0, 0 ]
         }
     ],
     "dependencies": [
         {
             "module_name": "@minecraft/server",
-            "version": "2.1.0-beta"
+            "version": "1.12.0-beta"
         },
         {
             "module_name": "@minecraft/server-ui",
-            "version": "2.1.0-beta"
-        },
-        {
-            "module_name": "@minecraft/server-gametest",
-            "version": "1.0.0-beta"
-        },
-        {
-            "uuid": "9dca0c93-f6ec-4701-a74c-a774600640a4",
-            "version": "__VERSION_ARRAY__"
+            "version": "1.2.0-beta"
         }
     ],
     "metadata": {
