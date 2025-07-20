@@ -364,18 +364,33 @@ export const commandAliases = new Map([
 export const editableConfigValues = { ...defaultConfigSettings };
 
 /**
- * Updates a configuration value at runtime.
- * @param {string} key The configuration key to update.
+ * Updates a configuration value at runtime, supporting nested keys (e.g., "tpa.enabled").
+ * @param {string} key The configuration key to update, using dot notation for nested properties.
  * @param {unknown} value The new value.
  * @returns {UpdateConfigValueResult} Object indicating success and a message.
  */
 export function updateConfigValue(key, value) {
-    if (!Object.prototype.hasOwnProperty.call(defaultConfigSettings, key)) {
+    const keys = key.split('.');
+    let currentConfig = editableConfigValues;
+    let currentDefault = defaultConfigSettings;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+        const currentKey = keys[i];
+        if (typeof currentConfig[currentKey] !== 'object' || currentConfig[currentKey] === null) {
+            return { success: false, message: `Configuration path "${key}" is invalid at segment "${currentKey}".` };
+        }
+        currentConfig = currentConfig[currentKey];
+        currentDefault = currentDefault[currentKey];
+    }
+
+    const finalKey = keys[keys.length - 1];
+
+    if (!Object.prototype.hasOwnProperty.call(currentDefault, finalKey)) {
         return { success: false, message: `Configuration key "${key}" does not exist.` };
     }
 
-    const oldValue = editableConfigValues[key];
-    const expectedType = typeof defaultConfigSettings[key];
+    const oldValue = currentConfig[finalKey];
+    const expectedType = typeof currentDefault[finalKey];
     let coercedValue = value;
 
     try {
@@ -386,27 +401,46 @@ export function updateConfigValue(key, value) {
                 } else if (value.toLowerCase() === 'false') {
                     coercedValue = false;
                 } else {
-                    throw new Error('Invalid boolean string');
+                    throw new Error('must be "true" or "false"');
                 }
             } else if (typeof value !== 'boolean') {
-                throw new Error(`Expected boolean, got ${typeof value}`);
+                throw new Error(`expected boolean, got ${typeof value}`);
             }
         } else if (expectedType === 'number') {
             coercedValue = Number(value);
             if (isNaN(coercedValue)) {
-                throw new Error('Invalid number');
+                throw new Error('not a valid number');
             }
         } else if (expectedType === 'string') {
             coercedValue = String(value);
-        } else if (typeof expectedType === 'object') {
+        } else if (Array.isArray(currentDefault[finalKey])) {
             if (typeof value === 'string') {
-                coercedValue = JSON.parse(value);
+                coercedValue = JSON.parse(value); // Expect stringified JSON for arrays
+            }
+            if (!Array.isArray(coercedValue)) {
+                throw new Error('expected an array or its JSON string representation');
+            }
+        } else if (typeof expectedType === 'object' && expectedType !== null) {
+            if (typeof value === 'string') {
+                coercedValue = JSON.parse(value); // Expect stringified JSON for objects
+            }
+            if (typeof coercedValue !== 'object' || Array.isArray(coercedValue)) {
+                throw new Error('expected an object or its JSON string representation');
             }
         }
     } catch (e) {
-        return { success: false, message: `Type coercion failed for key "${key}": ${e.message}`, oldValue };
+        return {
+            success: false,
+            message: `Type coercion failed for key "${key}": ${e.message}`,
+            oldValue,
+        };
     }
 
-    editableConfigValues[key] = coercedValue;
-    return { success: true, message: `Configuration "${key}" updated.`, oldValue, newValue: coercedValue };
+    currentConfig[finalKey] = coercedValue;
+    return {
+        success: true,
+        message: `Configuration "${key}" updated.`,
+        oldValue,
+        newValue: coercedValue,
+    };
 }
