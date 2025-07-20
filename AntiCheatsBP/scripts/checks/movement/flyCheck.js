@@ -11,7 +11,6 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
-// Constants for magic numbers
 const defaultJumpBoostYVelocityBonus = 0.2;
 const defaultMaxYVelocityPositive = 0.42;
 const yVelocityGraceTicks = 10;
@@ -87,7 +86,7 @@ export async function checkFly(player, pData, dependencies) {
             ticksSinceLastDamage <= graceTicks ||
             ticksSinceLastElytra <= graceTicks ||
             player.isClimbing ||
-            (pData.hasSlowFalling && currentYVelocity < 0) // 0 is fine
+            (pData.hasSlowFalling && currentYVelocity < 0)
         );
 
         if (underGraceCondition && pData.isWatched) {
@@ -101,7 +100,7 @@ export async function checkFly(player, pData, dependencies) {
             if (player.isClimbing) {
                 graceReasons.push('climbing');
             }
-            if (pData.hasSlowFalling && currentYVelocity < 0) { // 0 is fine
+            if (pData.hasSlowFalling && currentYVelocity < 0) {
                 graceReasons.push('slow falling downwards');
             }
             playerUtils?.debugLog(`[FlyCheck][Y-Velo] ${playerName}: Y-velocity check grace due to: ${graceReasons.join(', ')}.`, watchedPlayerName, dependencies);
@@ -130,17 +129,17 @@ export async function checkFly(player, pData, dependencies) {
         return;
     }
 
-    if (pData.hasLevitation && (pData.velocity?.y ?? 0) > 0) { // 0 is fine
+    if (pData.hasLevitation && (pData.velocity?.y ?? 0) > 0) {
         playerUtils?.debugLog(`[FlyCheck] ${playerName} allowing upward movement due to levitation. VSpeed: ${(pData.velocity?.y ?? 0).toFixed(genericDecimalPlacesFly)}`, watchedPlayerName, dependencies);
         return;
     }
-    if (pData.hasSlowFalling && (pData.velocity?.y ?? 0) < 0) { // 0 is fine
+    if (pData.hasSlowFalling && (pData.velocity?.y ?? 0) < 0) {
         playerUtils?.debugLog(`[FlyCheck] ${playerName} noting slow descent due to Slow Falling. VSpeed: ${(pData.velocity?.y ?? 0).toFixed(genericDecimalPlacesFly)}. Hover/Sustained checks might still apply if not actually falling significantly.`, watchedPlayerName, dependencies);
         // Don't return yet, as hovering with slow fall might still be an issue if not losing altitude.
     }
 
 
-    const verticalSpeed = pData.velocity?.y ?? 0; // 0 is fine
+    const verticalSpeed = pData.velocity?.y ?? 0;
     if (pData.isWatched) {
         playerUtils?.debugLog(`[FlyCheck] Processing Sustained/Hover for ${playerName}. VSpeed=${verticalSpeed.toFixed(loggingDecimalPlacesFly)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}, FallDist=${pData.fallDistance?.toFixed(genericDecimalPlacesFly)}`, watchedPlayerName, dependencies);
     }
@@ -175,8 +174,8 @@ export async function checkFly(player, pData, dependencies) {
 
     if (!player.isOnGround &&
         Math.abs(verticalSpeed) < hoverVSpeedThreshold &&
-        (pData.consecutiveOffGroundTicks ?? 0) > hoverOffGroundTicks && // 0 is fine
-        (pData.fallDistance ?? 0) < hoverMaxFallDist && // 0 is fine
+        (pData.consecutiveOffGroundTicks ?? 0) > hoverOffGroundTicks &&
+        (pData.fallDistance ?? 0) < hoverMaxFallDist &&
         !player.isClimbing &&
         !player.isInWater &&
         !pData.hasLevitation &&
@@ -194,8 +193,8 @@ export async function checkFly(player, pData, dependencies) {
             const violationDetails = {
                 type: 'flyHover',
                 verticalSpeed: verticalSpeed.toFixed(loggingDecimalPlacesFly),
-                offGroundTicks: (pData.consecutiveOffGroundTicks ?? 0).toString(), // 0 is fine
-                fallDistance: (pData.fallDistance ?? 0).toFixed(genericDecimalPlacesFly), // 0 is fine
+                offGroundTicks: (pData.consecutiveOffGroundTicks ?? 0).toString(),
+                fallDistance: (pData.fallDistance ?? 0).toFixed(genericDecimalPlacesFly),
                 heightAboveLastGround: heightAboveLastGround.toFixed(genericDecimalPlacesFly),
                 isClimbing: player.isClimbing.toString(),
                 isInWater: player.isInWater.toString(),

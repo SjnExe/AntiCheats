@@ -33,11 +33,9 @@ async function _loadScheduledFlagPurges(dependencies) {
         const data = world.getDynamicProperty(scheduledFlagPurgesKey);
         if (typeof data === 'string') {
             const parsed = JSON.parse(data);
-            // Convert array of objects to Map for easier lookup
             if (Array.isArray(parsed)) {
                 return new Map(parsed.map(item => [item.playerName, item]));
             }
-            // For backward compatibility with old Set<string> format
             if (parsed.values) {
                 const newMap = new Map();
                 for (const playerName of parsed.values()) {
@@ -61,7 +59,6 @@ async function _loadScheduledFlagPurges(dependencies) {
 async function _saveScheduledFlagPurges(purges, dependencies) {
     const { world } = dependencies;
     try {
-        // Convert Map values to an array for JSON serialization
         const arrayToSave = Array.from(purges.values());
         world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(arrayToSave));
     } catch (e) {
@@ -112,9 +109,6 @@ export async function cleanupStaleScheduledFlagPurges(dependencies) {
         }, dependencies);
     }
 }
-
-
-// --- Data Initialization and Default Structure ---
 
 /**
  * Initializes the default data structure for a new player.
@@ -199,8 +193,6 @@ export function initializeDefaultPlayerData(playerLike, currentTick) {
 }
 
 
-// --- Core Data Access and Management ---
-
 /**
  * Retrieves a player's data from the cache.
  * @param {string} playerId The player's ID.
@@ -262,7 +254,6 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         pData.joinTick = currentTick;
         pData.sessionStartTime = Date.now();
 
-        // Immediately populate transient data so it's available for the first tick
         updateTransientPlayerData(player, pData, dependencies);
 
         activePlayerData.set(player.id, pData);
@@ -291,9 +282,6 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
     }
 }
 
-
-// --- Data Persistence (Save/Load) ---
-
 /**
  * Saves a player's data to a dynamic property if dirty.
  * @param {import('@minecraft/server').Player} player The player object.
@@ -308,8 +296,6 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
         return false;
     }
 
-    // Ensure we have a valid player object with the setDynamicProperty method.
-    // This is crucial for saving data correctly, especially on player leave.
     if (typeof playerLike.setDynamicProperty !== 'function') {
         const errorMessage = `[PlayerDataManager CRITICAL] Attempted to save data for ${playerLike.name ?? playerLike.id} without a valid player object. Data save aborted.`;
         console.error(errorMessage);
@@ -326,11 +312,9 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
     }
 
     try {
-        // Create a savable copy, excluding transient data
         const dataToSave = { ...pData };
         delete dataToSave.transient;
 
-        // Cap arrays to prevent unbounded growth
         if (dataToSave.blockBreakTimestamps.length > 50) {
             dataToSave.blockBreakTimestamps = dataToSave.blockBreakTimestamps.slice(-50);
         }
@@ -340,7 +324,6 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
 
         let serializedData = JSON.stringify(dataToSave);
 
-        // Size check and recovery
         if (serializedData.length > maxSerializedDataLength) {
             logManager.addLog({
                 actionType: 'warning.pdm.dpWrite.sizeLimit',
@@ -353,7 +336,6 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
                 },
             }, dependencies);
 
-            // Recovery Step 1: Aggressively trim non-critical arrays
             dataToSave.blockBreakTimestamps = [];
             dataToSave.chatMessageTimestamps = [];
             if (dataToSave.recentBlockPlacements) {
@@ -368,7 +350,6 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
 
             serializedData = JSON.stringify(dataToSave);
 
-            // Recovery Step 2: Check size again
             if (serializedData.length > maxSerializedDataLength) {
                 logManager.addLog({
                     actionType: 'error.pdm.dpWrite.recoveryFail',
@@ -381,7 +362,6 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
                     },
                 }, dependencies);
 
-                // Recovery Step 3: Critical failure, reset data
                 const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick);
                 const freshSerializedData = JSON.stringify(freshData);
                 await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
@@ -431,7 +411,6 @@ function _loadPlayerDataFromDynamicProperties(player, dependencies) {
 
         const pData = JSON.parse(serializedData);
 
-        // Basic validation
         if (typeof pData !== 'object' || pData === null || pData.playerId !== player.id) {
             logManager.addLog({
                 actionType: 'error.pdm.dpRead.invalidData',
@@ -446,13 +425,11 @@ function _loadPlayerDataFromDynamicProperties(player, dependencies) {
             return Promise.resolve(null);
         }
 
-        // Transient data is not saved; it will be populated by updateTransientPlayerData.
-        // We just need to ensure the object structure is present.
         pData.transient = {};
         return Promise.resolve(pData);
 
     } catch (error) {
-        if (error instanceof SyntaxError) { // JSON.parse failed
+        if (error instanceof SyntaxError) {
             logManager.addLog({
                 actionType: 'error.pdm.dpRead.parseFail',
                 context: 'playerDataManager._loadPlayerDataFromDynamicProperties',
@@ -480,9 +457,6 @@ function _loadPlayerDataFromDynamicProperties(player, dependencies) {
     }
 }
 
-
-// --- Tick-Based Updates and Cleanup ---
-
 /**
  * Updates transient player data that changes every tick.
  * @param {import('@minecraft/server').Player} player The player object.
@@ -493,19 +467,16 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     const { currentTick } = dependencies;
     const transient = pData.transient;
 
-    // Update location and rotation
     pData.lastKnownLocation = { ...player.location };
     transient.headRotation = { ...player.getHeadRotation() };
     transient.bodyRotation = player.bodyRotation;
 
-    // Update velocity
     const velocity = player.getVelocity();
     transient.lastVelocity = { ...velocity };
 
-    // Update states from components
     const onGround = player.isOnGround;
     transient.isClimbing = player.isClimbing;
-    transient.isFalling = !onGround && velocity.y < minecraftFallingVelocity; // Minecraft constant for falling
+    transient.isFalling = !onGround && velocity.y < minecraftFallingVelocity;
     transient.isGliding = player.isGliding;
     transient.isJumping = player.isJumping;
     transient.isRiding = player.isRiding;
@@ -514,7 +485,6 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     transient.isSleeping = player.isSleeping;
     transient.isInsideWater = player.isInWater;
 
-    // Update fall distance and air ticks
     if (!onGround) {
         transient.ticksInAir++;
         transient.ticksSinceLastOnGround++;
@@ -532,7 +502,6 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         }
     }
 
-    // Update effects
     pData.speedAmplifier = -1;
     pData.jumpBoostAmplifier = -1;
     pData.hasSlowFalling = false;
@@ -602,9 +571,6 @@ export async function handlePlayerLeaveBeforeEvent(player, dependencies) {
         activePlayerData.delete(player.id);
     }
 }
-
-
-// --- State Management and Restrictions ---
 
 /**
  * Schedules a flag purge for an offline player.

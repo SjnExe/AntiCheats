@@ -1,4 +1,3 @@
-// Defines the !kick command for administrators to remove a player from the server.
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'kick',
@@ -96,8 +95,6 @@ export function execute(
         if (player) {
             player.sendMessage(successMessage);
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-        } else {
-            // console.log(`[KickCommand] ${successMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
         }
 
         const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);

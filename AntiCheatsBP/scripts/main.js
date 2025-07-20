@@ -73,7 +73,6 @@ function performInitializations() {
     system.runInterval(() => {
         mainTick().catch(e => {
             console.error(`[AntiCheat] Critical unhandled error in mainTick: ${e?.message}\n${e?.stack}`);
-            // Optionally, use the dependency manager to log this if it's safe
             try {
                 const depsForError = dependencyManager.getDependenciesUnsafe();
                 if (depsForError) {
@@ -271,11 +270,9 @@ async function processPlayer(player, dependencies, currentTick) {
     updateTransientPlayerData(player, pData, dependencies);
     clearExpiredItemUseStates(pData, dependencies);
 
-    // Stagger checks across ticks based on player ID to distribute load
     const checkNames = Object.keys(checks).sort();
     const staggerTicks = dependencies.config.checkStaggerTicks || 1;
 
-    // Use a player-specific, but consistent, value for the offset to ensure distribution
     const playerNameHash = Array.from(player.name).reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0);
 
     for (const checkName of checkNames) {
@@ -362,10 +359,9 @@ function tpaTick() {
                 const reasonMsgKey = 'tpa.manager.error.teleportWarmupTargetInvalid';
                 const reasonLog = `A player (${invalidPlayerName}) involved in TPA request ${req.requestId} went offline during warmup.`;
                 dependencies.tpaManager.cancelTeleport(req.requestId, reasonMsgKey, reasonLog, dependencies);
-                return; // Skip to the next request
+                return;
             }
 
-            // If the request is still valid after a potential cancellation above
             if (req.status !== 'pendingTeleportWarmup') {
                 return;
             }
@@ -412,9 +408,8 @@ function attemptInitializeSystem(retryCount = 0) {
         const isFinalAttempt = retryCount >= maxInitRetries;
         const errorMessage = `[Main] Initialization failed on attempt ${retryCount + 1}. ${isFinalAttempt ? 'FINAL ATTEMPT FAILED.' : `Retrying in ${delay / 20}s.`} Error: ${e.message}`;
 
-        console.error(errorMessage); // Always log to console for immediate visibility.
+        console.error(errorMessage);
 
-        // Attempt to use the structured logging system.
         try {
             const dependencies = dependencyManager.getDependenciesUnsafe();
             if (dependencies) {
