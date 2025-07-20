@@ -792,6 +792,12 @@ async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
         pData.isDirtyForSave = true;
     }
 
+    if (config?.enableNukerCheck) {
+        pData.blockBreakEvents = pData.blockBreakEvents || [];
+        pData.blockBreakEvents.push(Date.now());
+        pData.isDirtyForSave = true;
+    }
+
     if (checks?.checkXray && config?.xrayDetectionNotifyOnOreMineEnabled) {
         await checks.checkXray(player, block, brokenBlockPermutation.type, pData, dependencies);
     }

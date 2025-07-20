@@ -649,3 +649,38 @@ export function removePlayerStateRestriction(pData, stateType, dependencies) {
     }
     return wasRestricted;
 }
+
+/**
+ * Adds a flag or multiple flags to a player's data and triggers the automod check.
+ * @param {import('@minecraft/server').Player} player The player object.
+ * @param {string} flagType The type of flag to add (e.g., 'movementFlyHover').
+ * @param {string} reason A descriptive reason for the flag.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('../types.js').ViolationDetails} [violationDetails] Specific details about the violation.
+ * @param {number} [amount=1] The number of flags of this type to add.
+ * @returns {Promise<void>}
+ */
+export async function addFlag(player, flagType, reason, dependencies, violationDetails, amount = 1) {
+    if (amount <= 0) return;
+
+    const { playerDataManager, automodManager, playerUtils } = dependencies;
+    const pData = playerDataManager.getPlayerData(player.id);
+    if (!pData) {
+        playerUtils.debugLog(`[PlayerDataManager.addFlag] Could not find pData for ${player.nameTag}. Aborting flag add.`, player.nameTag, dependencies);
+        return;
+    }
+
+    pData.flags[flagType] = (pData.flags[flagType] || 0) + amount;
+    pData.flags.totalFlags = (pData.flags.totalFlags || 0) + amount;
+    pData.lastFlagType = flagType;
+    pData.isDirtyForSave = true;
+
+    const logMessage = amount > 1
+        ? `[PlayerDataManager] Added ${amount} flags of type '${flagType}' to ${player.nameTag}. New total for type: ${pData.flags[flagType]}. Grand total: ${pData.flags.totalFlags}.`
+        : `[PlayerDataManager] Added flag '${flagType}' to ${player.nameTag}. New total for type: ${pData.flags[flagType]}. Grand total: ${pData.flags.totalFlags}.`;
+
+    playerUtils.debugLog(logMessage, pData.isWatched ? player.nameTag : null, dependencies);
+
+    // Trigger AutoMod check once after adding all flags.
+    await automodManager.checkAndExecute(player, pData, flagType, reason, dependencies, violationDetails);
+}

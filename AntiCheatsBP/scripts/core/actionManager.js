@@ -70,10 +70,13 @@ async function _handleFlagging(player, profile, flagReasonMessage, checkType, de
 
     const flagType = profile.flag.type || checkType;
     const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
-    for (let i = 0; i < increment; i++) {
-        await dependencies.playerDataManager?.addFlag(player, flagType, flagReasonMessage, dependencies, violationDetails);
-    }
-    dependencies.playerUtils?.debugLog(`[ActionManager] Flagged ${player.nameTag} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.nameTag, dependencies);
+
+    // Call addFlag once with the total increment amount for efficiency and atomicity.
+    await dependencies.playerDataManager?.addFlag(player, flagType, flagReasonMessage, dependencies, violationDetails, increment);
+
+    // The debug log inside addFlag is now more detailed, so this one can be simplified or removed.
+    // For now, we'll keep it to confirm the action was initiated from ActionManager.
+    dependencies.playerUtils?.debugLog(`[ActionManager] Dispatched flag action for ${player.nameTag} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.nameTag, dependencies);
 }
 
 function _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies) {
