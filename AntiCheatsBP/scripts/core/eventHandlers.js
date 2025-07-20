@@ -2,7 +2,6 @@ import { world } from '@minecraft/server';
 import * as mc from '@minecraft/server';
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked, formatSessionDuration } from '../utils/index.js';
 const defaultCombatLogThresholdSeconds = 15;
-const welcomeMessageDelayTicks = 20;
 const deathCoordsMessageDelayTicks = 5;
 const defaultFoodUseDurationSeconds = 1.6;
 const ticksPerSecond = 20;

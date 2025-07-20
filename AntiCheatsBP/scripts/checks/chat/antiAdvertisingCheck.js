@@ -45,7 +45,7 @@ let lastLoadedAdvancedLinkRegexList = null;
 function getCompiledAdvancedLinkRegex(config, playerUtils, watchedPlayerName, dependencies) {
     const currentRegexListJson = JSON.stringify(config.advancedLinkRegexList);
     if (currentRegexListJson !== lastLoadedAdvancedLinkRegexList) {
-        playerUtils?.debugLog(`[AntiAdv] Compiling new advanced link regex patterns.`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog('[AntiAdv] Compiling new advanced link regex patterns.', watchedPlayerName, dependencies);
         compiledAdvancedLinkRegexList = (config.advancedLinkRegexList ?? []).map(pattern => {
             if (typeof pattern !== 'string' || pattern.trim() === '') return null;
             try {

@@ -5,7 +5,6 @@
 const secondsPerMinute = 60;
 const minutesPerHour = 60;
 const hoursPerDay = 24;
-const millisecondsPerSecond = 1000;
 const defaultAutomodTempbanDurationMs = 300000;
 const defaultAutomodMuteDurationMs = 600000;
 /**

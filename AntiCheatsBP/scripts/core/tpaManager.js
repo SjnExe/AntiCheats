@@ -239,14 +239,12 @@ export async function executeTeleport(requestId, dependencies) {
         return;
     }
 
-    let teleportSuccessful = false;
     try {
         if (request.requestType === 'tpa') {
             const targetDimension = minecraftSystem?.world?.getDimension(request.targetDimensionId);
             if (!targetDimension) throw new Error(`Invalid target dimension: ${request.targetDimensionId}`);
 
             await requesterPlayer.teleport(request.targetLocation, { dimension: targetDimension });
-            teleportSuccessful = true; // Assume success if no error is thrown
             requesterPlayer.sendMessage(getString('tpa.manager.teleport.successToTarget', { targetPlayerName: targetPlayer.nameTag }));
             targetPlayer.sendMessage(getString('tpa.manager.teleport.successTargetNotified', { requesterPlayerName: requesterPlayer.nameTag }));
 
@@ -255,7 +253,6 @@ export async function executeTeleport(requestId, dependencies) {
             if (!requesterDimension) throw new Error(`Invalid requester dimension: ${request.requesterDimensionId}`);
 
             await targetPlayer.teleport(request.requesterLocation, { dimension: requesterDimension });
-            teleportSuccessful = true; // Assume success
             targetPlayer.sendMessage(getString('tpa.manager.teleport.successToRequester', { requesterPlayerName: requesterPlayer.nameTag }));
             requesterPlayer.sendMessage(getString('tpa.manager.teleport.successRequesterNotified', { targetPlayerName: targetPlayer.nameTag }));
         } else {
