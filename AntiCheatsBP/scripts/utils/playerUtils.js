@@ -185,15 +185,15 @@ export function parseDuration(durationString) {
         const value = parseInt(match[1], 10);
         const unit = match[2];
         switch (unit) {
-        case 's': return value * millisecondsPerSecond;
-        case 'm': return value * secondsPerMinute * millisecondsPerSecond;
-        case 'h': return value * minutesPerHour * secondsPerMinute * millisecondsPerSecond;
-        case 'd': return value * hoursPerDay * minutesPerHour * secondsPerMinute * millisecondsPerSecond;
-        case 'w': return value * daysPerWeek * hoursPerDay * minutesPerHour * secondsPerMinute * millisecondsPerSecond; // Added weeks
-        default:
+            case 's': return value * millisecondsPerSecond;
+            case 'm': return value * secondsPerMinute * millisecondsPerSecond;
+            case 'h': return value * minutesPerHour * secondsPerMinute * millisecondsPerSecond;
+            case 'd': return value * hoursPerDay * minutesPerHour * secondsPerMinute * millisecondsPerSecond;
+            case 'w': return value * daysPerWeek * hoursPerDay * minutesPerHour * secondsPerMinute * millisecondsPerSecond; // Added weeks
+            default:
             // This case should ideally not be reached if the regex is correct.
-            console.warn(`[PlayerUtils.parseDuration] Unexpected unit '${unit}' from regex match.`);
-            return null;
+                console.warn(`[PlayerUtils.parseDuration] Unexpected unit '${unit}' from regex match.`);
+                return null;
         }
     } else if (/^\d+$/.test(lowerDurationString)) {
         const value = parseInt(lowerDurationString, 10);
@@ -330,33 +330,33 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
     };
 
     switch (soundConfig.target) {
-    case 'player':
-        if (primaryPlayer) {
-            playToPlayer(primaryPlayer);
-        }
-        break;
-    case 'admin':
-        mc.world.getAllPlayers().forEach(p => {
-            if (playerUtils.isAdmin(p, dependencies)) {
-                playToPlayer(p);
+        case 'player':
+            if (primaryPlayer) {
+                playToPlayer(primaryPlayer);
             }
-        });
-        break;
-    case 'targetPlayer':
-        if (targetPlayerContext) {
-            playToPlayer(targetPlayerContext);
-        } else if (primaryPlayer) {
-            playToPlayer(primaryPlayer);
-        }
-        break;
-    case 'global':
-        mc.world.getAllPlayers().forEach(p => playToPlayer(p));
-        break;
-    default:
-        if (primaryPlayer) {
-            playToPlayer(primaryPlayer);
-        }
-        break;
+            break;
+        case 'admin':
+            mc.world.getAllPlayers().forEach(p => {
+                if (playerUtils.isAdmin(p, dependencies)) {
+                    playToPlayer(p);
+                }
+            });
+            break;
+        case 'targetPlayer':
+            if (targetPlayerContext) {
+                playToPlayer(targetPlayerContext);
+            } else if (primaryPlayer) {
+                playToPlayer(primaryPlayer);
+            }
+            break;
+        case 'global':
+            mc.world.getAllPlayers().forEach(p => playToPlayer(p));
+            break;
+        default:
+            if (primaryPlayer) {
+                playToPlayer(primaryPlayer);
+            }
+            break;
     }
 }
 

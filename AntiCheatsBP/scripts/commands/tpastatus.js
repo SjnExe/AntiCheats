@@ -40,22 +40,22 @@ export function execute(player, args, dependencies) {
     let newAcceptsTpa;
 
     switch (subCommand) {
-    case 'on':
-    case 'enable':
-        newAcceptsTpa = true;
-        break;
-    case 'off':
-    case 'disable':
-        newAcceptsTpa = false;
-        break;
-    case 'status': {
-        const statusMsgKey = currentStatus?.acceptsTpaRequests ? 'command.tpastatus.status.accepting' : 'command.tpastatus.status.notAccepting';
-        player.sendMessage(getString(statusMsgKey));
-        return;
-    }
-    default:
-        player.sendMessage(getString('command.tpastatus.invalidOption', { prefix }));
-        return;
+        case 'on':
+        case 'enable':
+            newAcceptsTpa = true;
+            break;
+        case 'off':
+        case 'disable':
+            newAcceptsTpa = false;
+            break;
+        case 'status': {
+            const statusMsgKey = currentStatus?.acceptsTpaRequests ? 'command.tpastatus.status.accepting' : 'command.tpastatus.status.notAccepting';
+            player.sendMessage(getString(statusMsgKey));
+            return;
+        }
+        default:
+            player.sendMessage(getString('command.tpastatus.invalidOption', { prefix }));
+            return;
     }
 
     if (newAcceptsTpa === currentStatus?.acceptsTpaRequests) {

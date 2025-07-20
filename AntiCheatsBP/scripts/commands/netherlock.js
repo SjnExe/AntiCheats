@@ -31,48 +31,48 @@ export function execute(player, args, dependencies) {
 
     try {
         switch (subCommand) {
-        case 'on':
-        case 'lock': {
-            success = setNetherLocked(true);
-            if (success) {
-                player?.sendMessage(getString('command.netherlock.locked'));
-                logManager?.addLog({ adminName, actionType: 'dimensionLockEnabled', targetName: 'Nether', details: 'Nether dimension locked' }, dependencies);
-                if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                    const baseNotifyMsg = getString('command.dimensionLock.notify.locked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
-                    playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+            case 'on':
+            case 'lock': {
+                success = setNetherLocked(true);
+                if (success) {
+                    player?.sendMessage(getString('command.netherlock.locked'));
+                    logManager?.addLog({ adminName, actionType: 'dimensionLockEnabled', targetName: 'Nether', details: 'Nether dimension locked' }, dependencies);
+                    if (config?.notifyOnAdminUtilCommandUsage !== false) {
+                        const baseNotifyMsg = getString('command.dimensionLock.notify.locked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
+                        playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+                    }
+                    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+                } else {
+                    player?.sendMessage(getString('command.netherlock.failUpdate'));
+                    playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
-                playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-            } else {
-                player?.sendMessage(getString('command.netherlock.failUpdate'));
-                playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+                break;
             }
-            break;
-        }
-        case 'off':
-        case 'unlock': {
-            success = setNetherLocked(false);
-            if (success) {
-                player?.sendMessage(getString('command.netherlock.unlocked'));
-                logManager?.addLog({ adminName, actionType: 'dimensionLockDisabled', targetName: 'Nether', details: 'Nether dimension unlocked' }, dependencies);
-                if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                    const baseNotifyMsg = getString('command.dimensionLock.notify.unlocked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
-                    playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+            case 'off':
+            case 'unlock': {
+                success = setNetherLocked(false);
+                if (success) {
+                    player?.sendMessage(getString('command.netherlock.unlocked'));
+                    logManager?.addLog({ adminName, actionType: 'dimensionLockDisabled', targetName: 'Nether', details: 'Nether dimension unlocked' }, dependencies);
+                    if (config?.notifyOnAdminUtilCommandUsage !== false) {
+                        const baseNotifyMsg = getString('command.dimensionLock.notify.unlocked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
+                        playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+                    }
+                    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+                } else {
+                    player?.sendMessage(getString('command.netherlock.failUpdate'));
+                    playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
-                playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-            } else {
-                player?.sendMessage(getString('command.netherlock.failUpdate'));
-                playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+                break;
             }
-            break;
-        }
-        case 'status': {
-            const locked = isNetherLocked();
-            statusText = locked ? getString('command.netherlock.status.locked') : getString('command.netherlock.status.unlocked');
-            player?.sendMessage(getString('command.netherlock.status', { statusText }));
-            break;
-        }
-        default:
-            player?.sendMessage(`§cUsage: ${prefix}netherlock <on|off|status>`);
+            case 'status': {
+                const locked = isNetherLocked();
+                statusText = locked ? getString('command.netherlock.status.locked') : getString('command.netherlock.status.unlocked');
+                player?.sendMessage(getString('command.netherlock.status', { statusText }));
+                break;
+            }
+            default:
+                player?.sendMessage(`§cUsage: ${prefix}netherlock <on|off|status>`);
 
         }
     } catch (error) {

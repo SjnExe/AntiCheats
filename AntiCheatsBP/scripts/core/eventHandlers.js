@@ -85,7 +85,7 @@ async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
                 playerUtils.debugLog(
                     `[EvtHdlr.Leave] CombatLog: ${playerName} left ${timeSinceLastCombatSeconds}s after combat. ` +
                     `Thresh: ${config.combatLog.thresholdSeconds}s. Flag +${incrementAmount}.`,
-                    playerName, dependencies
+                    playerName, dependencies,
                 );
 
                 const violationDetails = { timeSinceLastCombat: timeSinceLastCombatSeconds, incrementAmount };
@@ -297,9 +297,9 @@ async function handlePlayerSpawn(eventData, dependencies) {
                 message: error.message,
                 rawErrorStack: error.stack,
                 meta: {
-                    initialSpawn
-                }
-            }
+                    initialSpawn,
+                },
+            },
         }, dependencies);
         throw error;
     }
@@ -1273,5 +1273,5 @@ export {
     handlePlayerPlaceBlockAfterEvent,
     handleBeforeChatSend,
     handlePlayerDimensionChangeAfterEvent,
-    handlePlayerHitEntityEvent
+    handlePlayerHitEntityEvent,
 };

@@ -34,15 +34,15 @@ function parseDimension(dimensionId, currentPlayer, dependencies) {
     }
     const lowerDimId = dimensionId.toLowerCase().replace('minecraft:', '');
     switch (lowerDimId) {
-    case 'overworld':
-        return mc.world.getDimension(mc.DimensionTypes.overworld.id);
-    case 'nether':
-        return mc.world.getDimension(mc.DimensionTypes.nether.id);
-    case 'the_end':
-        return mc.world.getDimension(mc.DimensionTypes.theEnd.id);
-    default:
-        playerUtils?.debugLog(`[TPCommand.parseDimension] Invalid dimension string: ${dimensionId}`, currentPlayer.nameTag, dependencies);
-        return undefined;
+        case 'overworld':
+            return mc.world.getDimension(mc.DimensionTypes.overworld.id);
+        case 'nether':
+            return mc.world.getDimension(mc.DimensionTypes.nether.id);
+        case 'the_end':
+            return mc.world.getDimension(mc.DimensionTypes.theEnd.id);
+        default:
+            playerUtils?.debugLog(`[TPCommand.parseDimension] Invalid dimension string: ${dimensionId}`, currentPlayer.nameTag, dependencies);
+            return undefined;
     }
 }
 

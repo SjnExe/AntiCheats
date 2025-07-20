@@ -54,20 +54,20 @@ export async function checkAntiGmc(player, pData, dependencies) {
             let targetMcGameMode;
 
             switch (targetGamemodeString) {
-            case 'survival':
-                targetMcGameMode = mc.GameMode.survival;
-                break;
-            case 'adventure':
-                targetMcGameMode = mc.GameMode.adventure;
-                break;
-            case 'spectator':
-                targetMcGameMode = mc.GameMode.spectator;
-                break;
-            default:
-                playerUtils?.debugLog(`[AntiGmcCheck WARNING] Invalid antiGmcSwitchToGameMode value '${config?.antiGmcSwitchToGameMode}'. Defaulting to survival for ${playerName}.`, watchedPlayerName, dependencies);
-                targetMcGameMode = mc.GameMode.survival;
-                targetGamemodeString = 'survival';
-                break;
+                case 'survival':
+                    targetMcGameMode = mc.GameMode.survival;
+                    break;
+                case 'adventure':
+                    targetMcGameMode = mc.GameMode.adventure;
+                    break;
+                case 'spectator':
+                    targetMcGameMode = mc.GameMode.spectator;
+                    break;
+                default:
+                    playerUtils?.debugLog(`[AntiGmcCheck WARNING] Invalid antiGmcSwitchToGameMode value '${config?.antiGmcSwitchToGameMode}'. Defaulting to survival for ${playerName}.`, watchedPlayerName, dependencies);
+                    targetMcGameMode = mc.GameMode.survival;
+                    targetGamemodeString = 'survival';
+                    break;
             }
 
             if (config?.antiGmcAutoSwitch) {

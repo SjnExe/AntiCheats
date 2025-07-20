@@ -276,7 +276,7 @@ export async function executeTeleport(requestId, dependencies) {
             actionType: 'tpaTeleportFinalized',
             targetName: targetPlayer?.nameTag || request.targetName,
             adminName: requesterPlayer?.nameTag || request.requesterName,
-            details: `Status: ${request.status}, Type: ${request.requestType}, ID: ${requestId}`
+            details: `Status: ${request.status}, Type: ${request.requestType}, ID: ${requestId}`,
         }, dependencies);
 
         // Now it's safe to remove the request, regardless of outcome.

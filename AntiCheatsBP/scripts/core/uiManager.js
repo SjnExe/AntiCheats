@@ -511,24 +511,24 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
     const originalValue = config[keyName]; // This is the live value from config, which is what we want to compare against.
     // context.currentValue is what was displayed on the list, which is also the original value.
     switch (keyType) {
-    case 'boolean':
-        modal.toggle(`New value for ${keyName}:`, typeof context.currentValue === 'boolean' ? context.currentValue : false);
-        break;
-    case 'number':
-        modal.textField(`New value for ${keyName} (number):`, String(context.currentValue ?? '0'));
-        break;
-    case 'string':
-        modal.textField(`New value for ${keyName} (string):`, String(context.currentValue ?? ''));
-        break;
-    case 'arrayString': // Represents a simple array to be edited as a JSON string
-        modal.textField(`New value for ${keyName} (JSON array string, e.g., ["a","b",1]):`, JSON.stringify(context.currentValue ?? []));
-        break;
-    default:
-        player.sendMessage(`§cError: Unsupported config type "${keyType}" for UI editing of key "${keyName}".`);
-        if (parentPanelForEdit) {
-            await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit);
-        }
-        return;
+        case 'boolean':
+            modal.toggle(`New value for ${keyName}:`, typeof context.currentValue === 'boolean' ? context.currentValue : false);
+            break;
+        case 'number':
+            modal.textField(`New value for ${keyName} (number):`, String(context.currentValue ?? '0'));
+            break;
+        case 'string':
+            modal.textField(`New value for ${keyName} (string):`, String(context.currentValue ?? ''));
+            break;
+        case 'arrayString': // Represents a simple array to be edited as a JSON string
+            modal.textField(`New value for ${keyName} (JSON array string, e.g., ["a","b",1]):`, JSON.stringify(context.currentValue ?? []));
+            break;
+        default:
+            player.sendMessage(`§cError: Unsupported config type "${keyType}" for UI editing of key "${keyName}".`);
+            if (parentPanelForEdit) {
+                await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit);
+            }
+            return;
     }
     try {
         const response = await modal.show(player);
@@ -538,48 +538,48 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
         const newValue = response.formValues[0];
         let updateSuccess = false;
         switch (keyType) {
-        case 'boolean': config[keyName] = !!newValue; updateSuccess = true; break;
-        case 'number': {
-            const numVal = parseFloat(newValue);
-            if (!isNaN(numVal)) {
-                config[keyName] = numVal;
-                updateSuccess = true;
-                player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
-                logManager?.addLog({ adminName: player.name, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
-                await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
-            } else {
-                player.sendMessage('§cError: Invalid number entered. Please try again.');
-                // Re-show the same edit form instead of going back to the list.
-                // The current context already contains keyName, keyType, parentPanelForEdit, etc.
-                // We need to ensure 'currentValue' in context reflects the *original* value for placeholder, not the bad input.
-                // The 'context' object was passed in and shouldn't have been mutated by the bad input.
-                await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context);
-                return; // Important to prevent falling through to showConfigCategoriesList
-            }
-            break;
-        }
-        case 'string':
-            config[keyName] = String(newValue);
-            updateSuccess = true;
-            // For strings, success message and navigation handled below to keep it DRY
-            break;
-        case 'arrayString':
-            try {
-                const parsedArray = JSON.parse(newValue);
-                if (Array.isArray(parsedArray) && parsedArray.every(el => typeof el === 'string' || typeof el === 'number' || typeof el === 'boolean')) {
-                    config[keyName] = parsedArray;
+            case 'boolean': config[keyName] = !!newValue; updateSuccess = true; break;
+            case 'number': {
+                const numVal = parseFloat(newValue);
+                if (!isNaN(numVal)) {
+                    config[keyName] = numVal;
                     updateSuccess = true;
+                    player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
+                    logManager?.addLog({ adminName: player.name, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
+                    await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
                 } else {
-                    player.sendMessage('§cError: Invalid input. Value must be a valid JSON array of strings, numbers, or booleans (e.g., ["a", "b", 123, true]). Please try again.');
+                    player.sendMessage('§cError: Invalid number entered. Please try again.');
+                    // Re-show the same edit form instead of going back to the list.
+                    // The current context already contains keyName, keyType, parentPanelForEdit, etc.
+                    // We need to ensure 'currentValue' in context reflects the *original* value for placeholder, not the bad input.
+                    // The 'context' object was passed in and shouldn't have been mutated by the bad input.
+                    await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context);
+                    return; // Important to prevent falling through to showConfigCategoriesList
+                }
+                break;
+            }
+            case 'string':
+                config[keyName] = String(newValue);
+                updateSuccess = true;
+                // For strings, success message and navigation handled below to keep it DRY
+                break;
+            case 'arrayString':
+                try {
+                    const parsedArray = JSON.parse(newValue);
+                    if (Array.isArray(parsedArray) && parsedArray.every(el => typeof el === 'string' || typeof el === 'number' || typeof el === 'boolean')) {
+                        config[keyName] = parsedArray;
+                        updateSuccess = true;
+                    } else {
+                        player.sendMessage('§cError: Invalid input. Value must be a valid JSON array of strings, numbers, or booleans (e.g., ["a", "b", 123, true]). Please try again.');
+                        await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
+                        return;
+                    }
+                } catch (parseError) {
+                    player.sendMessage(`§cError: Invalid JSON format for array: ${parseError.message}. Please try again.`);
                     await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
                     return;
                 }
-            } catch (parseError) {
-                player.sendMessage(`§cError: Invalid JSON format for array: ${parseError.message}. Please try again.`);
-                await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
-                return;
-            }
-            break;
+                break;
         }
 
         if (updateSuccess) { // Common success handling for boolean, string, arrayString
