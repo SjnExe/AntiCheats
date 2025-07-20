@@ -67,17 +67,19 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
         }
     }
 
-    // Re-fetch pData if an await occurred, to ensure atomicity for updates
-    // The original logic for pDataForUpdate and timestamp update remains.
-    // The eventData.cancel decision is now handled before the await.
-    const pDataForUpdate = actionWasAwaited ? playerDataManager.getPlayerData(player.id) : pData;
-
-    if (pDataForUpdate) {
-        pDataForUpdate.lastChatMessageTimestamp = initialTime;
-        pDataForUpdate.isDirtyForSave = true;
-    } else if (actionWasAwaited) {
-        // pData became null after await, log this potential issue
-        playerUtils?.debugLog(`[MessageRateCheck] pData for ${playerName} became null after await. Cannot update timestamps.`, watchedPlayerName, dependencies);
+    // If an action was taken, the player might have disconnected. Re-fetch pData.
+    if (actionWasAwaited) {
+        const currentPData = playerDataManager.getPlayerData(player.id);
+        if (currentPData) {
+            currentPData.lastChatMessageTimestamp = initialTime;
+            currentPData.isDirtyForSave = true;
+        } else {
+            playerUtils?.debugLog(`[MessageRateCheck] pData for ${playerName} became null after await. Cannot update timestamp.`, watchedPlayerName, dependencies);
+        }
+    } else {
+        // If no await happened, the original pData is still valid.
+        pData.lastChatMessageTimestamp = initialTime;
+        pData.isDirtyForSave = true;
     }
 
     // The final if (shouldCancelBasedOnProfile) block is removed as cancellation is handled before await.

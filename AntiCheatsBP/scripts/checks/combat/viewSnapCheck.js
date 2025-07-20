@@ -66,34 +66,42 @@ export async function checkViewSnap(player, pData, dependencies) {
         const ticksSinceLastAttack = currentTick - pData.lastAttackTick;
         const postAttackTimeMs = ticksSinceLastAttack * msPerTick;
 
-        const maxPitchSnap = config?.maxPitchSnapPerTick ?? defaultMaxPitchSnapPerTick;
+        const maxPitchSnapPerTick = config?.maxPitchSnapPerTick ?? defaultMaxPitchSnapPerTick;
         const pitchSnapActionProfileKey = config?.pitchSnapActionProfileName ?? 'combatViewSnapPitch';
 
-        if (deltaPitch > maxPitchSnap) {
-            const violationDetails = {
-                type: 'pitch',
-                change: deltaPitch.toFixed(2),
-                limit: maxPitchSnap.toFixed(2),
-                ticksSinceAttack: ticksSinceLastAttack.toString(),
-                postAttackTimeMs: postAttackTimeMs.toString(),
-            };
-            await actionManager?.executeCheckAction(player, pitchSnapActionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[ViewSnapCheck] (Pitch Snap) for ${playerName}: dP=${deltaPitch.toFixed(1)}° within ${ticksSinceLastAttack} ticks of attack. Limit: ${maxPitchSnap}°/tick.`, watchedPlayerName, dependencies);
+        if (ticksSinceLastAttack > 0) {
+            const pitchSnapRate = deltaPitch / ticksSinceLastAttack;
+            if (pitchSnapRate > maxPitchSnapPerTick) {
+                const violationDetails = {
+                    type: 'pitch',
+                    change: deltaPitch.toFixed(2),
+                    rate: pitchSnapRate.toFixed(2),
+                    limit: maxPitchSnapPerTick.toFixed(2),
+                    ticksSinceAttack: ticksSinceLastAttack.toString(),
+                    postAttackTimeMs: postAttackTimeMs.toString(),
+                };
+                await actionManager?.executeCheckAction(player, pitchSnapActionProfileKey, violationDetails, dependencies);
+                playerUtils?.debugLog(`[ViewSnapCheck] (Pitch Snap) for ${playerName}: dP=${deltaPitch.toFixed(1)}° rate=${pitchSnapRate.toFixed(1)}°/t within ${ticksSinceLastAttack} ticks. Limit: ${maxPitchSnapPerTick}°/t.`, watchedPlayerName, dependencies);
+            }
         }
 
-        const maxYawSnap = config?.maxYawSnapPerTick ?? 100;
+        const maxYawSnapPerTick = config?.maxYawSnapPerTick ?? 100;
         const yawSnapActionProfileKey = config?.yawSnapActionProfileName ?? 'combatViewSnapYaw';
 
-        if (deltaYaw > maxYawSnap) {
-            const violationDetails = {
-                type: 'yaw',
-                change: deltaYaw.toFixed(2),
-                limit: maxYawSnap.toFixed(2),
-                ticksSinceAttack: ticksSinceLastAttack.toString(),
-                postAttackTimeMs: postAttackTimeMs.toString(),
-            };
-            await actionManager?.executeCheckAction(player, yawSnapActionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[ViewSnapCheck] (Yaw Snap) for ${playerName}: dY=${deltaYaw.toFixed(1)}° within ${ticksSinceLastAttack} ticks of attack. Limit: ${maxYawSnap}°/tick.`, watchedPlayerName, dependencies);
+        if (ticksSinceLastAttack > 0) {
+            const yawSnapRate = deltaYaw / ticksSinceLastAttack;
+            if (yawSnapRate > maxYawSnapPerTick) {
+                const violationDetails = {
+                    type: 'yaw',
+                    change: deltaYaw.toFixed(2),
+                    rate: yawSnapRate.toFixed(2),
+                    limit: maxYawSnapPerTick.toFixed(2),
+                    ticksSinceAttack: ticksSinceLastAttack.toString(),
+                    postAttackTimeMs: postAttackTimeMs.toString(),
+                };
+                await actionManager?.executeCheckAction(player, yawSnapActionProfileKey, violationDetails, dependencies);
+                playerUtils?.debugLog(`[ViewSnapCheck] (Yaw Snap) for ${playerName}: dY=${deltaYaw.toFixed(1)}° rate=${yawSnapRate.toFixed(1)}°/t within ${ticksSinceLastAttack} ticks. Limit: ${maxYawSnapPerTick}°/t.`, watchedPlayerName, dependencies);
+            }
         }
     }
 }

@@ -95,11 +95,8 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
 
         playerUtils?.debugLog(`[MultiTargetCheck] Multi-Aura Flag: ${playerName} hit ${distinctTargets.size} distinct targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPlayerName, dependencies);
 
-        // Ensure operations on pData occur on the potentially updated reference if it could change,
-        // or confirm that pData reference stability is guaranteed by the environment.
-        // For satisfying the lint rule, explicitly re-using/re-affirming pData reference:
-        const pDataToUpdate = pData;
-        pDataToUpdate.recentHits = [];
-        pDataToUpdate.isDirtyForSave = true;
+        // Clear the recent hits for the player to reset the check for the next window.
+        pData.recentHits = [];
+        pData.isDirtyForSave = true;
     }
 }

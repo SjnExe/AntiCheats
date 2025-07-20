@@ -15,24 +15,28 @@
  * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
  * @param {Dependencies} dependencies Shared dependencies.
  */
-function isWhitelisted(text, message, config, playerUtils, playerName, watchedPlayerName, dependencies) {
-    if (Array.isArray(config.advertisingWhitelistPatterns) && config.advertisingWhitelistPatterns.length > 0) {
-        for (const wlPattern of config.advertisingWhitelistPatterns) {
-            if (typeof wlPattern !== 'string' || wlPattern.trim() === '') {
-                continue;
+function isWhitelisted(message, config, playerUtils, playerName, watchedPlayerName, dependencies) {
+    if (!Array.isArray(config.advertisingWhitelistPatterns) || config.advertisingWhitelistPatterns.length === 0) {
+        return false;
+    }
+
+    const lowerCaseMessage = message.toLowerCase();
+
+    for (const wlPattern of config.advertisingWhitelistPatterns) {
+        if (typeof wlPattern !== 'string' || wlPattern.trim() === '') {
+            continue;
+        }
+        try {
+            // Try as regex first
+            if (new RegExp(wlPattern, 'i').test(message)) {
+                playerUtils?.debugLog(`[AntiAdv] Message for ${playerName} whitelisted by regex: '${wlPattern}'.`, watchedPlayerName, dependencies);
+                return true;
             }
-            try {
-                if (new RegExp(wlPattern, 'i').test(text)) {
-                    playerUtils?.debugLog(`[AntiAdv] Text '${text}' for ${playerName} whitelisted by regex: '${wlPattern}'.`, watchedPlayerName, dependencies);
-                    return true;
-                }
-            } catch (eRegexWl) {
-                // Fallback to simple string inclusion if the pattern is not a valid regex.
-                // It should check against the 'text' (the detected link/pattern), not the whole message.
-                if (text.toLowerCase().includes(wlPattern.toLowerCase())) {
-                    playerUtils?.debugLog(`[AntiAdv] Text '${text}' for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
-                    return true;
-                }
+        } catch (eRegexWl) {
+            // Fallback to simple string inclusion if the pattern is not a valid regex.
+            if (lowerCaseMessage.includes(wlPattern.toLowerCase())) {
+                playerUtils?.debugLog(`[AntiAdv] Message for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
+                return true;
             }
         }
     }
@@ -79,14 +83,14 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
     if (config?.enableAdvancedLinkDetection) {
         const compiledRegexList = getCompiledAdvancedLinkRegex(config, playerUtils, watchedPlayerName, dependencies);
         if (compiledRegexList.length > 0) {
+            if (isWhitelisted(message, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
+                return; // Message is whitelisted, stop all advertisement checks for it.
+            }
             for (const regex of compiledRegexList) {
                 const match = regex.exec(message);
                 if (match) {
                     const detectedLink = match[0];
-                    if (isWhitelisted(detectedLink, message, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
-                        playerUtils?.debugLog(`[AntiAdvertisingCheck] Whitelisted link '${detectedLink}' for ${playerName}. Continuing scan.`, watchedPlayerName, dependencies);
-                        continue;
-                    }
+                    // No need to call isWhitelisted again here, as we check the whole message once up front.
 
                     playerUtils?.debugLog(`[AntiAdv] ${playerName} triggered ADV regex '${regex.source}' with link: '${detectedLink}'. Msg: '${message}'`, watchedPlayerName, dependencies);
                     const violationDetails = {
@@ -107,15 +111,21 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
     }
 
     if (!eventData.cancel && config?.enableAntiAdvertisingCheck && Array.isArray(config.antiAdvertisingPatterns) && config.antiAdvertisingPatterns.length > 0) {
+        // The advanced check already handles whitelisting. If it ran, we can assume the message is not whitelisted.
+        // If only simple checks are on, we must check for whitelisting here.
+        if (!config.enableAdvancedLinkDetection) {
+            if (isWhitelisted(message, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
+                return; // Message is whitelisted, stop all advertisement checks for it.
+            }
+        }
+
         const lowerCaseMessage = message.toLowerCase();
         for (const pattern of config.antiAdvertisingPatterns) {
             if (typeof pattern !== 'string' || pattern.trim() === '') {
                 continue;
             }
 
-            if (isWhitelisted(pattern, message, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
-                continue;
-            }
+            // No need to call isWhitelisted per-pattern. It's done once for the whole message.
 
             if (lowerCaseMessage.includes(pattern.toLowerCase())) {
                 playerUtils?.debugLog(`[AntiAdvertisingCheck] ${playerName} triggered SIMPLE pattern '${pattern}'. Message: '${message}'`, watchedPlayerName, dependencies);
