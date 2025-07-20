@@ -23,7 +23,7 @@ const DEBUG_LOG_UNICODE_SNIPPET_LENGTH = 20;
 export async function checkUnicodeAbuse(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const rawMessageContent = eventData.message;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableUnicodeAbuseCheck) {
         return;

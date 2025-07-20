@@ -22,7 +22,7 @@ const defaultMaxAllowedClientRenderDistance = 64;
  */
 export async function checkInvalidRenderDistance(player, pData, dependencies) {
     const { config, playerUtils, actionManager, logManager } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableInvalidRenderDistanceCheck) {
         return;

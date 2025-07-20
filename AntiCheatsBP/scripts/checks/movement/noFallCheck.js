@@ -30,7 +30,7 @@ const defaultMinFallDistanceForDamage = 3.5;
  */
 export async function checkNoFall(player, pData, dependencies) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableNofallCheck) {
         return;

@@ -29,7 +29,7 @@ import * as mc from '@minecraft/server';
 export async function checkSwitchAndUseInSameTick(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
     const itemStack = eventSpecificData?.itemStack;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableInventoryModCheck) {
         return;
@@ -78,7 +78,7 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
 export async function checkInventoryMoveWhileActionLocked(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
     const inventoryChangeDetails = eventSpecificData?.inventoryChangeDetails ?? eventSpecificData;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableInventoryModCheck) {
         return;

@@ -24,7 +24,7 @@ const defaultMaxPitchSnapPerTick = 75;
  */
 export async function checkViewSnap(player, pData, dependencies) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableViewSnapCheck) {
         return;

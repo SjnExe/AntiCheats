@@ -24,7 +24,7 @@ import * as mc from '@minecraft/server';
  */
 export async function checkSelfHurt(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     const cause = eventSpecificData?.damageCause ?? eventSpecificData?.cause;
     const damagingEntity = eventSpecificData?.damagingEntity;

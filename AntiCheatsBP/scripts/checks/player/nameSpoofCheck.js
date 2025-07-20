@@ -27,7 +27,7 @@ const defaultNameSpoofMinChangeIntervalTicks = 200;
  */
 export async function checkNameSpoof(player, pData, dependencies) {
     const { config, playerUtils, actionManager, currentTick, logManager } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableNameSpoofCheck) {
         return;
