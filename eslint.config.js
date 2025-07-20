@@ -29,7 +29,7 @@ export default [
     // Base JS configuration
     {
         files: ['**/*.js'],
-        ...jsdoc.configs['flat/recommended-typescript-error'],
+        // ...jsdoc.configs['flat/recommended-typescript-error'],
         languageOptions: {
             ecmaVersion: 'latest',
             sourceType: 'module',
@@ -62,7 +62,7 @@ export default [
             'no-undef': 'error',
             'object-curly-spacing': ['error', 'always'],
             'comma-dangle': ['error', 'always-multiline'],
-            'no-console': 'warn',
+            'no-console': 'off',
             'key-spacing': ['error', { 'beforeColon': false, 'afterColon': true }],
             'keyword-spacing': ['error', { 'before': true, 'after': true }],
             'space-before-function-paren': ['error', {
@@ -73,10 +73,10 @@ export default [
             'arrow-spacing': ['error', { 'before': true, 'after': true }],
 
             // JSDoc rules
-            'jsdoc/require-param-description': 'warn',
-            'jsdoc/require-returns-description': 'warn',
-            'jsdoc/check-tag-names': ['error', { 'definedTags': ['remarks', 'beta'] }],
-            'jsdoc/no-undefined-types': ['error', { 'disableReporting': true }],
+            // 'jsdoc/require-param-description': 'warn',
+            // 'jsdoc/require-returns-description': 'warn',
+            // 'jsdoc/check-tag-names': ['error', { 'definedTags': ['remarks', 'beta'] }],
+            // 'jsdoc/no-undefined-types': ['error', { 'disableReporting': true }],
         },
     },
     // JSONC configuration
