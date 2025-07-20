@@ -33,41 +33,27 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
         return;
     }
 
-    let maxRepeatCount = 0;
-    let currentChar = '';
-    let currentRepeatCount = 0;
-    let charThatRepeatedMost = '';
+    // This regex finds any character (.) that is followed by itself (\1)
+    // {threshold - 1} or more times. This is more efficient as it
+    // stops on the first match that meets the criteria.
+    const repeatPattern = new RegExp(`(.)\\1{${threshold - 1},}`);
+    const match = message.match(repeatPattern);
 
-    for (let i = 0; i < message.length; i++) {
-        const char = message[i];
-        if (char === currentChar) {
-            currentRepeatCount++;
-        } else {
-            if (currentRepeatCount > maxRepeatCount) {
-                maxRepeatCount = currentRepeatCount;
-                charThatRepeatedMost = currentChar;
-            }
-            currentChar = char;
-            currentRepeatCount = 1;
-        }
-    }
-    if (currentRepeatCount > maxRepeatCount) {
-        maxRepeatCount = currentRepeatCount;
-        charThatRepeatedMost = currentChar;
-    }
+    if (match) {
+        const charThatRepeated = match[1];
+        const repeatCount = match[0].length;
 
-    if (maxRepeatCount >= threshold) {
         const watchedPlayerName = pData?.isWatched ? playerName : null;
         playerUtils?.debugLog(
             `[CharRepeatCheck] Player ${playerName} triggered char repeat. ` +
-            `Msg: '${message}', Char: '${charThatRepeatedMost}', Count: ${maxRepeatCount}, ` +
+            `Msg: '${message}', Char: '${charThatRepeated}', Count: ${repeatCount}, ` +
             `Threshold: ${threshold}, MinLength: ${minLength}`,
             watchedPlayerName, dependencies,
         );
 
         const violationDetails = {
-            char: charThatRepeatedMost,
-            count: maxRepeatCount.toString(),
+            char: charThatRepeated,
+            count: repeatCount.toString(),
             threshold: threshold.toString(),
             messageLength: message.length.toString(),
             originalMessage: message,

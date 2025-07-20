@@ -49,62 +49,50 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         return;
     }
 
+    pData.chatMessageHistory ??= [];
     const historyLength = config?.chatContentRepeatHistoryLength ?? defaultHistoryLength;
     const triggerThreshold = config?.chatContentRepeatThreshold ?? defaultRepeatThreshold;
     const minMessageLength = config?.chatContentRepeatMinMessageLength ?? defaultMinMessageLengthForRepeatCheck;
 
     const normalizedMessage = normalizeMessage(rawMessageContent);
 
-    if (normalizedMessage.length < minMessageLength) {
-        if (rawMessageContent.trim().length > 0) {
-            pData.chatMessageHistory ??= [];
-            pData.chatMessageHistory.push(normalizedMessage);
-            while (pData.chatMessageHistory.length > historyLength) {
-                pData.chatMessageHistory.shift();
+    // Only check for repeats if the message is long enough
+    if (normalizedMessage.length >= minMessageLength) {
+        const matchCount = pData.chatMessageHistory.filter(oldMessage => oldMessage === normalizedMessage).length;
+
+        // The current message is the (matchCount + 1)-th occurrence.
+        // We flag when this number reaches the threshold.
+        if ((matchCount + 1) >= triggerThreshold) {
+            const watchedPlayerName = pData.isWatched ? playerName : null;
+            const violationDetails = {
+                repeatedMessageSnippet: normalizedMessage.substring(0, maxSnippetLength) + (normalizedMessage.length > maxSnippetLength ? '...' : ''),
+                matchCountInHistory: (matchCount + 1).toString(),
+                historyLookback: historyLength.toString(),
+                triggerThreshold: triggerThreshold.toString(),
+                originalMessage: rawMessageContent,
+            };
+
+            const profile = dependencies.checkActionProfiles?.[actionProfileKey];
+            if (profile?.cancelMessage) {
+                eventData.cancel = true;
             }
-            pData.isDirtyForSave = true;
-        }
-        return;
-    }
 
-    pData.chatMessageHistory ??= [];
-    let matchCount = 0;
-    for (const oldMessage of pData.chatMessageHistory) {
-        if (oldMessage === normalizedMessage) {
-            matchCount++;
+            await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+
+            playerUtils?.debugLog(
+                `[ChatContentRepeatCheck] Flagged ${playerName} for repeating '${normalizedMessage.substring(0, debugLogMessageSnippetLength)}...'. ` +
+                `Count: ${matchCount + 1} in last ${pData.chatMessageHistory.length + 1} (lookback: ${historyLength}, threshold: ${triggerThreshold}).`,
+                watchedPlayerName, dependencies,
+            );
         }
     }
 
-    pData.chatMessageHistory.push(normalizedMessage);
-    while (pData.chatMessageHistory.length > historyLength) {
-        pData.chatMessageHistory.shift();
-    }
-    pData.isDirtyForSave = true;
-
-    if ((matchCount + 1) >= triggerThreshold) {
-        const watchedPlayerName = pData.isWatched ? playerName : null;
-        const violationDetails = {
-            repeatedMessageSnippet: normalizedMessage.substring(0, maxSnippetLength) + (normalizedMessage.length > maxSnippetLength ? '...' : ''),
-            matchCountInHistory: (matchCount + 1).toString(),
-            historyLookback: historyLength.toString(),
-            triggerThreshold: triggerThreshold.toString(),
-            originalMessage: rawMessageContent,
-        };
-
-        // Determine if message should be cancelled before awaiting actionManager
-        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
-        const shouldCancelMessage = profile?.cancelMessage;
-
-        if (shouldCancelMessage) {
-            eventData.cancel = true;
+    // Always add the message to history (if it's not empty) and manage history size *after* the check.
+    if (normalizedMessage.length > 0) {
+        pData.chatMessageHistory.push(normalizedMessage);
+        while (pData.chatMessageHistory.length > historyLength) {
+            pData.chatMessageHistory.shift();
         }
-
-        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-
-        playerUtils?.debugLog(
-            `[ChatContentRepeatCheck] Flagged ${playerName} for repeating '${normalizedMessage.substring(0, debugLogMessageSnippetLength)}...'. ` +
-            `Count: ${matchCount + 1} in last ${pData.chatMessageHistory.length} (lookback: ${historyLength}, threshold: ${triggerThreshold}).`,
-            watchedPlayerName, dependencies,
-        );
+        pData.isDirtyForSave = true;
     }
 }

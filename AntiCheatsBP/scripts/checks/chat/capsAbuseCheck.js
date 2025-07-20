@@ -31,18 +31,9 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
         return;
     }
 
-    let totalLetters = 0;
-    let upperCaseLetters = 0;
-
-    for (let i = 0; i < message.length; i++) {
-        const char = message[i];
-        if (char.toLowerCase() !== char.toUpperCase()) {
-            totalLetters++;
-            if (char === char.toUpperCase()) {
-                upperCaseLetters++;
-            }
-        }
-    }
+    const upperCaseLetters = (message.match(/[A-Z]/g) || []).length;
+    const lowerCaseLetters = (message.match(/[a-z]/g) || []).length;
+    const totalLetters = upperCaseLetters + lowerCaseLetters;
 
     if (totalLetters === 0) {
         return;
