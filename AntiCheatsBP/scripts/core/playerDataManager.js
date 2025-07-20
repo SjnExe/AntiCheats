@@ -366,7 +366,7 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
             }
 
 
-            const serializedData = JSON.stringify(dataToSave);
+            serializedData = JSON.stringify(dataToSave);
 
             // Recovery Step 2: Check size again
             if (serializedData.length > maxSerializedDataLength) {
