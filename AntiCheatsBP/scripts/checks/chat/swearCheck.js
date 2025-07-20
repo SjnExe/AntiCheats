@@ -24,49 +24,48 @@ function normalizeWordForSwearCheck(word, dependencies) {
     if (typeof word !== 'string' || word.trim() === '') {
         return '';
     }
-    let normalized = word.toLowerCase();
 
-    normalized = normalized.replace(/[\s._\-~`!@#$%^&*()+={}[\]|\\:;"'<>,.?/0-9]+/g, '');
-    if (!normalized) {
-        return '';
-    }
+    const leetMap = config?.swearCheckEnableLeetSpeak ? (config?.swearCheckLeetSpeakMap ?? defaultLeetMap) : null;
+    let normalized = '';
+    let lastChar = '';
 
-    normalized = normalized.replace(/(.)\1+/g, '$1');
-    if (!normalized) {
-        return '';
-    }
+    const lowerWord = word.toLowerCase();
 
-    if (config?.swearCheckEnableLeetSpeak) {
-        const leetMap = config?.swearCheckLeetSpeakMap ?? defaultLeetMap;
-        const chars = Array.from(normalized);
-        const resultChars = [];
-        let i = 0;
-        while (i < chars.length) {
-            let replaced = false;
-            if (i + 1 < chars.length) {
-                const twoCharSeq = chars[i] + chars[i + 1];
+    for (let i = 0; i < lowerWord.length; i++) {
+        let currentChar = lowerWord[i];
+        let consumedChars = 1;
+
+        // Leet speak conversion (if enabled)
+        if (leetMap) {
+            // Check for two-character sequences first
+            if (i + 1 < lowerWord.length) {
+                const twoCharSeq = lowerWord.substring(i, i + 2);
                 if (leetMap[twoCharSeq]) {
-                    resultChars.push(leetMap[twoCharSeq]);
-                    i += 2;
-                    replaced = true;
+                    currentChar = leetMap[twoCharSeq];
+                    consumedChars = 2;
                 }
             }
-            if (!replaced) {
-                if (leetMap[chars[i]]) {
-                    resultChars.push(leetMap[chars[i]]);
-                } else {
-                    resultChars.push(chars[i]);
-                }
-                i++;
+            // If no two-char sequence, check for single char
+            if (consumedChars === 1 && leetMap[currentChar]) {
+                currentChar = leetMap[currentChar];
             }
         }
-        normalized = resultChars.join('');
 
-        normalized = normalized.replace(/(.)\1+/g, '$1');
-        if (!normalized) {
-            return '';
+        // Check if the character is an alphabet character
+        if (currentChar >= 'a' && currentChar <= 'z') {
+            // Remove consecutive duplicates
+            if (currentChar !== lastChar) {
+                normalized += currentChar;
+                lastChar = currentChar;
+            }
+        }
+        // If not an alphabet, it's effectively skipped, removing symbols/numbers
+
+        if (consumedChars > 1) {
+            i++; // Advance index for the consumed two-char sequence
         }
     }
+
     return normalized;
 }
 
