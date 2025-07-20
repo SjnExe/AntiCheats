@@ -26,24 +26,32 @@ const scheduledFlagPurgesKey = 'anticheat:scheduled_flag_purges';
  * @returns {Promise<Map<string, ScheduledPurge>>}
  */
 async function _loadScheduledFlagPurges(dependencies) {
-    const { world } = dependencies;
+    const { world, playerUtils } = dependencies;
     try {
         const data = world.getDynamicProperty(scheduledFlagPurgesKey);
         if (typeof data === 'string') {
             const parsed = JSON.parse(data);
+            // Standard format: An array of {playerName, timestamp} objects
             if (Array.isArray(parsed)) {
                 return new Map(parsed.map(item => [item.playerName, item]));
             }
-            if (parsed.values) {
+            // Legacy format check: An object like { values: ["Player1", "Player2"] }
+            if (typeof parsed === 'object' && parsed !== null && Array.isArray(parsed.values)) {
+                playerUtils.debugLog('[PlayerDataManager] Migrating legacy scheduled flag purges format.', 'System', dependencies);
                 const newMap = new Map();
-                for (const playerName of parsed.values()) {
-                    newMap.set(playerName, { playerName, timestamp: Date.now() });
+                for (const playerName of parsed.values) {
+                    if (typeof playerName === 'string') {
+                        newMap.set(playerName, { playerName, timestamp: Date.now() });
+                    }
                 }
+                // Immediately save in the new format to complete migration
+                await _saveScheduledFlagPurges(newMap, dependencies);
                 return newMap;
             }
         }
     } catch (e) {
-        console.error(`[PlayerDataManager] Failed to load scheduled flag purges: ${e}`);
+        console.error(`[PlayerDataManager] Failed to load scheduled flag purges: ${e.message}`);
+        playerUtils.debugLog(`[PlayerDataManager] Error loading scheduled flag purges: ${e.message}`, 'SystemError', dependencies);
     }
     return new Map();
 }
