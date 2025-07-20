@@ -31,7 +31,7 @@ const defaultSpeedGroundConsecutiveTicksThreshold = 5;
  */
 export async function checkSpeed(player, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableSpeedCheck) {
         return;

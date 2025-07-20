@@ -27,7 +27,7 @@ const DEFAULT_SPRINT_HUNGER_LIMIT = 6;
  */
 export async function checkInvalidSprint(player, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableInvalidSprintCheck) {
         return;

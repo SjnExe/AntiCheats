@@ -32,7 +32,7 @@ const DEFAULT_NOSLOW_GENERAL_TOLERANCE_PERCENT = 0.05;
  */
 export async function checkNoSlow(player, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableNoSlowCheck) {
         return;
