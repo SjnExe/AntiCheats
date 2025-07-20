@@ -54,51 +54,27 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
     const actionProfileKey = config?.gibberishActionProfileName ?? defaultActionProfileKey;
 
     const cleanedMessage = rawMessageContent.toLowerCase().replace(/[.,!?()"';:{}[\]<>~`^\\]/g, '');
+    const nonSpaceCleaned = cleanedMessage.replace(/\s/g, '');
 
-    let totalAlphaChars = 0;
-    let totalNonSpaceCharsInCleaned = 0;
-    let totalVowels = 0;
-    let totalConsonants = 0;
-    let currentConsecutiveConsonants = 0;
-    let overallMaxConsecutiveConsonants = 0;
-    const vowels = 'aeiou';
+    const alphaChars = nonSpaceCleaned.match(/[a-z]/g) || [];
+    const totalAlphaChars = alphaChars.length;
 
-    for (const char of cleanedMessage) {
-        if (char !== ' ') {
-            totalNonSpaceCharsInCleaned++;
-        }
-        if (char >= 'a' && char <= 'z') {
-            totalAlphaChars++;
-            if (vowels.includes(char)) {
-                totalVowels++;
-                currentConsecutiveConsonants = 0;
-            } else {
-                totalConsonants++;
-                currentConsecutiveConsonants++;
-                if (currentConsecutiveConsonants > overallMaxConsecutiveConsonants) {
-                    overallMaxConsecutiveConsonants = currentConsecutiveConsonants;
-                }
-            }
-        } else {
-            currentConsecutiveConsonants = 0;
-        }
-    }
-
-    if (totalNonSpaceCharsInCleaned === 0 || totalAlphaChars === 0) {
+    if (totalAlphaChars === 0) {
         return;
     }
 
-    const actualAlphaRatio = totalAlphaChars / totalNonSpaceCharsInCleaned;
+    const actualAlphaRatio = totalAlphaChars / nonSpaceCleaned.length;
     if (actualAlphaRatio < minAlphaRatio) {
-        playerUtils?.debugLog(`[GibberishCheck] Message for ${playerName} has low alpha ratio (${actualAlphaRatio.toFixed(2)} < ${minAlphaRatio}). Skipping gibberish vowel/consonant checks.`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[GibberishCheck] Message for ${playerName} has low alpha ratio (${actualAlphaRatio.toFixed(2)} < ${minAlphaRatio}). Skipping gibberish checks.`, watchedPlayerName, dependencies);
         return;
     }
 
-    const totalAlphaForVowelRatio = totalVowels + totalConsonants;
-    if (totalAlphaForVowelRatio === 0) {
-        return;
-    }
-    const actualVowelRatio = totalVowels / totalAlphaForVowelRatio;
+    const totalVowels = (nonSpaceCleaned.match(/[aeiou]/g) || []).length;
+    const totalConsonants = totalAlphaChars - totalVowels;
+    const actualVowelRatio = totalVowels / totalAlphaChars;
+
+    const consonantSequences = cleanedMessage.match(/[^aeiou\s]{1,}/g) || [];
+    const overallMaxConsecutiveConsonants = consonantSequences.reduce((max, seq) => Math.max(max, seq.length), 0);
 
     const flagReasons = [];
     if (actualVowelRatio < vowelRatioLowerBound && totalConsonants > totalVowels) {
