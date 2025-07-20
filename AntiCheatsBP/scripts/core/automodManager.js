@@ -20,13 +20,18 @@ function formatDuration(ms) {
     if (typeof ms !== 'number' || ms <= 0) {
         return '0s';
     }
-    let seconds = Math.floor(ms / millisecondsPerSecond);
-    let minutes = Math.floor(seconds / secondsPerMinute);
-    let hours = Math.floor(minutes / minutesPerHour);
-    const days = Math.floor(hours / hoursPerDay);
-    seconds %= secondsPerMinute;
-    minutes %= minutesPerHour;
-    hours %= hoursPerDay;
+
+    let totalSeconds = Math.floor(ms / 1000);
+
+    const days = Math.floor(totalSeconds / (hoursPerDay * minutesPerHour * secondsPerMinute));
+    totalSeconds %= (hoursPerDay * minutesPerHour * secondsPerMinute);
+
+    const hours = Math.floor(totalSeconds / (minutesPerHour * secondsPerMinute));
+    totalSeconds %= (minutesPerHour * secondsPerMinute);
+
+    const minutes = Math.floor(totalSeconds / secondsPerMinute);
+    const seconds = totalSeconds % secondsPerMinute;
+
     const parts = [];
     if (days > 0) {
         parts.push(`${days}d`);
