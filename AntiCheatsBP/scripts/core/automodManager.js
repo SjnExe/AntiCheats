@@ -8,7 +8,6 @@ const hoursPerDay = 24;
 const defaultAutomodTempbanDurationMs = 300000;
 const defaultAutomodMuteDurationMs = 600000;
 /**
- * Formats a duration in milliseconds into a human-readable string.
  * @param {number | Infinity} ms - The duration in milliseconds, or Infinity for permanent.
  * @returns {string} A formatted duration string (e.g., '5m', '1h', 'Permanent').
  */
@@ -47,7 +46,6 @@ function formatDuration(ms) {
     return parts.join(' ');
 }
 /**
- * Formats an AutoMod message template with dynamic context values.
  * @param {string | undefined} template - The message template.
  * @param {object} context - An object containing key-value pairs for placeholders.
  * @returns {string} The formatted message.
@@ -68,7 +66,6 @@ function formatAutomodMessage(template, context) {
     return message;
 }
 /**
- * Internal function to execute a specific AutoMod action.
  * @param {import('@minecraft/server').Player} player - The player to action.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {string} actionType - The type of action (e.g., 'warn', 'kick', 'tempBan') (camelCase).
@@ -336,7 +333,6 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
     return actionProcessed;
 }
 /**
- * Processes AutoMod actions for a player based on their current flags for a specific check type.
  * @param {import('@minecraft/server').Player} player - The player to process actions for.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {string} checkType - The specific check type (e.g., 'movementFlyHover', 'playerAntiGmc') to evaluate rules for.

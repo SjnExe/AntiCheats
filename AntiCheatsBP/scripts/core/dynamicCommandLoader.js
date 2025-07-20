@@ -7,7 +7,6 @@ import { commandAliases } from '../config.js';
 import { commandDefinitionMap, commandExecutionMap, commandFilePaths } from './commandManager.js';
 
 /**
- * Dynamically loads a command module by name.
  * @param {string} commandName The name of the command to load (case-insensitive).
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @returns {Promise<{definition: import('../types.js').CommandDefinition, execute: import('../types.js').CommandExecuteFunction}|null>} The command's definition and execute function, or null if loading fails.

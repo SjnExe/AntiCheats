@@ -3,7 +3,7 @@
  * @module AntiCheatsBP/scripts/core/reportManager
  */
 
-/** @constant {string} The dynamic property key for storing player reports. */
+/** @type {string} */
 const reportsPropertyKey = 'anticheat:reports_v1';
 
 // Constants for ID generation
@@ -15,14 +15,13 @@ const randomIdComponentLength = 5; // Results in a 5-character random string par
  * @typedef {import('../types.js').CommandDependencies} CommandDependencies
  */
 
-/** @type {ReportEntry[]} In-memory cache for report entries. Newest reports are typically at the beginning. */
+/** @type {ReportEntry[]} */
 let reportsInMemory = [];
 
-/** @type {boolean} Flag indicating if `reportsInMemory` has changes needing persistence. */
+/** @type {boolean} */
 let reportsAreDirty = false;
 
 /**
- * Generates a unique ID for a new report.
  * @returns {string} A unique report ID.
  */
 function generateReportId() {
@@ -30,7 +29,6 @@ function generateReportId() {
 }
 
 /**
- * Loads reports from dynamic properties into the in-memory cache.
  * @param {CommandDependencies} dependencies Standard dependencies object.
  */
 export function initializeReportCache(dependencies) {
@@ -54,7 +52,6 @@ export function initializeReportCache(dependencies) {
 }
 
 /**
- * Persists the in-memory report cache to dynamic properties.
  * @param {CommandDependencies} dependencies Standard dependencies object.
  * @returns {boolean} True on success, false on error.
  */
@@ -76,7 +73,6 @@ export function persistReportsToDisk(dependencies) {
 }
 
 /**
- * Retrieves reports from the cache, sorted newest first.
  * @returns {ReportEntry[]} An array of report objects, sorted by timestamp descending.
  */
 export function getReports() {
@@ -84,7 +80,6 @@ export function getReports() {
 }
 
 /**
- * Adds a new report to the system.
  * @param {import('@minecraft/server').Player} reporterPlayer The player making the report.
  * @param {string} reportedPlayerName The name of the player being reported.
  * @param {string} reason The reason for the report.
@@ -146,7 +141,6 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
 }
 
 /**
- * Clears all reports from the system.
  * @param {CommandDependencies} dependencies Standard dependencies object.
  * @returns {number} The number of reports cleared.
  */
@@ -167,7 +161,6 @@ export function clearAllReports(dependencies) {
 }
 
 /**
- * Clears a specific report by its ID.
  * @param {string} reportId The ID of the report to clear.
  * @param {CommandDependencies} dependencies Standard dependencies object.
  * @returns {boolean} True if the report was cleared, false otherwise.
@@ -192,7 +185,6 @@ export function clearReportById(reportId, dependencies) {
 }
 
 /**
- * Clears all reports associated with a specific player.
  * @param {string} playerNameOrId The nameTag or ID of the player.
  * @param {CommandDependencies} dependencies Standard dependencies object.
  * @returns {number} The number of reports cleared.

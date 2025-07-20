@@ -196,7 +196,6 @@ class DependencyManager {
     }
 
     /**
-     * Retrieves a specific dependency by name.
      * @param {string} name The name of the dependency to retrieve.
      * @returns {any} The requested dependency.
      * @throws {Error} If the dependency is not found.
@@ -209,7 +208,6 @@ class DependencyManager {
     }
 
     /**
-     * Returns the entire dependencies object. Use with caution.
      * @returns {object} The dependencies object.
      */
     getAll() {

@@ -3,20 +3,19 @@
  * @module AntiCheatsBP/scripts/core/logManager
  */
 
-/** @type {string} The dynamic property key used for storing action logs. */
+/** @type {string} */
 const logPropertyKey = 'anticheat:action_logs_v1'; // Using _v1 suffix for potential future format changes.
 
-/** @type {number} Maximum number of log entries to keep in memory and persisted storage. */
+/** @type {number} */
 const maxLogEntriesCount = 200; // Guideline: Keep this reasonable to avoid large dynamic property sizes.
 
-/** @type {Array<import('../types.js').LogEntry>} In-memory cache for log entries. Initialized on script load. */
+/** @type {Array<import('../types.js').LogEntry>} */
 let logsInMemory = [];
 
-/** @type {boolean} Flag indicating if the in-memory logs have changed and need to be persisted. */
+/** @type {boolean} */
 let logsAreDirty = false;
 
 /**
- * Loads logs from dynamic properties into the cache.
  * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function initializeLogCache(dependencies) {
@@ -40,7 +39,6 @@ export function initializeLogCache(dependencies) {
 }
 
 /**
- * Persists the log cache to dynamic properties if dirty.
  * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  * @returns {Promise<boolean>} True on success, false on error.
  */
@@ -63,7 +61,6 @@ export async function persistLogCacheToDisk(dependencies) {
 }
 
 /**
- * Adds a new log entry to the cache and handles log rotation.
  * @param {import('../types.js').LogEntry} logEntry The log entry object.
  * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
@@ -104,7 +101,6 @@ export function addLog(logEntry, dependencies) {
 }
 
 /**
- * Retrieves logs from the cache.
  * @param {number} [count] The number of most recent logs to retrieve.
  * @returns {Array<import('../types.js').LogEntry>} An array of log objects.
  */

@@ -18,9 +18,6 @@ export const commandExecutionMap = new Map();
 // Import all command modules, where each key is the module name (e.g., 'ban', 'kick')
 import * as commandFiles from '../commands/index.js';
 
-/**
- * Dynamically discovers and registers command files from the imported modules.
- */
 function discoverCommands() {
     commandFilePaths.clear();
     // commandFiles is an object where keys are module names (e.g., 'ban')
@@ -41,7 +38,6 @@ function discoverCommands() {
 }
 
 /**
- * Initializes the command manager.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export function initializeCommands(dependencies) {
@@ -60,7 +56,6 @@ export function initializeCommands(dependencies) {
 
 
 /**
- * Handles incoming chat messages to check for and execute commands.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
@@ -164,7 +159,6 @@ export async function handleChatCommand(eventData, dependencies) {
 }
 
 /**
- * Checks if a command is enabled.
  * @param {string} commandName The name of the command.
  * @param {import('../types.js').CommandDefinition} commandDef The command's definition.
  * @param {import('../types.js').Config} config The system's configuration.
@@ -179,7 +173,6 @@ function isCommandEnabled(commandName, commandDef, config) {
 }
 
 /**
- * Gets a list of all registered command names.
  * @returns {string[]} An array of command names.
  */
 export function getAllRegisteredCommandNames() {
