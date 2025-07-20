@@ -93,15 +93,30 @@ export async function handleChatCommand(eventData, dependencies) {
     // Resolve alias or use the input name
     const resolvedCommandName = aliasToCommandMap.get(commandNameInput) || commandNameInput;
 
-    // Dynamically load the command
-    const commandModule = await loadCommand(resolvedCommandName, dependencies);
-    if (!commandModule) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: commandNameInput }));
-        debugLog(`[CommandManager.handleChatCommand] Failed to load module for command '${resolvedCommandName}'.`, playerName, dependencies);
-        return;
-    }
+    // Check cache first
+    let commandDef = commandDefinitionMap.get(resolvedCommandName);
+    let commandExecute = commandExecutionMap.get(resolvedCommandName);
 
-    const { definition: commandDef, execute: commandExecute } = commandModule;
+    // If not in cache, dynamically load and then cache it
+    if (!commandDef || !commandExecute) {
+        debugLog(`[CommandManager.handleChatCommand] Command '${resolvedCommandName}' not in cache. Loading dynamically.`, getPlayerData(player.id)?.isWatched ? playerName : null, dependencies);
+        const commandModule = await loadCommand(resolvedCommandName, dependencies);
+        if (!commandModule) {
+            player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: commandNameInput }));
+            debugLog(`[CommandManager.handleChatCommand] Failed to load module for command '${resolvedCommandName}'.`, playerName, dependencies);
+            return;
+        }
+        commandDef = commandModule.definition;
+        commandExecute = commandModule.execute;
+
+        // Cache the loaded command
+        if (commandDef && commandExecute) {
+            commandDefinitionMap.set(resolvedCommandName, commandDef);
+            commandExecutionMap.set(resolvedCommandName, commandExecute);
+        }
+    } else {
+        debugLog(`[CommandManager.handleChatCommand] Loaded command '${resolvedCommandName}' from cache.`, getPlayerData(player.id)?.isWatched ? playerName : null, dependencies);
+    }
 
     // Check if the command is enabled
     if (!isCommandEnabled(resolvedCommandName, commandDef, config)) {
