@@ -62,7 +62,7 @@ export default [
             'no-undef': 'error',
             'object-curly-spacing': ['error', 'always'],
             'comma-dangle': ['error', 'always-multiline'],
-            'no-console': 'warn',
+            'no-console': 'off',
             'key-spacing': ['error', { 'beforeColon': false, 'afterColon': true }],
             'keyword-spacing': ['error', { 'before': true, 'after': true }],
             'space-before-function-paren': ['error', {
