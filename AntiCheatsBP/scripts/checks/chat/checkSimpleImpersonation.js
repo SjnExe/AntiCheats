@@ -78,6 +78,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
                     originalMessage: rawMessageContent,
                 };
 
+                // Await the action to ensure it completes before we potentially cancel the message and exit.
                 await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
                 playerUtils?.debugLog(`[SimpleImpersonationCheck] Flagged ${playerName} for impersonation attempt. Pattern: '${patternString}'. Msg: '${rawMessageContent.substring(0, DEBUG_LOG_SIMP_IMP_SNIPPET_LENGTH)}...'`, watchedPlayerName, dependencies);
 
