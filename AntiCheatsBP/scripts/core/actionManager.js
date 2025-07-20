@@ -101,7 +101,7 @@ function _handleLogging(player, profile, flagReasonMessage, checkType, violation
 }
 
 function _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies) {
-    if (!profile.notifyAdmins?.message || dependencies.config.notifyOnPlayerFlagged === false) return;
+    if (!profile.notifyAdmins?.message) return;
     if (!player?.isValid()) return;
 
     const { playerUtils, playerDataManager } = dependencies;
