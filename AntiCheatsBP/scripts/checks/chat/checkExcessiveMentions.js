@@ -50,12 +50,19 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
 
     const actionProfileKey = config?.mentionsActionProfileName ?? defaultActionProfileKey;
 
-    const mentionRegex = /@([A-Za-z0-9_]{3,24})/g;
+    // This regex handles two cases:
+    // 1. Standard usernames without spaces: @Username
+    // 2. Usernames with spaces enclosed in quotes: @"User Name"
+    const mentionRegex = /@(?:([A-Za-z0-9_]{3,24})|"([^"]{3,50})")/g;
     const allMentions = [];
     let match;
 
     while ((match = mentionRegex.exec(rawMessageContent)) !== null) {
-        allMentions.push(match[1]);
+        // The actual username will be in capture group 1 (unquoted) or 2 (quoted)
+        const mentionedUser = match[1] || match[2];
+        if (mentionedUser) {
+            allMentions.push(mentionedUser);
+        }
     }
 
     if (allMentions.length === 0) {
