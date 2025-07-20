@@ -45,7 +45,12 @@ async function _loadScheduledFlagPurges(dependencies) {
                     }
                 }
                 // Immediately save in the new format to complete migration
-                await _saveScheduledFlagPurges(newMap, dependencies);
+                try {
+                    await _saveScheduledFlagPurges(newMap, dependencies);
+                } catch (saveError) {
+                    console.error(`[PlayerDataManager] Failed to save migrated scheduled flag purges, but proceeding with in-memory data. Error: ${saveError.message}`);
+                    playerUtils.debugLog(`[PlayerDataManager] Error saving migrated purges: ${saveError.message}`, 'SystemError', dependencies);
+                }
                 return newMap;
             }
         }
