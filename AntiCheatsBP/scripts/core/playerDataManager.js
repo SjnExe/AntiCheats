@@ -338,7 +338,7 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
             dataToSave.chatMessageTimestamps = dataToSave.chatMessageTimestamps.slice(-50);
         }
 
-        const serializedData = JSON.stringify(dataToSave);
+        let serializedData = JSON.stringify(dataToSave);
 
         // Size check and recovery
         if (serializedData.length > maxSerializedDataLength) {

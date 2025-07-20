@@ -5,10 +5,7 @@ import { checkActionProfiles } from './core/actionProfiles.js';
 import * as checks from './checks/index.js'; // Keep as namespace for simplicity
 import {
     initializeCommands,
-    handleChatCommand,
     getAllRegisteredCommandNames,
-    commandDefinitionMap,
-    commandExecutionMap,
 } from './core/commandManager.js';
 import * as configModule from './config.js';
 import {
@@ -22,12 +19,10 @@ import {
     handlePlayerPlaceBlockAfterEvent,
     handleInventoryItemChange,
     handlePlayerDimensionChangeAfterEvent,
-    handlePlayerDeath,
     handleEntityDieForDeathEffects,
     handleEntitySpawnEventAntiGrief,
     handlePistonActivateAntiGrief,
     handleBeforeChatSend,
-    handlePlayerHitEntityEvent
 } from './core/eventHandlers.js';
 import { initializeLogCache, addLog, persistLogCacheToDisk } from './core/logManager.js';
 import {
