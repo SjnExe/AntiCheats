@@ -4,7 +4,6 @@
  */
 
 /**
- * Checks if a value is a string.
  * @param {*} value The value to check.
  * @returns {boolean}
  */
@@ -12,7 +11,6 @@ function isString(value) {
     return typeof value === 'string';
 }
 /**
- * Checks if a value is a number.
  * @param {*} value The value to check.
  * @returns {boolean}
  */
@@ -20,7 +18,6 @@ function isNumber(value) {
     return typeof value === 'number' && !isNaN(value);
 }
 /**
- * Checks if a value is a boolean.
  * @param {*} value The value to check.
  * @returns {boolean}
  */
@@ -28,7 +25,6 @@ function isBoolean(value) {
     return typeof value === 'boolean';
 }
 /**
- * Checks if a value is an array.
  * @param {*} value The value to check.
  * @returns {boolean}
  */
@@ -36,7 +32,6 @@ function isArray(value) {
     return Array.isArray(value);
 }
 /**
- * Checks if a value is an object.
  * @param {*} value The value to check.
  * @returns {boolean}
  */
@@ -197,7 +192,6 @@ function ensureFields(obj, fieldDefs, context, errors) {
     return allFieldsValidOverall;
 }
 /**
- * Validates the main configuration object.
  * @param {object} config The `defaultConfigSettings` object.
  * @param {object} actionProfiles The `checkActionProfiles` object.
  * @param {string[]} knownCommands An array of known command names.
@@ -491,7 +485,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
     return errors;
 }
 /**
- * Validates the checkActionProfiles object.
  * @param {object} actionProfiles The `checkActionProfiles` object.
  * @returns {string[]} An array of error messages.
  */
@@ -578,7 +571,6 @@ export function validateActionProfiles(actionProfiles) {
     return errors;
 }
 /**
- * Validates the automodConfig object.
  * @param {object} autoModConfig The `automodConfig` object.
  * @param {object} actionProfiles The `checkActionProfiles` object.
  * @returns {string[]} An array of error messages.
@@ -677,7 +669,6 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
     return errors;
 }
 /**
- * Validates the ranksConfig object.
  * @param {object} ranksConfig The ranks configuration object.
  * @param {string} mainConfigOwnerName The owner's name from the main config.
  * @param {string} mainConfigAdminTag The admin tag from the main config.

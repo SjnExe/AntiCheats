@@ -7,7 +7,6 @@ const MAX_MESSAGE_SNIPPET_LENGTH = 50;
 const DEFAULT_CHAT_DURING_COMBAT_COOLDOWN_SECONDS = 4;
 const DEFAULT_MAX_MESSAGE_LENGTH = 256;
 /**
- * Processes an incoming chat message for checks and formatting.
  * @param {import('@minecraft/server').Player} player The player who sent the message.
  * @param {import('../types.js').PlayerAntiCheatData} pData The player's data.
  * @param {string} originalMessage The original message content.

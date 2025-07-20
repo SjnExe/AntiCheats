@@ -25,7 +25,6 @@ const CONFIG_UI_TRUNCATE_KEEP_LENGTH = 27;
 const playerNavigationStacks = new Map();
 
 /**
- * Pushes a panel state onto the player's navigation stack.
  * @param {string} playerId The ID of the player.
  * @param {string} panelId The ID of the panel.
  * @param {object} context The context for the panel.
@@ -42,7 +41,6 @@ function pushToPlayerNavStack(playerId, panelId, context) {
 }
 
 /**
- * Pops the top panel state from the player's navigation stack.
  * @param {string} playerId The ID of the player.
  * @returns {{panelId: string, context: object}|null} The popped panel state or null.
  */
@@ -55,7 +53,6 @@ function popFromPlayerNavStack(playerId) {
 }
 
 /**
- * Clears the navigation stack for a specific player.
  * @param {string} playerId The ID of the player.
  */
 function clearPlayerNavStack(playerId) {
@@ -65,7 +62,6 @@ function clearPlayerNavStack(playerId) {
 }
 
 /**
- * Checks if the player's navigation stack is effectively empty.
  * @param {string} playerId The ID of the player.
  * @returns {boolean} True if the stack implies no logical "back" operation.
  */
@@ -77,7 +73,6 @@ function isNavStackAtRoot(playerId) {
 }
 
 /**
- * Gets the current panel state from the player's navigation stack.
  * @param {string} playerId The ID of the player.
  * @returns {{panelId: string, context: object}|null} The current panel state or null.
  */
@@ -318,7 +313,6 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
 // --- End Dynamic Item Generators ---
 
 /**
- * Displays a form to reset all flags for a player.
  * @param {import('@minecraft/server').Player} player The admin player.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  * @param {object} context The context from the calling panel.
@@ -371,7 +365,6 @@ async function showResetFlagsFormImpl(player, dependencies, context) {
 }
 
 /**
- * Displays a list of editable configuration keys.
  * @param {import('@minecraft/server').Player} player The admin player.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  */
@@ -488,7 +481,6 @@ async function showConfigCategoriesListImpl(player, dependencies) {
 }
 
 /**
- * Displays a form to edit a single configuration value.
  * @param {import('@minecraft/server').Player} player The admin player.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  * @param {object} context Context object with config key details.
@@ -598,7 +590,6 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
 }
 
 /**
- * Displays a generic confirmation modal.
  * @param {import('@minecraft/server').Player} adminPlayer The player to show the modal to.
  * @param {string} titleString The title of the modal.
  * @param {string} bodyString The body text of the modal.
@@ -640,7 +631,6 @@ async function _showConfirmationModal(adminPlayer, titleString, bodyString, conf
 }
 
 /**
- * Confirms and clears the global chat.
  * @param {import('@minecraft/server').Player} player The admin player.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  */
@@ -665,7 +655,6 @@ async function confirmClearChatImpl(player, dependencies) {
 }
 
 /**
- * Confirms and performs a lag clear operation.
  * @param {import('@minecraft/server').Player} player The admin player.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  */
@@ -697,7 +686,6 @@ async function confirmLagClearImpl(player, dependencies) {
 }
 
 /**
- * Displays a modal form showing all action logs.
  * @param {import('@minecraft/server').Player} player The admin player.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  */
@@ -770,7 +758,6 @@ async function displayActionLogsModalImpl(player, dependencies) {
 }
 
 /**
- * Shows a form to filter logs by player name.
  * @param {import('@minecraft/server').Player} player The admin player.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  * @param {object} context The current panel context.
@@ -828,7 +815,6 @@ async function showModLogFilterModalImpl(player, dependencies, context) {
 }
 
 /**
- * Displays a specific page of logs in a modal form.
  * @param {import('@minecraft/server').Player} player The player viewing the logs.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  * @param {object} context Context object with log filtering and pagination details.
@@ -917,7 +903,6 @@ async function displaySpecificLogsPageImpl(player, dependencies, context) {
 }
 
 /**
- * Displays a panel based on its definition.
  * @param {import('@minecraft/server').Player} player The player viewing the panel.
  * @param {string} panelId The ID of the panel to display.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
@@ -1241,7 +1226,6 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
 }
 
 /**
- * Prepares and shows the Ban/Unban logs viewer.
  * @param {import('@minecraft/server').Player} player The player initiating the view.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  * @param {object} context Context from the calling panel.
@@ -1268,7 +1252,6 @@ async function prepareBanUnbanLogsViewer(player, dependencies, context) {
 }
 
 /**
- * Prepares and shows the Mute/Unmute logs viewer.
  * @param {import('@minecraft/server').Player} player The player initiating the view.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  * @param {object} context Context from the calling panel.
@@ -2106,7 +2089,6 @@ async function goToPrevLogPage(player, dependencies, context) {
 
 
 /**
- * Shows a form to input a player name for inspection.
  * @param {import('@minecraft/server').Player} adminPlayer The admin player.
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
  * @param {object} context Context from the calling panel.
