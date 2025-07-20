@@ -52,12 +52,12 @@ export function execute(player, _args, dependencies) {
         if (rankDef.conditions && rankDef.conditions.length > 0) {
             for (const cond of rankDef.conditions) {
                 switch (cond.type) {
-                case 'ownerName': conditionStrings.push(getString('command.listranks.condition.ownerName')); break;
-                case 'adminTag': conditionStrings.push(getString('command.listranks.condition.adminTag')); break;
-                case 'manualTagPrefix': conditionStrings.push(getString('command.listranks.condition.manualTagPrefix', { prefix: cond.prefix ?? '', rankId: rankDef.id })); break;
-                case 'tag': conditionStrings.push(getString('command.listranks.condition.tag', { tag: cond.tag ?? '' })); break;
-                case 'default': conditionStrings.push(getString('command.listranks.condition.default')); break;
-                default: conditionStrings.push(getString('command.listranks.condition.custom', { type: cond.type })); break;
+                    case 'ownerName': conditionStrings.push(getString('command.listranks.condition.ownerName')); break;
+                    case 'adminTag': conditionStrings.push(getString('command.listranks.condition.adminTag')); break;
+                    case 'manualTagPrefix': conditionStrings.push(getString('command.listranks.condition.manualTagPrefix', { prefix: cond.prefix ?? '', rankId: rankDef.id })); break;
+                    case 'tag': conditionStrings.push(getString('command.listranks.condition.tag', { tag: cond.tag ?? '' })); break;
+                    case 'default': conditionStrings.push(getString('command.listranks.condition.default')); break;
+                    default: conditionStrings.push(getString('command.listranks.condition.custom', { type: cond.type })); break;
                 }
             }
         }

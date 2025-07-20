@@ -55,18 +55,18 @@ export async function execute(player, args, dependencies) {
     let newWatchState;
 
     switch (actionArg) {
-    case 'on':
-        newWatchState = true;
-        break;
-    case 'off':
-        newWatchState = false;
-        break;
-    case 'toggle':
-        newWatchState = !currentWatchState;
-        break;
-    default:
-        player.sendMessage(getString('command.watch.invalidAction', { action: actionArg, prefix, syntax: definition.syntax }));
-        return;
+        case 'on':
+            newWatchState = true;
+            break;
+        case 'off':
+            newWatchState = false;
+            break;
+        case 'toggle':
+            newWatchState = !currentWatchState;
+            break;
+        default:
+            player.sendMessage(getString('command.watch.invalidAction', { action: actionArg, prefix, syntax: definition.syntax }));
+            return;
     }
 
     if (newWatchState === currentWatchState) {

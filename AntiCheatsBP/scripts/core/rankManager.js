@@ -79,34 +79,34 @@ function getPlayerRankAndPermissions(player, dependencies) {
             for (const condition of rankDef.conditions) {
                 let match = false;
                 switch (condition.type) {
-                case 'ownerName': // Corrected to camelCase
-                    if (ownerName && player.nameTag.toLowerCase() === ownerName) {
-                        match = true;
-                    }
-                    break;
-                case 'adminTag': // Corrected to camelCase
-                    if (adminTag && player.hasTag(adminTag)) {
-                        match = true;
-                    }
-                    break;
-                case 'manualTagPrefix': // Corrected to camelCase
+                    case 'ownerName': // Corrected to camelCase
+                        if (ownerName && player.nameTag.toLowerCase() === ownerName) {
+                            match = true;
+                        }
+                        break;
+                    case 'adminTag': // Corrected to camelCase
+                        if (adminTag && player.hasTag(adminTag)) {
+                            match = true;
+                        }
+                        break;
+                    case 'manualTagPrefix': // Corrected to camelCase
                     // Ensure condition.prefix and rankDef.id are defined. rankDef.id is already lowercased.
-                    if (condition.prefix && rankDef.id && player.hasTag(condition.prefix + rankDef.id)) {
+                        if (condition.prefix && rankDef.id && player.hasTag(condition.prefix + rankDef.id)) {
+                            match = true;
+                        }
+                        break;
+                    case 'tag':
+                        if (condition.tag && player.hasTag(condition.tag)) {
+                            match = true;
+                        }
+                        break;
+                    case 'default': // Fallback condition
                         match = true;
-                    }
-                    break;
-                case 'tag':
-                    if (condition.tag && player.hasTag(condition.tag)) {
-                        match = true;
-                    }
-                    break;
-                case 'default': // Fallback condition
-                    match = true;
-                    break;
-                default:
+                        break;
+                    default:
                     // Unknown condition type, log if necessary or treat as no match
-                    playerUtils?.debugLog(`[RankManager] Unknown rank condition type '${condition.type}' for rank '${rankDef.id}' player '${playerName}'.`, playerName, dependencies);
-                    break;
+                        playerUtils?.debugLog(`[RankManager] Unknown rank condition type '${condition.type}' for rank '${rankDef.id}' player '${playerName}'.`, playerName, dependencies);
+                        break;
                 }
                 if (match) {
                     return { rankDefinition: rankDef, permissionLevel: rankDef.permissionLevel, rankId: rankDef.id };

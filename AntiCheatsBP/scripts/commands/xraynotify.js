@@ -49,36 +49,36 @@ export function execute(player, args, dependencies) {
     let responseMessageKey;
 
     switch (subCommand) {
-    case 'on':
-        newPreference = true;
-        responseMessageKey = 'command.xraynotify.enabled';
-        break;
-    case 'off':
-        newPreference = false;
-        responseMessageKey = 'command.xraynotify.disabled';
-        break;
-    case 'toggle':
-        newPreference = !currentPreference;
-        responseMessageKey = newPreference ? 'command.xraynotify.enabled' : 'command.xraynotify.disabled';
-        break;
-    case 'status': {
-        let statusKey;
-        if (typeof pData.xrayNotificationsEnabled === 'boolean') {
-            statusKey = currentPreference ? 'command.xraynotify.status.onExplicit' : 'command.xraynotify.status.offExplicit';
-        } else {
-            statusKey = currentPreference ? 'command.xraynotify.status.onDefault' : 'command.xraynotify.status.offDefault';
+        case 'on':
+            newPreference = true;
+            responseMessageKey = 'command.xraynotify.enabled';
+            break;
+        case 'off':
+            newPreference = false;
+            responseMessageKey = 'command.xraynotify.disabled';
+            break;
+        case 'toggle':
+            newPreference = !currentPreference;
+            responseMessageKey = newPreference ? 'command.xraynotify.enabled' : 'command.xraynotify.disabled';
+            break;
+        case 'status': {
+            let statusKey;
+            if (typeof pData.xrayNotificationsEnabled === 'boolean') {
+                statusKey = currentPreference ? 'command.xraynotify.status.onExplicit' : 'command.xraynotify.status.offExplicit';
+            } else {
+                statusKey = currentPreference ? 'command.xraynotify.status.onDefault' : 'command.xraynotify.status.offDefault';
+            }
+            player.sendMessage(getString(statusKey));
+            logManager?.addLog({
+                adminName,
+                actionType: 'xrayNotifyStatusChecked',
+                details: `Checked own X-Ray notification status: ${getString(statusKey)}`,
+            }, dependencies);
+            return;
         }
-        player.sendMessage(getString(statusKey));
-        logManager?.addLog({
-            adminName,
-            actionType: 'xrayNotifyStatusChecked',
-            details: `Checked own X-Ray notification status: ${getString(statusKey)}`,
-        }, dependencies);
-        return;
-    }
-    default:
-        player.sendMessage(getString('command.xraynotify.usage', { prefix }));
-        return;
+        default:
+            player.sendMessage(getString('command.xraynotify.usage', { prefix }));
+            return;
     }
 
     try {

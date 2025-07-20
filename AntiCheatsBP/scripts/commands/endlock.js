@@ -34,48 +34,48 @@ export function execute(player, args, dependencies) {
 
     try {
         switch (subCommand) {
-        case 'on':
-        case 'lock': {
-            success = setEndLocked(true);
-            if (success) {
-                player?.sendMessage(getString('command.endlock.locked'));
-                logManager?.addLog({ adminName, actionType: 'dimensionLockEnabled', targetName: 'The End', details: 'The End dimension locked' }, dependencies);
-                if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                    const baseNotifyMsg = getString('command.dimensionLock.notify.locked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
-                    playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+            case 'on':
+            case 'lock': {
+                success = setEndLocked(true);
+                if (success) {
+                    player?.sendMessage(getString('command.endlock.locked'));
+                    logManager?.addLog({ adminName, actionType: 'dimensionLockEnabled', targetName: 'The End', details: 'The End dimension locked' }, dependencies);
+                    if (config?.notifyOnAdminUtilCommandUsage !== false) {
+                        const baseNotifyMsg = getString('command.dimensionLock.notify.locked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
+                        playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+                    }
+                    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+                } else {
+                    player?.sendMessage(getString('command.endlock.failUpdate'));
+                    playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
-                playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-            } else {
-                player?.sendMessage(getString('command.endlock.failUpdate'));
-                playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+                break;
             }
-            break;
-        }
-        case 'off':
-        case 'unlock': {
-            success = setEndLocked(false);
-            if (success) {
-                player?.sendMessage(getString('command.endlock.unlocked'));
-                logManager?.addLog({ adminName, actionType: 'dimensionLockDisabled', targetName: 'The End', details: 'The End dimension unlocked' }, dependencies);
-                if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                    const baseNotifyMsg = getString('command.dimensionLock.notify.unlocked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
-                    playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+            case 'off':
+            case 'unlock': {
+                success = setEndLocked(false);
+                if (success) {
+                    player?.sendMessage(getString('command.endlock.unlocked'));
+                    logManager?.addLog({ adminName, actionType: 'dimensionLockDisabled', targetName: 'The End', details: 'The End dimension unlocked' }, dependencies);
+                    if (config?.notifyOnAdminUtilCommandUsage !== false) {
+                        const baseNotifyMsg = getString('command.dimensionLock.notify.unlocked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
+                        playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+                    }
+                    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+                } else {
+                    player?.sendMessage(getString('command.endlock.failUpdate'));
+                    playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
-                playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-            } else {
-                player?.sendMessage(getString('command.endlock.failUpdate'));
-                playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+                break;
             }
-            break;
-        }
-        case 'status': {
-            const locked = isEndLocked();
-            statusText = locked ? getString('command.endlock.status.locked') : getString('command.endlock.status.unlocked');
-            player?.sendMessage(getString('command.endlock.status', { statusText }));
-            break;
-        }
-        default:
-            player?.sendMessage(`§cUsage: ${prefix}endlock <on|off|status>`);
+            case 'status': {
+                const locked = isEndLocked();
+                statusText = locked ? getString('command.endlock.status.locked') : getString('command.endlock.status.unlocked');
+                player?.sendMessage(getString('command.endlock.status', { statusText }));
+                break;
+            }
+            default:
+                player?.sendMessage(`§cUsage: ${prefix}endlock <on|off|status>`);
 
         }
     } catch (error) {

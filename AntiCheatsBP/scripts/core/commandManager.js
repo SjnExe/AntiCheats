@@ -133,7 +133,7 @@ export async function handleChatCommand(eventData, dependencies) {
             targetName: playerName,
             targetId: player.id,
             context: 'commandManager.handleChatCommand',
-            details: { command: resolvedCommandName, fullMessage: message, permissionLevel: userPermissionLevel }
+            details: { command: resolvedCommandName, fullMessage: message, permissionLevel: userPermissionLevel },
         }, dependencies);
     }
 

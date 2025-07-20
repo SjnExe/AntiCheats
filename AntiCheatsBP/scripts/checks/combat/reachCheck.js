@@ -44,16 +44,16 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
 
     let maxReachDistBase;
     switch (gameMode) {
-    case mc.GameMode.creative:
-        maxReachDistBase = config?.reachDistanceCreative ?? defaultCreativeReach;
-        break;
-    case mc.GameMode.survival:
-    case mc.GameMode.adventure:
-        maxReachDistBase = config?.reachDistanceSurvival ?? defaultSurvivalReach;
-        break;
-    default:
-        playerUtils?.debugLog(`[ReachCheck] Unsupported game mode '${mc.GameMode[gameMode]}' for player ${playerName}. Skipping reach check.`, watchedPlayerName, dependencies);
-        return;
+        case mc.GameMode.creative:
+            maxReachDistBase = config?.reachDistanceCreative ?? defaultCreativeReach;
+            break;
+        case mc.GameMode.survival:
+        case mc.GameMode.adventure:
+            maxReachDistBase = config?.reachDistanceSurvival ?? defaultSurvivalReach;
+            break;
+        default:
+            playerUtils?.debugLog(`[ReachCheck] Unsupported game mode '${mc.GameMode[gameMode]}' for player ${playerName}. Skipping reach check.`, watchedPlayerName, dependencies);
+            return;
     }
 
     const reachBuffer = config?.reachBuffer ?? defaultReachBuffer;
