@@ -24,7 +24,7 @@ const distinctTargetsSampleLimitMulti = 5;
 export async function checkMultiTarget(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
     const targetEntity = eventSpecificData?.targetEntity;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableMultiTargetCheck) {
         return;

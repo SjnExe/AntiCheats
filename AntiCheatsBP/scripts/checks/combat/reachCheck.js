@@ -31,7 +31,7 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
     const { config, playerUtils, actionManager } = dependencies;
     const targetEntity = eventSpecificData?.targetEntity;
     const gameMode = eventSpecificData?.gameMode;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableReachCheck) return;
 
