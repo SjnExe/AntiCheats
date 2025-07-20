@@ -341,88 +341,87 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
  */
 export async function processAutoModActions(player, pData, checkType, dependencies) {
     const { config: globalConfig, playerUtils, automodConfig: moduleAutomodConfig } = dependencies;
-    if (!globalConfig?.enableAutoMod) {
+    if (!globalConfig?.automod?.enabled) {
         return;
     }
+
     const ruleSet = moduleAutomodConfig?.automodRuleSets?.find(rs => rs.checkType === checkType);
-    if (!ruleSet) {
+    if (!ruleSet || !ruleSet.enabled) {
         return;
     }
-    if (!ruleSet.enabled) {
-        playerUtils?.debugLog(`[AutoModManager] AutoMod for checkType '${checkType}' on ${player?.nameTag} is disabled in its ruleSet.`, player?.nameTag, dependencies);
+
+    const rulesForCheck = ruleSet.tiers?.sort((a, b) => b.flagThreshold - a.flagThreshold) || [];
+    if (rulesForCheck.length === 0) {
         return;
     }
-    const rulesForCheck = ruleSet.tiers;
-    if (!rulesForCheck || rulesForCheck.length === 0) {
-        return;
-    }
-    const currentFlags = pData?.flags?.[checkType]?.count || 0;
+
+    const flagData = pData?.flags?.[checkType];
+    const currentFlags = flagData?.count || 0;
     if (currentFlags === 0) {
         return;
     }
+
     pData.automodState ??= {};
     pData.automodState[checkType] ??= { lastActionThreshold: 0, lastActionTimestamp: 0, lastActionedFlagCount: 0 };
     const checkState = pData.automodState[checkType];
-    let bestRuleToApply = null;
-    for (const rule of rulesForCheck) {
-        if (currentFlags >= rule.flagThreshold) {
-            if (rule.flagThreshold > checkState.lastActionThreshold ||
-                (rule.flagThreshold === checkState.lastActionThreshold && currentFlags > checkState.lastActionedFlagCount)) {
-                if (!bestRuleToApply || rule.flagThreshold > bestRuleToApply.flagThreshold) {
-                    bestRuleToApply = rule;
-                }
+
+    // Find the highest-tier rule the player currently qualifies for.
+    const applicableRule = rulesForCheck.find(rule => currentFlags >= rule.flagThreshold);
+
+    // If no rule is applicable, or if the highest applicable rule is the same one we last actioned
+    // and the flag count hasn't increased, there's nothing to do.
+    if (!applicableRule || (applicableRule.flagThreshold === checkState.lastActionThreshold && currentFlags <= checkState.lastActionedFlagCount)) {
+        playerUtils?.debugLog(`[AutoModManager] No new action needed for ${player?.nameTag} for ${checkType}. Current flags: ${currentFlags}, Last action threshold: ${checkState.lastActionThreshold}.`, player?.nameTag, dependencies);
+        return;
+    }
+
+    // If the applicable rule's threshold is lower than the last actioned one, it means flags were reset.
+    // We should allow this new (lower) action to proceed.
+    if (applicableRule.flagThreshold < checkState.lastActionThreshold) {
+        playerUtils?.debugLog(`[AutoModManager] Player ${player?.nameTag} qualifies for a lower-tier rule (${applicableRule.flagThreshold}) for ${checkType} after a likely flag reset. Last action was at ${checkState.lastActionThreshold}. Proceeding.`, player?.nameTag, dependencies);
+    }
+
+    playerUtils?.debugLog(`[AutoModManager] ${player?.nameTag} (flags: ${currentFlags} for ${checkType}) meets threshold ${applicableRule.flagThreshold}. Intended action: ${applicableRule.actionType}`, player?.nameTag, dependencies);
+    if (applicableRule.parameters) {
+        playerUtils?.debugLog(`[AutoModManager] Action parameters: ${JSON.stringify(applicableRule.parameters)}`, player?.nameTag, dependencies);
+    }
+
+    const finalParameters = { ...(applicableRule.parameters || {}), flagThresholdInternal: applicableRule.flagThreshold };
+    const actionSuccess = await _executeAutomodAction(player, pData, applicableRule.actionType, finalParameters, checkType, dependencies);
+
+    if (actionSuccess) {
+        checkState.lastActionThreshold = applicableRule.flagThreshold;
+        checkState.lastActionedFlagCount = currentFlags;
+        checkState.lastActionTimestamp = Date.now();
+        pData.isDirtyForSave = true;
+
+        if (applicableRule.resetFlagsAfterAction) {
+            playerUtils?.debugLog(`[AutoModManager] Resetting flags for ${checkType} on ${player?.nameTag} as per rule (Threshold: ${applicableRule.flagThreshold}, Action: ${applicableRule.actionType}).`, player?.nameTag, dependencies);
+            if (flagData) {
+                pData.flags.totalFlags = Math.max(0, (pData.flags.totalFlags || 0) - flagData.count);
+                flagData.count = 0;
+                // After a reset, clear the automod state for this check to allow fresh escalation
+                pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0, lastActionedFlagCount: 0 };
             }
+            pData.isDirtyForSave = true;
         }
     }
-    if (bestRuleToApply) {
-        if (bestRuleToApply.flagThreshold === checkState.lastActionThreshold && currentFlags === checkState.lastActionedFlagCount) {
-            playerUtils?.debugLog(`[AutoModManager] Rule for threshold ${bestRuleToApply.flagThreshold} for ${checkType} on ${player?.nameTag} was already the last actioned at this exact flag count (${currentFlags}). Skipping.`, player?.nameTag, dependencies);
-            return;
-        }
-        playerUtils?.debugLog(`[AutoModManager] ${player?.nameTag} (flags: ${currentFlags} for ${checkType}) meets threshold ${bestRuleToApply.flagThreshold}. Intended action: ${bestRuleToApply.actionType}`, player?.nameTag, dependencies);
-        if (bestRuleToApply.parameters) {
-            playerUtils?.debugLog(`[AutoModManager] Action parameters: ${JSON.stringify(bestRuleToApply.parameters)}`, player?.nameTag, dependencies);
-        }
-        const finalParameters = { ...(bestRuleToApply.parameters || {}), flagThresholdInternal: bestRuleToApply.flagThreshold };
-        const actionSuccess = await _executeAutomodAction(player, pData, bestRuleToApply.actionType, finalParameters, checkType, dependencies);
-        if (actionSuccess) {
-            checkState.lastActionThreshold = bestRuleToApply.flagThreshold;
-            checkState.lastActionedFlagCount = currentFlags;
-            checkState.lastActionTimestamp = Date.now();
-            if (pData) {
-                pData.isDirtyForSave = true;
-            }
-            if (bestRuleToApply.resetFlagsAfterAction) {
-                playerUtils?.debugLog(`[AutoModManager] Resetting flags for ${checkType} on ${player?.nameTag} as per rule (Threshold: ${bestRuleToApply.flagThreshold}, Action: ${bestRuleToApply.actionType}).`, player?.nameTag, dependencies);
-                if (pData?.flags?.[checkType]) {
-                    if (typeof pData.flags.totalFlags === 'number' && typeof pData.flags[checkType].count === 'number') {
-                        pData.flags.totalFlags = Math.max(0, pData.flags.totalFlags - pData.flags[checkType].count);
-                    }
-                    pData.flags[checkType].count = 0;
-                    pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0, lastActionedFlagCount: 0 };
-                }
-                if (pData) {
-                    pData.isDirtyForSave = true;
-                }
-            }
-        }
-    }
+
+    // Handle global flag reset due to inactivity
     if (ruleSet.resetFlagsAfterSeconds && ruleSet.resetFlagsAfterSeconds > 0) {
-        const lastFlagTime = pData?.flags?.[checkType]?.lastDetectionTime || 0;
+        const lastFlagTime = flagData?.lastDetectionTime || 0;
         const now = Date.now();
         if (lastFlagTime > 0 && (now - lastFlagTime) > (ruleSet.resetFlagsAfterSeconds * 1000)) {
-            if (checkState.lastActionTimestamp <= lastFlagTime || checkState.lastActionThreshold === 0) {
+            // Only reset if no action has been taken since the last flag, or if the flag count is now zero.
+            if (checkState.lastActionTimestamp <= lastFlagTime || flagData.count === 0) {
                 playerUtils?.debugLog(`[AutoModManager] Globally resetting flags for ${checkType} on ${player?.nameTag} due to inactivity (resetAfterSeconds: ${ruleSet.resetFlagsAfterSeconds}).`, player?.nameTag, dependencies);
-                if (pData?.flags?.[checkType]) {
-                    if (typeof pData.flags.totalFlags === 'number' && typeof pData.flags[checkType].count === 'number') {
-                        pData.flags.totalFlags = Math.max(0, pData.flags.totalFlags - pData.flags[checkType].count);
-                    }
-                    pData.flags[checkType].count = 0;
+                if (flagData) {
+                    pData.flags.totalFlags = Math.max(0, (pData.flags.totalFlags || 0) - flagData.count);
+                    flagData.count = 0;
                 }
+                // Reset automod state as well
                 pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0, lastActionedFlagCount: 0 };
-                if (pData) {
-                    pData.isDirtyForSave = true;
-                }
+                pData.isDirtyForSave = true;
             }
         }
     }
