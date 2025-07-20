@@ -21,7 +21,7 @@ const LOCAL_ELLIPSIS_LENGTH_MSG_RATE = 3;
  */
 export async function checkMessageRate(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!config?.enableFastMessageSpamCheck) {
         return;

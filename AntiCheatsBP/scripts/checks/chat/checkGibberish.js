@@ -22,7 +22,7 @@ const DEBUG_LOG_GIBBERISH_SNIPPET_LENGTH = 20;
 export async function checkGibberish(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const rawMessageContent = eventData.message;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     const enableCheck = config?.enableGibberishCheck ?? false;
     if (!enableCheck) {

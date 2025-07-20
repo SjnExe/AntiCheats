@@ -22,7 +22,7 @@ const DEBUG_LOG_SIMP_IMP_SNIPPET_LENGTH = 50;
 export async function checkSimpleImpersonation(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;
     const rawMessageContent = eventData.message;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     const enableCheck = config?.enableSimpleImpersonationCheck ?? false;
     if (!enableCheck) {

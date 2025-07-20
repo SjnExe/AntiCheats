@@ -23,7 +23,7 @@ const DEBUG_LOG_SNIPPET_LENGTH_MENTIONS = 20;
 export async function checkExcessiveMentions(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const rawMessageContent = eventData.message;
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerName = player?.name ?? 'UnknownPlayer';
 
     const enableCheck = config?.enableExcessiveMentionsCheck ?? false;
     if (!enableCheck) {
