@@ -22,14 +22,15 @@ function isWhitelisted(text, message, config, playerUtils, playerName, watchedPl
                 continue;
             }
             try {
-                // This part remains dynamic as it's for simple string includes too
                 if (new RegExp(wlPattern, 'i').test(text)) {
                     playerUtils?.debugLog(`[AntiAdv] Text '${text}' for ${playerName} whitelisted by regex: '${wlPattern}'.`, watchedPlayerName, dependencies);
                     return true;
                 }
             } catch (eRegexWl) {
-                if (message.toLowerCase().includes(wlPattern.toLowerCase())) {
-                    playerUtils?.debugLog(`[AntiAdv] Text in message for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
+                // Fallback to simple string inclusion if the pattern is not a valid regex.
+                // It should check against the 'text' (the detected link/pattern), not the whole message.
+                if (text.toLowerCase().includes(wlPattern.toLowerCase())) {
+                    playerUtils?.debugLog(`[AntiAdv] Text '${text}' for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
                     return true;
                 }
             }
