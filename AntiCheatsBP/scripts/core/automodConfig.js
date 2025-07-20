@@ -25,7 +25,7 @@ export const automodConfig = {
             ],
         },
         {
-            checkType: 'movementSpeedGround',
+            checkType: 'movementSpeed',
             enabled: false,
             description: 'Actions for excessive ground speed.',
             tiers: [
