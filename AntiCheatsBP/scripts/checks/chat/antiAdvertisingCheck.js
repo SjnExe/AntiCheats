@@ -22,6 +22,7 @@ function isWhitelisted(text, message, config, playerUtils, playerName, watchedPl
                 continue;
             }
             try {
+                // This part remains dynamic as it's for simple string includes too
                 if (new RegExp(wlPattern, 'i').test(text)) {
                     playerUtils?.debugLog(`[AntiAdv] Text '${text}' for ${playerName} whitelisted by regex: '${wlPattern}'.`, watchedPlayerName, dependencies);
                     return true;
@@ -37,6 +38,30 @@ function isWhitelisted(text, message, config, playerUtils, playerName, watchedPl
     return false;
 }
 
+
+let compiledAdvancedLinkRegexList = [];
+let lastLoadedAdvancedLinkRegexList = null;
+
+function getCompiledAdvancedLinkRegex(config, playerUtils, watchedPlayerName, dependencies) {
+    const currentRegexListJson = JSON.stringify(config.advancedLinkRegexList);
+    if (currentRegexListJson !== lastLoadedAdvancedLinkRegexList) {
+        playerUtils?.debugLog(`[AntiAdv] Compiling new advanced link regex patterns.`, watchedPlayerName, dependencies);
+        compiledAdvancedLinkRegexList = (config.advancedLinkRegexList ?? []).map(pattern => {
+            if (typeof pattern !== 'string' || pattern.trim() === '') return null;
+            try {
+                return new RegExp(pattern, 'i');
+            } catch (e) {
+                console.error(`[AntiAdvertisingCheck CRITICAL] Invalid regex pattern in config.advancedLinkRegexList: '${pattern}'. Error: ${e.stack || e.message}`);
+                playerUtils?.debugLog(`[AntiAdvertisingCheck CRITICAL] Error compiling regex '${pattern}': ${e.message}`, watchedPlayerName, dependencies);
+                return null;
+            }
+        }).filter(Boolean);
+        lastLoadedAdvancedLinkRegexList = currentRegexListJson;
+    }
+    return compiledAdvancedLinkRegexList;
+}
+
+
 export async function checkAntiAdvertising(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
@@ -50,26 +75,23 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
 
     const watchedPlayerName = pData?.isWatched ? playerName : null;
 
-    if (config?.enableAdvancedLinkDetection && Array.isArray(config.advancedLinkRegexList) && config.advancedLinkRegexList.length > 0) {
-        for (const regexString of config.advancedLinkRegexList) {
-            if (typeof regexString !== 'string' || regexString.trim() === '') {
-                continue;
-            }
-            try {
-                const regex = new RegExp(regexString, 'i');
+    if (config?.enableAdvancedLinkDetection) {
+        const compiledRegexList = getCompiledAdvancedLinkRegex(config, playerUtils, watchedPlayerName, dependencies);
+        if (compiledRegexList.length > 0) {
+            for (const regex of compiledRegexList) {
                 const match = regex.exec(message);
                 if (match) {
                     const detectedLink = match[0];
                     if (isWhitelisted(detectedLink, message, config, playerUtils, playerName, watchedPlayerName, dependencies)) {
-                        playerUtils?.debugLog(`[AntiAdvertisingCheck] Whitelisted link '${detectedLink}' for ${playerName}. Continuing scan with other regex patterns.`, watchedPlayerName, dependencies);
+                        playerUtils?.debugLog(`[AntiAdvertisingCheck] Whitelisted link '${detectedLink}' for ${playerName}. Continuing scan.`, watchedPlayerName, dependencies);
                         continue;
                     }
 
-                    playerUtils?.debugLog(`[AntiAdv] ${playerName} triggered ADV regex '${regexString}' with link: '${detectedLink}'. Msg: '${message}'`, watchedPlayerName, dependencies);
+                    playerUtils?.debugLog(`[AntiAdv] ${playerName} triggered ADV regex '${regex.source}' with link: '${detectedLink}'. Msg: '${message}'`, watchedPlayerName, dependencies);
                     const violationDetails = {
                         detectedLink,
                         method: 'advancedRegex',
-                        patternUsed: regexString,
+                        patternUsed: regex.source,
                         originalMessage: message,
                     };
                     await actionManager?.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
@@ -79,9 +101,6 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                     }
                     return;
                 }
-            } catch (eRegexMain) {
-                console.error(`[AntiAdvertisingCheck CRITICAL] Invalid regex pattern in config.advancedLinkRegexList: '${regexString}'. Error: ${eRegexMain.stack || eRegexMain.message}`);
-                playerUtils?.debugLog(`[AntiAdvertisingCheck CRITICAL] Error with regex '${regexString}' for ${playerName}: ${eRegexMain.message}`, watchedPlayerName, dependencies);
             }
         }
     }
