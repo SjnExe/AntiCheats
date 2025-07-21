@@ -488,18 +488,20 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     transient.isInsideWater = player.isInWater;
 
     if (!onGround) {
-        transient.ticksInAir++;
-        transient.ticksSinceLastOnGround++;
+        pData.consecutiveOffGroundTicks = (pData.consecutiveOffGroundTicks || 0) + 1;
+        transient.ticksSinceLastOnGround++; // This can remain transient if not used elsewhere critically
         if (transient.isFalling) {
-            transient.fallDistance -= velocity.y;
+            pData.fallDistance = (pData.fallDistance || 0) - velocity.y;
         }
     } else {
-        transient.ticksInAir = 0;
+        pData.consecutiveOffGroundTicks = 0;
         transient.ticksSinceLastOnGround = 0;
-        transient.fallDistance = 0;
+        pData.fallDistance = 0;
+        pData.lastOnGroundPosition = { ...player.location };
+        pData.lastDimensionId = player.dimension.id; // Store dimension with ground position
 
         const blockBelow = player.dimension.getBlock(player.location.offset(0, -1, 0));
-        if (blockBelow && blockBelow.typeId === 'minecraft:slime') {
+        if (blockBelow?.typeId === 'minecraft:slime') {
             pData.lastOnSlimeBlockTick = currentTick;
         }
     }
