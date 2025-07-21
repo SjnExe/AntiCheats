@@ -523,8 +523,6 @@ function handleEntityDieForDeathEffects(eventData, dependencies) {
     const entityName = deadEntity.name ?? deadEntity.typeId ?? 'UnknownEntity';
 
     if (deadEntity instanceof mc.Player) {
-        handlePlayerDeath(eventData, dependencies);
-
         playerUtils?.debugLog(`[EvtHdlr.DeathFx] Player ${entityName} died. Processing effects.`, entityName, dependencies);
         try {
             const location = deadEntity.location;

@@ -23,6 +23,7 @@ import {
     handleEntitySpawnEventAntiGrief,
     handlePistonActivateAntiGrief,
     handleBeforeChatSend,
+    handlePlayerDeath,
 } from './core/eventHandlers.js';
 import { initializeLogCache, addLog, persistLogCacheToDisk } from './core/logManager.js';
 import {
@@ -115,7 +116,8 @@ function subscribeToEvents(dependencies) {
         entityDie: handleEntityDieForDeathEffects,
         entitySpawn: handleEntitySpawnEventAntiGrief,
         pistonActivate: handlePistonActivateAntiGrief,
-        inventorySlotChanged: handleInventoryItemChange,
+        inventoryItemChanged: handleInventoryItemChange,
+        playerDeath: handlePlayerDeath,
     };
 
     for (const eventName in beforeEventSubscriptions) {
@@ -405,7 +407,7 @@ function attemptInitializeSystem(retryCount = 0) {
         dependencyManager.validateDependencies(`attemptInitializeSystem - pre-check - attempt ${retryCount}`);
         performInitializations();
     } catch (e) {
-        const delay = initialRetryDelayTicks * Math.pow(2, retryCount);
+        const delay = 100; // 5 seconds (20 ticks/sec)
         const isFinalAttempt = retryCount >= maxInitRetries;
         const errorMessage = `[Main] Initialization failed on attempt ${retryCount + 1}. ${isFinalAttempt ? 'FINAL ATTEMPT FAILED.' : `Retrying in ${delay / 20}s.`} Error: ${e.message}`;
 
