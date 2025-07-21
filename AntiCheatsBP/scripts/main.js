@@ -443,7 +443,7 @@ function attemptInitializeSystem(retryCount = 0) {
     }
 }
 
-world.afterEvents.worldInitialize.subscribe((eventData) => {
+system.afterEvents.worldInitialize.subscribe((eventData) => {
     try {
         attemptInitializeSystem();
     } catch (e) {
