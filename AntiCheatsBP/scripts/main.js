@@ -443,10 +443,20 @@ function attemptInitializeSystem(retryCount = 0) {
     }
 }
 
-world.afterEvents.worldInitialize.subscribe((eventData) => {
+let isInitialized = false;
+
+/**
+ * Main entry point for initializing the AntiCheat system.
+ * This function is designed to be called once.
+ */
+export function initializeAntiCheat() {
+    if (isInitialized) {
+        return;
+    }
     try {
         attemptInitializeSystem();
+        isInitialized = true;
     } catch (e) {
-        console.error(`[AntiCheat] CRITICAL: Unhandled error during worldInitialize subscription: ${e?.message}\n${e?.stack}`);
+        console.error(`[AntiCheat] CRITICAL: Unhandled error during initialization: ${e?.message}\n${e?.stack}`);
     }
-});
+}
