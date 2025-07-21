@@ -1,5 +1,6 @@
 import { world } from '@minecraft/server';
 import * as mc from '@minecraft/server';
+import { initializeAntiCheat } from '../main.js';
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked, formatSessionDuration } from '../utils/index.js';
 const defaultCombatLogThresholdSeconds = 15;
 const deathCoordsMessageDelayTicks = 5;
@@ -146,6 +147,9 @@ profileEventHandler('handlePlayerLeaveBeforeEvent', handlePlayerLeaveBeforeEvent
  * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
  */
 async function handlePlayerSpawn(eventData, dependencies) {
+    // Attempt to initialize the system on the first player spawn.
+    initializeAntiCheat();
+
     const { player, initialSpawn } = eventData;
     const { playerDataManager, playerUtils, config, logManager, checks, rankManager, system } = dependencies;
     const playerName = player?.name ?? 'UnknownPlayer';

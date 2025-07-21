@@ -15,7 +15,7 @@ const defaultConfigSettings = {
     /** @type {string} The tag for identifying admin players. */
     adminTag: 'admin',
     /** @type {string} The exact name of the server owner. Required for owner-level commands/features. Case-sensitive. */
-    ownerPlayerName: 'PlayerNameHere',
+    ownerPlayerName: 'SjnTechMlmYT',
     /** @type {boolean} If true, enables detailed debug logging to the console for development and troubleshooting. */
     enableDebugLogging: true,
     /** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
