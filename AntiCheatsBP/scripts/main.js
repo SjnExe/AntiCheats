@@ -407,7 +407,7 @@ function attemptInitializeSystem(retryCount = 0) {
         dependencyManager.validateDependencies(`attemptInitializeSystem - pre-check - attempt ${retryCount}`);
         performInitializations();
     } catch (e) {
-        const delay = 100; // 5 seconds (20 ticks/sec)
+        const delay = initialRetryDelayTicks;
         const isFinalAttempt = retryCount >= maxInitRetries;
         const errorMessage = `[Main] Initialization failed on attempt ${retryCount + 1}. ${isFinalAttempt ? 'FINAL ATTEMPT FAILED.' : `Retrying in ${delay / 20}s.`} Error: ${e.message}`;
 
