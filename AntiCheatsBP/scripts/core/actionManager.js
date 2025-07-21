@@ -116,6 +116,11 @@ function _handleAdminNotifications(player, profile, checkType, violationDetails,
     const { playerUtils, playerDataManager } = dependencies;
     const notifyMsg = formatActionMessage(profile.notifyAdmins.message, player.nameTag, checkType, violationDetails);
     const pData = playerDataManager?.getPlayerData(player.id);
+
+    // Re-validate player right before sending notification to be safe
+    if (!player.isValid()) {
+        return;
+    }
     playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
 }
 
