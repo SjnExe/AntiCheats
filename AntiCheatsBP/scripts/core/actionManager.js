@@ -104,8 +104,14 @@ function _handleLogging(player, profile, flagReasonMessage, checkType, violation
 }
 
 function _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies) {
-    if (!profile.notifyAdmins?.message) return;
-    if (!player?.isValid()) return;
+    // Exit early if there's no player or the profile doesn't have a notification message.
+    if (!player || !profile.notifyAdmins?.message) {
+        return;
+    }
+    // Also exit if the player object is no longer valid.
+    if (!player.isValid()) {
+        return;
+    }
 
     const { playerUtils, playerDataManager } = dependencies;
     const notifyMsg = formatActionMessage(profile.notifyAdmins.message, player.nameTag, checkType, violationDetails);
