@@ -23,6 +23,7 @@ import {
     handleEntitySpawnEventAntiGrief,
     handlePistonActivateAntiGrief,
     handleBeforeChatSend,
+    handlePlayerDeath,
 } from './core/eventHandlers.js';
 import { initializeLogCache, addLog, persistLogCacheToDisk } from './core/logManager.js';
 import {
