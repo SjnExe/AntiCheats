@@ -541,6 +541,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
                     await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
                 } else {
                     player.sendMessage('§cError: Invalid number entered. Please try again.');
+                    updateSuccess = false; // Explicitly set to false on failure
                     // Re-show the same edit form instead of going back to the list.
                     // The current context already contains keyName, keyType, parentPanelForEdit, etc.
                     // We need to ensure 'currentValue' in context reflects the *original* value for placeholder, not the bad input.

@@ -89,7 +89,9 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
     }
 
     let lockingActionKey = null;
-    if (pData.isUsingConsumable) {
+    if (pData.isUsingConsumable && pData.isChargingBow) {
+        lockingActionKey = 'usingConsumable and chargingBow';
+    } else if (pData.isUsingConsumable) {
         lockingActionKey = 'usingConsumable';
     } else if (pData.isChargingBow) {
         lockingActionKey = 'chargingBow';

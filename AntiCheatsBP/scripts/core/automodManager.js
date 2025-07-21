@@ -240,13 +240,12 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
                     }
                 }
                 baseMessageContext.itemQuantity = removedItemCount;
-                const removalMessage = formatAutomodMessage(messageTemplate, baseMessageContext);
                 if (removedItemCount > 0) {
+                    const removalMessage = formatAutomodMessage(messageTemplate, baseMessageContext);
                     playerUtils?.warnPlayer(player, removalMessage, dependencies);
                     logDetails = `Removed ${removedItemCount}x ${itemTypeIdToRemove} from ${player?.nameTag} (Check: ${checkType}). Message: '${removalMessage}'`;
                 } else {
-                    playerUtils?.warnPlayer(player, removalMessage, dependencies);
-                    logDetails = `No items of type ${itemTypeIdToRemove} found to remove from ${player?.nameTag} (Check: ${checkType}). Player notified with: '${removalMessage}'`;
+                    logDetails = `No items of type ${itemTypeIdToRemove} found to remove from ${player?.nameTag} (Check: ${checkType}).`;
                 }
                 actionProcessed = true;
             } catch (e) {

@@ -220,9 +220,6 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
     } else if (fullSettings.shape) {
         playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Unknown shape '${fullSettings.shape}' provided.`, 'System', dependencies);
         return false;
-    } else {
-        playerUtils.debugLog('[WorldBorderManager] saveBorderSettings: Shape is required.', 'System', dependencies);
-        return false;
     }
     const resizeFields = ['isResizing', 'originalSize', 'targetSize', 'resizeStartTimeMs', 'resizeDurationMs'];
     const hasSomeResizeFields = resizeFields.some(field => fullSettings[field] !== undefined);

@@ -217,7 +217,8 @@ async function mainTick() {
  */
 async function processTick() {
     const dependencies = dependencyManager.getAll();
-    dependencyManager.updateCurrentTick(dependencies.currentTick + 1);
+    dependencies.currentTick++; // Manually increment the tick in the dependencies
+    dependencyManager.updateCurrentTick(dependencies.currentTick); // Update the manager
 
     if (dependencies.config.enableWorldBorderSystem) {
         try {
