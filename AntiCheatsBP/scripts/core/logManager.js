@@ -16,6 +16,16 @@ let logsInMemory = [];
 let logsAreDirty = false;
 
 /**
+ * Converts a string to camelCase.
+ * @param {string} str The string to convert.
+ * @returns {string} The camelCased string.
+ */
+function toCamelCase(str) {
+    if (!str) return '';
+    return str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+}
+
+/**
  * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function initializeLogCache(dependencies) {

@@ -386,11 +386,11 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
     const effects = player.getEffects();
     const haste = effects?.find(e => e.typeId === 'haste');
     if (haste) {
-        breakTimeSeconds /= (1 + hasteEffectMultiplierBase * (haste.amplifier + 1));
+        breakTimeSeconds *= 1 - (hasteEffectMultiplierBase * (haste.amplifier + 1));
     }
     const fatigue = effects?.find(e => e.typeId === 'mining_fatigue');
     if (fatigue) {
-        breakTimeSeconds /= Math.pow(miningFatigueEffectPowerBase, fatigue.amplifier + 1);
+        breakTimeSeconds *= Math.pow(1 / miningFatigueEffectPowerBase, fatigue.amplifier + 1);
     }
 
     if (!player.isOnGround) {

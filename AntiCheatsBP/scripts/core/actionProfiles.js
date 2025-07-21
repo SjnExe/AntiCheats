@@ -994,7 +994,6 @@ export const checkActionProfiles = {
     },
     worldAntiGriefPistonLag: {
         enabled: true,
-        flag: null,
         notifyAdmins: {
             message: '[AntiGrief] Rapid §bpiston activity§r detected at §a{x},{y},{z}§r in §a{dimensionId}§r. Rate: §a{rate}/sec§r over §a{duration}s§r. (Potential Lag)',
         },

@@ -108,8 +108,7 @@ function _handleAdminNotifications(player, profile, checkType, violationDetails,
     if (!player?.isValid()) return;
 
     const { playerUtils, playerDataManager } = dependencies;
-    const playerNameForLog = player.name;
-    const notifyMsg = formatActionMessage(profile.notifyAdmins.message, playerNameForLog, checkType, violationDetails);
+    const notifyMsg = formatActionMessage(profile.notifyAdmins.message, player.nameTag, checkType, violationDetails);
     const pData = playerDataManager?.getPlayerData(player.id);
     playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
 }

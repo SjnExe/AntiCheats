@@ -59,8 +59,6 @@ export async function checkFly(player, pData, dependencies) {
         pData.isDirtyForSave = true;
         playerUtils?.debugLog(`[FlyCheck] ${playerName} is gliding. Standard fly checks bypassed.`, watchedPlayerName, dependencies);
         return;
-    } else {
-        pData.lastUsedElytraTick = -Infinity;
     }
     if (player.isFlying) {
         playerUtils?.debugLog(`[FlyCheck] ${playerName} is legitimately flying (isFlying=true). Standard fly checks bypassed.`, watchedPlayerName, dependencies);

@@ -670,17 +670,22 @@ export async function addFlag(player, flagType, reason, dependencies, violationD
         return;
     }
 
-    pData.flags[flagType] = (pData.flags[flagType] || 0) + amount;
+    if (!pData.flags[flagType]) {
+        pData.flags[flagType] = { count: 0, lastDetectionTime: 0 };
+    }
+
+    pData.flags[flagType].count += amount;
+    pData.flags[flagType].lastDetectionTime = Date.now();
     pData.flags.totalFlags = (pData.flags.totalFlags || 0) + amount;
     pData.lastFlagType = flagType;
     pData.isDirtyForSave = true;
 
     const logMessage = amount > 1
-        ? `[PlayerDataManager] Added ${amount} flags of type '${flagType}' to ${player.nameTag}. New total for type: ${pData.flags[flagType]}. Grand total: ${pData.flags.totalFlags}.`
-        : `[PlayerDataManager] Added flag '${flagType}' to ${player.nameTag}. New total for type: ${pData.flags[flagType]}. Grand total: ${pData.flags.totalFlags}.`;
+        ? `[PlayerDataManager] Added ${amount} flags of type '${flagType}' to ${player.nameTag}. New total for type: ${pData.flags[flagType].count}. Grand total: ${pData.flags.totalFlags}.`
+        : `[PlayerDataManager] Added flag '${flagType}' to ${player.nameTag}. New total for type: ${pData.flags[flagType].count}. Grand total: ${pData.flags.totalFlags}.`;
 
     playerUtils.debugLog(logMessage, pData.isWatched ? player.nameTag : null, dependencies);
 
     // Trigger AutoMod check once after adding all flags.
-    await automodManager.checkAndExecute(player, pData, flagType, reason, dependencies, violationDetails);
+    await automodManager.processAutoModActions(player, pData, flagType, dependencies);
 }

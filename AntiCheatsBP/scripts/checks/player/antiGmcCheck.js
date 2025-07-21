@@ -30,7 +30,7 @@ import * as mc from '@minecraft/server';
 export async function checkAntiGmc(player, pData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;
     const playerName = player?.name ?? 'UnknownPlayer';
-    const watchedPlayerName = pData?.isWatched ? playerName : null; // Define here
+    const watchedPlayerName = pData?.isWatched ? playerName : null;
 
     if (!config?.enableAntiGmcCheck) {
         return;
