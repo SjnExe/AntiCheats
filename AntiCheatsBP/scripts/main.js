@@ -443,4 +443,10 @@ function attemptInitializeSystem(retryCount = 0) {
     }
 }
 
-system.runTimeout(() => attemptInitializeSystem(), initialRetryDelayTicks);
+world.afterEvents.worldInitialize.subscribe((eventData) => {
+    try {
+        attemptInitializeSystem();
+    } catch (e) {
+        console.error(`[AntiCheat] CRITICAL: Unhandled error during worldInitialize subscription: ${e?.message}\n${e?.stack}`);
+    }
+});
