@@ -449,7 +449,7 @@ let isInitialized = false;
  * Main entry point for initializing the AntiCheat system.
  * This function is designed to be called once.
  */
-export function initializeAntiCheat() {
+function initializeAntiCheat() {
     if (isInitialized) {
         return;
     }
@@ -460,3 +460,5 @@ export function initializeAntiCheat() {
         console.error(`[AntiCheat] CRITICAL: Unhandled error during initialization: ${e?.message}\n${e?.stack}`);
     }
 }
+
+initializeAntiCheat();
