@@ -324,13 +324,8 @@ export const checkActionProfiles = {
     },
     combatLog: {
         enabled: true,
-        flag: {
-            increment: 0,
-            reason: 'Player disconnected {timeSinceLastCombat}s after combat. Flags: +{incrementAmount}',
-            type: 'combatLog',
-        },
         notifyAdmins: {
-            message: '§e{playerName}§c disconnected §a{timeSinceLastCombat}s§c after combat. Flags: §a+{incrementAmount}§c. Details: {detailsString}',
+            message: '§e{playerName}§c disconnected §a{timeSinceLastCombat}s§c after combat. Details: {detailsString}',
         },
         log: {
             actionType: 'detectedCombatLog',
