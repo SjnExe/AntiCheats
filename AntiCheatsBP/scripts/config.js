@@ -414,24 +414,26 @@ export function updateConfigValue(key, value) {
         } else if (expectedType === 'string') {
             coercedValue = String(value);
         } else if (Array.isArray(currentDefault[finalKey])) {
+            // If the input is a string, assume it's JSON. Otherwise, it must already be an array.
             if (typeof value === 'string') {
-                coercedValue = JSON.parse(value); // Expect stringified JSON for arrays
+                coercedValue = JSON.parse(value);
             }
             if (!Array.isArray(coercedValue)) {
-                throw new Error('expected an array or its JSON string representation');
+                throw new Error(`expected an array or its JSON string representation, but got type ${typeof value}`);
             }
-        } else if (typeof expectedType === 'object' && expectedType !== null) {
+        } else if (typeof currentDefault[finalKey] === 'object' && currentDefault[finalKey] !== null) {
+            // If the input is a string, assume it's JSON. Otherwise, it must already be an object.
             if (typeof value === 'string') {
-                coercedValue = JSON.parse(value); // Expect stringified JSON for objects
+                coercedValue = JSON.parse(value);
             }
-            if (typeof coercedValue !== 'object' || Array.isArray(coercedValue)) {
-                throw new Error('expected an object or its JSON string representation');
+            if (typeof coercedValue !== 'object' || coercedValue === null || Array.isArray(coercedValue)) {
+                throw new Error(`expected an object or its JSON string representation, but got type ${typeof value}`);
             }
         }
     } catch (e) {
         return {
             success: false,
-            message: `Type coercion failed for key "${key}": ${e.message}`,
+            message: `Type coercion failed for key "${key}": ${e.message}. Received value of type ${typeof value}.`,
             oldValue,
         };
     }
