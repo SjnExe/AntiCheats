@@ -194,9 +194,8 @@ export function updatePlayerNametag(player, dependencies) {
 
         if (longestPrefix.length > 0) {
             const potentialBase = currentNameTag.substring(longestPrefix.length);
-            if (potentialBase.length > 0) {
-                baseName = potentialBase;
-            }
+            // If stripping the prefix leaves a non-empty string, use it. Otherwise, fall back to the player's actual name.
+            baseName = potentialBase.length > 0 ? potentialBase : player.name;
         } else {
             // If no known prefix matches, but the nametag is different, assume the entire nametag is the intended base name.
             // This handles custom names set by other plugins or commands.
