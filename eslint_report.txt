@@ -1,5 +1,0 @@
-
-/app/AntiCheatsBP/scripts/main.js
-  50:7  error  Parsing error: Identifier 'DependencyManager' has already been declared
-
-✖ 1 problem (1 error, 0 warnings)
