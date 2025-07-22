@@ -96,7 +96,7 @@ const tpaManager = { clearExpiredRequests, getRequestsInWarmup, checkPlayerMovem
 const chatProcessor = { processChatMessage };
 
 
-class DependencyManager {
+export class DependencyManager {
     constructor() {
         this._dependencies = {};
         this.profilingData = {
@@ -106,11 +106,13 @@ class DependencyManager {
         };
         this.MAX_PROFILING_HISTORY = 100;
         this.currentTick = 0;
-
-        this._assembleDependencies();
     }
 
-    _assembleDependencies() {
+    /**
+     * Builds the dependency container.
+     * @returns {object} The fully constructed dependency container.
+     */
+    build() {
         try {
             this._dependencies = {
                 get config() { return configModule.editableConfigValues; },
@@ -140,10 +142,20 @@ class DependencyManager {
                 profilingData: this.profilingData,
                 MAX_PROFILING_HISTORY: this.MAX_PROFILING_HISTORY,
             };
+            return this._dependencies;
         } catch (error) {
             console.error(`[${mainModuleName}._assembleDependencies CRITICAL] Error during assembly: ${error.stack || error}`);
             throw error;
         }
+    }
+
+    /**
+     * Sets a dependency, allowing for overrides and mocking.
+     * @param {string} name - The name of the dependency to set.
+     * @param {*} value - The dependency to inject.
+     */
+    set(name, value) {
+        this._dependencies[name] = value;
     }
 
     validateDependencies(callContext) {
@@ -220,28 +232,15 @@ class DependencyManager {
     }
 
     refreshDependencies() {
-        this._assembleDependencies();
+        this.build();
         this.validateDependencies('refreshDependencies');
         this.get('playerUtils').debugLog('Dependencies refreshed.', 'System', this.getAll());
     }
 
     updateCurrentTick(tick) {
         this.currentTick = tick;
-        this._dependencies.currentTick = tick;
+        if (this._dependencies) {
+            this._dependencies.currentTick = tick;
+        }
     }
 }
-
-let instance = null;
-
-function getInstance() {
-    if (!instance) {
-        instance = new DependencyManager();
-    }
-    return instance;
-}
-
-/**
- * The singleton instance of the DependencyManager.
- * @type {DependencyManager}
- */
-export const dependencyManager = getInstance();

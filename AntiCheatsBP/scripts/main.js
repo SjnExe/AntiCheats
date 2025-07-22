@@ -45,7 +45,8 @@ import {
     validateRanksConfig,
 } from './core/configValidator.js';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './core/ranksConfig.js';
-import { dependencyManager } from './core/dependencyManager.js';
+import { DependencyManager } from './core/dependencyManager.js';
+const dependencyManager = new DependencyManager();
 
 const maxInitRetries = 3;
 const initialRetryDelayTicks = 20;
@@ -59,8 +60,8 @@ let lastProcessedTick = -1;
  * Initializes the AntiCheat system.
  */
 function performInitializations() {
+    const dependencies = dependencyManager.build();
     dependencyManager.validateDependencies('performInitializations - startup');
-    const dependencies = dependencyManager.getAll();
 
     dependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', dependencies);
 
