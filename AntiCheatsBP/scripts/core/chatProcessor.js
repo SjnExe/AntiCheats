@@ -73,12 +73,12 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 }
             }
         }
-        if (pData.isChargingBow || pData.isUsingConsumable) {
+        if (!eventData.cancel && (pData.isChargingBow || pData.isUsingConsumable)) {
             const stateCleared = pData.isChargingBow ? 'isChargingBow' : 'isUsingConsumable';
             pData.isChargingBow = false;
             pData.isUsingConsumable = false;
             pData.isDirtyForSave = true;
-            playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cleared ${stateCleared} for ${playerName} due to chat attempt.`, playerName, dependencies);
+            playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cleared ${stateCleared} for ${playerName} because a successful chat attempt interrupts the action.`, playerName, dependencies);
         }
         const chatCheckFunctions = [
             { fn: checks?.checkSwear, enabled: config?.chatChecks?.swear?.enabled, name: 'swearCheck' },
