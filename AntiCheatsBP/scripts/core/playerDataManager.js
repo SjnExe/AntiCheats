@@ -403,13 +403,13 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
  * @returns {Promise<import('../types.js').PlayerAntiCheatData|null>} The loaded data, or null if invalid.
  * @private
  */
-function _loadPlayerDataFromDynamicProperties(player, dependencies) {
+async function _loadPlayerDataFromDynamicProperties(player, dependencies) {
     const { logManager, config } = dependencies;
     try {
         const serializedData = player.getDynamicProperty(config.playerDataDynamicPropertyKey);
 
         if (typeof serializedData !== 'string') {
-            return Promise.resolve(null);
+            return null;
         }
 
         const pData = JSON.parse(serializedData);
@@ -425,11 +425,11 @@ function _loadPlayerDataFromDynamicProperties(player, dependencies) {
                     meta: { loadedId: pData?.playerId, expectedId: player.id },
                 },
             }, dependencies);
-            return Promise.resolve(null);
+            return null;
         }
 
         pData.transient = {};
-        return Promise.resolve(pData);
+        return pData;
 
     } catch (error) {
         if (error instanceof SyntaxError) {
@@ -456,7 +456,7 @@ function _loadPlayerDataFromDynamicProperties(player, dependencies) {
             }, dependencies);
         }
         console.error(`[PlayerDataManager] Error loading data for ${player.nameTag}: ${error.stack}`);
-        return Promise.resolve(null);
+        return null;
     }
 }
 
