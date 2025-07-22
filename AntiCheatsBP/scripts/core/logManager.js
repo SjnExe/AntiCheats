@@ -85,7 +85,7 @@ export function addLog(logEntry, dependencies) {
 
     // Enforce camelCase for actionType as per guidelines
     const originalActionType = logEntry.actionType;
-    const standardizedActionType = originalActionType;
+    const standardizedActionType = toCamelCase(originalActionType);
 
     if (standardizedActionType !== originalActionType) {
         playerUtils?.debugLog(`[LogManager.addLog] Standardized actionType from '${originalActionType}' to '${standardizedActionType}'.`, null, dependencies);
