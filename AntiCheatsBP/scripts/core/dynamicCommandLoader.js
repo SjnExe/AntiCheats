@@ -3,7 +3,6 @@
  * @module AntiCheatsBP/scripts/core/dynamicCommandLoader
  */
 
-import { commandAliases } from '../config.js';
 import { commandDefinitionMap, commandExecutionMap, commandFilePaths } from './commandManager.js';
 
 /**

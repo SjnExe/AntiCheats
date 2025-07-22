@@ -205,7 +205,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         errors.push(`${context}: Expected an object, but got ${typeof config}.`);
         return errors;
     }
-    const actionProfileNames = Object.keys(actionProfiles || {});
     const configFieldDefs = [
         { name: 'adminTag', type: 'string' },
         { name: 'ownerPlayerName', type: 'string' },
