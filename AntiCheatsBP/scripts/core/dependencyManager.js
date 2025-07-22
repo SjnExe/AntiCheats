@@ -159,6 +159,7 @@ class DependencyManager {
             'configValidator.validateMainConfig': 'function',
             'chatProcessor.processChatMessage': 'function',
             'checks': 'object',
+            'tpaManager.clearExpiredRequests': 'function',
         };
 
         if (!deps) {

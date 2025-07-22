@@ -120,7 +120,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             break;
         }
         case 'tempBan': {
-            const durationStringTempBan = parameters?.duration || globalConfig.automodDefaultMuteDuration || '5m';
+            const durationStringTempBan = parameters?.duration || '5m';
             let parsedDurationMsTempBan = playerUtils?.parseDuration(durationStringTempBan);
             if (parsedDurationMsTempBan === null || (parsedDurationMsTempBan <= 0 && parsedDurationMsTempBan !== Infinity)) {
                 playerUtils?.debugLog(`[AutoModManager] Invalid duration string '${durationStringTempBan}' for tempBan on ${player?.nameTag}. Defaulting to 5m.`, player?.nameTag, dependencies);
@@ -179,7 +179,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             break;
         }
         case 'mute': {
-            const durationStringMute = parameters?.duration || globalConfig.automodDefaultMuteDuration || '10m';
+            const durationStringMute = parameters?.duration || '10m';
             let parsedDurationMsMute = playerUtils?.parseDuration(durationStringMute);
             if (parsedDurationMsMute === null || (parsedDurationMsMute <= 0 && parsedDurationMsMute !== Infinity)) {
                 playerUtils?.debugLog(`[AutoModManager] Invalid duration string '${durationStringMute}' for mute on ${player?.nameTag}. Defaulting to 10m.`, player?.nameTag, dependencies);

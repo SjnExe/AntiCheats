@@ -109,7 +109,7 @@ export const automodConfig = {
             description: 'Actions for accessing the Nether roof.',
             tiers: [
                 { flagThreshold: 1, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, detected on the Nether roof (Flags: {flagCount}/{flagThreshold}). This area is restricted.' }, resetFlagsAfterAction: false },
-                { flagThreshold: 2, actionType: 'teleportSafe', parameters: { coordinates: { y: 120 }, messageTemplate: 'AutoMod [{actionType}|{checkType}]: Teleporting {playerName} from the Nether roof to {teleportCoordinates} (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
+                { flagThreshold: 2, actionType: 'teleportSafe', parameters: { coordinates: { y: 120 }, messageTemplate: 'AutoMod [{actionType}|{checkType}]: Teleporting {playerName} from the Nether roof to {teleportCoordinates} (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
                 { flagThreshold: 3, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeatedly accessing the Nether roof (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
                 { flagThreshold: 5, actionType: 'tempBan', parameters: { duration: '1h', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for persistent Nether roof violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
             ],

@@ -211,33 +211,58 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'ownerPlayerName', type: 'string' },
         { name: 'enableDebugLogging', type: 'boolean' },
         { name: 'prefix', type: 'string' },
-        { name: 'vanishedPlayerTag', type: 'string' },
-        { name: 'frozenPlayerTag', type: 'string' },
-        { name: 'enableWelcomerMessage', type: 'boolean' },
-        { name: 'welcomeMessage', type: 'string' },
-        { name: 'notifyAdminOnNewPlayerJoin', type: 'boolean' },
-        { name: 'enableDeathCoordsMessage', type: 'boolean' },
-        { name: 'deathCoordsMessage', type: 'string' },
-        { name: 'enableCombatLogDetection', type: 'boolean' },
-        { name: 'combatLogThresholdSeconds', type: 'positiveNumber' },
-        { name: 'combatLogFlagIncrement', type: 'nonNegativeNumber' },
-        { name: 'combatLogMessage', type: 'string' },
-        { name: 'enableTpaSystem', type: 'boolean' },
-        { name: 'tpaRequestTimeoutSeconds', type: 'positiveNumber' },
-        { name: 'tpaRequestCooldownSeconds', type: 'positiveNumber' },
-        { name: 'tpaTeleportWarmupSeconds', type: 'positiveNumber' },
-        { name: 'tpaCancelOnMoveDuringWarmup', type: 'boolean' },
-        { name: 'tpaMovementTolerance', type: 'nonNegativeNumber' },
-        { name: 'discordLink', type: 'string' },
-        { name: 'websiteLink', type: 'string' },
         {
-            name: 'helpLinks', type: 'array', arrayElementType: 'object', objectProperties: [
-                { name: 'title', type: 'string' },
-                { name: 'url', type: 'string' },
+            name: 'development', type: 'object', objectProperties: [
+                { name: 'enablePerformanceProfiling', type: 'boolean' },
+                { name: 'logPerformanceProfileIntervalTicks', type: 'positiveNumber' },
+                { name: 'checkStaggerTicks', type: 'positiveNumber' },
             ],
         },
-        { name: 'generalHelpMessages', type: 'array', arrayElementType: 'string' },
-        { name: 'enableDetailedJoinLeaveLogging', type: 'boolean' },
+        {
+            name: 'playerTags', type: 'object', objectProperties: [
+                { name: 'vanished', type: 'string' },
+                { name: 'frozen', type: 'string' },
+            ],
+        },
+        {
+            name: 'playerInfo', type: 'object', objectProperties: [
+                { name: 'enableWelcomer', type: 'boolean' },
+                { name: 'welcomeMessage', type: 'string' },
+                { name: 'notifyAdminOnNewPlayer', type: 'boolean' },
+                { name: 'enableDeathCoords', type: 'boolean' },
+                { name: 'deathCoordsMessage', type: 'string' },
+            ],
+        },
+        {
+            name: 'combatLog', type: 'object', objectProperties: [
+                { name: 'enabled', type: 'boolean' },
+                { name: 'thresholdSeconds', type: 'positiveNumber' },
+            ],
+        },
+        {
+            name: 'tpa', type: 'object', objectProperties: [
+                { name: 'enabled', type: 'boolean' },
+                { name: 'requestTimeoutSeconds', type: 'positiveNumber' },
+                { name: 'requestCooldownSeconds', type: 'positiveNumber' },
+                { name: 'teleportWarmupSeconds', type: 'nonNegativeNumber' },
+                { name: 'cancelOnMove', type: 'boolean' },
+                { name: 'movementTolerance', type: 'nonNegativeNumber' },
+            ],
+        },
+        {
+            name: 'serverInfo', type: 'object', objectProperties: [
+                { name: 'discordLink', type: 'string' },
+                { name: 'websiteLink', type: 'string' },
+                {
+                    name: 'helpLinks', type: 'array', arrayElementType: 'object', objectProperties: [
+                        { name: 'title', type: 'string' },
+                        { name: 'url', type: 'string' },
+                    ],
+                },
+                { name: 'generalHelpMessages', type: 'array', arrayElementType: 'string' },
+                { name: 'rules', type: 'string' },
+            ],
+        },
         {
             name: 'chatChecks', type: 'object', objectProperties: [
                 {
@@ -287,60 +312,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     ],
                 },
             ],
-        },
-        {
-            name: 'maxWordsSpamActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            },
-        },
-        {
-            name: 'chatContentRepeatActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            },
-        },
-        {
-            name: 'unicodeAbuseActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            },
-        },
-        {
-            name: 'gibberishActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            },
-        },
-        {
-            name: 'mentionsActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            },
-        },
-        {
-            name: 'impersonationActionProfileName', type: 'string',
-            validator: (val, path, errs) => {
-                if (!actionProfileNames.includes(val)) {
-                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-                }
-                return actionProfileNames.includes(val);
-            },
         },
         {
             name: 'antiGrief', type: 'object', objectProperties: [
@@ -393,27 +364,26 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     const eventDef = soundEventsObj[eventName];
                     const soundFieldDefs = [
                         { name: 'enabled', type: 'boolean' },
-                        { name: 'soundId', type: 'string', optional: true },
-                        { name: 'volume', type: 'number', optional: true },
-                        { name: 'pitch', type: 'number', optional: true },
+                        { name: 'soundId', type: 'string' },
+                        { name: 'volume', type: 'number' },
+                        { name: 'pitch', type: 'number' },
                         {
-                            name: 'target', type: 'string', optional: true,
+                            name: 'target', type: 'string',
                             validator: (val, p, e) => {
                                 const validTargets = ['player', 'admin', 'targetPlayer', 'global'];
-                                if (val && !validTargets.includes(val)) {
+                                if (!validTargets.includes(val)) {
                                     e.push(`${p}: Invalid sound event target "${val}". Expected one of ${validTargets.join(', ')}.`);
                                     return false;
                                 }
                                 return true;
                             },
                         },
-                        { name: 'description', type: 'string' },
                     ];
                     if (!ensureFields(eventDef, soundFieldDefs, eventPath, seErrs)) {
                         overallSoundEventsValid = false;
                     }
-                    if (eventDef.volume !== undefined && isNumber(eventDef.volume) && (eventDef.volume < 0 || eventDef.volume > 1.0)) {
-                        seErrs.push(`${eventPath}.volume: Must be between 0.0 and 1.0. Got ${eventDef.volume}.`);
+                    if (eventDef.volume !== undefined && isNumber(eventDef.volume) && (eventDef.volume < 0.0)) {
+                        seErrs.push(`${eventPath}.volume: Must be non-negative. Got ${eventDef.volume}.`);
                         overallSoundEventsValid = false;
                     }
                 }
@@ -425,31 +395,27 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
             validator: (cmdSettingsObj, csPath, csErrs) => {
                 let overallIsValid = true;
                 for (const cmdName of Object.keys(cmdSettingsObj)) {
-                    let currentCmdLocalValid = true;
                     if (!knownCommands.includes(cmdName)) {
                         csErrs.push(`${csPath}.${cmdName}: Unknown command "${cmdName}" listed in commandSettings.`);
-                        currentCmdLocalValid = false;
+                        overallIsValid = false;
+                        continue;
                     }
                     const cmdDef = cmdSettingsObj[cmdName];
                     const cmdFieldDefs = [{ name: 'enabled', type: 'boolean' }];
-                    const errorCountBeforeEnsureFields = csErrs.length;
-                    ensureFields(cmdDef, cmdFieldDefs, `${csPath}.${cmdName}`, csErrs);
-                    if (csErrs.length > errorCountBeforeEnsureFields) {
-                        currentCmdLocalValid = false;
-                    }
-                    if (!currentCmdLocalValid) {
+                    if (!ensureFields(cmdDef, cmdFieldDefs, `${csPath}.${cmdName}`, csErrs)) {
                         overallIsValid = false;
                     }
                 }
                 return overallIsValid;
             },
         },
-        { name: 'chatClearLinesCount', type: 'positiveNumber' },
-        { name: 'reportsViewPerPage', type: 'positiveNumber' },
-        { name: 'enableAutoMod', type: 'boolean' },
-        { name: 'manualMuteDefaultDuration', type: 'durationString' },
-        { name: 'serverRules', type: 'string' },
-        { name: 'enableReachCheck', type: 'boolean' },
+        {
+            name: 'automod', type: 'object', objectProperties: [
+                { name: 'enabled', type: 'boolean' },
+                { name: 'defaultMuteDuration', type: 'durationString' },
+            ],
+        },
+        { name: 'checks', type: 'object' }, // Further validation could be added for each check
     ];
     ensureFields(config, configFieldDefs, context, errors);
     const knownKeys = configFieldDefs.map(f => f.name);

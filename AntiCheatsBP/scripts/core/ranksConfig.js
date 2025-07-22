@@ -61,6 +61,7 @@ export const rankDefinitions = [
     {
         id: 'owner', // lowercase, as handled by RankManager
         name: 'Owner',
+        priority: 0, // The lowest number, checked first.
         permissionLevel: 0, // Highest permission
         chatFormatting: {
             prefixText: '§8[§cOwner§8] ',
@@ -75,6 +76,7 @@ export const rankDefinitions = [
     {
         id: 'admin', // lowercase
         name: 'Admin',
+        priority: 10,
         permissionLevel: 1,
         chatFormatting: {
             prefixText: '§8[§bAdmin§8] ',
@@ -90,6 +92,7 @@ export const rankDefinitions = [
     {
         id: 'member', // lowercase, Default/Fallback rank
         name: 'Member',
+        priority: 1000, // The highest number, checked last.
         permissionLevel: defaultPermissionLevel,
         chatFormatting: defaultChatFormatting, // Uses the exported default object
         nametagPrefix: defaultNametagPrefix,   // Uses the exported default object
