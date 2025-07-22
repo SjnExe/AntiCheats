@@ -47,7 +47,7 @@ import {
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './core/ranksConfig.js';
 import { DependencyManager } from './core/dependencyManager.js';
 
-const DependencyManager = new DependencyManager();
+const dependencyManager = new DependencyManager();
 const maxInitRetries = 3;
 const initialRetryDelayTicks = 20;
 const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
