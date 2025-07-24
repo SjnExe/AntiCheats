@@ -9,8 +9,8 @@
  */
 
 // Constants for magic numbers
-const LOCAL_ELLIPSIS_LENGTH = 3;
-const DEBUG_LOG_GIBBERISH_SNIPPET_LENGTH = 20;
+const localEllipsisLength = 3;
+const debugLogGibberishSnippetLength = 20;
 
 /**
  * Checks a message for gibberish patterns.
@@ -90,7 +90,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
     if (flagReasons.length > 0) {
         const messageSnippetLimit = 50; // This is a local const, might be better at top or from config if shared
         const violationDetails = {
-            messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH) }...` : rawMessageContent,
+            messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - localEllipsisLength) }...` : rawMessageContent,
             vowelRatio: actualVowelRatio.toFixed(2),
             alphaRatio: actualAlphaRatio.toFixed(2),
             maxConsecutiveConsonantsFound: overallMaxConsecutiveConsonants.toString(),
@@ -107,6 +107,6 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
         }
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[GibberishCheck] Flagged ${playerName} for ${flagReasons.join('; ')}. Msg: '${rawMessageContent.substring(0, DEBUG_LOG_GIBBERISH_SNIPPET_LENGTH)}...'`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[GibberishCheck] Flagged ${playerName} for ${flagReasons.join('; ')}. Msg: '${rawMessageContent.substring(0, debugLogGibberishSnippetLength)}...'`, watchedPlayerName, dependencies);
     }
 }

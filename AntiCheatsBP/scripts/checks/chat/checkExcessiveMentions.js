@@ -9,9 +9,9 @@
  */
 
 // Constants for magic numbers
-const DISTINCT_USERS_SAMPLE_LIMIT = 5;
-const ELLIPSIS_LENGTH = 3;
-const DEBUG_LOG_SNIPPET_LENGTH_MENTIONS = 20;
+const distinctUsersSampleLimit = 5;
+const ellipsisLength = 3;
+const debugLogSnippetLengthMentions = 20;
 
 /**
  * Checks a message for excessive user mentions.
@@ -96,12 +96,12 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     if (flagReasonTexts.length > 0) {
         const messageSnippetLimit = 75;
         const violationDetails = {
-            messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - ELLIPSIS_LENGTH) }...` : rawMessageContent,
+            messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - ellipsisLength) }...` : rawMessageContent,
             totalMentionsFound: allMentions.length.toString(),
             uniqueMentionsCount: distinctMentionCount.toString(),
             maxRepeatedMentionCount: maxRepeatCount.toString(),
             mostRepeatedUser,
-            distinctUsersSample: Array.from(distinctMentionedUsers).slice(0, DISTINCT_USERS_SAMPLE_LIMIT).join(', '),
+            distinctUsersSample: Array.from(distinctMentionedUsers).slice(0, distinctUsersSampleLimit).join(', '),
             triggerReasons: flagReasonTexts.join('; '),
             originalMessage: rawMessageContent,
         };
@@ -115,6 +115,6 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         }
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[ExcessiveMentionsCheck] Flagged ${playerName} for ${flagReasonTexts.join('; ')}. Msg: '${rawMessageContent.substring(0, DEBUG_LOG_SNIPPET_LENGTH_MENTIONS)}...'`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[ExcessiveMentionsCheck] Flagged ${playerName} for ${flagReasonTexts.join('; ')}. Msg: '${rawMessageContent.substring(0, debugLogSnippetLengthMentions)}...'`, watchedPlayerName, dependencies);
     }
 }

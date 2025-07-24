@@ -9,8 +9,8 @@
  */
 
 // Constants for magic numbers
-const LOCAL_ELLIPSIS_LENGTH_SIMP_IMP = 3;
-const DEBUG_LOG_SIMP_IMP_SNIPPET_LENGTH = 50;
+const localEllipsisLengthSimpImp = 3;
+const debugLogSimpImpSnippetLength = 50;
 
 /**
  * Checks a message for simple impersonation patterns.
@@ -71,7 +71,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
             if (regex.test(rawMessageContent)) {
                 const messageSnippetLimit = 75; // This is a local const, might be better at top or from config if shared
                 const violationDetails = {
-                    messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_SIMP_IMP) }...` : rawMessageContent,
+                    messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - localEllipsisLengthSimpImp) }...` : rawMessageContent,
                     matchedPattern: patternString,
                     playerPermissionLevel: typeof playerPermission === 'number' ? playerPermission.toString() : 'Unknown',
                     exemptPermissionLevelRequired: exemptPermissionLevel.toString(),
@@ -80,7 +80,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
 
                 // Await the action to ensure it completes before we potentially cancel the message and exit.
                 await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-                playerUtils?.debugLog(`[SimpleImpersonationCheck] Flagged ${playerName} for impersonation attempt. Pattern: '${patternString}'. Msg: '${rawMessageContent.substring(0, DEBUG_LOG_SIMP_IMP_SNIPPET_LENGTH)}...'`, watchedPlayerName, dependencies);
+                playerUtils?.debugLog(`[SimpleImpersonationCheck] Flagged ${playerName} for impersonation attempt. Pattern: '${patternString}'. Msg: '${rawMessageContent.substring(0, debugLogSimpImpSnippetLength)}...'`, watchedPlayerName, dependencies);
 
                 const profile = dependencies.checkActionProfiles?.[actionProfileKey];
                 if (profile?.cancelMessage) {

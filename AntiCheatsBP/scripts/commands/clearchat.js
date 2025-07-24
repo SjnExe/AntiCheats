@@ -3,8 +3,8 @@
  */
 
 // Default configuration values
-const DEFAULT_CHAT_CLEAR_LINES_COUNT = 150;
-const CLEAR_CHAT_FAILURE_THRESHOLD_MESSAGES = 5;
+const defaultChatClearLinesCount = 150;
+const clearChatFailureThresholdMessages = 5;
 
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
@@ -28,7 +28,7 @@ export function execute(player, _args, dependencies) {
     const { playerUtils, logManager, getString, config, mc } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
-    const linesToClear = config?.chatClearLinesCount ?? DEFAULT_CHAT_CLEAR_LINES_COUNT;
+    const linesToClear = config?.chatClearLinesCount ?? defaultChatClearLinesCount;
     let allMessagesSent = true;
     let messagesAttempted = 0;
 
@@ -44,7 +44,7 @@ export function execute(player, _args, dependencies) {
             mc.world.sendMessage(' ');
         } catch (error) {
             console.warn(`[ClearChatCommand.execute WARNING] Error sending empty message line ${i + 1} for ${adminName}: ${error.stack || error}`);
-            if (i > CLEAR_CHAT_FAILURE_THRESHOLD_MESSAGES) {
+            if (i > clearChatFailureThresholdMessages) {
                 player?.sendMessage(getString('command.clearchat.failPartial'));
                 allMessagesSent = false;
                 break;

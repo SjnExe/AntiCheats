@@ -104,7 +104,7 @@ export class DependencyManager {
             playerChecks: {},
             eventHandlers: {},
         };
-        this.MAX_PROFILING_HISTORY = 100;
+        this.maxProfilingHistory = 100;
         this.currentTick = 0;
     }
 
@@ -140,7 +140,7 @@ export class DependencyManager {
                 chatProcessor,
                 editableConfig: configModule,
                 profilingData: this.profilingData,
-                MAX_PROFILING_HISTORY: this.MAX_PROFILING_HISTORY,
+                maxProfilingHistory: this.maxProfilingHistory,
             };
             return this._dependencies;
         } catch (error) {

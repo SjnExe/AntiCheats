@@ -3,7 +3,7 @@
  * @module AntiCheatsBP/scripts/core/actionManager
  * This module is responsible for interpreting check results and applying configured consequences.
  */
-const DECIMAL_PLACES_FOR_VIOLATION_DETAILS = 3;
+const decimalPlacesForViolationDetails = 3;
 /**
  * @param {import('../types.js').ViolationDetails | undefined} violationDetails - An object containing details of the violation.
  * @returns {string} A comma-separated string of key-value pairs, or 'N/A'.
@@ -15,7 +15,7 @@ function formatViolationDetails(violationDetails) {
     return Object.entries(violationDetails)
         .map(([key, value]) => {
             if (typeof value === 'number' && !Number.isInteger(value)) {
-                return `${key}: ${value.toFixed(DECIMAL_PLACES_FOR_VIOLATION_DETAILS)}`;
+                return `${key}: ${value.toFixed(decimalPlacesForViolationDetails)}`;
             }
             return `${key}: ${String(value)}`;
         })
@@ -46,7 +46,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
         const value = replacements[key];
         if (value !== undefined) {
             if (typeof value === 'number' && !Number.isInteger(value)) {
-                return value.toFixed(DECIMAL_PLACES_FOR_VIOLATION_DETAILS);
+                return value.toFixed(decimalPlacesForViolationDetails);
             }
             return String(value);
         }

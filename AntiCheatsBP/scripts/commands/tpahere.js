@@ -3,7 +3,7 @@
  */
 
 // Default configuration values
-const DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS = 60;
+const defaultTpaRequestTimeoutSeconds = 60;
 
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
@@ -78,7 +78,7 @@ export function execute(player, args, dependencies) {
         }
     } else if (addResult && typeof addResult === 'object' && 'requestId' in addResult) {
         const request = /** @type {import('../types.js').TpaRequest} */ (addResult);
-        const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS;
+        const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? defaultTpaRequestTimeoutSeconds;
         player.sendMessage(getString('command.tpahere.requestSent', { playerName: targetPlayer.nameTag, timeoutSeconds: timeoutSeconds.toString(), prefix }));
 
         const actionBarMessage = getString('tpa.notify.actionBar.requestYouToThem', { requestingPlayerName: requesterName, prefix });

@@ -14,7 +14,7 @@ import * as mc from '@minecraft/server';
  */
 
 // Constants for magic numbers
-const DEFAULT_SPRINT_HUNGER_LIMIT = 6;
+const defaultSprintHungerLimit = 6;
 
 /**
  * Checks if a player is sprinting under invalid conditions.
@@ -50,7 +50,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             const foodComp = player.getComponent(mc.EntityComponentTypes.Food);
             if (foodComp) {
                 currentFoodLevel = foodComp.foodLevel.toString();
-                if (foodComp.foodLevel <= (config?.sprintHungerLimit ?? DEFAULT_SPRINT_HUNGER_LIMIT)) {
+                if (foodComp.foodLevel <= (config?.sprintHungerLimit ?? defaultSprintHungerLimit)) {
                     isHungerTooLow = true;
                 }
             }
@@ -69,7 +69,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             conditionDetailsLog = 'Player is riding an entity';
         } else if (isHungerTooLow) {
             resolvedConditionString = `Low Hunger (Food: ${currentFoodLevel})`;
-            conditionDetailsLog = `Hunger level at ${currentFoodLevel} (Limit: <= ${config?.sprintHungerLimit ?? DEFAULT_SPRINT_HUNGER_LIMIT})`;
+            conditionDetailsLog = `Hunger level at ${currentFoodLevel} (Limit: <= ${config?.sprintHungerLimit ?? defaultSprintHungerLimit})`;
         } else if (pData.isUsingConsumable) {
             resolvedConditionString = 'Using Item (Consumable)';
             conditionDetailsLog = 'Player is using a consumable';

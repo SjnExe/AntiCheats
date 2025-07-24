@@ -4,7 +4,7 @@
  */
 
 /** @type {string} */
-const logPropertyKey = 'anticheat:action_logs_v1'; // Using _v1 suffix for potential future format changes.
+const logPropertyKey = 'anticheat:actionLogsV1'; // Using _v1 suffix for potential future format changes.
 
 /** @type {number} */
 const maxLogEntriesCount = 200; // Guideline: Keep this reasonable to avoid large dynamic property sizes.

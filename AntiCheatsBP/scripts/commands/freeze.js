@@ -5,9 +5,9 @@
 import * as mc from '@minecraft/server';
 
 // Default configuration values
-const DEFAULT_FREEZE_EFFECT_DURATION = 2000000; // Very long duration for effects
-const DEFAULT_FREEZE_SLOWNESS_AMPLIFIER = 255;
-const DEFAULT_FREEZE_WEAKNESS_AMPLIFIER = 255;
+const defaultFreezeEffectDuration = 2000000; // Very long duration for effects
+const defaultFreezeSlownessAmplifier = 255;
+const defaultFreezeWeaknessAmplifier = 255;
 
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
@@ -44,9 +44,9 @@ export function execute(
     const prefix = config?.prefix ?? '!';
 
     const frozenTagName = config?.frozenPlayerTag ?? 'frozen';
-    const effectDuration = DEFAULT_FREEZE_EFFECT_DURATION;
-    const slownessAmplifier = config?.freezeSlownessAmplifier ?? DEFAULT_FREEZE_SLOWNESS_AMPLIFIER;
-    const weaknessAmplifier = config?.freezeWeaknessAmplifier ?? DEFAULT_FREEZE_WEAKNESS_AMPLIFIER;
+    const effectDuration = defaultFreezeEffectDuration;
+    const slownessAmplifier = config?.freezeSlownessAmplifier ?? defaultFreezeSlownessAmplifier;
+    const weaknessAmplifier = config?.freezeWeaknessAmplifier ?? defaultFreezeWeaknessAmplifier;
     const showParticles = config?.freezeShowParticles ?? false;
     const usageMsg = `§cUsage: ${prefix}freeze <playername> [on|off|toggle|status]`;
 
