@@ -1603,7 +1603,7 @@ const uiActionFunctions = {
             } else {
                 const [duration, reason] = response.formValues;
                 if (!reason || reason.trim() === '') {
-            player.sendMessage(getString('common.error.reasonEmpty')); await uiActionFunctions.showBanFormForPlayer(player, dependencies, context); return;
+                    player.sendMessage(getString('common.error.reasonEmpty')); await uiActionFunctions.showBanFormForPlayer(player, dependencies, context); return;
                 }
                 const banCommand = commandExecutionMap?.get('ban');
                 if (banCommand) {
