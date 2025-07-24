@@ -50,9 +50,9 @@ import { DependencyManager } from './core/dependencyManager.js';
 const dependencyManager = new DependencyManager();
 const maxInitRetries = 3;
 const initialRetryDelayTicks = 20;
-const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
-const STALE_PURGE_CLEANUP_INTERVAL_TICKS = 72000; // Once per hour
-const TPA_SYSTEM_TICK_INTERVAL = 20;
+const periodicDataPersistenceIntervalTicks = 600;
+const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
+const tpaSystemTickInterval = 20;
 
 let lastProcessedTick = -1;
 
@@ -89,7 +89,7 @@ function performInitializations() {
             }
         });
     }, 1);
-    system.runInterval(() => tpaTick(), TPA_SYSTEM_TICK_INTERVAL);
+    system.runInterval(() => tpaTick(), tpaSystemTickInterval);
 }
 /**
  * Subscribes to all necessary server events.
@@ -240,12 +240,12 @@ async function processTick() {
         }
     }
 
-    if (dependencies.currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
+    if (dependencies.currentTick % periodicDataPersistenceIntervalTicks === 0) {
         const onlinePlayers = world.getAllPlayers();
         await handlePeriodicDataPersistence(onlinePlayers, dependencies);
     }
 
-    if (dependencies.currentTick % STALE_PURGE_CLEANUP_INTERVAL_TICKS === 0) {
+    if (dependencies.currentTick % stalePurgeCleanupIntervalTicks === 0) {
         await cleanupStaleScheduledFlagPurges(dependencies);
     }
 }

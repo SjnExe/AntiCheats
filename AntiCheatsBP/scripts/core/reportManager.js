@@ -4,7 +4,7 @@
  */
 
 /** @type {string} */
-const reportsPropertyKey = 'anticheat:reports_v1';
+const reportsPropertyKey = 'anticheat:reportsV1';
 
 // Constants for ID generation
 const alphanumericRadix = 36;

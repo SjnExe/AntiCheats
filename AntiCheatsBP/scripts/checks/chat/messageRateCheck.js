@@ -9,8 +9,8 @@
  */
 
 // Constants for magic numbers
-const DEFAULT_FAST_MESSAGE_SPAM_THRESHOLD_MS = 500;
-const LOCAL_ELLIPSIS_LENGTH_MSG_RATE = 3;
+const defaultFastMessageSpamThresholdMs = 500;
+const localEllipsisLengthMsgRate = 3;
 
 /**
  * Checks if a player is sending messages too frequently.
@@ -34,7 +34,7 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
 
     const watchedPlayerName = pData.isWatched ? playerName : null;
     const initialTime = Date.now(); // Timestamp of when this message event began processing
-    const threshold = config?.fastMessageSpamThresholdMs ?? DEFAULT_FAST_MESSAGE_SPAM_THRESHOLD_MS;
+    const threshold = config?.fastMessageSpamThresholdMs ?? defaultFastMessageSpamThresholdMs;
 
     const actionProfileKey = config?.fastMessageSpamActionProfileName ?? 'chatSpamFastMessage';
 
@@ -52,7 +52,7 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
             const violationDetails = {
                 timeSinceLastMsgMs: timeSinceLastMsgMs.toString(),
                 thresholdMs: threshold.toString(),
-                messageContent: eventData.message.length > messageSnippetLimit ? `${eventData.message.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_MSG_RATE) }...` : eventData.message,
+                messageContent: eventData.message.length > messageSnippetLimit ? `${eventData.message.substring(0, messageSnippetLimit - localEllipsisLengthMsgRate) }...` : eventData.message,
                 originalMessage: eventData.message,
             };
 

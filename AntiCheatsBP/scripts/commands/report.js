@@ -1,8 +1,8 @@
 // Defines the !report command, allowing players to report others for rule violations.
 import * as reportManager from '../core/reportManager.js';
 
-const MIN_REPORT_REASON_LENGTH = 10;
-const MAX_REPORT_REASON_LENGTH = 256;
+const minReportReasonLength = 10;
+const maxReportReasonLength = 256;
 
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
@@ -36,11 +36,11 @@ export function execute(player, args, dependencies) {
         return;
     }
 
-    if (reason.length < MIN_REPORT_REASON_LENGTH) {
+    if (reason.length < minReportReasonLength) {
         playerUtils.sendMessage(reporterPlayer, getString('command.report.reasonTooShort'));
         return;
     }
-    if (reason.length > MAX_REPORT_REASON_LENGTH) {
+    if (reason.length > maxReportReasonLength) {
         playerUtils.sendMessage(reporterPlayer, getString('command.report.reasonTooLong'));
         return;
     }

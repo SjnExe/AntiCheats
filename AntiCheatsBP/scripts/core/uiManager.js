@@ -12,8 +12,8 @@ const inspectPlayerTextFieldLabel = 'Player Name:';
 const inspectPlayerTextFieldPlaceholder = 'Enter exact player name';
 
 // Constants for string truncation in config UI
-const CONFIG_UI_MAX_STRING_DISPLAY_LENGTH = 30;
-const CONFIG_UI_TRUNCATE_KEEP_LENGTH = 27;
+const configUiMaxStringDisplayLength = 30;
+const configUiTruncateKeepLength = 27;
 
 // --- Player Navigation Stack Management ---
 /**
@@ -99,7 +99,7 @@ function getCurrentTopOfNavStack(playerId) {
  * and returns an array of `PanelItem` objects.
  * @type {{[key: string]: DynamicItemGeneratorFunction}}
  */
-const UI_DYNAMIC_ITEM_GENERATORS = {
+const uiDynamicItemGenerators = {
     /**
  * Generates panel items for each helpful link in the configuration.
  * @param {import('@minecraft/server').Player} player The player viewing the panel.
@@ -388,8 +388,8 @@ async function showConfigCategoriesListImpl(player, dependencies) {
             if (type === 'boolean' || type === 'number' || type === 'string') {
                 isEditable = true;
                 // Truncate long strings for display
-                if (type === 'string' && displayValue.length > CONFIG_UI_MAX_STRING_DISPLAY_LENGTH) {
-                    displayValue = `${displayValue.substring(0, CONFIG_UI_TRUNCATE_KEEP_LENGTH) }...`;
+                if (type === 'string' && displayValue.length > configUiMaxStringDisplayLength) {
+                    displayValue = `${displayValue.substring(0, configUiTruncateKeepLength) }...`;
                 }
             } else if (Array.isArray(value)) {
                 // Check if it's a simple array (all elements are primitives)
@@ -398,8 +398,8 @@ async function showConfigCategoriesListImpl(player, dependencies) {
                     isEditable = true;
                     type = 'arrayString'; // Special type for our form handler
                     displayValue = JSON.stringify(value);
-                    if (displayValue.length > CONFIG_UI_MAX_STRING_DISPLAY_LENGTH) {
-                        displayValue = `${displayValue.substring(0, CONFIG_UI_TRUNCATE_KEEP_LENGTH) }...`;
+                    if (displayValue.length > configUiMaxStringDisplayLength) {
+                        displayValue = `${displayValue.substring(0, configUiTruncateKeepLength) }...`;
                     }
                 } else {
                     type = 'arrayComplex'; // Not editable via simple form
@@ -467,7 +467,7 @@ async function showConfigCategoriesListImpl(player, dependencies) {
                 parentPanelForEdit: callingPanelState ? callingPanelState.panelId : 'configEditingRootPanel',
                 parentContextForEdit: callingPanelState ? callingPanelState.context : {},
             };
-            await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, editFormContext);
+            await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, editFormContext);
         }
     } catch (e) {
         console.error(`[UiManager.showConfigCategoriesListImpl] Error: ${e.stack || e}`);
@@ -518,14 +518,14 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
         default:
             player.sendMessage(`§cError: Unsupported config type "${keyType}" for UI editing of key "${keyName}".`);
             if (parentPanelForEdit) {
-                await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit);
+                await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit);
             }
             return;
     }
     try {
         const response = await modal.show(player);
         if (response.canceled) {
-            await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); return;
+            await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit); return;
         }
         const newValue = response.formValues[0];
         let updateSuccess = false;
@@ -538,7 +538,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
                     updateSuccess = true;
                     player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
                     logManager?.addLog({ adminName: player.name, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
-                    await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
+                    await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
                 } else {
                     player.sendMessage('§cError: Invalid number entered. Please try again.');
                     updateSuccess = false; // Explicitly set to false on failure
@@ -546,7 +546,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
                     // The current context already contains keyName, keyType, parentPanelForEdit, etc.
                     // We need to ensure 'currentValue' in context reflects the *original* value for placeholder, not the bad input.
                     // The 'context' object was passed in and shouldn't have been mutated by the bad input.
-                    await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context);
+                    await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, context);
                     return; // Important to prevent falling through to showConfigCategoriesList
                 }
                 break;
@@ -564,12 +564,12 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
                         updateSuccess = true;
                     } else {
                         player.sendMessage('§cError: Invalid input. Value must be a valid JSON array of strings, numbers, or booleans (e.g., ["a", "b", 123, true]). Please try again.');
-                        await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
+                        await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
                         return;
                     }
                 } catch (parseError) {
                     player.sendMessage(`§cError: Invalid JSON format for array: ${parseError.message}. Please try again.`);
-                    await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
+                    await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
                     return;
                 }
                 break;
@@ -578,7 +578,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
         if (updateSuccess) { // Common success handling for boolean, string, arrayString
             player.sendMessage(`§aSuccess: Config "${keyName}" updated to: ${JSON.stringify(config[keyName])}`);
             logManager?.addLog({ adminName: player.name, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
-            await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
+            await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
         }
         // Note: 'number' type handles its own success message and navigation due to the re-prompt logic on failure.
         // if (updateSuccess) { ... } // This block is now conditional per type
@@ -586,7 +586,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
         console.error(`[UiManager.showEditSingleConfigValueFormImpl] Error: ${e.stack || e}`);
         player.sendMessage(getString('common.error.genericForm'));
         // On error, attempt to return to the list view, as re-showing the edit form might repeat the error.
-        await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit);
+        await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit);
     }
 }
 
@@ -976,7 +976,7 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
 
     // Check for and execute dynamic item generator
     if (panelDefinition.dynamicItemGeneratorKey) {
-        const generatorFunction = UI_DYNAMIC_ITEM_GENERATORS[panelDefinition.dynamicItemGeneratorKey];
+        const generatorFunction = uiDynamicItemGenerators[panelDefinition.dynamicItemGeneratorKey];
         if (generatorFunction && typeof generatorFunction === 'function') {
             try {
                 const dynamicItems = generatorFunction(player, dependencies, effectiveContext);
@@ -1020,7 +1020,7 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
                 }
             }
         } else { // Generator function itself not found
-            console.warn(`[UiManager.showPanel] Dynamic item generator key "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}" not found in UI_DYNAMIC_ITEM_GENERATORS.`);
+            console.warn(`[UiManager.showPanel] Dynamic item generator key "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}" not found in uiDynamicItemGenerators.`);
             logManager?.addLog({
                 actionType: 'warningUiDynamicGeneratorNotFound', // Could be upgraded to error type
                 context: 'uiManager.showPanel',
@@ -1165,7 +1165,7 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
                 pushToPlayerNavStack(player.id, panelId, effectiveContext);
                 await showPanel(player, selectedItemConfig.actionValue, dependencies, nextContext);
             } else if (selectedItemConfig.actionType === 'functionCall') {
-                const funcToCall = UI_ACTION_FUNCTIONS[selectedItemConfig.actionValue];
+                const funcToCall = uiActionFunctions[selectedItemConfig.actionValue];
                 if (funcToCall && typeof funcToCall === 'function') {
                     const functionContext = { ...effectiveContext, ...(selectedItemConfig.initialContext || {}) };
                     await funcToCall(player, dependencies, functionContext);
@@ -1279,7 +1279,7 @@ async function prepareMuteUnmuteLogsViewer(player, dependencies, context) {
 }
 
 
-const UI_ACTION_FUNCTIONS = {
+const uiActionFunctions = {
     /**
  * Displays a modal with the player's stats.
      * @param {import('@minecraft/server').Player} player The player viewing their stats.
@@ -1603,7 +1603,7 @@ const UI_ACTION_FUNCTIONS = {
             } else {
                 const [duration, reason] = response.formValues;
                 if (!reason || reason.trim() === '') {
-                    player.sendMessage(getString('common.error.reasonEmpty')); await UI_ACTION_FUNCTIONS.showBanFormForPlayer(player, dependencies, context); return;
+            player.sendMessage(getString('common.error.reasonEmpty')); await uiActionFunctions.showBanFormForPlayer(player, dependencies, context); return;
                 }
                 const banCommand = commandExecutionMap?.get('ban');
                 if (banCommand) {
@@ -2117,7 +2117,7 @@ async function showInspectPlayerForm(adminPlayer, dependencies, context) {
         const targetPlayerName = response.formValues?.[0]?.trim();
         if (!targetPlayerName) {
             adminPlayer?.sendMessage(getString('common.error.nameEmpty'));
-            await UI_ACTION_FUNCTIONS.showInspectPlayerForm(adminPlayer, dependencies, context);
+            await uiActionFunctions.showInspectPlayerForm(adminPlayer, dependencies, context);
             return;
         }
 

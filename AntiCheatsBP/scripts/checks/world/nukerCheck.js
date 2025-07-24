@@ -5,9 +5,9 @@
  */
 
 // Constants for magic numbers
-const DEFAULT_NUKER_CHECK_INTERVAL_MS = 200;
-const DEFAULT_NUKER_MAX_BREAKS_SHORT_INTERVAL = 4;
-const NUKER_DEBUG_EVENT_SUMMARY_COUNT = 5;
+const defaultNukerCheckIntervalMs = 200;
+const defaultNukerMaxBreaksShortInterval = 4;
+const nukerDebugEventSummaryCount = 5;
 
 /**
  * Checks for Nuker-like behavior by analyzing the rate of block breaking.
@@ -35,7 +35,7 @@ export async function checkNuker(player, pData, dependencies) {
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const now = Date.now();
-    const checkIntervalMs = config.nukerCheckIntervalMs ?? DEFAULT_NUKER_CHECK_INTERVAL_MS;
+    const checkIntervalMs = config.nukerCheckIntervalMs ?? defaultNukerCheckIntervalMs;
 
     const originalEventCount = pData.blockBreakEvents.length;
     pData.blockBreakEvents = pData.blockBreakEvents.filter(timestamp => (now - timestamp) < checkIntervalMs);
@@ -50,12 +50,12 @@ export async function checkNuker(player, pData, dependencies) {
         playerUtils.debugLog(`[NukerCheck] Processing for ${player.nameTag}. Broke ${brokenBlocksInWindow} blocks in last ${checkIntervalMs}ms.`, watchedPrefix, dependencies);
     }
 
-    const maxBreaks = config.nukerMaxBreaksShortInterval ?? DEFAULT_NUKER_MAX_BREAKS_SHORT_INTERVAL;
+    const maxBreaks = config.nukerMaxBreaksShortInterval ?? defaultNukerMaxBreaksShortInterval;
     const actionProfileKey = config.nukerActionProfileName ?? 'worldNuker';
 
     if (brokenBlocksInWindow > maxBreaks) {
         if (pData.isWatched || config.enableDebugLogging) {
-            const eventSummary = pData.blockBreakEvents.slice(-NUKER_DEBUG_EVENT_SUMMARY_COUNT).map(ts => now - ts).join(', ');
+            const eventSummary = pData.blockBreakEvents.slice(-nukerDebugEventSummaryCount).map(ts => now - ts).join(', ');
             playerUtils.debugLog(`[NukerCheck] ${player.nameTag}: Flagging. EventsInWindow: ${brokenBlocksInWindow}, Threshold: ${maxBreaks}, TimeWindow: ${checkIntervalMs}ms. Recent Event Ages (ms from now): [${eventSummary}]`, watchedPrefix, dependencies);
         }
         const violationDetails = {

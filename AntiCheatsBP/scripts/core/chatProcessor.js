@@ -3,9 +3,9 @@
  * @module AntiCheatsBP/scripts/core/chatProcessor
  */
 import * as mc from '@minecraft/server';
-const MAX_MESSAGE_SNIPPET_LENGTH = 50;
-const DEFAULT_CHAT_DURING_COMBAT_COOLDOWN_SECONDS = 4;
-const DEFAULT_MAX_MESSAGE_LENGTH = 256;
+const maxMessageSnippetLength = 50;
+const defaultChatDuringCombatCooldownSeconds = 4;
+const defaultMaxMessageLength = 256;
 /**
  * @param {import('@minecraft/server').Player} player The player who sent the message.
  * @param {import('../types.js').PlayerAntiCheatData} pData The player's data.
@@ -43,13 +43,13 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
         }
         if (config?.enableChatDuringCombatCheck && pData.lastCombatInteractionTime) {
             const timeSinceCombat = (Date.now() - pData.lastCombatInteractionTime) / 1000;
-            if (timeSinceCombat < (config.chatDuringCombatCooldownSeconds ?? DEFAULT_CHAT_DURING_COMBAT_COOLDOWN_SECONDS)) {
+            if (timeSinceCombat < (config.chatDuringCombatCooldownSeconds ?? defaultChatDuringCombatCooldownSeconds)) {
                 const profile = dependencies.checkActionProfiles?.playerChatDuringCombat;
                 if (profile?.enabled) {
                     if (profile.cancelMessage !== false) {
                         eventData.cancel = true;
                     }
-                    playerUtils?.warnPlayer(player, playerUtils.getString(profile.messageKey || 'chat.error.combatCooldown', dependencies, { seconds: config.chatDuringCombatCooldownSeconds ?? DEFAULT_CHAT_DURING_COMBAT_COOLDOWN_SECONDS }));
+                    playerUtils?.warnPlayer(player, playerUtils.getString(profile.messageKey || 'chat.error.combatCooldown', dependencies, { seconds: config.chatDuringCombatCooldownSeconds ?? defaultChatDuringCombatCooldownSeconds }));
                     await actionManager?.executeCheckAction(player, 'playerChatDuringCombat', { timeSinceCombat: timeSinceCombat.toFixed(1) }, dependencies);
                     if (eventData.cancel) {
                         playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cancelling chat for ${playerName} (chat during combat).`, playerName, dependencies);
@@ -108,7 +108,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
         if (!eventData.cancel && config?.enableNewlineCheck) {
             if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
                 playerUtils?.warnPlayer(player, playerUtils.getString('chat.error.newline', dependencies));
-                const messageSnippet = originalMessage.substring(0, MAX_MESSAGE_SNIPPET_LENGTH) + (originalMessage.length > MAX_MESSAGE_SNIPPET_LENGTH ? '...' : '');
+                const messageSnippet = originalMessage.substring(0, maxMessageSnippetLength) + (originalMessage.length > maxMessageSnippetLength ? '...' : '');
                 const shouldCancelForNewline = config.cancelMessageOnNewline !== false;
                 if (shouldCancelForNewline) {
                     eventData.cancel = true;
@@ -123,15 +123,15 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             }
         }
         if (!eventData.cancel && config?.enableMaxMessageLengthCheck) {
-            if (originalMessage.length > (config.maxMessageLength ?? DEFAULT_MAX_MESSAGE_LENGTH)) {
-                playerUtils?.warnPlayer(player, playerUtils.getString('chat.error.maxLength', dependencies, { maxLength: config.maxMessageLength ?? DEFAULT_MAX_MESSAGE_LENGTH }));
-                const messageSnippet = originalMessage.substring(0, MAX_MESSAGE_SNIPPET_LENGTH) + (originalMessage.length > MAX_MESSAGE_SNIPPET_LENGTH ? '...' : '');
+            if (originalMessage.length > (config.maxMessageLength ?? defaultMaxMessageLength)) {
+                playerUtils?.warnPlayer(player, playerUtils.getString('chat.error.maxLength', dependencies, { maxLength: config.maxMessageLength ?? defaultMaxMessageLength }));
+                const messageSnippet = originalMessage.substring(0, maxMessageSnippetLength) + (originalMessage.length > maxMessageSnippetLength ? '...' : '');
                 const shouldCancelForMaxLength = config.cancelOnMaxMessageLength !== false;
                 if (shouldCancelForMaxLength) {
                     eventData.cancel = true;
                 }
                 if (config.flagOnMaxMessageLength) {
-                    await actionManager?.executeCheckAction(player, 'chatMaxLength', { messageLength: originalMessage.length, maxLength: config.maxMessageLength ?? DEFAULT_MAX_MESSAGE_LENGTH, messageSnippet }, dependencies);
+                    await actionManager?.executeCheckAction(player, 'chatMaxLength', { messageLength: originalMessage.length, maxLength: config.maxMessageLength ?? defaultMaxMessageLength, messageSnippet }, dependencies);
                 }
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by MaxMessageLengthCheck.`, playerName, dependencies);
