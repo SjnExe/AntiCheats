@@ -2,7 +2,7 @@
  * @file Manages the storage and retrieval of action logs.
  * @module AntiCheatsBP/scripts/core/logManager
  */
-import { log, logError } from '../utils/playerUtils.js';
+import { logError } from '../utils/playerUtils.js';
 
 /** @type {string} */
 const logPropertyKey = 'anticheat:actionLogsV1'; // Using _v1 suffix for potential future format changes.
