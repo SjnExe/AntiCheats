@@ -25,6 +25,7 @@ import {
     handleBeforeChatSend,
     handlePlayerDeath,
 } from './core/eventHandlers.js';
+import { logError } from './utils/playerUtils.js';
 import { initializeLogCache, addLog, persistLogCacheToDisk } from './core/logManager.js';
 import {
     ensurePlayerDataInitialized,
@@ -74,7 +75,7 @@ function performInitializations() {
 
     system.runInterval(() => {
         mainTick().catch(e => {
-            console.error(`[AntiCheat] Critical unhandled error in mainTick: ${e?.message}\n${e?.stack}`);
+            logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
             try {
                 const depsForError = dependencyManager.getDependenciesUnsafe();
                 if (depsForError) {
@@ -85,7 +86,7 @@ function performInitializations() {
                     }, depsForError);
                 }
             } catch (loggingError) {
-                console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during top-level tick error: ${loggingError.message}`);
+                logError(`CRITICAL: Failed to write to structured log during top-level tick error: ${loggingError.message}`, loggingError);
             }
         });
     }, 1);
@@ -195,8 +196,7 @@ async function mainTick() {
             lastProcessedTick = currentTick;
         }
     } catch (e) {
-        const errorMessage = `[AntiCheat] Unhandled error in main tick processing: ${e?.message}\n${e?.stack}`;
-        console.error(errorMessage);
+        logError(`Unhandled error in main tick processing: ${e?.message}`, e);
 
         try {
             const depsForError = dependencyManager.getDependenciesUnsafe();
@@ -207,10 +207,10 @@ async function mainTick() {
                     details: { errorMessage: e?.message, stack: e?.stack },
                 }, depsForError);
             } else {
-                console.error('[AntiCheat] CRITICAL: Could not get dependencies for structured logging in main tick.');
+                logError('CRITICAL: Could not get dependencies for structured logging in main tick.');
             }
         } catch (loggingError) {
-            console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during main tick error: ${loggingError.message}`);
+            logError(`CRITICAL: Failed to write to structured log during main tick error: ${loggingError.message}`, loggingError);
         }
     }
 }
@@ -383,7 +383,7 @@ function tpaTick() {
             }
         });
     } catch (e) {
-        console.error(`[AntiCheat] Unhandled error in tpaTick: ${e?.message}\n${e?.stack}`);
+        logError(`Unhandled error in tpaTick: ${e?.message}`, e);
         const depsForError = dependencyManager.getDependenciesUnsafe();
         if (depsForError) {
             addLog({
@@ -410,9 +410,9 @@ function attemptInitializeSystem(retryCount = 0) {
     } catch (e) {
         const delay = initialRetryDelayTicks;
         const isFinalAttempt = retryCount >= maxInitRetries;
-        const errorMessage = `[Main] Initialization failed on attempt ${retryCount + 1}. ${isFinalAttempt ? 'FINAL ATTEMPT FAILED.' : `Retrying in ${delay / 20}s.`} Error: ${e.message}`;
+        const errorMessage = `Initialization failed on attempt ${retryCount + 1}. ${isFinalAttempt ? 'FINAL ATTEMT FAILED.' : `Retrying in ${delay / 20}s.`} Error: ${e.message}`;
 
-        console.error(errorMessage);
+        logError(errorMessage, e);
 
         try {
             const dependencies = dependencyManager.getDependenciesUnsafe();
@@ -434,10 +434,10 @@ function attemptInitializeSystem(retryCount = 0) {
                     dependencies.playerUtils.notifyAdmins(criticalErrorMsg, dependencies);
                 }
             } else {
-                console.error('[AntiCheat] CRITICAL: Could not get dependencies for structured logging during initialization.');
+                logError('CRITICAL: Could not get dependencies for structured logging during initialization.');
             }
         } catch (loggingError) {
-            console.error(`[AntiCheat] CRITICAL: Failed to write to structured log during initialization error: ${loggingError.message}`);
+            logError(`CRITICAL: Failed to write to structured log during initialization error: ${loggingError.message}`, loggingError);
         }
 
         if (!isFinalAttempt) {
@@ -460,7 +460,7 @@ function initializeAntiCheat() {
         attemptInitializeSystem();
         isInitialized = true;
     } catch (e) {
-        console.error(`[AntiCheat] CRITICAL: Unhandled error during initialization: ${e?.message}\n${e?.stack}`);
+        logError(`CRITICAL: Unhandled error during initialization: ${e?.message}`, e);
     }
 }
 

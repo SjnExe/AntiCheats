@@ -144,6 +144,27 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
  * @param {import('../types.js').CommandDependencies} dependencies Access to config.
  * @param {string|null} [contextPlayerNameIfWatched] The name of a watched player for context.
  */
+/**
+ * Logs a message to the console with a standard prefix.
+ * @param {string} message The message to log.
+ */
+export function log(message) {
+    console.warn(`[AC] ${message}`);
+}
+
+/**
+ * Logs an error to the console with a standard prefix and stack trace.
+ * @param {string} message The error message.
+ * @param {Error} [error] Optional error object to include stack trace.
+ */
+export function logError(message, error) {
+    const errorMessage = `[AC ERROR] ${message}`;
+    console.error(errorMessage);
+    if (error && error.stack) {
+        console.error(`Stack Trace: ${error.stack}`);
+    }
+}
+
 export function debugLog(message, dependencies, contextPlayerNameIfWatched = null) {
     if (dependencies?.config?.enableDebugLogging) {
         const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : '[AC Debug]';

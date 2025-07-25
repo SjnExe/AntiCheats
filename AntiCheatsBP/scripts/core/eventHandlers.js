@@ -1,6 +1,6 @@
 import { world } from '@minecraft/server';
 import * as mc from '@minecraft/server';
-import { getExpectedBreakTicks, isNetherLocked, isEndLocked, formatSessionDuration } from '../utils/index.js';
+import { getExpectedBreakTicks, isNetherLocked, isEndLocked, formatSessionDuration, log, logError } from '../utils/index.js';
 const defaultCombatLogThresholdSeconds = 15;
 const deathCoordsMessageDelayTicks = 5;
 const defaultFoodUseDurationSeconds = 1.6;
@@ -39,7 +39,7 @@ function profileEventHandler(handlerName, handlerFunction) {
             try {
                 await handlerFunction.apply(null, args);
             } catch (e) {
-                console.error(`[EventHandler.${handlerName}] Unhandled error (profiling disabled): ${e?.message}\n${e?.stack}`);
+                logError(`[EventHandler.${handlerName}] Unhandled error (profiling disabled): ${e?.message}\n${e?.stack}`, e);
                 const player = args[0]?.player ?? args[0]?.source ?? args[0]?.damagingEntity ?? args[0]?.hurtEntity;
                 if (dependencies?.logManager) {
                     dependencies.logManager.addLog({
@@ -123,7 +123,7 @@ async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
             await playerDataManager.handlePlayerLeaveBeforeEvent(player, dependencies);
             playerUtils.debugLog(`[EventHandler.handlePlayerLeave] Data save processed for ${playerName} on leave.`, playerName, dependencies);
         } catch (error) {
-            console.error(`[EventHandler.handlePlayerLeave CRITICAL] Error in handlePlayerLeaveBeforeEvent for ${playerName} on leave: ${error.stack || error}`);
+            logError(`[EventHandler.handlePlayerLeave CRITICAL] Error in handlePlayerLeaveBeforeEvent for ${playerName} on leave: ${error.stack || error}`, error);
             logManager.addLog({
                 actionType: 'error.event.pdataSaveOnLeave',
                 context: 'eventHandlers.handlePlayerLeaveBeforeEvent',
@@ -135,7 +135,7 @@ async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
     }
 
     if (config?.playerInfo?.enableDetailedJoinLeaveLogging) {
-        console.warn(`[LeaveLog] Player: ${playerName} (ID: ${playerId}) left the game.`);
+        log(`[LeaveLog] Player: ${playerName} (ID: ${playerId}) left the game.`);
     }
     playerUtils.debugLog(`[EventHandler.handlePlayerLeave] Finished processing for ${playerName}.`, playerName, dependencies);
 }
@@ -151,7 +151,7 @@ async function handlePlayerSpawn(eventData, dependencies) {
     const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!player?.isValid()) {
-        console.warn('[EvtHdlr.Spawn] Invalid player object in eventData.');
+        log('[EvtHdlr.Spawn] Invalid player object in eventData.');
         return;
     }
 
@@ -163,7 +163,7 @@ async function handlePlayerSpawn(eventData, dependencies) {
     try {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, dependencies);
         if (!pData) {
-            console.error(`[EvtHdlr.Spawn CRITICAL] pData null for ${playerName}. Aborting spawn logic.`);
+            logError(`[EvtHdlr.Spawn CRITICAL] pData null for ${playerName}. Aborting spawn logic.`);
             player.sendMessage({ translate: 'error.playerDataLoadFailedKick' });
             player.kick(playerUtils.getString('error.playerDataLoadFailedKickReason', dependencies));
             return;
@@ -276,14 +276,14 @@ async function handlePlayerSpawn(eventData, dependencies) {
         if (config.playerInfo.enableDetailedJoinLeaveLogging) {
             const deviceType = playerUtils.getDeviceType(player) ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
             const locStr = `${Math.floor(spawnLocation.x)}, ${Math.floor(spawnLocation.y)}, ${Math.floor(spawnLocation.z)} in ${spawnDimensionId}`;
-            console.warn(
+            log(
                 `[JoinLog] Player: ${playerName} (ID: ${player.id}, Device: ${deviceType}, Mode: ${spawnGameMode}) ` +
         `${initialSpawn ? 'joined' : 'spawned'} at ${locStr}.`,
             );
         }
 
     } catch (error) {
-        console.error(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.stack || error}`);
+        logError(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
             actionType: 'error.evt.playerSpawn',
@@ -404,7 +404,7 @@ async function handleEntitySpawnEventAntiGrief(eventData, dependencies) {
                                 playerName, dependencies,
                             );
                         } catch (e) {
-                            console.warn(`[EvtHdlr.EntSpawn CRITICAL] Failed to kill ${entityName}: ${e.message}`);
+                            log(`[EvtHdlr.EntSpawn CRITICAL] Failed to kill ${entityName}: ${e.message}`);
                             logManager?.addLog({
                                 actionType: 'errorEventHandlersKillRestrictedEntity',
                                 context: 'eventHandlers.handleEntitySpawnEvent_AntiGrief.spamKill',
@@ -638,13 +638,13 @@ function handlePlayerDeath(eventData, dependencies) {
     const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!player?.isValid()) {
-        console.warn('[EvtHdlr.Death] player is undefined or invalid.');
+        log('[EvtHdlr.Death] player is undefined or invalid.');
         return;
     }
 
     const pData = playerDataManager?.getPlayerData(player.id);
     if (!pData) {
-        console.warn(`[EvtHdlr.Death] pData not found for ${playerName}.`);
+        log(`[EvtHdlr.Death] pData not found for ${playerName}.`);
         return;
     }
 
@@ -687,7 +687,7 @@ function subscribeToCombatLogEvents(dependencies) {
     }
 
     if (!world?.afterEvents?.entityHurt) {
-        console.warn('[EvtHdlr.CombatLogSub] mc.world.afterEvents.entityHurt is not available. CombatLog detection disabled.');
+        log('[EvtHdlr.CombatLogSub] mc.world.afterEvents.entityHurt is not available. CombatLog detection disabled.');
         return;
     }
 
@@ -1194,7 +1194,7 @@ async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
             }, dependencies);
 
         } catch (e) {
-            console.error(`[EvtHdlr.DimChange CRITICAL] Failed to teleport ${player.name} from locked ${toDimensionIdClean}: ${e.stack || e}`);
+            logError(`[EvtHdlr.DimChange CRITICAL] Failed to teleport ${player.name} from locked ${toDimensionIdClean}: ${e.stack || e}`, e);
             logManager?.addLog({
                 actionType: 'errorEventHandlersDimensionLockTeleport', context: 'eventHandlers.handlePlayerDimensionChangeAfterEvent',
                 targetName: player.name, targetId: player.id,

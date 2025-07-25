@@ -2,6 +2,7 @@
  * @file Manages player-submitted reports.
  * @module AntiCheatsBP/scripts/core/reportManager
  */
+import { logError } from '../utils/playerUtils.js';
 
 /** @type {string} */
 const reportsPropertyKey = 'anticheat:reportsV1';
@@ -45,7 +46,7 @@ export function initializeReportCache(dependencies) {
         }
         playerUtils?.debugLog(`[ReportManager.initializeReportCache] No valid reports at '${reportsPropertyKey}'. Initializing empty cache.`, 'System', dependencies);
     } catch (error) {
-        console.error(`[ReportManager.initializeReportCache] Error loading reports: ${error.stack || error}`);
+        logError(`[ReportManager.initializeReportCache] Error loading reports: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[ReportManager.initializeReportCache] Exception: ${error.message}`, 'System', dependencies);
     }
     reportsInMemory = []; // Ensure it's an array on failure or no data
@@ -66,7 +67,7 @@ export function persistReportsToDisk(dependencies) {
         playerUtils?.debugLog(`[ReportManager.persistReportsToDisk] Persisted ${reportsInMemory.length} reports.`, 'System', dependencies);
         return true;
     } catch (error) {
-        console.error(`[ReportManager.persistReportsToDisk] Error saving reports: ${error.stack || error}`);
+        logError(`[ReportManager.persistReportsToDisk] Error saving reports: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[ReportManager.persistReportsToDisk] Exception: ${error.message}`, 'System', dependencies);
         return false;
     }

@@ -2,6 +2,7 @@
  * @file Manages the storage and retrieval of action logs.
  * @module AntiCheatsBP/scripts/core/logManager
  */
+import { log, logError } from '../utils/playerUtils.js';
 
 /** @type {string} */
 const logPropertyKey = 'anticheat:actionLogsV1'; // Using _v1 suffix for potential future format changes.
@@ -64,7 +65,7 @@ export async function persistLogCacheToDisk(dependencies) {
         playerUtils?.debugLog(`[LogManager.persistLogCacheToDisk] Persisted ${logsInMemory.length} logs.`, null, dependencies);
         return true;
     } catch (error) {
-        console.error(`[LogManager.persistLogCacheToDisk] Error saving logs: ${error.stack || error}`);
+        logError(`[LogManager.persistLogCacheToDisk] Error saving logs: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[LogManager.persistLogCacheToDisk] Exception: ${error.message}`, null, dependencies);
         return false;
     }

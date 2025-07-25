@@ -4,6 +4,7 @@
  */
 import { commandAliases } from '../config.js';
 import { loadCommand } from './dynamicCommandLoader.js';
+import { log, logError } from '../utils/playerUtils.js';
 import { CommandError } from '../types.js';
 
 /** @type {Map<string, string>} */
@@ -69,7 +70,7 @@ export async function handleChatCommand(eventData, dependencies) {
 
     const playerName = player?.name ?? 'UnknownPlayer';
     if (!player?.isValid()) {
-        console.warn('[CommandManager.handleChatCommand] Invalid player object in eventData.');
+        log('[CommandManager.handleChatCommand] Invalid player object in eventData.');
         eventData.cancel = true;
         return;
     }
@@ -158,7 +159,7 @@ export async function handleChatCommand(eventData, dependencies) {
 
         const errorMessage = error?.message || String(error);
         const errorStack = error?.stack || 'N/A';
-        console.error(`[CommandManager.handleChatCommand CRITICAL] Error executing ${resolvedCommandName} for ${playerName}: ${errorStack}`);
+        logError(`[CommandManager.handleChatCommand CRITICAL] Error executing ${resolvedCommandName} for ${playerName}: ${errorStack}`, error);
         addLog({
             actionType: 'error.cmd.exec',
             targetName: playerName,
