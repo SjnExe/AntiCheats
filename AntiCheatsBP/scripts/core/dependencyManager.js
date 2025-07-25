@@ -19,7 +19,7 @@ import {
     clearExpiredItemUseStates,
     saveDirtyPlayerData,
 } from './playerDataManager.js';
-import { debugLog, getString, notifyAdmins, playSoundForEvent, isAdmin, formatSessionDuration } from '../utils/playerUtils.js';
+import { debugLog, getString, notifyAdmins, playSoundForEvent, isAdmin, formatSessionDuration, logError } from '../utils/playerUtils.js';
 import {
     getPlayerPermissionLevel,
     updatePlayerNametag,
