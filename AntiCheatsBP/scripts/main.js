@@ -55,7 +55,7 @@ const periodicDataPersistenceIntervalTicks = 600;
 const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
 const tpaSystemTickInterval = 20;
 
-let lastProcessedTick = -1;
+let isProcessingTick = false;
 
 /**
  * Initializes the AntiCheat system.
@@ -189,12 +189,13 @@ function validateConfigurations(dependencies) {
  * Processes all tasks for a single system tick.
  */
 async function mainTick() {
+    if (isProcessingTick) {
+        return;
+    }
+
+    isProcessingTick = true;
     try {
-        const currentTick = system.currentTick;
-        if (currentTick > lastProcessedTick) {
-            await processTick();
-            lastProcessedTick = currentTick;
-        }
+        await processTick();
     } catch (e) {
         logError(`Unhandled error in main tick processing: ${e?.message}`, e);
 
@@ -212,6 +213,8 @@ async function mainTick() {
         } catch (loggingError) {
             logError(`CRITICAL: Failed to write to structured log during main tick error: ${loggingError.message}`, loggingError);
         }
+    } finally {
+        isProcessingTick = false;
     }
 }
 
