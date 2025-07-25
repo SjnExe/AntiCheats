@@ -464,9 +464,12 @@ async function handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencie
         const griefConfig = config.antiGrief[actionConfigKey];
         const isAdminAllowed = griefConfig.allowAdmins;
 
-        if (isAdminAllowed && permissionLevels?.admin !== undefined && playerPermission <= permissionLevels.admin) {
+        if (isAdminAllowed &&
+    ((permissionLevels?.owner !== undefined && playerPermission <= permissionLevels.owner) ||
+     (permissionLevels?.admin !== undefined && playerPermission <= permissionLevels.admin))
+) {
             playerUtils?.debugLog(
-                `[EvtHdlr.AntiGriefPlace] Admin ${playerName} placed ${itemStack.typeId}. Allowed.`,
+                `[EvtHdlr.AntiGriefPlace] Privileged user ${playerName} placed ${itemStack.typeId}. Allowed.`,
                 playerName, dependencies,
             );
             return;
