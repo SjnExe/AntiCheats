@@ -5,6 +5,7 @@
 import { world } from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from '../core/panelLayoutConfig.js';
+import { log, logError } from '../utils/playerUtils.js';
 
 // Constants for showInspectPlayerForm
 const inspectPlayerTitle = '§l§3Inspect Player§r';
@@ -351,7 +352,7 @@ async function showResetFlagsFormImpl(player, dependencies, context) {
             await showPanel(player, 'playerManagementPanel', dependencies, {});
         }
     } catch (error) {
-        console.error(`[UiManager.showResetFlagsFormImpl] Error for ${adminPlayerName}: ${error.stack || error}`);
+        logError(`[UiManager.showResetFlagsFormImpl] Error for ${adminPlayerName}: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[UiManager.showResetFlagsFormImpl] Error: ${error.message}`, adminPlayerName, dependencies);
         logManager?.addLog({ actionType: 'errorUiResetFlagsForm', context: 'uiManager.showResetFlagsFormImpl', adminName: adminPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
         player.sendMessage(getString('common.error.genericForm'));
@@ -470,7 +471,7 @@ async function showConfigCategoriesListImpl(player, dependencies) {
             await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, editFormContext);
         }
     } catch (e) {
-        console.error(`[UiManager.showConfigCategoriesListImpl] Error: ${e.stack || e}`);
+        logError(`[UiManager.showConfigCategoriesListImpl] Error: ${e.stack || e}`, e);
         player.sendMessage(getString('common.error.genericForm'));
         if (callingPanelState && callingPanelState.panelId) {
             await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
@@ -583,7 +584,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
         // Note: 'number' type handles its own success message and navigation due to the re-prompt logic on failure.
         // if (updateSuccess) { ... } // This block is now conditional per type
     } catch (e) {
-        console.error(`[UiManager.showEditSingleConfigValueFormImpl] Error: ${e.stack || e}`);
+        logError(`[UiManager.showEditSingleConfigValueFormImpl] Error: ${e.stack || e}`, e);
         player.sendMessage(getString('common.error.genericForm'));
         // On error, attempt to return to the list view, as re-showing the edit form might repeat the error.
         await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit);
@@ -623,7 +624,7 @@ async function _showConfirmationModal(adminPlayer, titleString, bodyString, conf
         playerUtils?.debugLog(`[UiManager._showConfirmationModal] Modal '${titleString}' confirmed by ${playerName}. Action executed.`, playerName, dependencies);
         return true;
     } catch (error) {
-        console.error(`[UiManager._showConfirmationModal] Error for ${playerName} (Title: ${titleString}): ${error.stack || error}`);
+        logError(`[UiManager._showConfirmationModal] Error for ${playerName} (Title: ${titleString}): ${error.stack || error}`, error);
         playerUtils?.debugLog(`[UiManager._showConfirmationModal] Error for ${playerName} (Title: ${titleString}): ${error.message}`, playerName, dependencies);
         logManager?.addLog({ actionType: 'errorUiConfirmationModal', context: 'uiManager._showConfirmationModal', adminName: playerName, details: { titleString, errorMessage: error.message, stack: error.stack } }, dependencies);
         adminPlayer?.sendMessage(getString('common.error.genericForm'));
@@ -674,7 +675,7 @@ async function confirmLagClearImpl(player, dependencies) {
                 player.sendMessage('§aSuccess: Ground items cleared.');
             } catch (e) {
                 player.sendMessage('§cError: Basic item clear command failed. See console for details.');
-                console.error(`[UiManager.confirmLagClearImpl] Basic item clear failed: ${ e.stack || e}`);
+                logError(`[UiManager.confirmLagClearImpl] Basic item clear failed: ${ e.stack || e}`, e);
             }
         }
     }, dependencies);
@@ -744,7 +745,7 @@ async function displayActionLogsModalImpl(player, dependencies) {
     try {
         await modal.show(player);
     } catch (error) {
-        console.error(`[UiManager.displayActionLogsModalImpl] Error for ${adminPlayerName}: ${error.stack || error}`);
+        logError(`[UiManager.displayActionLogsModalImpl] Error for ${adminPlayerName}: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[UiManager.displayActionLogsModalImpl] Error: ${error.message}`, adminPlayerName, dependencies);
         logManager?.addLog({ actionType: 'errorUiActionLogsModal', context: 'uiManager.displayActionLogsModalImpl', adminName: adminPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
         player.sendMessage(getString('common.error.genericForm'));
@@ -801,7 +802,7 @@ async function showModLogFilterModalImpl(player, dependencies, context) {
         await showPanel(player, 'logViewerPanel', dependencies, nextContext);
 
     } catch (error) {
-        console.error(`[UiManager.showModLogFilterModalImpl] Error for ${adminPlayerName}: ${error.stack || error}`);
+        logError(`[UiManager.showModLogFilterModalImpl] Error for ${adminPlayerName}: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[UiManager.showModLogFilterModalImpl] Error: ${error.message}`, adminPlayerName, dependencies);
         logManager?.addLog({ actionType: 'errorUiModLogFilterModal', context: 'uiManager.showModLogFilterModalImpl', adminName: adminPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
         player.sendMessage(getString('common.error.genericForm'));
@@ -889,7 +890,7 @@ async function displaySpecificLogsPageImpl(player, dependencies, context) {
         await modal.show(player);
     } catch (error) {
         player.sendMessage(getString('common.error.genericForm'));
-        console.error(`[UiManager.displaySpecificLogsPageImpl] Error showing modal: ${error.stack || error}`);
+        logError(`[UiManager.displaySpecificLogsPageImpl] Error showing modal: ${error.stack || error}`, error);
         logManager?.addLog({
             actionType: 'errorUiDisplaySpecificLogs',
             context: 'uiManager.displaySpecificLogsPageImpl',
@@ -935,7 +936,7 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
     const panelDefinition = panelDefinitions[panelId];
 
     if (!panelDefinition) {
-        console.error(`[UiManager.showPanel] Error: Panel definition for panelId "${panelId}" not found.`);
+        logError(`[UiManager.showPanel] Error: Panel definition for panelId "${panelId}" not found.`);
         logManager?.addLog({
             actionType: 'errorUiMissingPanelDef',
             context: 'uiManager.showPanel',
@@ -1002,7 +1003,7 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
                     }
                 }
             } catch (genError) {
-                console.error(`[UiManager.showPanel] Error in dynamic item generator "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}": ${genError.stack || genError}`);
+                logError(`[UiManager.showPanel] Error in dynamic item generator "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}": ${genError.stack || genError}`, genError);
                 logManager?.addLog({
                     actionType: 'errorUiDynamicGenerator',
                     context: 'uiManager.showPanel',
@@ -1201,7 +1202,7 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
             playerUtils?.debugLog(`[UiManager.showPanel] Invalid selection ${selection} in panel ${panelId}.`, viewingPlayerName, dependencies);
         }
     } catch (error) {
-        console.error(`[UiManager.showPanel] Error processing panel ${panelId} for ${viewingPlayerName}: ${error.stack || error}`);
+        logError(`[UiManager.showPanel] Error processing panel ${panelId} for ${viewingPlayerName}: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[UiManager.showPanel] Error for ${viewingPlayerName}, Panel ${panelId}: ${error.message}`, viewingPlayerName, dependencies);
         logManager?.addLog({ actionType: 'errorUiGenericPanelShow', context: `uiManager.showPanel.${panelId}`, adminName: viewingPlayerName, details: { panelId, context: effectiveContext, errorMessage: error.message, stack: error.stack } }, dependencies);
         const navStack = playerNavigationStacks.get(player.id) || [];
@@ -1499,7 +1500,7 @@ const uiActionFunctions = {
         try {
             await modal.show(player);
         } catch (error) {
-            console.error(`[UiManager.displaySystemInfoModal] Error for ${viewingPlayerName}: ${error.stack || error}`);
+            logError(`[UiManager.displaySystemInfoModal] Error for ${viewingPlayerName}: ${error.stack || error}`, error);
             logManager?.addLog({ actionType: 'errorUiSystemInfoModal', context: 'uiManager.displaySystemInfoModal', adminName: viewingPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
             player.sendMessage(getString('common.error.genericForm'));
         }
@@ -1561,7 +1562,7 @@ const uiActionFunctions = {
         try {
             await modal.show(player);
         } catch (error) {
-            console.error(`[UiManager.displayDetailedFlagsModal] Error for ${adminPlayerName} viewing flags of ${targetPlayerName}: ${error.stack || error}`); playerUtils?.debugLog(`[UiManager.displayDetailedFlagsModal] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiDetailedFlagsModal', context: 'uiManager.displayDetailedFlagsModal', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(getString('common.error.genericForm'));
+            logError(`[UiManager.displayDetailedFlagsModal] Error for ${adminPlayerName} viewing flags of ${targetPlayerName}: ${error.stack || error}`, error); playerUtils?.debugLog(`[UiManager.displayDetailedFlagsModal] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiDetailedFlagsModal', context: 'uiManager.displayDetailedFlagsModal', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(getString('common.error.genericForm'));
         } finally {
             await showPanel(player, 'playerActionsPanel', dependencies, context);
         }
@@ -1613,7 +1614,7 @@ const uiActionFunctions = {
                 }
             }
         } catch (error) {
-            console.error(`[UiManager.showBanFormForPlayer] Error for ${adminPlayerName} banning ${targetPlayerName}: ${error.stack || error}`); playerUtils?.debugLog(`[UiManager.showBanFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiBanForm', context: 'uiManager.showBanFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(getString('common.error.genericForm'));
+            logError(`[UiManager.showBanFormForPlayer] Error for ${adminPlayerName} banning ${targetPlayerName}: ${error.stack || error}`, error); playerUtils?.debugLog(`[UiManager.showBanFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiBanForm', context: 'uiManager.showBanFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(getString('common.error.genericForm'));
         } finally {
             await showPanel(player, 'playerActionsPanel', dependencies, context);
         }
@@ -1657,7 +1658,7 @@ const uiActionFunctions = {
                 }
             }
         } catch (error) {
-            console.error(`[UiManager.showKickFormForPlayer] Error for ${adminPlayerName} kicking ${targetPlayerName}: ${error.stack || error}`); playerUtils?.debugLog(`[UiManager.showKickFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiKickForm', context: 'uiManager.showKickFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(getString('common.error.genericForm'));
+            logError(`[UiManager.showKickFormForPlayer] Error for ${adminPlayerName} kicking ${targetPlayerName}: ${error.stack || error}`, error); playerUtils?.debugLog(`[UiManager.showKickFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiKickForm', context: 'uiManager.showKickFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(getString('common.error.genericForm'));
         } finally {
             await showPanel(player, 'playerActionsPanel', dependencies, context);
         }
@@ -1706,7 +1707,7 @@ const uiActionFunctions = {
                 }
             }
         } catch (error) {
-            console.error(`[UiManager.showMuteFormForPlayer] Error for ${adminPlayerName} muting ${targetPlayerName}: ${error.stack || error}`); playerUtils?.debugLog(`[UiManager.showMuteFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiMuteForm', context: 'uiManager.showMuteFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(getString('common.error.genericForm'));
+            logError(`[UiManager.showMuteFormForPlayer] Error for ${adminPlayerName} muting ${targetPlayerName}: ${error.stack || error}`, error); playerUtils?.debugLog(`[UiManager.showMuteFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiMuteForm', context: 'uiManager.showMuteFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(getString('common.error.genericForm'));
         } finally {
             await showPanel(player, 'playerActionsPanel', dependencies, context);
         }
@@ -1730,7 +1731,7 @@ const uiActionFunctions = {
             try {
                 await freezeCommand(player, [targetPlayerName, 'toggle'], dependencies);
             } catch (error) {
-                console.error(`[UiManager.toggleFreezePlayer] Error executing freeze command for ${targetPlayerName}: ${error.stack || error}`); player.sendMessage(getString('common.error.genericCommandError', { commandName: 'freeze', errorMessage: error.message })); logManager?.addLog({ actionType: 'errorUiFreezeToggle', context: 'uiManager.toggleFreezePlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
+                logError(`[UiManager.toggleFreezePlayer] Error executing freeze command for ${targetPlayerName}: ${error.stack || error}`, error); player.sendMessage(getString('common.error.genericCommandError', { commandName: 'freeze', errorMessage: error.message })); logManager?.addLog({ actionType: 'errorUiFreezeToggle', context: 'uiManager.toggleFreezePlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
             }
         } else {
             player.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'freeze' }));
@@ -1758,7 +1759,7 @@ const uiActionFunctions = {
                 logManager?.addLog({ adminName: adminPlayerName, actionType: 'teleportSelfToPlayer', targetName: targetPlayerName, details: `Admin TP to ${targetPlayerName}` });
             } catch (e) {
                 player.sendMessage(getString('ui.playerActions.teleport.errorGeneric') || '§cError: Teleport failed. The player might be in an invalid location or dimension.');
-                console.error(`[UiManager.teleportAdminToPlayer] Teleport failed for ${adminPlayerName} to ${targetPlayerName}: ${e.stack || e}`);
+                logError(`[UiManager.teleportAdminToPlayer] Teleport failed for ${adminPlayerName} to ${targetPlayerName}: ${e.stack || e}`, e);
                 logManager?.addLog({ actionType: 'errorUiTeleportToPlayer', context: 'uiManager.teleportAdminToPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack } });
             }
         } else {
@@ -1790,7 +1791,7 @@ const uiActionFunctions = {
                 logManager?.addLog({ adminName: adminPlayerName, actionType: 'teleportPlayerToAdmin', targetName: targetPlayerName, details: `Admin TP'd ${targetPlayerName} to self` }, dependencies);
             } catch (e) {
                 player.sendMessage(getString('ui.playerActions.teleport.errorGeneric') || '§cError: Teleport failed. The player might be in an invalid location or dimension, or you lack permission.');
-                console.error(`[UiManager.teleportPlayerToAdmin] Teleport failed for ${targetPlayerName} to ${adminPlayerName}: ${e.stack || e}`);
+                logError(`[UiManager.teleportPlayerToAdmin] Teleport failed for ${targetPlayerName} to ${adminPlayerName}: ${e.stack || e}`, e);
                 logManager?.addLog({ actionType: 'errorUiTeleportPlayerToAdmin', context: 'uiManager.teleportPlayerToAdmin', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack } }, dependencies);
             }
         } else {
@@ -1879,7 +1880,7 @@ const uiActionFunctions = {
                         }
                     } catch (e) {
                         player.sendMessage(getString('ui.playerActions.clearInventory.fail', { targetPlayerName }));
-                        console.error(`[UiManager.confirmClearPlayerInventory] Vanilla /clear command failed for ${targetPlayerName}: ${e}`);
+                        logError(`[UiManager.confirmClearPlayerInventory] Vanilla /clear command failed for ${targetPlayerName}: ${e}`, e);
                         logManager?.addLog({ adminName: adminPlayerName, actionType: 'errorPlayerInventoryClear', targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack } }, dependencies);
                     }
                 }
@@ -1984,7 +1985,7 @@ const uiActionFunctions = {
             try {
                 await invseeCommand(player, [targetPlayerName], dependencies);
             } catch (error) {
-                console.error(`[UiManager.showPlayerInventoryFromPanel] Error executing invsee command for ${targetPlayerName}: ${error.stack || error}`);
+                logError(`[UiManager.showPlayerInventoryFromPanel] Error executing invsee command for ${targetPlayerName}: ${error.stack || error}`, error);
                 player.sendMessage(getString('common.error.genericCommandError', { commandName: 'invsee', errorMessage: error.message }));
                 logManager?.addLog({ actionType: 'errorUiInvsee', context: 'uiManager.showPlayerInventoryFromPanel', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
                 // Still show panel again in finally
@@ -2034,7 +2035,7 @@ const uiActionFunctions = {
             try {
                 await watchCommand(player, [targetPlayerName, 'toggle'], dependencies);
             } catch (error) {
-                console.error(`[UiManager.toggleWatchPlayerFromPanel] Error executing watch command for ${targetPlayerName}: ${error.stack || error}`);
+                logError(`[UiManager.toggleWatchPlayerFromPanel] Error executing watch command for ${targetPlayerName}: ${error.stack || error}`, error);
                 player.sendMessage(getString('common.error.genericCommandError', { commandName: 'watch', errorMessage: error.message }));
                 logManager?.addLog({ actionType: 'errorUiWatchToggle', context: 'uiManager.toggleWatchPlayerFromPanel', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
             }
@@ -2132,7 +2133,7 @@ async function showInspectPlayerForm(adminPlayer, dependencies, context) {
         }
 
     } catch (error) {
-        console.error(`[UiManager.showInspectPlayerForm] Error for ${adminName}: ${error.stack || error}`);
+        logError(`[UiManager.showInspectPlayerForm] Error for ${adminName}: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[UiManager.showInspectPlayerForm] Error for ${adminName}: ${error.message}`, adminName, dependencies);
         logManager?.addLog({
             actionType: 'errorUiInspectPlayerForm',

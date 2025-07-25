@@ -2,6 +2,7 @@
  * @file Manages TPA (teleport request) operations.
  * @module AntiCheatsBP/scripts/core/tpaManager
  */
+import { logError } from '../utils/playerUtils.js';
 
 // Constants for UUID generation
 const uuidRandomMultiplier = 16;
@@ -257,7 +258,7 @@ export async function executeTeleport(requestId, dependencies) {
 
     } catch (e) {
         request.status = 'cancelled';
-        console.error(`[TpaManager.executeTeleport] Error for request ${requestId}: ${e.stack || e}`);
+        logError(`[TpaManager.executeTeleport] Error for request ${requestId}: ${e.stack || e}`, e);
         if (requesterPlayer?.isValid()) {
             requesterPlayer.sendMessage(getString('tpa.manager.error.teleportGenericErrorToRequester'));
         }

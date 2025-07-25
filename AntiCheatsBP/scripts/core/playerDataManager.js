@@ -3,6 +3,8 @@
  * @module AntiCheatsBP/scripts/core/playerDataManager
  */
 
+import { logError } from '../utils/playerUtils.js';
+
 const maxSerializedDataLength = 30000;
 const itemUseStateExpiryMs = 5000;
 const minecraftFallingVelocity = -0.0784;
@@ -48,14 +50,14 @@ async function _loadScheduledFlagPurges(dependencies) {
                 try {
                     await _saveScheduledFlagPurges(newMap, dependencies);
                 } catch (saveError) {
-                    console.error(`[PlayerDataManager] Failed to save migrated scheduled flag purges, but proceeding with in-memory data. Error: ${saveError.message}`);
+                    logError(`[PlayerDataManager] Failed to save migrated scheduled flag purges, but proceeding with in-memory data. Error: ${saveError.message}`, saveError);
                     playerUtils.debugLog(`[PlayerDataManager] Error saving migrated purges: ${saveError.message}`, 'SystemError', dependencies);
                 }
                 return newMap;
             }
         }
     } catch (e) {
-        console.error(`[PlayerDataManager] Failed to load scheduled flag purges: ${e.message}`);
+        logError(`[PlayerDataManager] Failed to load scheduled flag purges: ${e.message}`, e);
         playerUtils.debugLog(`[PlayerDataManager] Error loading scheduled flag purges: ${e.message}`, 'SystemError', dependencies);
     }
     return new Map();
@@ -72,7 +74,7 @@ async function _saveScheduledFlagPurges(purges, dependencies) {
         const arrayToSave = Array.from(purges.values());
         world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(arrayToSave));
     } catch (e) {
-        console.error(`[PlayerDataManager] Failed to save scheduled flag purges: ${e}`);
+        logError(`[PlayerDataManager] Failed to save scheduled flag purges: ${e}`, e);
     }
 }
 
@@ -275,7 +277,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
                 rawErrorStack: error.stack,
             },
         }, dependencies);
-        console.error(`[PlayerDataManager CRITICAL] Failed to initialize player data for ${player.nameTag}: ${error.stack}`);
+        logError(`[PlayerDataManager CRITICAL] Failed to initialize player data for ${player.nameTag}: ${error.stack}`, error);
         // Fallback to default data to prevent system failure for this player
         if (!player.isValid()) {
             playerUtils.debugLog(`[PlayerDataManager] Player ${player.nameTag} became invalid during data initialization after an error. Aborting.`, player.nameTag, dependencies);
@@ -302,7 +304,7 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
 
     if (typeof playerLike.setDynamicProperty !== 'function') {
         const errorMessage = `[PlayerDataManager CRITICAL] Attempted to save data for ${playerLike.name ?? playerLike.id} without a valid player object. Data save aborted.`;
-        console.error(errorMessage);
+        logError(errorMessage);
         logManager.addLog({
             actionType: 'error.pdm.dpWrite.invalidPlayerObject',
             context: 'playerDataManager.saveDirtyPlayerData',
@@ -392,7 +394,7 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
                 rawErrorStack: error.stack,
             },
         }, dependencies);
-        console.error(`[PlayerDataManager CRITICAL] Failed to save player data for ${playerLike.name}: ${error.stack}`);
+        logError(`[PlayerDataManager CRITICAL] Failed to save player data for ${playerLike.name}: ${error.stack}`, error);
         return false;
     }
 }
@@ -455,7 +457,7 @@ async function _loadPlayerDataFromDynamicProperties(player, dependencies) {
                 },
             }, dependencies);
         }
-        console.error(`[PlayerDataManager] Error loading data for ${player.nameTag}: ${error.stack}`);
+        logError(`[PlayerDataManager] Error loading data for ${player.nameTag}: ${error.stack}`, error);
         return null;
     }
 }

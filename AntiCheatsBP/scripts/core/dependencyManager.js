@@ -200,8 +200,8 @@ export class DependencyManager {
 
         if (errors.length > 0) {
             const fullErrorMessage = `${mainContext} Dependency validation failed:\n${errors.map(e => `  - ${e}`).join('\n')}`;
-            console.error('!!!! CRITICAL DEPENDENCY VALIDATION FAILURE !!!!');
-            console.error(fullErrorMessage);
+            logError('!!!! CRITICAL DEPENDENCY VALIDATION FAILURE !!!!');
+            logError(fullErrorMessage);
             throw new Error(fullErrorMessage);
         }
 
