@@ -1,6 +1,6 @@
 import { commandAliases } from '../config.js';
 import { loadCommand } from './dynamicCommandLoader.js';
-import { log, logError } from '../utils/playerUtils.js';
+import { logError } from '../utils/playerUtils.js';
 import { CommandError } from '../types.js';
 
 export const commandFilePaths = new Map();
@@ -85,7 +85,7 @@ async function executeCommand(player, commandDef, commandExecute, args, dependen
 export async function handleChatCommand(eventData, dependencies) {
     const { sender: player, message } = eventData;
     const { config, playerUtils, rankManager, aliasToCommandMap } = dependencies;
-    const { debugLog, getString, warnPlayer } = playerUtils;
+    const { getString, warnPlayer } = playerUtils;
     const { getPlayerPermissionLevel } = rankManager;
 
     if (!player?.isValid() || !config?.prefix || !message.startsWith(config.prefix)) {
