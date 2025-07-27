@@ -2,6 +2,7 @@ export * from './ban.js';
 export * from './clearchat.js';
 export * from './clearreports.js';
 export * from './copyinv.js';
+export * from './debug.js';
 export * from './endlock.js';
 export * from './freeze.js';
 export * from './gma.js';
