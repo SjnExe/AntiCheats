@@ -3,6 +3,13 @@
 This document is an archive of completed tasks.
 
 ---
+- **Jules (AI Assistant):** Removed unnecessary comments. (Completed on 2025-07-27)
+  - **Summary:** Reviewed and removed unnecessary comments from the codebase to improve clarity and readability.
+  - **Work Done:**
+    - Reviewed and cleaned files in the `AntiCheatsBP/scripts/core/` directory.
+    - Ran the linter and fixed any issues.
+  - **Submission:** Changes will be submitted on branch `chore/remove-unnecessary-comments`.
+
 - **Jules (AI Assistant):** Merge rank priority into permissionLevel. (Completed on 2024-05-24)
   - **Summary:** Merged the `priority` field into the `permissionLevel` field in the rank configuration.
   - **Work Done:**

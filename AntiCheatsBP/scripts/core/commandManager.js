@@ -21,19 +21,12 @@ import * as commandFiles from '../commands/index.js';
 
 function discoverCommands() {
     commandFilePaths.clear();
-    // commandFiles is an object where keys are module names (e.g., 'ban')
-    // and values are the modules themselves.
     for (const moduleKey in commandFiles) {
         const cmdModule = commandFiles[moduleKey];
         if (cmdModule?.definition?.name) {
             const commandName = cmdModule.definition.name.toLowerCase();
-            // The moduleKey from the import *should* correspond to the file name.
-            // Example: import * as commandFiles from './commands/index.js' -> commandFiles.ban -> ban.js
             const filePath = `../commands/${moduleKey}.js`;
             commandFilePaths.set(commandName, filePath);
-        } else {
-            // This can happen if index.js exports something that isn't a command module.
-            // We can ignore it or log a warning if it's unexpected.
         }
     }
 }
@@ -49,7 +42,6 @@ export function initializeCommands(dependencies) {
     commandDefinitionMap.clear();
     commandExecutionMap.clear();
 
-    // Set the alias map from the command registry
     dependencies.aliasToCommandMap = new Map(commandAliases);
 
     debugLog(`[CommandManager.initializeCommands] Command system initialized. ${commandFilePaths.size} commands available, ${dependencies.aliasToCommandMap.size} aliases registered.`, null, dependencies);
@@ -76,10 +68,10 @@ export async function handleChatCommand(eventData, dependencies) {
     }
 
     if (!config?.prefix || !message.startsWith(config.prefix)) {
-        return; // Not a command
+        return;
     }
 
-    eventData.cancel = true; // Cancel the original chat message
+    eventData.cancel = true;
 
     const args = message.substring(config.prefix.length).trim().split(/\s+/);
     const commandNameInput = args.shift()?.toLowerCase();
@@ -91,14 +83,11 @@ export async function handleChatCommand(eventData, dependencies) {
         return;
     }
 
-    // Resolve alias or use the input name
     const resolvedCommandName = aliasToCommandMap.get(commandNameInput) || commandNameInput;
 
-    // Check cache first
     let commandDef = commandDefinitionMap.get(resolvedCommandName);
     let commandExecute = commandExecutionMap.get(resolvedCommandName);
 
-    // If not in cache, dynamically load and then cache it
     if (!commandDef || !commandExecute) {
         debugLog(`[CommandManager.handleChatCommand] Command '${resolvedCommandName}' not in cache. Loading dynamically.`, getPlayerData(player.id)?.isWatched ? playerName : null, dependencies);
         const commandModule = await loadCommand(resolvedCommandName, dependencies);
@@ -110,7 +99,6 @@ export async function handleChatCommand(eventData, dependencies) {
         commandDef = commandModule.definition;
         commandExecute = commandModule.execute;
 
-        // Cache the loaded command
         if (commandDef && commandExecute) {
             commandDefinitionMap.set(resolvedCommandName, commandDef);
             commandExecutionMap.set(resolvedCommandName, commandExecute);
@@ -119,14 +107,12 @@ export async function handleChatCommand(eventData, dependencies) {
         debugLog(`[CommandManager.handleChatCommand] Loaded command '${resolvedCommandName}' from cache.`, getPlayerData(player.id)?.isWatched ? playerName : null, dependencies);
     }
 
-    // Check if the command is enabled
     if (!isCommandEnabled(resolvedCommandName, commandDef, config)) {
         player?.sendMessage(getString('command.error.disabled', { commandName: resolvedCommandName }));
         debugLog(`[CommandManager.handleChatCommand] Command '${resolvedCommandName}' is disabled. Access denied for ${playerName}.`, playerName, dependencies);
         return;
     }
 
-    // Check permission level
     const userPermissionLevel = getPlayerPermissionLevel(player, dependencies);
     if (typeof userPermissionLevel !== 'number' || userPermissionLevel > commandDef.permissionLevel) {
         warnPlayer(player, getString('common.error.permissionDenied'), dependencies);
@@ -134,7 +120,6 @@ export async function handleChatCommand(eventData, dependencies) {
         return;
     }
 
-    // Log admin command usage
     if (dependencies.permissionLevels?.admin !== undefined && userPermissionLevel <= dependencies.permissionLevels.admin) {
         addLog({
             actionType: 'info.command.admin',
@@ -145,7 +130,6 @@ export async function handleChatCommand(eventData, dependencies) {
         }, dependencies);
     }
 
-    // Execute the command
     try {
         debugLog(`[CommandManager.handleChatCommand] Executing '${resolvedCommandName}' for ${playerName}.`, getPlayerData(player.id)?.isWatched ? playerName : null, dependencies);
         await commandExecute(player, args, dependencies);
