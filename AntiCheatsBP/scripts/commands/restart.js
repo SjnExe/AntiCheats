@@ -1,5 +1,3 @@
-import { world } from '@minecraft/server';
-
 /**
  * @file Defines the !restart command, which reloads the entire world, including resource and behavior packs.
  */
