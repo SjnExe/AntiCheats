@@ -334,7 +334,7 @@ Rule 6: Have fun and contribute to a positive community!`,
 };
 
 // --- System & Versioning (Not part of editableConfigValues by default) ---
-export const acVersion = 'v99.99.99';
+export const acVersion = 'v__VERSION_STRING__';
 
 /**
  * Maps command aliases to their main command names.
