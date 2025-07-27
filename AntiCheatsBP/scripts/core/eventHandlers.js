@@ -467,7 +467,7 @@ async function handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencie
         if (isAdminAllowed &&
     ((permissionLevels?.owner !== undefined && playerPermission <= permissionLevels.owner) ||
      (permissionLevels?.admin !== undefined && playerPermission <= permissionLevels.admin))
-) {
+        ) {
             playerUtils?.debugLog(
                 `[EvtHdlr.AntiGriefPlace] Privileged user ${playerName} placed ${itemStack.typeId}. Allowed.`,
                 playerName, dependencies,
