@@ -121,20 +121,8 @@ export async function cleanupStaleScheduledFlagPurges(dependencies) {
     }
 }
 
-/**
- * @param {object} playerLike An object with player-like properties (id, name, location, dimension, etc.).
- * @param {number} currentTick The current server tick.
- * @returns {import('../types.js').PlayerAntiCheatData} The default player data object.
- */
-export function initializeDefaultPlayerData(playerLike, currentTick) {
-    const now = Date.now();
-
+function getDefaultSessionState(currentTick, now) {
     return {
-        // Core Identifiers
-        playerId: playerLike.id,
-        playerNameTag: playerLike.name,
-
-        // Session and State
         isOnline: true,
         isDirtyForSave: false,
         joinTick: currentTick,
@@ -142,29 +130,41 @@ export function initializeDefaultPlayerData(playerLike, currentTick) {
         sessionStartTime: now,
         lastSavedTimestamp: 0,
         isWatched: false,
+    };
+}
 
-        // Flags and Violations
+function getDefaultFlagsAndViolations() {
+    return {
         flags: { totalFlags: 0 },
         lastFlagType: '',
         lastViolationDetailsMap: {},
         automodState: {},
+    };
+}
 
-        // Restrictions and Status
+function getDefaultRestrictions() {
+    return {
         permissionLevel: null, // Will be set by rankManager
         banInfo: null,
         muteInfo: null,
         isFrozen: false,
         isVanished: false,
         godModeActive: false,
+    };
+}
 
-        // Movement and Teleportation
+function getDefaultMovementState(playerLike, now) {
+    return {
         lastKnownLocation: playerLike.location ? { ...playerLike.location } : { x: 0, y: 0, z: 0 },
         lastKnownDimensionId: playerLike.dimension ? playerLike.dimension.id : 'minecraft:overworld',
         lastSignificantMovement: now,
         lastTeleportTimestamp: 0,
         isTeleporting: false,
+    };
+}
 
-        // Combat and Interaction
+function getDefaultCombatState() {
+    return {
         lastAttackTimestamp: 0,
         lastDamageTimestamp: 0,
         lastHealTimestamp: 0,
@@ -173,32 +173,50 @@ export function initializeDefaultPlayerData(playerLike, currentTick) {
         itemUseStates: {},
         consecutiveHits: 0,
         lastAttackedEntityId: null,
+    };
+}
 
-        // Block Interactions
-        blockBreakTimestamps: [], // Capped at a reasonable limit
+function getDefaultInteractionState() {
+    return {
+        blockBreakTimestamps: [],
         lastBlockPlacedTimestamp: 0,
-
-        // Chat and Communication
         lastChatMessageTimestamp: 0,
-        chatMessageTimestamps: [], // Capped at a reasonable limit
+        chatMessageTimestamps: [],
+    };
+}
 
-        // Miscellaneous and Transient Data (Not Saved)
-        transient: {
-            lastVelocity: { x: 0, y: 0, z: 0 },
-            isFalling: false,
-            fallDistance: 0,
-            ticksSinceLastOnGround: 0,
-            ticksInAir: 0,
-            isNearLiquid: false,
-            isClimbing: false,
-            isSleeping: false,
-            isRiding: false,
-            isSprinting: false,
-            isSwimming: false,
-            isGliding: false,
-            headRotation: playerLike.getHeadRotation ? { ...playerLike.getHeadRotation() } : { x: 0, y: 0 },
-            bodyRotation: playerLike.bodyRotation || 0,
-        },
+function getDefaultTransientState(playerLike) {
+    return {
+        lastVelocity: { x: 0, y: 0, z: 0 },
+        isFalling: false,
+        fallDistance: 0,
+        ticksSinceLastOnGround: 0,
+        ticksInAir: 0,
+        isNearLiquid: false,
+        isClimbing: false,
+        isSleeping: false,
+        isRiding: false,
+        isSprinting: false,
+        isSwimming: false,
+        isGliding: false,
+        headRotation: playerLike.getHeadRotation ? { ...playerLike.getHeadRotation() } : { x: 0, y: 0 },
+        bodyRotation: playerLike.bodyRotation || 0,
+    };
+}
+
+export function initializeDefaultPlayerData(playerLike, currentTick) {
+    const now = Date.now();
+
+    return {
+        playerId: playerLike.id,
+        playerNameTag: playerLike.name,
+        ...getDefaultSessionState(currentTick, now),
+        ...getDefaultFlagsAndViolations(),
+        ...getDefaultRestrictions(),
+        ...getDefaultMovementState(playerLike, now),
+        ...getDefaultCombatState(),
+        ...getDefaultInteractionState(),
+        transient: getDefaultTransientState(playerLike),
     };
 }
 
@@ -294,70 +312,66 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @returns {Promise<boolean>} True if data was saved, false otherwise.
  */
+function trimPlayerData(dataToSave) {
+    if (dataToSave.blockBreakTimestamps.length > 50) {
+        dataToSave.blockBreakTimestamps = dataToSave.blockBreakTimestamps.slice(-50);
+    }
+    if (dataToSave.chatMessageTimestamps.length > 50) {
+        dataToSave.chatMessageTimestamps = dataToSave.chatMessageTimestamps.slice(-50);
+    }
+    return dataToSave;
+}
+
+function recoverAndSerializePlayerData(dataToSave, playerLike, dependencies) {
+    const { logManager } = dependencies;
+
+    logManager.addLog({
+        actionType: 'warning.pdm.dpWrite.sizeLimit',
+        context: 'playerDataManager.saveDirtyPlayerData.recovery',
+        targetName: playerLike.name,
+        details: {
+            errorCode: 'PDM_DP_SIZE_EXCEEDED_RECOVERY_ATTEMPT',
+            message: `Serialized player data for ${playerLike.name} exceeds size limit. Attempting recovery.`,
+            meta: { originalSize: JSON.stringify(dataToSave).length },
+        },
+    }, dependencies);
+
+    dataToSave.blockBreakTimestamps = [];
+    dataToSave.chatMessageTimestamps = [];
+    if (dataToSave.recentBlockPlacements) {
+        dataToSave.recentBlockPlacements = [];
+    }
+    if (dataToSave.flags) {
+        for (const key in dataToSave.flags) {
+            if (Array.isArray(dataToSave.flags[key])) {
+                dataToSave.flags[key] = dataToSave.flags[key].slice(-10);
+            }
+        }
+    }
+
+    return JSON.stringify(dataToSave);
+}
+
 export async function saveDirtyPlayerData(playerLike, dependencies) {
     const { playerUtils, logManager, config } = dependencies;
     const pData = getPlayerData(playerLike.id);
 
-    if (!pData || !pData.isDirtyForSave) {
-        return false;
-    }
+    if (!pData || !pData.isDirtyForSave) return false;
 
     if (typeof playerLike.setDynamicProperty !== 'function') {
-        const errorMessage = `[PlayerDataManager CRITICAL] Attempted to save data for ${playerLike.name ?? playerLike.id} without a valid player object. Data save aborted.`;
-        logError(errorMessage);
-        logManager.addLog({
-            actionType: 'error.pdm.dpWrite.invalidPlayerObject',
-            context: 'playerDataManager.saveDirtyPlayerData',
-            targetName: playerLike.name ?? playerLike.id,
-            details: {
-                errorCode: 'PDM_INVALID_PLAYERLIKE_OBJECT',
-                message: 'The provided player-like object does not have a setDynamicProperty method.',
-            },
-        }, dependencies);
+        logError(`[PlayerDataManager CRITICAL] Attempted to save data for ${playerLike.name ?? playerLike.id} without a valid player object. Data save aborted.`);
         return false;
     }
 
     try {
-        const dataToSave = { ...pData };
+        let dataToSave = { ...pData };
         delete dataToSave.transient;
 
-        if (dataToSave.blockBreakTimestamps.length > 50) {
-            dataToSave.blockBreakTimestamps = dataToSave.blockBreakTimestamps.slice(-50);
-        }
-        if (dataToSave.chatMessageTimestamps.length > 50) {
-            dataToSave.chatMessageTimestamps = dataToSave.chatMessageTimestamps.slice(-50);
-        }
-
+        dataToSave = trimPlayerData(dataToSave);
         let serializedData = JSON.stringify(dataToSave);
 
         if (serializedData.length > maxSerializedDataLength) {
-            logManager.addLog({
-                actionType: 'warning.pdm.dpWrite.sizeLimit',
-                context: 'playerDataManager.saveDirtyPlayerData.recovery',
-                targetName: playerLike.name,
-                details: {
-                    errorCode: 'PDM_DP_SIZE_EXCEEDED_RECOVERY_ATTEMPT',
-                    message: `Serialized player data for ${playerLike.name} exceeds size limit (${serializedData.length} > ${maxSerializedDataLength}). Attempting recovery.`,
-                    meta: { originalSize: serializedData.length },
-                },
-            }, dependencies);
-
-            dataToSave.blockBreakTimestamps = [];
-            dataToSave.chatMessageTimestamps = [];
-            if (dataToSave.recentBlockPlacements) {
-                dataToSave.recentBlockPlacements = [];
-            }
-            if (dataToSave.flags) {
-                // Instead of clearing, trim flag details if they are arrays
-                for (const key in dataToSave.flags) {
-                    if (Array.isArray(dataToSave.flags[key])) {
-                        dataToSave.flags[key] = dataToSave.flags[key].slice(-10); // Keep last 10
-                    }
-                }
-            }
-
-
-            serializedData = JSON.stringify(dataToSave);
+            serializedData = recoverAndSerializePlayerData(dataToSave, playerLike, dependencies);
 
             if (serializedData.length > maxSerializedDataLength) {
                 logManager.addLog({
@@ -366,16 +380,15 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
                     targetName: playerLike.name,
                     details: {
                         errorCode: 'PDM_DP_RECOVERY_FAILED_DATA_RESET',
-                        message: `Data recovery failed for ${playerLike.name}. Size after trimming is still too large (${serializedData.length}). Resetting player data to prevent corruption.`,
+                        message: `Data recovery failed for ${playerLike.name}. Size after trimming is still too large. Resetting player data to prevent corruption.`,
                         meta: { trimmedSize: serializedData.length },
                     },
                 }, dependencies);
 
                 const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick);
-                const freshSerializedData = JSON.stringify(freshData);
-                await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, freshSerializedData);
-                activePlayerData.set(playerLike.id, freshData); // Update cache with fresh data
-                return true; // Saved fresh data
+                await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, JSON.stringify(freshData));
+                activePlayerData.set(playerLike.id, freshData);
+                return true;
             }
         }
 
@@ -387,16 +400,6 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
         return true;
 
     } catch (error) {
-        logManager.addLog({
-            actionType: 'error.pdm.dpWrite.generic',
-            context: 'playerDataManager.saveDirtyPlayerData',
-            targetName: playerLike.name,
-            details: {
-                errorCode: 'PDM_DP_WRITE_FAILURE',
-                message: error.message,
-                rawErrorStack: error.stack,
-            },
-        }, dependencies);
         logError(`[PlayerDataManager CRITICAL] Failed to save player data for ${playerLike.name}: ${error.stack}`, error);
         return false;
     }
