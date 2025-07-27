@@ -71,11 +71,8 @@ async function _handleFlagging(player, profile, flagReasonMessage, checkType, de
     const flagType = profile.flag.type || checkType;
     const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
 
-    // Call addFlag once with the total increment amount for efficiency and atomicity.
     await dependencies.playerDataManager?.addFlag(player, flagType, flagReasonMessage, dependencies, violationDetails, increment);
 
-    // The debug log inside addFlag is now more detailed, so this one can be simplified or removed.
-    // For now, we'll keep it to confirm the action was initiated from ActionManager.
     dependencies.playerUtils?.debugLog(`[ActionManager] Dispatched flag action for ${player.nameTag} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.nameTag, dependencies);
 }
 
@@ -104,11 +101,9 @@ function _handleLogging(player, profile, flagReasonMessage, checkType, violation
 }
 
 function _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies) {
-    // Exit early if there's no player or the profile doesn't have a notification message.
     if (!player || !profile.notifyAdmins?.message) {
         return;
     }
-    // Also exit if the player object is no longer valid.
     if (!player.isValid()) {
         return;
     }
@@ -136,7 +131,6 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
     const { playerDataManager, playerUtils } = dependencies;
     const currentPData = playerDataManager?.getPlayerData(player.id);
     if (currentPData) {
-        // Ensure player is still valid right before updating their data
         if (!player.isValid()) {
             playerUtils?.debugLog(`[ActionManager] Player ${currentPData.name} became invalid after getting pData. Skipping details map update.`, null, dependencies);
             return;
@@ -152,7 +146,6 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
         currentPData.isDirtyForSave = true;
         playerUtils?.debugLog(`[ActionManager] Stored violation details for check '${checkType}' for ${player.name}: ${JSON.stringify(detailsToStore)}`, player.name, dependencies);
     } else {
-        // This case might happen if the player leaves right as this is called.
         playerUtils?.debugLog(`[ActionManager] Could not store violation details for '${checkType}' (pData not found for player).`, null, dependencies);
     }
 }

@@ -15,7 +15,6 @@ export async function loadCommand(commandName, dependencies) {
     const { debugLog } = playerUtils;
     const lowerCaseCommandName = commandName.toLowerCase();
 
-    // Check if the command is already loaded
     if (commandDefinitionMap.has(lowerCaseCommandName)) {
         debugLog(`[DynamicCommandLoader] '${lowerCaseCommandName}' already loaded in memory.`, null, dependencies);
         return {
@@ -27,7 +26,7 @@ export async function loadCommand(commandName, dependencies) {
     const commandPath = commandFilePaths.get(lowerCaseCommandName);
     if (!commandPath) {
         debugLog(`[DynamicCommandLoader] No path found for command '${lowerCaseCommandName}'.`, null, dependencies);
-        return null; // Command does not exist in the registry
+        return null;
     }
 
     try {
@@ -37,13 +36,11 @@ export async function loadCommand(commandName, dependencies) {
         if (cmdModule?.definition?.name && typeof cmdModule.definition.name === 'string' && typeof cmdModule.execute === 'function') {
             const cmdNameLower = cmdModule.definition.name.toLowerCase();
 
-            // Check for name consistency between registry and module
             if (cmdNameLower !== lowerCaseCommandName) {
                 console.error(`[DynamicCommandLoader CRITICAL] Command name mismatch for ${lowerCaseCommandName}: Module exported '${cmdNameLower}'. Aborting load for this command.`);
                 return null;
             }
 
-            // Store the loaded command definition and execution function
             commandDefinitionMap.set(cmdNameLower, cmdModule.definition);
             commandExecutionMap.set(cmdNameLower, cmdModule.execute);
 

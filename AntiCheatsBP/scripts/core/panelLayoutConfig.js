@@ -71,10 +71,9 @@
  * @type {Record<string, PanelDefinition>}
  */
 export const panelDefinitions = {
-    // --- Main Panels ---
     mainAdminPanel: {
         title: '§l§bAntiCheat Admin Panel§r',
-        parentPanelId: null, // Top-level panel
+        parentPanelId: null,
         items: [
             {
                 id: 'playerManagementCat', sortId: 10, text: 'Player Management', icon: 'textures/ui/icon_multiplayer',
@@ -86,13 +85,13 @@ export const panelDefinitions = {
             },
             {
                 id: 'configEditingCat', sortId: 30, text: '§l§6Configuration§r', icon: 'textures/ui/settings_glyph_color',
-                requiredPermLevel: 0, actionType: 'openPanel', actionValue: 'configEditingRootPanel', // Owner only
+                requiredPermLevel: 0, actionType: 'openPanel', actionValue: 'configEditingRootPanel',
             },
         ],
     },
     mainUserPanel: {
         title: 'Player Information Panel',
-        parentPanelId: null, // Top-level panel
+        parentPanelId: null,
         items: [
             {
                 id: 'myStats', sortId: 10, text: 'My AntiCheat Stats', icon: 'textures/ui/icon_bestfriend',
@@ -113,14 +112,13 @@ export const panelDefinitions = {
         ],
     },
 
-    // --- Admin Sub-Panels ---
     playerManagementPanel: {
         title: 'Player Management',
         parentPanelId: 'mainAdminPanel',
         items: [
             {
                 id: 'viewOnlinePlayersPanel', sortId: 10, text: '§lView Online Players§r', icon: 'textures/ui/multiplayer_glyph_color',
-                requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'onlinePlayersPanel', // Changed perm from 2 to 1
+                requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'onlinePlayersPanel',
             },
             {
                 id: 'inspectPlayerText', sortId: 20, text: '§lInspect Player (Text)§r', icon: 'textures/ui/magnifying_glass',
@@ -147,14 +145,13 @@ export const panelDefinitions = {
         items: [
             {
                 id: 'refreshOnlinePlayers',
-                sortId: 1, // Show refresh at the top
+                sortId: 1,
                 text: '§2Refresh List§r',
                 icon: 'textures/ui/refresh',
-                requiredPermLevel: 1, // Changed perm from 2 to 1
+                requiredPermLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'refreshOnlinePlayersPanelAction',
             },
-            // Player items will be dynamically generated
         ],
     },
     /**
@@ -168,14 +165,13 @@ export const panelDefinitions = {
         items: [
             {
                 id: 'refreshWatchedPlayers',
-                sortId: 1, // Show refresh at the top
+                sortId: 1,
                 text: '§2Refresh List§r',
                 icon: 'textures/ui/refresh',
-                requiredPermLevel: 1, // Matches old command perm
+                requiredPermLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'refreshWatchedPlayersPanelAction',
             },
-            // Watched player items will be dynamically generated
         ],
     },
     serverManagementPanel: {
@@ -193,12 +189,12 @@ export const panelDefinitions = {
         title: '§l§6Configuration Editor§r',
         parentPanelId: 'mainAdminPanel',
         items: [
-            { id: 'viewConfigCategories', sortId: 10, text: 'Browse Config Categories', requiredPermLevel: 0, actionType: 'functionCall', actionValue: 'showConfigCategoriesList' }, // This would list categories, then specific configs
+            { id: 'viewConfigCategories', sortId: 10, text: 'Browse Config Categories', requiredPermLevel: 0, actionType: 'functionCall', actionValue: 'showConfigCategoriesList' },
         ],
     },
     playerActionsPanel: {
-        title: 'Actions for {playerName}', // Dynamic title
-        parentPanelId: 'playerManagementPanel', // This might be dynamic based on how it's opened (e.g. from online list)
+        title: 'Actions for {playerName}',
+        parentPanelId: 'playerManagementPanel',
         items: [
             { id: 'viewPlayerFlags', sortId: 5, text: '§bView Detailed Flags§r', icon: 'textures/ui/magnifying_glass', requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'detailedFlagsPanel', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
             { id: 'resetPlayerFlagsDirect', sortId: 7, text: '§eReset Player Flags§r', icon: 'textures/ui/refresh', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'confirmResetPlayerFlagsForPlayer', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
@@ -208,18 +204,18 @@ export const panelDefinitions = {
             { id: 'unmutePlayer', sortId: 35, text: '§aUnmute Player§r', icon: 'textures/ui/speaker_off_light', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showUnmuteFormForPlayer', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
             {
                 id: 'freezePlayer', sortId: 40,
-                text: '§bToggle Freeze for {targetPlayerName}§r', // Default text
-                icon: 'textures/ui/debug_glyph_color', // Default icon (placeholder)
+                text: '§bToggle Freeze for {targetPlayerName}§r',
+                icon: 'textures/ui/debug_glyph_color',
                 textVariants: [
                     { contextKey: 'isTargetFrozen', contextValue: true, text: '§aUnfreeze {targetPlayerName}§r' },
                     { contextKey: 'isTargetFrozen', contextValue: false, text: '§bFreeze {targetPlayerName}§r' },
                 ],
                 iconVariants: [
-                    { contextKey: 'isTargetFrozen', contextValue: true, icon: 'textures/ui/icon_unlocked' }, // Placeholder icon for "Unfreeze"
-                    { contextKey: 'isTargetFrozen', contextValue: false, icon: 'textures/ui/icon_locked' },     // Placeholder icon for "Freeze"
+                    { contextKey: 'isTargetFrozen', contextValue: true, icon: 'textures/ui/icon_unlocked' },
+                    { contextKey: 'isTargetFrozen', contextValue: false, icon: 'textures/ui/icon_locked' },
                 ],
                 requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'toggleFreezePlayer',
-                actionContextVars: ['targetPlayerId', 'targetPlayerName', 'isTargetFrozen'], // Pass isTargetFrozen to the action too
+                actionContextVars: ['targetPlayerId', 'targetPlayerName', 'isTargetFrozen'],
             },
             { id: 'viewPlayerInventory', sortId: 42, text: '§9View Inventory§r', icon: 'textures/ui/inventory_icon', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showPlayerInventoryFromPanel', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
             { id: 'toggleWatchPlayer', sortId: 43, text: '§3Toggle Watch§r', icon: 'textures/ui/spyglass_flat_color', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'toggleWatchPlayerFromPanel', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
@@ -243,58 +239,43 @@ export const panelDefinitions = {
             {
                 id: 'filterByName', sortId: 30, text: '§bFilter by Player Name§r',
                 requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showModLogFilterModal',
-                // This function (showModLogFilterModalImpl) already handles setting initial context for logViewerPanel
             },
         ],
     },
 
-    // --- User Panel Sub-Panels (now actual panels) ---
     myStatsPanel: {
         title: '§l§bYour Stats§r',
         parentPanelId: 'mainUserPanel',
         items: [
-            // Content for stats will be dynamically generated by a functionCall,
-            // or this panel could be a 'displayPanel' type if we add such an actionType.
-            // For now, assume a function call populates a modal or a simple action form body.
             { id: 'displayMyStats', sortId: 10, text: 'View My Stats Details', requiredPermLevel: 1024, actionType: 'functionCall', actionValue: 'showMyStatsPageContent' },
         ],
     },
     serverRulesPanel: {
         title: '§l§eServer Rules§r',
         parentPanelId: 'mainUserPanel',
-        dynamicItemGeneratorKey: 'generateServerRuleItems', // Added for dynamic items
+        dynamicItemGeneratorKey: 'generateServerRuleItems',
         items: [
-            // Items will be dynamically generated.
-            // The 'showServerRulesPageContent' function call is no longer needed here
-            // as the panel itself will list the rules.
         ],
     },
     helpfulLinksPanel: {
         title: '§l§9Helpful Links§r',
         parentPanelId: 'mainUserPanel',
-        dynamicItemGeneratorKey: 'generateHelpfulLinkItems', // Added for dynamic items
+        dynamicItemGeneratorKey: 'generateHelpfulLinkItems',
         items: [
-            // Static items can still be defined here if needed, e.g., a refresh button.
-            // For now, it will be populated entirely by the dynamic generator.
-            // The 'showHelpfulLinksPageContent' function call is no longer needed here
-            // as the panel itself will list the links.
         ],
     },
     generalTipsPanel: {
         title: 'General Tips',
         parentPanelId: 'mainUserPanel',
-        dynamicItemGeneratorKey: 'generateGeneralTipItems', // Added for dynamic items
+        dynamicItemGeneratorKey: 'generateGeneralTipItems',
         items: [
-            // Items will be dynamically generated.
-            // The 'showGeneralTipsPageContent' function call is no longer needed here.
         ],
     },
 
-    // --- Example Leaf Panels (display content, often modal or simple action forms) ---
     systemInfoPanel: {
         title: '§l§bSystem Information§r',
         parentPanelId: 'serverManagementPanel',
-        items: [ // This would typically be a functionCall that shows a modal with info
+        items: [
             { id: 'displaySystemInfo', sortId: 10, text: 'Show System Details', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'displaySystemInfoModal' },
         ],
     },
@@ -306,13 +287,13 @@ export const panelDefinitions = {
         ],
     },
     logViewerPanel: {
-        title: 'Logs: {logTypeName} (Page {currentPage}/{totalPages})', // Dynamic title
+        title: 'Logs: {logTypeName} (Page {currentPage}/{totalPages})',
         parentPanelId: 'modLogSelectionPanel',
         items: [
             {
                 id: 'viewCurrentPageLogs', sortId: 10, text: 'View Current Page ({currentPage}) Logs', icon: 'textures/ui/book_writable',
                 requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'displaySpecificLogsPage',
-                actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter', 'currentPage', 'totalPages'], // Pass all relevant for display
+                actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter', 'currentPage', 'totalPages'],
             },
             {
                 id: 'prevLogPage', sortId: 20, text: 'Previous Page', icon: 'textures/ui/arrow_left_thin_hover',
@@ -324,10 +305,10 @@ export const panelDefinitions = {
                 requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'goToNextLogPage',
                 actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter', 'currentPage', 'totalPages'],
             },
-            { // Optional: Re-filter if needed from here
+            {
                 id: 'filterLogsAgain', sortId: 40, text: 'Change Filter', icon: 'textures/ui/icon_filter',
                 requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showModLogFilterModal',
-                actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter'], // Current filter context
+                actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter'],
             },
         ],
     },
