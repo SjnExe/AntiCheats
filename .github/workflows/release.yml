@@ -59,14 +59,14 @@ jobs:
             echo "No JSON files found in staging directory. Skipping JSON placeholder replacements."
           else
             echo "Found JSON files for processing: $JSON_FILES"
-            echo "Processing JSON files for 'v__VERSION_STRING__' replacement..."
-            find staging -type f -name "*.json" -exec sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" {} +
-            echo "Completed 'v__VERSION_STRING__' replacement in JSON files."
+            echo "Processing JSON files for 'v99.99.99' replacement..."
+            find staging -type f -name "*.json" -exec sed -i "s/v99.99.99/v${VERSION_STRING}/g" {} +
+            echo "Completed 'v99.99.99' replacement in JSON files."
 
-            echo "Processing JSON files for '__VERSION_ARRAY__' replacement..."
+            echo "Processing JSON files for '[99, 99, 99]' replacement..."
             # This replaces the JSON string ""__VERSION_ARRAY__"" with the array string like [1,2,3]
-            find staging -type f -name "*.json" -exec sed -i "s/\"__VERSION_ARRAY__\"/${VERSION_ARRAY_STRING}/g" {} +
-            echo "Completed '__VERSION_ARRAY__' replacement in JSON files."
+            find staging -type f -name "*.json" -exec sed -i "s/\[99, 99, 99\]/${VERSION_ARRAY_STRING}/g" {} +
+            echo "Completed '[99, 99, 99]' replacement in JSON files."
           fi
 
           echo "--- Verification of Manifest Files ---"
@@ -89,10 +89,10 @@ jobs:
           echo "--- End Manifest Verification ---"
 
           CONFIG_JS_PATH="staging/AntiCheatsBP/scripts/config.js"
-          echo "Processing config.js for 'v__VERSION_STRING__' replacement..."
+          echo "Processing config.js for 'v99.99.99' replacement..."
           if [ -f "$CONFIG_JS_PATH" ]; then
-            echo "Found config.js at $CONFIG_JS_PATH. Replacing 'v__VERSION_STRING__' with 'v${VERSION_STRING}'."
-            sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" "$CONFIG_JS_PATH"
+            echo "Found config.js at $CONFIG_JS_PATH. Replacing 'v99.99.99' with 'v${VERSION_STRING}'."
+            sed -i "s/v99.99.99/v${VERSION_STRING}/g" "$CONFIG_JS_PATH"
             echo "Contents of $CONFIG_JS_PATH after replacement (first 15 lines):"
             head -n 15 "$CONFIG_JS_PATH" # Show only first few lines to avoid overly long logs
             echo "--- End config.js Verification ---"
