@@ -1,3 +1,21 @@
+// A simple, early-stage error handler to catch issues during the initial script load phase.
+// This is crucial for diagnosing problems that prevent the main error handling mechanisms from starting.
+try {
+    // Top-level error boundary for the entire script initialization.
+    // If this fails, it indicates a severe issue, likely with module resolution or a syntax error in a critical file.
+    system.events.beforeWatchdogTerminate.subscribe(data => {
+        // This event fires just before the script watchdog terminates the script due to a long-running operation.
+        // It's a last-chance effort to log what was happening.
+        console.warn(`[AntiCheat] Watchdog termination imminent. Reason: ${data.cancelationReason}`);
+        // In a real-world scenario, you might try to log this to an external service if possible.
+    });
+} catch (e) {
+    // This catch block will only execute if there's an error subscribing to the watchdog event itself,
+    // which would be highly unusual but is included for completeness.
+    console.error(`[AntiCheat] CRITICAL: Failed to subscribe to watchdog event: ${e}`);
+}
+
+
 import {
     system,
     world,
@@ -41,9 +59,32 @@ let isProcessingTick = false;
 function performInitializations() {
     playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', dependencies);
 
-    subscribeToEvents();
-    initializeModules();
-    validateConfigurations();
+    try {
+        subscribeToEvents();
+    } catch (e) {
+        logError('CRITICAL: Failed to subscribe to events during initialization.', e);
+        // We throw here because a failure to subscribe to events is catastrophic.
+        // The main initialization loop will catch this and attempt a retry.
+        throw new Error(`Event subscription failed: ${e.message}`);
+    }
+
+    try {
+        initializeModules();
+    } catch (e) {
+        logError('CRITICAL: Failed to initialize core modules.', e);
+        throw new Error(`Module initialization failed: ${e.message}`);
+    }
+
+    try {
+        validateConfigurations();
+    } catch (e) {
+        logError('CRITICAL: An unexpected error occurred during configuration validation.', e);
+        // This is a severe error, but we might not need to halt everything.
+        // The validation function itself is expected to notify admins of specific issues.
+        // We'll log it and continue, but this indicates a deeper problem.
+        playerUtils.notifyAdmins('A critical, unexpected error occurred during config validation. Check server logs.', dependencies);
+    }
+
 
     world.sendMessage({
         'translate': 'system.core.initialized',
@@ -167,8 +208,18 @@ function validateConfigurations() {
     });
 
     if (allValidationErrors.length > 0) {
-        const summaryMessage = `CRITICAL: AntiCheat configuration validation failed with ${allValidationErrors.length} error(s). Check logs for details.`;
+        const summaryMessage = `CRITICAL: AntiCheat configuration validation failed with ${allValidationErrors.length} error(s).`;
         playerUtils.notifyAdmins(summaryMessage, dependencies);
+
+        // To avoid chat spam, we'll send a limited number of detailed errors to admins in-game.
+        const detailedErrorsToSend = allValidationErrors.slice(0, 5);
+        const detailedMessage = `§cConfiguration Errors:§r\n` + detailedErrorsToSend.join('\n');
+        playerUtils.notifyAdmins(detailedMessage, dependencies);
+
+        if (allValidationErrors.length > 5) {
+            playerUtils.notifyAdmins(`...and ${allValidationErrors.length - 5} more errors. Please check server logs for the full list.`, dependencies);
+        }
+
     } else {
         playerUtils.debugLog(`[${mainModuleName}] All configurations validated successfully.`, 'System', dependencies);
     }
