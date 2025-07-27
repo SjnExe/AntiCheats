@@ -22,6 +22,7 @@ export * from './panel.js';
 export * from './purgeflags.js';
 export * from './rank.js';
 export * from './reload.js';
+export * from './restart.js';
 export * from './report.js';
 export * from './resetflags.js';
 export * from './rules.js';
