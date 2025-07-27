@@ -1,5 +1,3 @@
-import { world } from '@minecraft/server';
-
 /**
  * @file Defines the !reload command, which reloads the server's scripts and functions.
  */
