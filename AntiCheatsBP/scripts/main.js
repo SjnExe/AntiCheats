@@ -98,9 +98,8 @@ function subscribeToEvents(dependencies) {
     const mainModuleName = 'CoreSystem';
     dependencies.playerUtils.debugLog(`[${mainModuleName}] Subscribing to events...`, 'System', dependencies);
 
-    world.beforeEvents.chatSend.subscribe((eventData) => handleBeforeChatSend(eventData, dependencies));
-
     const beforeEventSubscriptions = {
+        chatSend: handleBeforeChatSend,
         playerBreakBlock: handlePlayerBreakBlockBeforeEvent,
         itemUse: handleItemUse,
         playerPlaceBlock: handlePlayerPlaceBlockBefore,
