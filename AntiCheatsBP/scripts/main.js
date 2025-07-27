@@ -100,32 +100,32 @@ function subscribeToEvents(dependencies) {
 
     world.beforeEvents.chatSend.subscribe((eventData) => handleBeforeChatSend(eventData, dependencies));
 
-    const beforeEventSubscriptions = {
-        playerBreakBlock: handlePlayerBreakBlockBeforeEvent,
-        itemUse: handleItemUse,
-        playerPlaceBlock: handlePlayerPlaceBlockBefore,
-        playerLeave: handlePlayerLeaveBeforeEvent,
+    const eventSubscriptions = {
+        before: {
+            playerBreakBlock: handlePlayerBreakBlockBeforeEvent,
+            itemUse: handleItemUse,
+            playerPlaceBlock: handlePlayerPlaceBlockBefore,
+            playerLeave: handlePlayerLeaveBeforeEvent,
+        },
+        after: {
+            playerSpawn: handlePlayerSpawn,
+            entityHurt: handleEntityHurt,
+            playerBreakBlock: handlePlayerBreakBlockAfterEvent,
+            playerPlaceBlock: handlePlayerPlaceBlockAfterEvent,
+            playerDimensionChange: handlePlayerDimensionChangeAfterEvent,
+            entityDie: handleEntityDieForDeathEffects,
+            entitySpawn: handleEntitySpawnEventAntiGrief,
+            pistonActivate: handlePistonActivateAntiGrief,
+            inventoryItemChanged: handleInventoryItemChange,
+            playerDeath: handlePlayerDeath,
+        },
     };
 
-    const afterEventSubscriptions = {
-        playerSpawn: handlePlayerSpawn,
-        entityHurt: handleEntityHurt,
-        playerBreakBlock: handlePlayerBreakBlockAfterEvent,
-        playerPlaceBlock: handlePlayerPlaceBlockAfterEvent,
-        playerDimensionChange: handlePlayerDimensionChangeAfterEvent,
-        entityDie: handleEntityDieForDeathEffects,
-        entitySpawn: handleEntitySpawnEventAntiGrief,
-        pistonActivate: handlePistonActivateAntiGrief,
-        inventoryItemChanged: handleInventoryItemChange,
-        playerDeath: handlePlayerDeath,
-    };
-
-    for (const eventName in beforeEventSubscriptions) {
-        world.beforeEvents[eventName].subscribe((eventData) => beforeEventSubscriptions[eventName](eventData, dependencies));
-    }
-
-    for (const eventName in afterEventSubscriptions) {
-        world.afterEvents[eventName].subscribe((eventData) => afterEventSubscriptions[eventName](eventData, dependencies));
+    for (const eventType in eventSubscriptions) {
+        const eventGroup = world[`${eventType}Events`];
+        for (const eventName in eventSubscriptions[eventType]) {
+            eventGroup[eventName].subscribe((eventData) => eventSubscriptions[eventType][eventName](eventData, dependencies));
+        }
     }
 }
 /**
@@ -158,18 +158,27 @@ function validateConfigurations(dependencies) {
     const knownCommands = getAllRegisteredCommandNames();
 
     const validationTasks = [
-        () => validateMainConfig(configModule.defaultConfigSettings, checkActionProfiles, knownCommands, configModule.commandAliases),
-        () => validateActionProfiles(checkActionProfiles),
-        () => validateAutoModConfig(automodConfig, checkActionProfiles),
-        () => validateRanksConfig({ rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel }, dependencies.config.ownerPlayerName, dependencies.config.adminTag),
+        {
+            task: () => validateMainConfig(configModule.defaultConfigSettings, checkActionProfiles, knownCommands, configModule.commandAliases),
+            context: 'config.js',
+        },
+        {
+            task: () => validateActionProfiles(checkActionProfiles),
+            context: 'actionProfiles.js',
+        },
+        {
+            task: () => validateAutoModConfig(automodConfig, checkActionProfiles),
+            context: 'automodConfig.js',
+        },
+        {
+            task: () => validateRanksConfig({ rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel }, dependencies.config.ownerPlayerName, dependencies.config.adminTag),
+            context: 'ranksConfig.js',
+        },
     ];
 
-    const errorContexts = ['config.js', 'actionProfiles.js', 'automodConfig.js', 'ranksConfig.js'];
-
-    validationTasks.forEach((task, index) => {
+    validationTasks.forEach(({ task, context }) => {
         const errors = task();
         if (errors.length > 0) {
-            const context = errorContexts[index];
             dependencies.playerUtils.debugLog(`[${mainModuleName}] ${context} validation errors found:`, 'SystemCritical', dependencies);
             errors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
             allValidationErrors.push(...errors.map(e => `[${context}] ${e}`));
