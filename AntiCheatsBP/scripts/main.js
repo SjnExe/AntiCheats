@@ -46,9 +46,7 @@ import {
     validateRanksConfig,
 } from './core/configValidator.js';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './core/ranksConfig.js';
-import { DependencyManager } from './core/dependencyManager.js';
-
-const dependencyManager = new DependencyManager();
+import { dependencyManager } from './core/dependencyManager.js';
 const maxInitRetries = 3;
 const initialRetryDelayTicks = 20;
 const periodicDataPersistenceIntervalTicks = 600;

@@ -96,8 +96,14 @@ const tpaManager = { clearExpiredRequests, getRequestsInWarmup, checkPlayerMovem
 const chatProcessor = { processChatMessage };
 
 
-export class DependencyManager {
+class DependencyManager {
     constructor() {
+        if (DependencyManager._instance) {
+            logError(`[${mainModuleName}] FATAL: Attempted to instantiate a second DependencyManager. This is a singleton.`);
+            return DependencyManager._instance;
+        }
+        DependencyManager._instance = this;
+
         this._dependencies = {};
         this.profilingData = {
             tickLoop: { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] },
@@ -244,3 +250,5 @@ export class DependencyManager {
         }
     }
 }
+
+export const dependencyManager = new DependencyManager();
