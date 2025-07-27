@@ -348,9 +348,12 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
                 dataToSave.recentBlockPlacements = [];
             }
             if (dataToSave.flags) {
-                // Keep totalFlags but clear detailed history if it's large
-                const preservedFlags = { totalFlags: dataToSave.flags.totalFlags || 0 };
-                dataToSave.flags = preservedFlags;
+                // Instead of clearing, trim flag details if they are arrays
+                for (const key in dataToSave.flags) {
+                    if (Array.isArray(dataToSave.flags[key])) {
+                        dataToSave.flags[key] = dataToSave.flags[key].slice(-10); // Keep last 10
+                    }
+                }
             }
 
 
