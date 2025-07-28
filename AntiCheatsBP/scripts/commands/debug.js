@@ -81,7 +81,7 @@ export async function execute(player, args, dependencies) {
         case 'help':
         default:
             player.sendMessage(
-                "§2--- AntiCheat Debug Help ---\n" +
+                '§2--- AntiCheat Debug Help ---\n' +
                 `§a${prefix}debug log [on|off]§7 - Toggles debug logging.\n` +
                 `§a${prefix}debug watch <player>§7 - Toggles watching a player.\n` +
                 `§a${prefix}debug list§7 - Lists watched players.\n` +
@@ -89,7 +89,7 @@ export async function execute(player, args, dependencies) {
                 `§a${prefix}debug playerdata <PlayerName>§7 - Shows cached data for a player.\n` +
                 `§a${prefix}debug ranks§7 - Lists all registered ranks.\n` +
                 `§a${prefix}debug commands§7 - Lists all registered commands and aliases.\n` +
-                `§a${prefix}debug actionprofiles§7 - Lists all available action profiles.`
+                `§a${prefix}debug actionprofiles§7 - Lists all available action profiles.`,
             );
             break;
     }
@@ -104,7 +104,7 @@ function handleConfigDebug(player, { configModule }) {
         }, 2);
 
         const chunks = configString.match(/.{1,900}/gs) || [];
-        player.sendMessage("§2--- Current Configuration ---");
+        player.sendMessage('§2--- Current Configuration ---');
         chunks.forEach(chunk => player.sendMessage(chunk));
 
     } catch (e) {
@@ -115,7 +115,7 @@ function handleConfigDebug(player, { configModule }) {
 function handlePlayerDataDebug(player, args, playerDataManager) {
     const targetName = args[0];
     if (!targetName) {
-        player.sendMessage("§cUsage: !debug playerdata <PlayerName>");
+        player.sendMessage('§cUsage: !debug playerdata <PlayerName>');
         return;
     }
 
@@ -149,10 +149,10 @@ function handlePlayerDataDebug(player, args, playerDataManager) {
 
 function handleRanksDebug(player, rankManager) {
     const { rankDefinitions } = rankManager;
-    player.sendMessage("§2--- Registered Ranks ---");
+    player.sendMessage('§2--- Registered Ranks ---');
 
     if (!rankDefinitions || rankDefinitions.length === 0) {
-        player.sendMessage("§cNo ranks are defined.");
+        player.sendMessage('§cNo ranks are defined.');
         return;
     }
 
@@ -166,36 +166,36 @@ function handleRanksDebug(player, rankManager) {
 
 function handleCommandsDebug(player, { commandAliases }, commandManager) {
     const allCommands = commandManager.getAllRegisteredCommandNames();
-    player.sendMessage("§2--- Registered Commands ---");
+    player.sendMessage('§2--- Registered Commands ---');
     player.sendMessage(allCommands.join(', '));
 
-    player.sendMessage("\n§2--- Command Aliases ---");
+    player.sendMessage('\n§2--- Command Aliases ---');
     const aliasEntries = Array.from(commandAliases.entries());
     if (aliasEntries.length > 0) {
         const aliasString = aliasEntries.map(([alias, cmd]) => `${alias} -> ${cmd}`).join(', ');
         player.sendMessage(aliasString);
     } else {
-        player.sendMessage("No aliases are configured.");
+        player.sendMessage('No aliases are configured.');
     }
 }
 
 function handleActionProfilesDebug(player, checkActionProfiles) {
-    player.sendMessage("§2--- Action Profiles ---");
+    player.sendMessage('§2--- Action Profiles ---');
     const profileNames = Object.keys(checkActionProfiles);
 
     if (profileNames.length === 0) {
-        player.sendMessage("§cNo action profiles are defined.");
+        player.sendMessage('§cNo action profiles are defined.');
         return;
     }
 
     profileNames.forEach(name => {
         const profile = checkActionProfiles[name];
-        const enabledStatus = profile.enabled ? "§aEnabled" : "§cDisabled";
+        const enabledStatus = profile.enabled ? '§aEnabled' : '§cDisabled';
         let actions = [];
         if (profile.flag) actions.push(`Flag(+${profile.flag.increment})`);
-        if (profile.notifyAdmins) actions.push("Notify");
-        if (profile.log) actions.push("Log");
-        if (profile.cancelMessage) actions.push("CancelMsg");
+        if (profile.notifyAdmins) actions.push('Notify');
+        if (profile.log) actions.push('Log');
+        if (profile.cancelMessage) actions.push('CancelMsg');
         if (profile.customAction) actions.push(profile.customAction);
 
         player.sendMessage(`§b${name}§r [${enabledStatus}§r]: ${actions.join(', ')}`);

@@ -213,7 +213,7 @@ function validateConfigurations() {
 
         // To avoid chat spam, we'll send a limited number of detailed errors to admins in-game.
         const detailedErrorsToSend = allValidationErrors.slice(0, 5);
-        const detailedMessage = `§cConfiguration Errors:§r\n` + detailedErrorsToSend.join('\n');
+        const detailedMessage = '§cConfiguration Errors:§r\n' + detailedErrorsToSend.join('\n');
         playerUtils.notifyAdmins(detailedMessage, dependencies);
 
         if (allValidationErrors.length > 5) {

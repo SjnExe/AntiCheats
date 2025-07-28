@@ -1,0 +1,24 @@
+
+/app/AntiCheatsBP/scripts/commands/debug.js
+   84:17  error  Strings must use singlequote  quotes
+   92:91  error  Missing trailing comma        comma-dangle
+  107:28  error  Strings must use singlequote  quotes
+  118:28  error  Strings must use singlequote  quotes
+  152:24  error  Strings must use singlequote  quotes
+  155:28  error  Strings must use singlequote  quotes
+  169:24  error  Strings must use singlequote  quotes
+  172:24  error  Strings must use singlequote  quotes
+  178:28  error  Strings must use singlequote  quotes
+  183:24  error  Strings must use singlequote  quotes
+  187:28  error  Strings must use singlequote  quotes
+  193:49  error  Strings must use singlequote  quotes
+  193:63  error  Strings must use singlequote  quotes
+  196:48  error  Strings must use singlequote  quotes
+  197:39  error  Strings must use singlequote  quotes
+  198:49  error  Strings must use singlequote  quotes
+
+/app/AntiCheatsBP/scripts/main.js
+  216:33  error  Strings must use singlequote  quotes
+
+✖ 17 problems (17 errors, 0 warnings)
+  17 errors and 0 warnings potentially fixable with the `--fix` option.
