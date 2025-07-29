@@ -477,8 +477,15 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     const { currentTick } = dependencies;
     const transient = pData.transient;
 
-    pData.lastKnownLocation = { ...player.location };
-    transient.headRotation = { ...player.getHeadRotation() };
+    const currentLocation = player.location;
+    pData.lastKnownLocation.x = currentLocation.x;
+    pData.lastKnownLocation.y = currentLocation.y;
+    pData.lastKnownLocation.z = currentLocation.z;
+
+    const currentHeadRotation = player.getHeadRotation();
+    transient.headRotation.x = currentHeadRotation.x;
+    transient.headRotation.y = currentHeadRotation.y;
+
     transient.bodyRotation = player.bodyRotation;
 
     const velocity = player.getVelocity();
