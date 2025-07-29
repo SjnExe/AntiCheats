@@ -131,7 +131,7 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
                     playSoundForEvent(p, 'adminNotificationReceived', dependencies, null);
                 } catch (e) {
                     console.error(`[playerUtils] Failed to send notification to admin ${p.name}: ${e}`);
-                    debugLog(`Failed to send AC notification to admin ${p.name}: ${e}`, dependencies, p.name);
+                    debugLog(`Failed to send AC notification to admin ${p.name}: ${e}`, p.name, dependencies);
                 }
             }
         }
@@ -165,7 +165,7 @@ export function logError(message, error) {
     }
 }
 
-export function debugLog(message, dependencies, contextPlayerNameIfWatched = null) {
+export function debugLog(message, contextPlayerNameIfWatched = null, dependencies) {
     if (dependencies?.config?.enableDebugLogging) {
         const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : '[AC Debug]';
         console.warn(`${prefix} ${message}`);
