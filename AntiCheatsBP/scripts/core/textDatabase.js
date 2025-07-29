@@ -304,6 +304,22 @@ export const stringDB = {
     // --- gma.js, gmc.js, gms.js, gmsp.js ---
     // Usage strings for gamemode commands are not used/needed as they default to self if no args.
     'command.gamemode.success.other': '§aSet {playerName}\'s gamemode to {gamemodeName}.',
+    // --- homes system ---
+    'command.homes.disabled': '§cThe homes system is currently disabled.',
+    'command.sethome.usage': '§cUsage: {prefix}sethome <name>',
+    'command.sethome.maxHomesReached': '§cYou have reached the maximum number of homes ({maxHomes}).',
+    'command.sethome.nameExists': '§cYou already have a home named "{homeName}".',
+    'command.sethome.success': '§aHome "{homeName}" set successfully.',
+    'command.home.usage': '§cUsage: {prefix}home <name>',
+    'command.home.notFound': '§cHome "{homeName}" not found.',
+    'command.home.success': '§aTeleporting to home "{homeName}".',
+    'command.home.teleportError': '§cTeleport failed: {error}',
+    'command.delhome.usage': '§cUsage: {prefix}delhome <name>',
+    'command.delhome.noHomes': '§cYou have no homes to delete.',
+    'command.delhome.notFound': '§cHome "{homeName}" not found.',
+    'command.delhome.success': '§aHome "{homeName}" deleted successfully.',
+    'command.homes.noHomes': '§cYou have no homes set.',
+    'command.homes.list': '§aYour homes: {homes}',
     'command.gamemode.success.self': '§aYour gamemode has been set to {gamemodeName}.',
     'command.gamemode.targetNotification': '§eYour gamemode has been set to {gamemodeName}.',
     'command.gamemode.error.generic': '§cFailed to set gamemode for {targetNameForError} to {gamemodeName}: {errorMessage}',
@@ -355,10 +371,31 @@ export const stringDB = {
     // --- kick.js ---
     'command.kick.cannotSelf': '§cYou cannot kick yourself.',
     'command.kick.noPermission': '§cYou do not have permission to kick this player.',
+    // --- economy system ---
+    'command.economy.disabled': '§cThe economy system is currently disabled.',
+    'command.balance.success': '§aYour balance is: {balance}',
+    'command.pay.usage': '§cUsage: {prefix}pay <player> <amount>',
+    'command.pay.cannotPaySelf': '§cYou cannot pay yourself.',
+    'command.pay.insufficientFunds': '§cYou do not have enough money. Your balance is: {balance}',
+    'command.pay.success.sender': '§aYou have paid {playerName} {amount}.',
+    'command.pay.success.receiver': '§aYou have received {amount} from {playerName}.',
+    'command.pay.error': '§cAn error occurred while processing the payment.',
+    'command.baltop.noData': '§cThere is no balance leaderboard data available yet.',
+    'command.baltop.header': '§l§6Top Balances§r',
+    'command.baltop.row': '§e#{rank}. §f{playerName}: §a{symbol}{balance}§r',
+    'command.baltop.error': '§cAn error occurred while fetching the top balances.',
     'command.kick.noPermissionOwner': '§cOnly the server owner can kick another owner.',
     'command.kick.targetMessage': '§cYou have been kicked by {kickerName}. Reason: {reason}',
     'command.kick.success': '§aKicked {playerName}. Reason: {reason}',
     'command.kick.error': '§cError kicking {playerName}: {errorMessage}',
+
+    // --- kits.js ---
+    'command.kit.disabled': '§cThe kits system is currently disabled.',
+    'command.kit.usage': '§cUsage: {prefix}kit <name>. Available kits: {kits}',
+    'command.kit.notFound': '§cKit "{kitName}" not found.',
+    'command.kit.cooldown': '§cYou must wait {time} before using this kit again.',
+    'command.kit.inventoryError': '§cCould not access your inventory.',
+    'command.kit.success': '§aYou have received the {kitName} kit.',
 
     // --- listranks.js ---
     'command.listranks.noRanks': '§cNo ranks are currently defined in the system.',
@@ -462,6 +499,11 @@ export const stringDB = {
     'ui.serverRules.title': '§l§eServer Rules§r',
     'ui.serverRules.noRulesDefined': 'The server rules have not been defined yet.',
     'ui.serverRules.invalidRuleNumber': '§cInvalid rule number. Please enter a number between 1 and {maxRules}.',
+
+    // --- spawn.js ---
+    'command.spawn.success': '§aTeleporting you to the spawn point.',
+    'command.spawn.error': '§cCould not teleport you to the spawn point.',
+    'command.spawn.set.success': '§aServer spawn point has been set to your current location.',
 
     // --- testnotify.js ---
     'command.testnotify.message': '§6This is a test notification from {playerName} via the AntiCheat system.',
