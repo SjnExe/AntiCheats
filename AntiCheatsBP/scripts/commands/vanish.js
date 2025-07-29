@@ -24,9 +24,6 @@ export async function execute(player, args, dependencies) {
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const vanishedPlayerTagName = config?.vanishedPlayerTag ?? 'vanished';
 
-    let mode = 'notify';
-    let action = 'toggle';
-
     const pData = dependencies.playerDataManager?.getPlayerData(player.id);
     if (!pData) {
         player.sendMessage(getString('common.error.playerDataNotFound'));

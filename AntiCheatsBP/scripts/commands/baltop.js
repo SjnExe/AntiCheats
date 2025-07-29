@@ -18,7 +18,7 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { config, getString, playerDataManager } = dependencies;
+    const { config, getString } = dependencies;
 
     if (!config.economy?.enabled) {
         player.sendMessage(getString('command.economy.disabled'));

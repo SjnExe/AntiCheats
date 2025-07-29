@@ -2171,7 +2171,7 @@ const uiActionFunctions = {
                     player.sendMessage(`§cFailed to clear report ${reportId}.`);
                 }
             },
-            dependencies
+            dependencies,
         );
         await showPanel(player, 'reportManagementPanel', dependencies, {});
     },

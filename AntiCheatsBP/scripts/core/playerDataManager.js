@@ -254,7 +254,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
     // Check offline ban list first
     const offlineBanEntry = offlineBanList.find(entry =>
         (entry.playerName && entry.playerName.toLowerCase() === player.name.toLowerCase()) ||
-        (entry.xuid && entry.xuid === player.id)
+        (entry.xuid && entry.xuid === player.id),
     );
 
     if (offlineBanEntry) {

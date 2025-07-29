@@ -115,12 +115,12 @@ const defaultConfigSettings = {
         ],
         /** @type {string[]} An array of strings, where each string is a server rule. */
         rules: [
-            "Rule 1: Be respectful to all players and staff.",
-            "Rule 2: No cheating, exploiting, or using unauthorized modifications.",
-            "Rule 3: Do not spam chat or use excessive caps/symbols.",
-            "Rule 4: Follow instructions from server administrators and moderators.",
-            "Rule 5: Keep chat appropriate and avoid offensive language.",
-            "Rule 6: Have fun and contribute to a positive community!"
+            'Rule 1: Be respectful to all players and staff.',
+            'Rule 2: No cheating, exploiting, or using unauthorized modifications.',
+            'Rule 3: Do not spam chat or use excessive caps/symbols.',
+            'Rule 4: Follow instructions from server administrators and moderators.',
+            'Rule 5: Keep chat appropriate and avoid offensive language.',
+            'Rule 6: Have fun and contribute to a positive community!',
         ],
     },
 

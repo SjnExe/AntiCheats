@@ -19,7 +19,7 @@ import { kits } from './kits.js';
  * @returns {{success: boolean, message: string}}
  */
 export function giveKit(player, kitName, dependencies) {
-    const { playerDataManager, getString, config } = dependencies;
+    const { playerDataManager, getString } = dependencies;
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return { success: false, message: getString('common.error.playerDataNotFound') };
 
