@@ -116,7 +116,9 @@ export async function handleChatCommand(eventData, dependencies) {
     }
 
     const userPermissionLevel = getPlayerPermissionLevel(player, dependencies);
-    if (typeof userPermissionLevel !== 'number' || userPermissionLevel > commandDef.permissionLevel) {
+    const requiredPermissionLevel = commandDef.permissionLevel ?? 4; // Default to a high number if undefined
+
+    if (userPermissionLevel > requiredPermissionLevel) {
         warnPlayer(player, getString('common.error.permissionDenied'), dependencies);
         return;
     }
@@ -132,10 +134,8 @@ export async function handleChatCommand(eventData, dependencies) {
  */
 function isCommandEnabled(commandName, commandDef, config) {
     const commandConfig = config?.commandSettings?.[commandName];
-    if (typeof commandConfig?.enabled === 'boolean') {
-        return commandConfig.enabled;
-    }
-    return commandDef.enabled !== false;
+    // Prioritize config setting, fall back to command definition, default to true.
+    return commandConfig?.enabled ?? commandDef.enabled ?? true;
 }
 
 /**
