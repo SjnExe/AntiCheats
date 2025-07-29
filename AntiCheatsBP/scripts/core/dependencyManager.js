@@ -21,7 +21,6 @@ import * as tpaManager from './tpaManager.js';
 import * as uiManager from './uiManager.js';
 import * as worldBorderManager from '../utils/worldBorderManager.js';
 import * as configValidator from './configValidator.js';
-import { offlineBanList } from './offlineBanList.js';
 import * as homesManager from './homesManager.js';
 import * as kitsManager from './kitsManager.js';
 import { kits } from './kits.js';

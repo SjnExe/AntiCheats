@@ -19,7 +19,7 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export function execute(player, args, dependencies) {
-    const { config, playerUtils, getString } = dependencies;
+    const { config, getString } = dependencies;
 
     if (!config.homes?.enabled) {
         player.sendMessage(getString('command.homes.disabled'));

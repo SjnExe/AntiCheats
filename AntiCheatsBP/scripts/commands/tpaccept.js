@@ -56,7 +56,7 @@ export async function execute(player, args, dependencies) {
     }
 
     if (!requestToAccept) {
-        player.sendMessage(getString('command.tpaccept.noRequestFromPlayer', { playerName: targetRequesterNameArg ?? "any" }));
+        player.sendMessage(getString('command.tpaccept.noRequestFromPlayer', { playerName: targetRequesterNameArg ?? 'any' }));
         return;
     }
 
