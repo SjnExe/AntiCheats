@@ -169,6 +169,27 @@ async function handlePlayerSpawn(eventData, dependencies) {
         playerName, dependencies,
     );
 
+    const banInfo = playerDataManager.getBanInfo(player, dependencies);
+    if (banInfo) {
+        playerUtils.debugLog(
+            `[EvtHdlr.Spawn] Player ${playerName} is banned. Kicking. Reason: ${banInfo.reason}, ` +
+    `Expires: ${new Date(banInfo.unbanTime).toISOString()}`,
+            playerName, dependencies,
+        );
+        const durationStringKick = playerUtils.getString(
+            banInfo.unbanTime === Infinity ? 'ban.duration.permanent' : 'ban.duration.expires', dependencies,
+            { expiryDate: new Date(banInfo.unbanTime).toLocaleString() },
+        );
+        let kickReason = playerUtils.getString('ban.kickMessage', dependencies, {
+            reason: banInfo.reason ?? playerUtils.getString('common.value.noReasonProvided', dependencies),
+            durationMessage: durationStringKick,
+        });
+        if (config.serverInfo.discordLink && config.serverInfo.discordLink.trim() !== '' && !config.serverInfo.discordLink.includes('example.com')) {
+            kickReason += `\n${playerUtils.getString('ban.kickMessage.discord', dependencies, { discordLink: config.serverInfo.discordLink })}`;
+        }
+        player.kick(kickReason, { reason: kickReason });
+        return;
+    }
     try {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, dependencies);
         if (!pData) {
@@ -186,28 +207,6 @@ async function handlePlayerSpawn(eventData, dependencies) {
         pData.isUsingShield = false;
         pData.joinTime = Date.now();
         pData.isDirtyForSave = true;
-
-        const banInfo = playerDataManager.getBanInfo(player, dependencies);
-        if (banInfo) {
-            playerUtils.debugLog(
-                `[EvtHdlr.Spawn] Player ${playerName} is banned. Kicking. Reason: ${banInfo.reason}, ` +
-        `Expires: ${new Date(banInfo.unbanTime).toISOString()}`,
-                playerName, dependencies,
-            );
-            const durationStringKick = playerUtils.getString(
-                banInfo.unbanTime === Infinity ? 'ban.duration.permanent' : 'ban.duration.expires', dependencies,
-                { expiryDate: new Date(banInfo.unbanTime).toLocaleString() },
-            );
-            let kickReason = playerUtils.getString('ban.kickMessage', dependencies, {
-                reason: banInfo.reason ?? playerUtils.getString('common.value.noReasonProvided', dependencies),
-                durationMessage: durationStringKick,
-            });
-            if (config.serverInfo.discordLink && config.serverInfo.discordLink.trim() !== '' && !config.serverInfo.discordLink.includes('example.com')) {
-                kickReason += `\n${playerUtils.getString('ban.kickMessage.discord', dependencies, { discordLink: config.serverInfo.discordLink })}`;
-            }
-            player.kick(kickReason, { reason: kickReason });
-            return;
-        }
 
         rankManager?.updatePlayerNametag(player, dependencies);
         playerUtils.debugLog(`[EventHandler.handlePlayerSpawn] Nametag updated for ${playerName}.`, playerName, dependencies);
