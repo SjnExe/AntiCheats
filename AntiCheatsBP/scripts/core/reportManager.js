@@ -81,6 +81,57 @@ export function getReports() {
 }
 
 /**
+ * @returns {ReportEntry[]} An array of open report objects, sorted by timestamp descending.
+ */
+export function getOpenReports() {
+    return getReports().filter(report => report.status === 'open');
+}
+
+/**
+ * @param {string} reportId The ID of the report to retrieve.
+ * @returns {ReportEntry|undefined} The report entry, or undefined if not found.
+ */
+export function getReportById(reportId) {
+    return reportsInMemory.find(report => report.id === reportId);
+}
+
+/**
+ * @param {string} reportId The ID of the report to assign.
+ * @param {string} adminName The name of the admin to assign the report to.
+ * @returns {boolean} True if the report was assigned, false otherwise.
+ */
+export function assignReport(reportId, adminName) {
+    const report = getReportById(reportId);
+    if (report) {
+        report.assignedAdmin = adminName;
+        report.status = 'assigned';
+        report.lastUpdatedTimestamp = Date.now();
+        reportsAreDirty = true;
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @param {string} reportId The ID of the report to resolve.
+ * @param {string} adminName The name of the admin resolving the report.
+ * @param {string} resolutionNotes Notes on how the report was resolved.
+ * @returns {boolean} True if the report was resolved, false otherwise.
+ */
+export function resolveReport(reportId, adminName, resolutionNotes) {
+    const report = getReportById(reportId);
+    if (report) {
+        report.status = 'resolved';
+        report.assignedAdmin = adminName;
+        report.resolutionDetails = resolutionNotes;
+        report.lastUpdatedTimestamp = Date.now();
+        reportsAreDirty = true;
+        return true;
+    }
+    return false;
+}
+
+/**
  * @param {import('@minecraft/server').Player} reporterPlayer The player making the report.
  * @param {string} reportedPlayerName The name of the player being reported.
  * @param {string} reason The reason for the report.

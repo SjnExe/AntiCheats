@@ -458,8 +458,10 @@ export const stringDB = {
     'command.resetflags.success': '§aSuccessfully reset flags and violation data for {playerName}.',
     'command.resetflags.noData': '§cCould not reset flags for {playerName} (no player data found).',
 
-    // --- rules.js (UI strings are in uiManager section or directly in config.serverRules) ---
-    // No command-specific messages here, as it opens a UI.
+    // --- rules.js ---
+    'ui.serverRules.title': '§l§eServer Rules§r',
+    'ui.serverRules.noRulesDefined': 'The server rules have not been defined yet.',
+    'ui.serverRules.invalidRuleNumber': '§cInvalid rule number. Please enter a number between 1 and {maxRules}.',
 
     // --- testnotify.js ---
     'command.testnotify.message': '§6This is a test notification from {playerName} via the AntiCheat system.',

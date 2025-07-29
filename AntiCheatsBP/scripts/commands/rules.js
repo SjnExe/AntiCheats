@@ -16,20 +16,31 @@ export const definition = {
 /**
  * Executes the !rules command.
  * @param {import('@minecraft/server').Player} player The player executing the command.
- * @param {string[]} _args Command arguments (not used).
+ * @param {string[]} args Command arguments. If a number is provided, it shows that specific rule.
  * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
  */
-export async function execute(player, _args, dependencies) {
+export async function execute(player, args, dependencies) {
     const { playerUtils, config, logManager, getString } = dependencies;
 
     const form = new MessageFormData();
     form.title(getString('ui.serverRules.title'));
 
-    if (config.serverRules && config.serverRules.trim() !== '') {
-        const rulesText = Array.isArray(config.serverRules) ? config.serverRules.join('\n') : config.serverRules;
-        form.body(rulesText);
-    } else {
+    const rules = config.serverInfo.rules;
+
+    if (!Array.isArray(rules) || rules.length === 0) {
         form.body(getString('ui.serverRules.noRulesDefined'));
+    } else {
+        const ruleNumberArg = args[0];
+        if (ruleNumberArg && /^\d+$/.test(ruleNumberArg)) {
+            const ruleIndex = parseInt(ruleNumberArg, 10) - 1;
+            if (ruleIndex >= 0 && ruleIndex < rules.length) {
+                form.body(rules[ruleIndex]);
+            } else {
+                form.body(getString('ui.serverRules.invalidRuleNumber', { maxRules: rules.length }));
+            }
+        } else {
+            form.body(rules.join('\n'));
+        }
     }
 
     form.button1(getString('common.button.close'));

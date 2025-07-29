@@ -21,6 +21,7 @@ import * as tpaManager from './tpaManager.js';
 import * as uiManager from './uiManager.js';
 import * as worldBorderManager from '../utils/worldBorderManager.js';
 import * as configValidator from './configValidator.js';
+import { offlineBanList } from './offlineBanList.js';
 
 export const actionManager = { executeCheckAction };
 export const chatProcessor = { processChatMessage };
