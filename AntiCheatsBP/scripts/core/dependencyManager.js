@@ -25,6 +25,7 @@ import { offlineBanList } from './offlineBanList.js';
 import * as homesManager from './homesManager.js';
 import * as kitsManager from './kitsManager.js';
 import { kits } from './kits.js';
+import * as economyManager from './economyManager.js';
 
 export const actionManager = { executeCheckAction };
 export const chatProcessor = { processChatMessage };
@@ -53,4 +54,5 @@ export {
     homesManager,
     kitsManager,
     kits,
+    economyManager,
 };

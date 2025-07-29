@@ -1,3 +1,5 @@
+export * from './balance.js';
+export * from './baltop.js';
 export * from './ban.js';
 export * from './clearchat.js';
 export * from './clearreports.js';
@@ -24,6 +26,7 @@ export * from './myflags.js';
 export * from './netherlock.js';
 export * from './notify.js';
 export * from './panel.js';
+export * from './pay.js';
 export * from './purgeflags.js';
 export * from './rank.js';
 export * from './reload.js';

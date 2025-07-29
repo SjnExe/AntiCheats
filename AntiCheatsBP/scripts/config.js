@@ -83,6 +83,14 @@ const defaultConfigSettings = {
         enabled: false,
     },
 
+    /** @type {object} Settings for the economy system. */
+    economy: {
+        /** @type {boolean} If true, the economy system is enabled. */
+        enabled: false,
+        /** @type {number} The starting balance for new players. */
+        startingBalance: 100,
+    },
+
     /** @type {object} Settings for server information and links. */
     serverInfo: {
         /** @type {string} Link to the server's Discord. */

@@ -71,7 +71,7 @@ function profileEventHandler(handlerName, handlerFunction) {
  * @param {import('../types.js').Dependencies} dependencies
  */
 async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
-    const { playerDataManager, playerUtils, config, logManager, actionManager } = dependencies;
+    const { playerDataManager, playerUtils, config, logManager, actionManager, economyManager } = dependencies;
     const { player } = eventData;
     const { name: playerName, id: playerId } = player;
 
@@ -80,6 +80,11 @@ async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
     const pData = playerDataManager.getPlayerData(playerId);
 
     if (pData) {
+        // Update economy leaderboard
+        if (config.economy?.enabled) {
+            economyManager.updateLeaderboard(player, dependencies);
+        }
+
         // Handle combat logging first
         if (config?.combatLog?.enabled && pData.lastCombatInteractionTime > 0) {
             const currentTime = Date.now();
