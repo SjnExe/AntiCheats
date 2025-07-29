@@ -54,9 +54,9 @@ export function addRequest(requester, target, type, dependencies) {
     const requesterName = requester?.nameTag ?? 'UnknownRequester';
     const targetName = target?.nameTag ?? 'UnknownTarget';
 
-    if (lastPlayerRequestTimestamp.has(requester.nameTag)) { // Use player.name as key for consistency with other maps
-        const elapsedTime = now - (lastPlayerRequestTimestamp.get(requester.nameTag) ?? 0);
-        const cooldownMs = (config?.tpaRequestCooldownSeconds ?? defaultTpaRequestCooldownSeconds) * 1000;
+    if (lastPlayerRequestTimestamp.has(requester.name)) {
+        const elapsedTime = now - (lastPlayerRequestTimestamp.get(requester.name) ?? 0);
+        const cooldownMs = (config?.tpa?.requestCooldownSeconds ?? defaultTpaRequestCooldownSeconds) * 1000;
         if (elapsedTime < cooldownMs) {
             const remainingSeconds = Math.ceil((cooldownMs - elapsedTime) / 1000);
             playerUtils?.debugLog(`[TpaManager.addRequest] Cooldown for ${requesterName}. Remaining: ${remainingSeconds}s`, requesterName, dependencies);
@@ -96,17 +96,13 @@ export function addRequest(requester, target, type, dependencies) {
  */
 export function findRequest(playerAName, playerBName) {
     for (const request of activeRequests.values()) {
-        const isRequesterA = request.requesterName === playerAName;
-        const isTargetA = request.targetName === playerAName;
-
+        const involvedPlayers = [request.requesterName, request.targetName];
         if (playerBName) {
-            const isRequesterB = request.requesterName === playerBName;
-            const isTargetB = request.targetName === playerBName;
-            if ((isRequesterA && isTargetB) || (isRequesterB && isTargetA)) {
+            if (involvedPlayers.includes(playerAName) && involvedPlayers.includes(playerBName)) {
                 return request;
             }
-        } else { // Only one player name provided, find any request involving them
-            if (isRequesterA || isTargetA) {
+        } else {
+            if (involvedPlayers.includes(playerAName)) {
                 return request;
             }
         }

@@ -242,11 +242,34 @@ export function getActivePlayers() {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @returns {Promise<import('../types.js').PlayerAntiCheatData>} A promise resolving with the player's data.
  */
+import { offlineBanList } from './offlineBanList.js';
+
 export async function ensurePlayerDataInitialized(player, currentTick, dependencies) {
     const { playerUtils, logManager } = dependencies;
 
     if (activePlayerData.has(player.id)) {
         return activePlayerData.get(player.id);
+    }
+
+    // Check offline ban list first
+    const offlineBanEntry = offlineBanList.find(entry =>
+        (entry.playerName && entry.playerName.toLowerCase() === player.name.toLowerCase()) ||
+        (entry.xuid && entry.xuid === player.id)
+    );
+
+    if (offlineBanEntry) {
+        let pData = initializeDefaultPlayerData(player, currentTick);
+        pData.banInfo = {
+            reason: offlineBanEntry.reason || 'Banned by offline list.',
+            bannedBy: offlineBanEntry.bannedBy || 'System',
+            isAutoMod: false,
+            triggeringCheckType: 'offlineBan',
+            expiryTimestamp: Infinity,
+            startTimestamp: Date.now(),
+        };
+        pData.isDirtyForSave = true;
+        activePlayerData.set(player.id, pData);
+        return pData;
     }
 
     try {
@@ -477,8 +500,15 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     const { currentTick } = dependencies;
     const transient = pData.transient;
 
-    pData.lastKnownLocation = { ...player.location };
-    transient.headRotation = { ...player.getHeadRotation() };
+    const currentLocation = player.location;
+    pData.lastKnownLocation.x = currentLocation.x;
+    pData.lastKnownLocation.y = currentLocation.y;
+    pData.lastKnownLocation.z = currentLocation.z;
+
+    const currentHeadRotation = player.getHeadRotation();
+    transient.headRotation.x = currentHeadRotation.x;
+    transient.headRotation.y = currentHeadRotation.y;
+
     transient.bodyRotation = player.bodyRotation;
 
     const velocity = player.getVelocity();

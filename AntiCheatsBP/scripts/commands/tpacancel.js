@@ -35,18 +35,11 @@ export function execute(player, args, dependencies) {
     let specificPlayerTargeted = false;
 
     if (targetPlayerNameArg) {
-        const otherPlayerOnline = playerUtils?.findPlayer(targetPlayerNameArg);
-        if (otherPlayerOnline && otherPlayerOnline.isValid()) {
-            requestToCancel = tpaManager?.findRequest(player.name, otherPlayerOnline.name);
-        } else {
-            requestToCancel = tpaManager?.findRequest(player.name, targetPlayerNameArg);
-        }
+        requestToCancel = tpaManager?.findRequest(player.name, targetPlayerNameArg);
         specificPlayerTargeted = true;
     } else {
         const allRequests = tpaManager?.findRequestsForPlayer(player.name) ?? [];
-        const outgoing = allRequests.find(r => r.requesterName === player.name && (r.status === 'pendingAcceptance' || r.status === 'pendingTeleportWarmup'));
-        const incoming = allRequests.find(r => r.targetName === player.name && r.status === 'pendingAcceptance');
-        requestToCancel = outgoing || incoming || null;
+        requestToCancel = allRequests.find(r => ['pendingAcceptance', 'pendingTeleportWarmup'].includes(r.status));
     }
 
     if (!requestToCancel) {

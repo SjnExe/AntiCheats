@@ -96,13 +96,15 @@ const defaultConfigSettings = {
             'Report issues or players using !report.',
             'Type !rules to see the server rules.',
         ],
-        /** @type {string} A single string containing all server rules, separated by newlines. */
-        rules: `Rule 1: Be respectful to all players and staff.
-Rule 2: No cheating, exploiting, or using unauthorized modifications.
-Rule 3: Do not spam chat or use excessive caps/symbols.
-Rule 4: Follow instructions from server administrators and moderators.
-Rule 5: Keep chat appropriate and avoid offensive language.
-Rule 6: Have fun and contribute to a positive community!`,
+        /** @type {string[]} An array of strings, where each string is a server rule. */
+        rules: [
+            "Rule 1: Be respectful to all players and staff.",
+            "Rule 2: No cheating, exploiting, or using unauthorized modifications.",
+            "Rule 3: Do not spam chat or use excessive caps/symbols.",
+            "Rule 4: Follow instructions from server administrators and moderators.",
+            "Rule 5: Keep chat appropriate and avoid offensive language.",
+            "Rule 6: Have fun and contribute to a positive community!"
+        ],
     },
 
     /** @type {object} Settings for chat-related checks. */
@@ -357,6 +359,7 @@ export const commandAliases = new Map([
     ['w', 'watch'],
     ['wb', 'worldborder'],
     ['xray', 'xraynotify'],
+    ['rule', 'rules'],
     // Add other aliases here
 ]);
 

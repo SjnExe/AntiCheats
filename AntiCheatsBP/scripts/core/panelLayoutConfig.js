@@ -183,6 +183,33 @@ export const panelDefinitions = {
             { id: 'lagClear', sortId: 30, text: '§cClear Ground Items/Entities§r', icon: 'textures/ui/trash', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'confirmLagClear' },
             { id: 'actionLogs', sortId: 40, text: '§3View Action Logs (All)§r', icon: 'textures/ui/icon_sign', requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'actionLogsPanel' },
             { id: 'modLogs', sortId: 50, text: '§3View Moderation Logs (Filtered)§r', icon: 'textures/ui/icon_filter', requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'modLogSelectionPanel' },
+            { id: 'reportManagement', sortId: 60, text: '§l§dReport Management§r', icon: 'textures/ui/feedback', requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'reportManagementPanel' },
+        ],
+    },
+    reportManagementPanel: {
+        title: '§l§dReport Management§r',
+        parentPanelId: 'serverManagementPanel',
+        dynamicItemGeneratorKey: 'generateReportListItems',
+        items: [
+            {
+                id: 'refreshReports',
+                sortId: 1,
+                text: '§2Refresh List§r',
+                icon: 'textures/ui/refresh',
+                requiredPermLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'refreshReportListPanelAction',
+            },
+        ],
+    },
+    reportActionsPanel: {
+        title: 'Report Details: {reportId}',
+        parentPanelId: 'reportManagementPanel',
+        items: [
+            { id: 'viewReportDetails', sortId: 10, text: '§eView Details§r', icon: 'textures/ui/magnifying_glass', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showReportDetailsModal', actionContextVars: ['reportId'] },
+            { id: 'assignReportToSelf', sortId: 20, text: '§aAssign to Me§r', icon: 'textures/ui/icon_bestfriend', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'assignReportToSelf', actionContextVars: ['reportId'] },
+            { id: 'resolveReport', sortId: 30, text: '§bResolve Report§r', icon: 'textures/ui/check', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showResolveReportForm', actionContextVars: ['reportId'] },
+            { id: 'clearReport', sortId: 40, text: '§cClear Report§r', icon: 'textures/ui/trash', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'confirmClearReport', actionContextVars: ['reportId'] },
         ],
     },
     configEditingRootPanel: {

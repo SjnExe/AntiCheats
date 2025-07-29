@@ -59,7 +59,7 @@ export function execute(player, args, dependencies) {
     }
 
     const existingRequest = tpaManager?.findRequest(player.name, targetPlayer.name);
-    if (existingRequest && (existingRequest.status === 'pendingAcceptance' || existingRequest.status === 'pendingTeleportWarmup')) {
+    if (existingRequest && ['pendingAcceptance', 'pendingTeleportWarmup'].includes(existingRequest.status)) {
         player.sendMessage(getString('command.tpa.alreadyActive', { playerName: targetPlayer.nameTag }));
         return;
     }

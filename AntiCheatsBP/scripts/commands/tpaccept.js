@@ -46,23 +46,18 @@ export async function execute(player, args, dependencies) {
 
     if (targetRequesterNameArg) {
         const lowerTargetRequesterName = targetRequesterNameArg.toLowerCase();
-        requestToAccept = incomingRequests.find(r => {
-            const requesterOnline = playerUtils?.findPlayer(r.requesterName);
-            return (requesterOnline?.nameTag?.toLowerCase() === lowerTargetRequesterName) || (r.requesterName.toLowerCase() === lowerTargetRequesterName);
-        });
-        if (!requestToAccept) {
-            player.sendMessage(getString('command.tpaccept.noRequestFromPlayer', { playerName: targetRequesterNameArg }));
-            return;
-        }
+        requestToAccept = incomingRequests.find(r => r.requesterName.toLowerCase() === lowerTargetRequesterName);
     } else if (incomingRequests.length === 1) {
         requestToAccept = incomingRequests[0];
     } else {
-        const requesterNames = incomingRequests.map(r => {
-            const reqOnline = playerUtils?.findPlayer(r.requesterName);
-            return reqOnline?.nameTag ?? r.requesterName;
-        }).join(', ');
+        const requesterNames = incomingRequests.map(r => r.requesterName).join(', ');
         player.sendMessage(getString('command.tpaccept.pendingFrom', { playerNames: requesterNames }));
         player.sendMessage(getString('command.tpaccept.usage', { prefix }));
+        return;
+    }
+
+    if (!requestToAccept) {
+        player.sendMessage(getString('command.tpaccept.noRequestFromPlayer', { playerName: targetRequesterNameArg ?? "any" }));
         return;
     }
 

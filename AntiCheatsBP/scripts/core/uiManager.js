@@ -2044,7 +2044,166 @@ const uiActionFunctions = {
         }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
+    /**
+     * Refreshes the report list panel.
+     * @param {import('@minecraft/server').Player} player The player who clicked refresh.
+     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+     * @param {object} context The current panel context.
+     */
+    refreshReportListPanelAction: async (player, dependencies, context) => {
+        const { playerUtils } = dependencies;
+        playerUtils.debugLog(`Action: refreshReportListPanelAction for ${player.name}`, player.name, dependencies);
+        await showPanel(player, 'reportManagementPanel', dependencies, context);
+    },
+    /**
+     * Shows a modal with the details of a specific report.
+     * @param {import('@minecraft/server').Player} player The admin player.
+     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+     * @param {object} context Context object with the reportId.
+     */
+    showReportDetailsModal: async (player, dependencies, context) => {
+        const { reportManager, getString } = dependencies;
+        const { reportId } = context;
+        const report = reportManager.getReportById(reportId);
+
+        if (!report) {
+            player.sendMessage(getString('command.viewreports.idNotFound', { reportId }));
+            await showPanel(player, 'reportManagementPanel', dependencies, {});
+            return;
+        }
+
+        let bodyText = `§eID: §f${report.id}\n`;
+        bodyText += `§eTimestamp: §f${new Date(report.timestamp).toLocaleString()}\n`;
+        bodyText += `§eReporter: §f${report.reporterName}\n`;
+        bodyText += `§eReported: §f${report.reportedName}\n`;
+        bodyText += `§eReason: §f${report.reason}\n`;
+        bodyText += `§eStatus: §f${report.status}\n`;
+        if (report.assignedAdmin) {
+            bodyText += `§eAssigned to: §f${report.assignedAdmin}\n`;
+        }
+        if (report.resolutionDetails) {
+            bodyText += `§eResolution: §f${report.resolutionDetails}\n`;
+        }
+
+        const modal = new ModalFormData()
+            .title('Report Details')
+            .content(bodyText)
+            .button1(getString('common.button.ok'));
+
+        await modal.show(player);
+        await showPanel(player, 'reportActionsPanel', dependencies, context);
+    },
+
+    /**
+     * Assigns a report to the current admin.
+     * @param {import('@minecraft/server').Player} player The admin player.
+     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+     * @param {object} context Context object with the reportId.
+     */
+    assignReportToSelf: async (player, dependencies, context) => {
+        const { reportManager, getString } = dependencies;
+        const { reportId } = context;
+        const success = reportManager.assignReport(reportId, player.name);
+
+        if (success) {
+            player.sendMessage(`§aReport ${reportId} assigned to you.`);
+        } else {
+            player.sendMessage(`§cFailed to assign report ${reportId}.`);
+        }
+        await showPanel(player, 'reportManagementPanel', dependencies, {});
+    },
+
+    /**
+     * Shows a form to resolve a report.
+     * @param {import('@minecraft/server').Player} player The admin player.
+     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+     * @param {object} context Context object with the reportId.
+     */
+    showResolveReportForm: async (player, dependencies, context) => {
+        const { reportManager, getString } = dependencies;
+        const { reportId } = context;
+
+        const modal = new ModalFormData()
+            .title(`Resolve Report: ${reportId}`)
+            .textField('Resolution Notes:', 'Enter resolution details')
+            .toggle('Mark as resolved', true);
+
+        const response = await modal.show(player);
+
+        if (response.canceled) {
+            await showPanel(player, 'reportActionsPanel', dependencies, context);
+            return;
+        }
+
+        const [resolutionNotes, isResolved] = response.formValues;
+
+        if (isResolved) {
+            const success = reportManager.resolveReport(reportId, player.name, resolutionNotes);
+            if (success) {
+                player.sendMessage(`§aReport ${reportId} has been resolved.`);
+            } else {
+                player.sendMessage(`§cFailed to resolve report ${reportId}.`);
+            }
+        }
+        await showPanel(player, 'reportManagementPanel', dependencies, {});
+    },
+
+    /**
+     * Confirms and clears a report.
+     * @param {import('@minecraft/server').Player} player The admin player.
+     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+     * @param {object} context Context object with the reportId.
+     */
+    confirmClearReport: async (player, dependencies, context) => {
+        const { reportManager, getString } = dependencies;
+        const { reportId } = context;
+
+        await _showConfirmationModal(
+            player,
+            'Confirm Clear Report',
+            `Are you sure you want to clear report ${reportId}? This cannot be undone.`,
+            'Confirm Clear',
+            async () => {
+                const success = reportManager.clearReportById(reportId, dependencies);
+                if (success) {
+                    player.sendMessage(`§aReport ${reportId} has been cleared.`);
+                } else {
+                    player.sendMessage(`§cFailed to clear report ${reportId}.`);
+                }
+            },
+            dependencies
+        );
+        await showPanel(player, 'reportManagementPanel', dependencies, {});
+    },
 };
+Object.assign(uiDynamicItemGenerators, {
+    /**
+     * Generates panel items for each open report.
+     * @param {import('@minecraft/server').Player} player The admin player.
+     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
+     */
+    generateReportListItems: (player, dependencies) => {
+        const { reportManager } = dependencies;
+        const items = [];
+        const openReports = reportManager.getOpenReports();
+
+        openReports.forEach((report, index) => {
+            items.push({
+                id: `report_${report.id}`,
+                sortId: 10 + index,
+                text: `§eReport ID: §f${report.id}\n§cReported: §f${report.reportedName}`,
+                icon: 'textures/ui/feedback',
+                requiredPermLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'reportActionsPanel',
+                initialContext: { reportId: report.id },
+            });
+        });
+
+        return items;
+    },
+});
 
 /**
  * Navigates to the next page of logs in the logViewerPanel.
