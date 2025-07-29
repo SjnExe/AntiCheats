@@ -67,6 +67,14 @@ const defaultConfigSettings = {
         enabled: false,
         /** @type {number} Seconds a TPA request remains valid before automatically expiring. */
         requestTimeoutSeconds: 60,
+    },
+
+    /** @type {object} Settings for the homes system. */
+    homes: {
+        /** @type {boolean} If true, the homes system is enabled. */
+        enabled: false,
+        /** @type {number} The maximum number of homes a player can set. */
+        maxHomes: 5,
         /** @type {number} Seconds a player must wait between sending TPA requests. */
         requestCooldownSeconds: 10,
         /** @type {number} Seconds of warmup before a player is teleported after a TPA request is accepted. */

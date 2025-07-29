@@ -304,6 +304,22 @@ export const stringDB = {
     // --- gma.js, gmc.js, gms.js, gmsp.js ---
     // Usage strings for gamemode commands are not used/needed as they default to self if no args.
     'command.gamemode.success.other': '§aSet {playerName}\'s gamemode to {gamemodeName}.',
+    // --- homes system ---
+    'command.homes.disabled': '§cThe homes system is currently disabled.',
+    'command.sethome.usage': '§cUsage: {prefix}sethome <name>',
+    'command.sethome.maxHomesReached': '§cYou have reached the maximum number of homes ({maxHomes}).',
+    'command.sethome.nameExists': '§cYou already have a home named "{homeName}".',
+    'command.sethome.success': '§aHome "{homeName}" set successfully.',
+    'command.home.usage': '§cUsage: {prefix}home <name>',
+    'command.home.notFound': '§cHome "{homeName}" not found.',
+    'command.home.success': '§aTeleporting to home "{homeName}".',
+    'command.home.teleportError': '§cTeleport failed: {error}',
+    'command.delhome.usage': '§cUsage: {prefix}delhome <name>',
+    'command.delhome.noHomes': '§cYou have no homes to delete.',
+    'command.delhome.notFound': '§cHome "{homeName}" not found.',
+    'command.delhome.success': '§aHome "{homeName}" deleted successfully.',
+    'command.homes.noHomes': '§cYou have no homes set.',
+    'command.homes.list': '§aYour homes: {homes}',
     'command.gamemode.success.self': '§aYour gamemode has been set to {gamemodeName}.',
     'command.gamemode.targetNotification': '§eYour gamemode has been set to {gamemodeName}.',
     'command.gamemode.error.generic': '§cFailed to set gamemode for {targetNameForError} to {gamemodeName}: {errorMessage}',
