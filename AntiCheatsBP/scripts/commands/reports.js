@@ -6,7 +6,6 @@ export const definition = {
     name: 'reports',
     description: 'Opens the report management UI.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

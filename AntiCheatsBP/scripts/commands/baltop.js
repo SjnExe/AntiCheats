@@ -9,7 +9,6 @@ export const definition = {
     description: 'Shows the players with the top balances.',
     syntax: '!baltop',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

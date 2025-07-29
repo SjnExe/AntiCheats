@@ -10,7 +10,6 @@ export const definition = {
     description: 'Deletes one of your homes.',
     syntax: '!delhome <name>',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

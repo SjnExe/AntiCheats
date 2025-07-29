@@ -10,7 +10,6 @@ export const definition = {
     description: 'Shows your current balance.',
     syntax: '!balance',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

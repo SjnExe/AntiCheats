@@ -7,7 +7,6 @@ export const definition = {
     syntax: '[playername]',
     description: 'Sets your gamemode or a target player\'s gamemode to Spectator.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

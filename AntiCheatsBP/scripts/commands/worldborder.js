@@ -16,7 +16,6 @@ export const definition = {
     syntax: '<subcommand> [args...]',
     description: 'Manages per-dimension world borders. Use "!wb help" for subcommands.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

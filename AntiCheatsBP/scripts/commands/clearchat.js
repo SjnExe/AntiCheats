@@ -12,7 +12,6 @@ export const definition = {
     syntax: '',
     description: 'Clears the global chat for all players.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

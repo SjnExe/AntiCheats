@@ -15,7 +15,6 @@ export const definition = {
     syntax: '<playername> [on|off|toggle|status]',
     description: 'Freezes or unfreezes a player, preventing movement by applying strong slowness and weakness.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

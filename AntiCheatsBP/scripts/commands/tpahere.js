@@ -11,7 +11,6 @@ export const definition = {
     syntax: '<playerName>',
     description: 'Requests another player to teleport to you.',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

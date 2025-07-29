@@ -10,7 +10,6 @@ export const definition = {
     description: 'Pays another player from your balance.',
     syntax: '!pay <player> <amount>',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

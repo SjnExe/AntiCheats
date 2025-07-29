@@ -7,7 +7,6 @@ export const definition = {
     syntax: '<playername>',
     description: 'Views a player\'s AntiCheat data and status, including flags, mutes, and bans.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

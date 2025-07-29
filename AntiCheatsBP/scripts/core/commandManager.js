@@ -110,8 +110,8 @@ export async function handleChatCommand(eventData, dependencies) {
         return;
     }
 
-    if (!isCommandEnabled(resolvedCommandName, commandDef, config)) {
-        player?.sendMessage(getString('command.error.disabled', { commandName: resolvedCommandName }));
+    if (!isCommandEnabled(resolvedCommandName, config)) {
+        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: commandNameInput }));
         return;
     }
 
@@ -132,10 +132,10 @@ export async function handleChatCommand(eventData, dependencies) {
  * @param {import('../types.js').Config} config The system's configuration.
  * @returns {boolean} True if the command is enabled, false otherwise.
  */
-function isCommandEnabled(commandName, commandDef, config) {
+function isCommandEnabled(commandName, config) {
     const commandConfig = config?.commandSettings?.[commandName];
-    // Prioritize config setting, fall back to command definition, default to true.
-    return commandConfig?.enabled ?? commandDef.enabled ?? true;
+    // The single source of truth is now the config. Default to false if not specified.
+    return commandConfig?.enabled ?? false;
 }
 
 /**

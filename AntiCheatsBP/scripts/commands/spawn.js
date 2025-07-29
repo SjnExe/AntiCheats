@@ -9,7 +9,6 @@ export const definition = {
     description: 'Teleports you to the server spawn point or sets it if you are an admin.',
     syntax: '!spawn [set]',
     permissionLevel: 1024, // member
-    enabled: false,
 };
 
 /**

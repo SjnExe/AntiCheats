@@ -17,7 +17,6 @@ export const definition = {
     syntax: '<targetPlayerNameToMove> [destinationPlayerNameOrX] [y] [z] [dimensionId]',
     description: 'Teleports a player to another player or to specified coordinates.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

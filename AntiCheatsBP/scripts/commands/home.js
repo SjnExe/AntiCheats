@@ -11,7 +11,6 @@ export const definition = {
     description: 'Teleports you to one of your homes.',
     syntax: '!home <name>',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

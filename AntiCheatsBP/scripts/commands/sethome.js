@@ -10,7 +10,6 @@ export const definition = {
     description: 'Sets a home at your current location.',
     syntax: '!sethome <name>',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

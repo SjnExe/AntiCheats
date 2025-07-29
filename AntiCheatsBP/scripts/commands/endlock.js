@@ -10,7 +10,6 @@ export const definition = {
     syntax: '<on|off|status>',
     description: 'Manages End dimension access. "on" locks, "off" unlocks, "status" checks.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

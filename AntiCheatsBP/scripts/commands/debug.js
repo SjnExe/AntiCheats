@@ -9,7 +9,6 @@ export const definition = {
     syntax: 'log [on|off]|watch <player> [on|off]|list|config|playerdata <PlayerName>|ranks|commands|actionprofiles',
     description: 'Manages debugging features of the AntiCheat and displays diagnostic information.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

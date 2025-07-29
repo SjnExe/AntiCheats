@@ -9,7 +9,6 @@ export const definition = {
     syntax: '!resetflags <playerName>',
     description: 'Clears a player\'s AntiCheat flags and violation data.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

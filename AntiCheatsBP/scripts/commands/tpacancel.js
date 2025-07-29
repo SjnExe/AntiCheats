@@ -5,7 +5,6 @@ export const definition = {
     syntax: '[playerName]',
     description: 'Cancels or declines a TPA request.',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

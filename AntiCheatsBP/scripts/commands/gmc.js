@@ -10,7 +10,6 @@ export const definition = {
     syntax: '[playername]',
     description: 'Sets your gamemode or a target player\'s gamemode to Creative.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

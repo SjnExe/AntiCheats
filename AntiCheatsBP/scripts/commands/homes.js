@@ -10,7 +10,6 @@ export const definition = {
     description: 'Lists all of your homes.',
     syntax: '!homes',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

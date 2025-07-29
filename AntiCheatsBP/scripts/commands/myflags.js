@@ -7,7 +7,6 @@ export const definition = {
     syntax: '',
     description: 'Allows players to view their own AntiCheat flag status.',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

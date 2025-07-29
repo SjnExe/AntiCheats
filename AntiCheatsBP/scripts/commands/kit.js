@@ -11,7 +11,6 @@ export const definition = {
     description: 'Gives you a kit of items.',
     syntax: '!kit [name]',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

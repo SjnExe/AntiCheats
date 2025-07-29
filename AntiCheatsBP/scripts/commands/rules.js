@@ -10,7 +10,6 @@ export const definition = {
     description: 'Displays the server rules.',
     syntax: '!rules',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**
