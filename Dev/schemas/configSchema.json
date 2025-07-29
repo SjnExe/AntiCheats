@@ -481,7 +481,9 @@
         "enableSelfHurtCheck": { "type": "boolean", "description": "Master toggle for Self-Hurt checks." },
         "enableNetherRoofCheck": { "type": "boolean", "description": "Master toggle for Nether Roof access checks." },
         "noSlowGeneralTolerancePercent": {
-            "type": "number", "minimum": 0.0, "maximum": 1.0,
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
             "description": "Percentage (0.0 to 1.0) of general tolerance for NoSlow check if not Speed affected."
         },
         "netherRoofYLevelThreshold": {
@@ -533,7 +535,8 @@
             "description": "Number of consecutive ticks a player must exceed maximum horizontal speed on ground to be flagged."
         },
         "noFallMitigationBlocks": {
-            "type": "array", "items": { "type": "string" },
+            "type": "array",
+            "items": { "type": "string" },
             "description": "List of block type IDs that mitigate fall damage."
         },
         "enableNoSlowCheck": {
@@ -541,7 +544,9 @@
             "description": "If true, the NoSlow check is active."
         },
         "noSlowSpeedEffectTolerancePercent": {
-            "type": "number", "minimum": 0.0, "maximum": 1.0,
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
             "description": "Percentage (0.0 to 1.0) of additional speed allowed if player has Speed effect for NoSlow."
         },
         "noSlowMaxSpeedEating": { "type": "number", "description": "Maximum horizontal speed (blocks/sec) allowed while eating or drinking." },
