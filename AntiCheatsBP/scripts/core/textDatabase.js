@@ -500,6 +500,10 @@ export const stringDB = {
     'ui.serverRules.noRulesDefined': 'The server rules have not been defined yet.',
     'ui.serverRules.invalidRuleNumber': '§cInvalid rule number. Please enter a number between 1 and {maxRules}.',
 
+    // --- spawn.js ---
+    'command.spawn.success': '§aTeleporting you to the spawn point.',
+    'command.spawn.error': '§cCould not teleport you to the spawn point.',
+
     // --- testnotify.js ---
     'command.testnotify.message': '§6This is a test notification from {playerName} via the AntiCheat system.',
     'command.testnotify.success': '§aTest notification sent to online admins/owners.',
