@@ -16,6 +16,7 @@ export * from './homes.js';
 export * from './inspect.js';
 export * from './invsee.js';
 export * from './kick.js';
+export * from './kit.js';
 export * from './listranks.js';
 export * from './listwatched.js';
 export * from './mute.js';

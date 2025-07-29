@@ -376,6 +376,14 @@ export const stringDB = {
     'command.kick.success': '§aKicked {playerName}. Reason: {reason}',
     'command.kick.error': '§cError kicking {playerName}: {errorMessage}',
 
+    // --- kits.js ---
+    'command.kit.disabled': '§cThe kits system is currently disabled.',
+    'command.kit.usage': '§cUsage: {prefix}kit <name>. Available kits: {kits}',
+    'command.kit.notFound': '§cKit "{kitName}" not found.',
+    'command.kit.cooldown': '§cYou must wait {time} before using this kit again.',
+    'command.kit.inventoryError': '§cCould not access your inventory.',
+    'command.kit.success': '§aYou have received the {kitName} kit.',
+
     // --- listranks.js ---
     'command.listranks.noRanks': '§cNo ranks are currently defined in the system.',
     'command.listranks.header': '§e--- Available Ranks ---',
