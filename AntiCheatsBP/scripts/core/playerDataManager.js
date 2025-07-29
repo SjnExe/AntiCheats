@@ -242,11 +242,34 @@ export function getActivePlayers() {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @returns {Promise<import('../types.js').PlayerAntiCheatData>} A promise resolving with the player's data.
  */
+import { offlineBanList } from './offlineBanList.js';
+
 export async function ensurePlayerDataInitialized(player, currentTick, dependencies) {
     const { playerUtils, logManager } = dependencies;
 
     if (activePlayerData.has(player.id)) {
         return activePlayerData.get(player.id);
+    }
+
+    // Check offline ban list first
+    const offlineBanEntry = offlineBanList.find(entry =>
+        (entry.playerName && entry.playerName.toLowerCase() === player.name.toLowerCase()) ||
+        (entry.xuid && entry.xuid === player.id)
+    );
+
+    if (offlineBanEntry) {
+        let pData = initializeDefaultPlayerData(player, currentTick);
+        pData.banInfo = {
+            reason: offlineBanEntry.reason || 'Banned by offline list.',
+            bannedBy: offlineBanEntry.bannedBy || 'System',
+            isAutoMod: false,
+            triggeringCheckType: 'offlineBan',
+            expiryTimestamp: Infinity,
+            startTimestamp: Date.now(),
+        };
+        pData.isDirtyForSave = true;
+        activePlayerData.set(player.id, pData);
+        return pData;
     }
 
     try {
