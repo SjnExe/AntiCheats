@@ -28,25 +28,19 @@ export async function execute(player, args, dependencies) {
     let mode = 'notify';
     let action = 'toggle';
 
-    args.forEach(arg => {
-        const lowerArg = arg.toLowerCase();
-        if (lowerArg === 'on' || lowerArg === 'off' || lowerArg === 'toggle') {
-            action = lowerArg;
-        } else if (lowerArg === 'silent' || lowerArg === 'notify') {
-            mode = lowerArg;
-        }
-    });
-
     const pData = dependencies.playerDataManager?.getPlayerData(player.id);
     if (!pData) {
         player.sendMessage(getString('common.error.playerDataNotFound'));
         return;
     }
 
+    const actionArg = args.find(arg => ['on', 'off', 'toggle'].includes(arg.toLowerCase())) || 'toggle';
+    const modeArg = args.find(arg => ['silent', 'notify'].includes(arg.toLowerCase())) || pData.vanishMode || 'notify';
+
     const isCurrentlyVanished = player.hasTag(vanishedPlayerTagName);
     let targetVanishState;
 
-    switch (action) {
+    switch (actionArg) {
         case 'on':
             targetVanishState = true;
             break;
@@ -59,42 +53,38 @@ export async function execute(player, args, dependencies) {
             break;
     }
 
-    pData.vanishMode = mode;
+    if (targetVanishState === isCurrentlyVanished && pData.vanishMode === modeArg) {
+        const message = isCurrentlyVanished ? `§eYou are already vanished (Mode: ${modeArg}).` : '§eYou are already unvanished.';
+        player.sendMessage(message);
+        return;
+    }
+
+    pData.vanishMode = modeArg;
     pData.isDirtyForSave = true;
 
     if (targetVanishState) {
-        if (isCurrentlyVanished && pData.vanishTagApplied) {
-            player.sendMessage(`§eYou are already vanished (Mode: ${pData.vanishMode ?? mode}).`);
-            return;
-        }
         player.addTag(vanishedPlayerTagName);
-        pData.vanishTagApplied = true;
-        pData.isDirtyForSave = true;
-
         player.addEffect(mc.MinecraftEffectTypes.invisibility, veryLongEffectDuration, { amplifier: 1, showParticles: false });
 
-        if (mode === 'notify') {
+        if (modeArg === 'notify' && !isCurrentlyVanished) { // Only show leave message if they weren't already vanished
             mc.world.sendMessage(getString('command.vanish.notify.leftGame', { playerName: adminName }));
         }
-        player.onScreenDisplay.setActionBar(getString(mode === 'silent' ? 'command.vanish.actionBar.on.silent' : 'command.vanish.actionBar.on.notify'));
-        logManager?.addLog({ adminName, actionType: 'vanishEnabled', details: `Mode: ${mode}` }, dependencies);
 
-    } else {
-        if (!isCurrentlyVanished && !pData.vanishTagApplied) {
-            player.sendMessage('§eYou are already unvanished.');
-            return;
+        if (player.onScreenDisplay) {
+            player.onScreenDisplay.setActionBar(getString(modeArg === 'silent' ? 'command.vanish.actionBar.on.silent' : 'command.vanish.actionBar.on.notify'));
         }
-        player.removeTag(vanishedPlayerTagName);
-        pData.vanishTagApplied = false;
-        pData.isDirtyForSave = true;
 
+        logManager?.addLog({ adminName, actionType: 'vanishEnabled', details: `Mode: ${modeArg}` }, dependencies);
+    } else {
+        player.removeTag(vanishedPlayerTagName);
         player.removeEffect(mc.MinecraftEffectTypes.invisibility);
 
-        if (mode === 'notify') {
+        if (modeArg === 'notify' && isCurrentlyVanished) { // Only show join message if they were previously vanished
             mc.world.sendMessage(getString('command.vanish.notify.joinedGame', { playerName: adminName }));
         }
-        player.sendMessage(getString(mode === 'silent' ? 'command.vanish.message.off.silent' : 'command.vanish.message.off.notify'));
-        logManager?.addLog({ adminName, actionType: 'vanishDisabled', details: `Mode: ${mode}` }, dependencies);
+
+        player.sendMessage(getString(modeArg === 'silent' ? 'command.vanish.message.off.silent' : 'command.vanish.message.off.notify'));
+        logManager?.addLog({ adminName, actionType: 'vanishDisabled', details: `Mode: ${modeArg}` }, dependencies);
     }
     playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
