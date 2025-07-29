@@ -94,10 +94,10 @@ function performInitializations() {
     });
     playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Tick loop active.', 'System', dependencies);
 
-    // Use a self-adjusting timer for the main tick loop to prevent tick drift.
-    const runMainTick = () => {
-        const startTime = Date.now();
-        mainTick().catch(e => {
+    system.runInterval(async () => {
+        try {
+            await mainTick();
+        } catch (e) {
             logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
             try {
                 logManager.addLog({
@@ -111,13 +111,8 @@ function performInitializations() {
             } catch (loggingError) {
                 logError(`CRITICAL: Failed to write to structured log during top-level tick error: ${loggingError.message}`, loggingError);
             }
-        }).finally(() => {
-            const processingTime = Date.now() - startTime;
-            const delay = Math.max(0, 50 - processingTime); // 50ms = 1 tick
-            system.runTimeout(runMainTick, Math.round(delay / 50));
-        });
-    };
-    system.runTimeout(runMainTick, 1);
+        }
+    });
 
 
     system.runInterval(() => tpaTick(dependencies), tpaSystemTickInterval);
