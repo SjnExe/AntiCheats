@@ -7,7 +7,6 @@ export const definition = {
     syntax: '[message...]',
     description: 'Sends a test notification to all online administrators/owners.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

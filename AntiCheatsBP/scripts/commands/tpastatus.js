@@ -7,7 +7,6 @@ export const definition = {
     syntax: '[on|off|status]',
     description: 'Manages your TPA request availability (on/off/status).',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

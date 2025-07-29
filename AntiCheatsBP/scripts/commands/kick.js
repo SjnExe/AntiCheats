@@ -4,7 +4,6 @@ export const definition = {
     syntax: '<playername> [reason]',
     description: 'Kicks a player from the server.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

@@ -8,7 +8,6 @@ export const definition = {
     syntax: '[commandName]',
     description: 'command.help.description',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

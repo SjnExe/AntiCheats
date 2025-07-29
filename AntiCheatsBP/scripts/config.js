@@ -67,15 +67,32 @@ const defaultConfigSettings = {
         enabled: false,
         /** @type {number} Seconds a TPA request remains valid before automatically expiring. */
         requestTimeoutSeconds: 60,
-        /** @type {number} Seconds a player must wait between sending TPA requests. */
-        requestCooldownSeconds: 10,
-        /** @type {number} Seconds of warmup before a player is teleported after a TPA request is accepted. */
-        teleportWarmupSeconds: 10,
-        /** @type {boolean} If true, TPA is cancelled if the teleporting player moves during the warmup period. */
-        cancelOnMove: true,
-        /** @type {number} Maximum distance (in blocks) a player can move during TPA warmup before it's cancelled. */
-        movementTolerance: 0.5,
     },
+
+    /** @type {object} Settings for the homes system. */
+    homes: {
+        /** @type {boolean} If true, the homes system is enabled. */
+        enabled: false,
+        /** @type {number} The maximum number of homes a player can set. */
+        maxHomes: 5,
+    },
+
+    /** @type {object} Settings for the kits system. */
+    kits: {
+        /** @type {boolean} If true, the kits system is enabled. */
+        enabled: false,
+    },
+
+    /** @type {object} Settings for the economy system. */
+    economy: {
+        /** @type {boolean} If true, the economy system is enabled. */
+        enabled: false,
+        /** @type {number} The starting balance for new players. */
+        startingBalance: 100,
+    },
+
+    /** @type {object | null} The custom spawn location. If null, the world's default spawn is used. */
+    spawnLocation: null,
 
     /** @type {object} Settings for server information and links. */
     serverInfo: {
@@ -291,6 +308,7 @@ const defaultConfigSettings = {
         clearreports: { enabled: true },
         watch: { enabled: true },
         unwatch: { enabled: true },
+        spawn: { enabled: false },
     },
 
     /** @type {object} Settings for the automated moderation system. */

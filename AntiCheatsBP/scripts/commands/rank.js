@@ -8,7 +8,6 @@ export const definition = {
     syntax: '<add|remove> <playername> <rankId>',
     description: 'Manages player ranks.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

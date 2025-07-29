@@ -7,7 +7,6 @@ export const definition = {
     syntax: '<playername>',
     description: 'Unmutes a player, allowing them to chat.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

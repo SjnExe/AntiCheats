@@ -11,7 +11,6 @@ export const definition = {
     syntax: '<playername>',
     description: 'Views a player\'s inventory.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

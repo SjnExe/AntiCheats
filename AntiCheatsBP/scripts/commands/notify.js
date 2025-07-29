@@ -5,7 +5,6 @@ export const definition = {
     syntax: '[on|off|toggle|status]',
     description: 'Manages your AntiCheat system notification preferences.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

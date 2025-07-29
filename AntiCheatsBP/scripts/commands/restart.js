@@ -7,7 +7,6 @@ export const definition = {
     name: 'restart',
     description: 'Reloads the entire world, including resource and behavior packs.',
     permissionLevel: 0, // owner
-    enabled: true,
 };
 
 /**

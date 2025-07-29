@@ -11,7 +11,6 @@ export const definition = {
     syntax: '<playername>',
     description: 'Admin command to purge flags, violation history, and AutoMod state for a player. Works for online players immediately and queues for offline players (pending full offline processing).',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

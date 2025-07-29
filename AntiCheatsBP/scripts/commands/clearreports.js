@@ -7,7 +7,6 @@ export const definition = {
     syntax: '<reportId|playerName|all>',
     description: 'Admin command to clear player reports. Use "all" to clear all reports (use with caution).',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

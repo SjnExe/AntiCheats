@@ -9,7 +9,6 @@ export const definition = {
     syntax: '',
     description: 'Lists all defined ranks and their basic properties.',
     permissionLevel: 1024, // member
-    enabled: true,
 };
 
 /**

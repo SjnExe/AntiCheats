@@ -7,7 +7,6 @@ export const definition = {
     syntax: '',
     description: 'Lists all online players currently being watched.',
     permissionLevel: 1, // admin
-    enabled: true,
 };
 
 /**

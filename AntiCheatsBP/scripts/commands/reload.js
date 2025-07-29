@@ -7,7 +7,6 @@ export const definition = {
     name: 'reload',
     description: 'Reloads all script files and functions in behavior packs.',
     permissionLevel: 0, // owner
-    enabled: true,
 };
 
 /**
