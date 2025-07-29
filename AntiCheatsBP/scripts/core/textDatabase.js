@@ -504,6 +504,9 @@ export const stringDB = {
     'command.spawn.success': '§aTeleporting you to the spawn point.',
     'command.spawn.error': '§cCould not teleport you to the spawn point.',
 
+    // --- setspawn.js ---
+    'command.setspawn.success': '§aServer spawn point has been set to your current location.',
+
     // --- testnotify.js ---
     'command.testnotify.message': '§6This is a test notification from {playerName} via the AntiCheat system.',
     'command.testnotify.success': '§aTest notification sent to online admins/owners.',

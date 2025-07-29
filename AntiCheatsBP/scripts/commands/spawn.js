@@ -19,12 +19,22 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { getString, mc } = dependencies;
+    const { getString, mc, config } = dependencies;
     const { world } = mc;
 
     try {
-        const spawnPoint = world.getDefaultSpawnLocation();
-        await player.teleport(spawnPoint, { dimension: world.getDimension('overworld') });
+        let spawnPoint;
+        let dimension;
+
+        if (config.spawnLocation) {
+            spawnPoint = { x: config.spawnLocation.x, y: config.spawnLocation.y, z: config.spawnLocation.z };
+            dimension = world.getDimension(config.spawnLocation.dimension);
+        } else {
+            spawnPoint = world.getDefaultSpawnLocation();
+            dimension = world.getDimension('overworld');
+        }
+
+        await player.teleport(spawnPoint, { dimension: dimension });
         player.sendMessage(getString('command.spawn.success'));
     } catch (error) {
         dependencies.logError(`[spawn.execute] Failed to teleport player: ${error}`, error);

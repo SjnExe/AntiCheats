@@ -91,6 +91,9 @@ const defaultConfigSettings = {
         startingBalance: 100,
     },
 
+    /** @type {object | null} The custom spawn location. If null, the world's default spawn is used. */
+    spawnLocation: null,
+
     /** @type {object} Settings for server information and links. */
     serverInfo: {
         /** @type {string} Link to the server's Discord. */
