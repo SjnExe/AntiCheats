@@ -308,6 +308,7 @@ const defaultConfigSettings = {
         clearreports: { enabled: true },
         watch: { enabled: true },
         unwatch: { enabled: true },
+        spawn: { enabled: false },
     },
 
     /** @type {object} Settings for the automated moderation system. */

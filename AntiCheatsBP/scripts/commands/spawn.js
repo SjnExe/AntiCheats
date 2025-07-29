@@ -6,10 +6,10 @@
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'spawn',
-    description: 'Teleports you to the server spawn point.',
-    syntax: '!spawn',
+    description: 'Teleports you to the server spawn point or sets it if you are an admin.',
+    syntax: '!spawn [set]',
     permissionLevel: 1024, // member
-    enabled: true,
+    enabled: false,
 };
 
 /**
@@ -19,8 +19,30 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { getString, mc, config } = dependencies;
+    const { getString, mc, config, permissionLevels, rankManager } = dependencies;
     const { world } = mc;
+
+    const playerPermission = rankManager.getPlayerPermissionLevel(player, dependencies);
+
+    if (args[0]?.toLowerCase() === 'set') {
+        if (playerPermission > permissionLevels.admin) {
+            player.sendMessage(getString('common.error.permissionDenied'));
+            return;
+        }
+
+        const location = player.location;
+        const dimension = player.dimension.id;
+
+        config.spawnLocation = {
+            x: location.x,
+            y: location.y,
+            z: location.z,
+            dimension: dimension,
+        };
+
+        player.sendMessage(getString('command.spawn.set.success'));
+        return;
+    }
 
     try {
         let spawnPoint;
