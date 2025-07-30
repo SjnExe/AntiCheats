@@ -1,7 +1,3 @@
-/**
- * @file Manages world border settings and enforcement.
- * @module AntiCheatsBP/scripts/utils/worldBorderManager
- */
 import * as mc from '@minecraft/server';
 
 const worldBorderDynamicPropertyPrefix = 'anticheat:worldborder_';
@@ -16,10 +12,9 @@ const playerHeightBlocks = 2;
 
 
 /**
- * Calculates the current effective size of the border, accounting for resizing.
- * @param {object} borderSettings The border settings for the dimension.
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
- * @returns {{currentSize: number|null, shape: string|null}} Object with currentSize and shape, or nulls if invalid.
+ * @param {object} borderSettings
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {{currentSize: number|null, shape: string|null}}
  */
 function getCurrentEffectiveBorderSize(borderSettings, dependencies) {
     if (!borderSettings || typeof borderSettings.enabled !== 'boolean' || !borderSettings.enabled) {
@@ -64,10 +59,9 @@ function getCurrentEffectiveBorderSize(borderSettings, dependencies) {
 }
 
 /**
- * Checks if a player is outside the world border.
- * @param {import('@minecraft/server').Player} player The player to check.
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
- * @returns {boolean} True if the player is outside the border, false otherwise.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean}
  */
 export function isPlayerOutsideBorder(player, dependencies) {
     const borderSettings = getBorderSettings(player.dimension.id, dependencies);
@@ -98,10 +92,9 @@ export function isPlayerOutsideBorder(player, dependencies) {
 }
 
 /**
- * Retrieves the world border settings for a specific dimension.
- * @param {string} dimensionId The ID of the dimension (e.g., 'minecraft:overworld').
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
- * @returns {object|null} The border settings object or null if not found or invalid.
+ * @param {string} dimensionId
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {object|null}
  */
 export function getBorderSettings(dimensionId, dependencies) {
     const { playerUtils, logManager } = dependencies; // Added logManager
@@ -191,11 +184,10 @@ export function getBorderSettings(dimensionId, dependencies) {
 }
 
 /**
- * Saves the world border settings for a specific dimension.
- * @param {string} dimensionId The ID of the dimension.
- * @param {object} settingsToSave The border settings object to save.
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
- * @returns {boolean} True if saving was successful, false otherwise.
+ * @param {string} dimensionId
+ * @param {object} settingsToSave
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean}
  */
 export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
     const { playerUtils } = dependencies;
@@ -265,30 +257,27 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
 }
 
 /**
- * Quadratic easing out function.
- * @param {number} t Progress ratio from 0 to 1.
- * @returns {number} Eased value.
+ * @param {number} t
+ * @returns {number}
  */
 function easeOutQuad(t) {
     return t * (2 - t);
 }
 
 /**
- * Quadratic easing in and out function.
- * @param {number} t Progress ratio from 0 to 1.
- * @returns {number} Eased value.
+ * @param {number} t
+ * @returns {number}
  */
 function easeInOutQuad(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }
 
 /**
- * Finds a safe Y-coordinate for teleportation.
- * @param {import('@minecraft/server').Dimension} dimension The dimension to search within.
- * @param {number} targetX The target X-coordinate.
- * @param {number} initialY The initial Y-coordinate to search from.
- * @param {number} targetZ The target Z-coordinate.
- * @returns {number} A safe Y-coordinate for teleportation.
+ * @param {import('@minecraft/server').Dimension} dimension
+ * @param {number} targetX
+ * @param {number} initialY
+ * @param {number} targetZ
+ * @returns {number}
  */
 function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
     const minDimensionHeight = dimension.heightRange.min;
@@ -328,10 +317,7 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
     return Math.floor(initialY);
 }
 
-/**
- * Processes active world border resizing operations.
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
- */
+/** @param {import('../types.js').CommandDependencies} dependencies */
 export function processWorldBorderResizing(dependencies) {
     const { config, playerUtils, logManager } = dependencies; // Added logManager back
     const knownBorderDimensions = config.worldBorderKnownDimensions ?? ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
@@ -389,10 +375,9 @@ export function processWorldBorderResizing(dependencies) {
 }
 
 /**
- * Enforces the world border for a given player.
- * @param {import('@minecraft/server').Player} player The player to check.
- * @param {import('../types.js').PlayerAntiCheatData} pData The player's AntiCheat data.
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').PlayerAntiCheatData} pData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function enforceWorldBorderForPlayer(player, pData, dependencies) {
     const { config, playerUtils, getString, rankManager, permissionLevels, currentTick } = dependencies; // Renamed logManager
@@ -531,14 +516,6 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) {
                 const { centerX, centerZ } = borderSettings;
                 const minX = centerX - currentEffectiveSize, maxX = centerX + currentEffectiveSize;
                 const minZ = centerZ - currentEffectiveSize, maxZ = centerZ + currentEffectiveSize;
-                /**
-                 * Spawns particles along a line segment for the world border visual.
- * @param {boolean} isXAxis True if the line is parallel to the X-axis.
- * @param {number} fixedCoord The fixed coordinate value.
- * @param {number} startDyn The starting dynamic coordinate value.
- * @param {number} endDyn The ending dynamic coordinate value.
- * @param {number} playerDynamicCoord The player's current dynamic coordinate.
-                 */
                 const spawnLine = (isXAxis, fixedCoord, startDyn, endDyn, playerDynamicCoord) => {
                     const lineLength = Math.min(segmentLength, Math.abs(endDyn - startDyn));
                     let actualStartDyn = playerDynamicCoord - lineLength / 2;
@@ -592,10 +569,9 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) {
 }
 
 /**
- * Clears the world border settings for a specific dimension.
- * @param {string} dimensionId The ID of the dimension.
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
- * @returns {boolean} True if clearing was successful, false on error.
+ * @param {string} dimensionId
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean}
  */
 export function clearBorderSettings(dimensionId, dependencies) {
     const { playerUtils } = dependencies;

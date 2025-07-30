@@ -1,7 +1,3 @@
-/**
- * @file Provides utility functions for player-related operations.
- * @module AntiCheatsBP/scripts/utils/playerUtils
- */
 import * as mc from '@minecraft/server';
 import { stringDB } from '../core/textDatabase.js';
 
@@ -16,10 +12,9 @@ const _avgDaysPerYear = 365.25; // Prefixed as unused in this file
 
 
 /**
- * Retrieves and formats a string from the text database.
- * @param {string} key The key of the string to retrieve.
- * @param {Record<string, string|number>} [params] Optional placeholder values.
- * @returns {string} The formatted string, or the key if not found.
+ * @param {string} key
+ * @param {Record<string, string|number>} [params]
+ * @returns {string}
  */
 export function getString(key, params) {
     let str = stringDB[key];
@@ -38,10 +33,9 @@ export function getString(key, params) {
 }
 
 /**
- * Checks if a player has admin-level permissions.
- * @param {import('@minecraft/server').Player} player The player to check.
- * @param {import('../types.js').CommandDependencies} dependencies Object containing rankManager and permissionLevels.
- * @returns {boolean} True if the player is an admin, false otherwise.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean}
  */
 export function isAdmin(player, dependencies) {
     if (!dependencies || !dependencies.rankManager || !dependencies.permissionLevels) {
@@ -55,10 +49,9 @@ export function isAdmin(player, dependencies) {
 }
 
 /**
- * Sends a standardized warning message to a player.
- * @param {import('@minecraft/server').Player} player The player to warn.
- * @param {string} reason The reason for the warning.
- * @param {import('../types.js').CommandDependencies} [dependencies] Optional dependencies for sound playback.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string} reason
+ * @param {import('../types.js').CommandDependencies} [dependencies]
  */
 export function warnPlayer(player, reason, dependencies) {
     player?.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
@@ -68,9 +61,8 @@ export function warnPlayer(player, reason, dependencies) {
 }
 
 /**
- * Formats a dimension ID string into a readable name.
- * @param {string} dimensionId The dimension ID (e.g., 'minecraft:the_nether').
- * @returns {string} The formatted dimension name (e.g., 'The Nether').
+ * @param {string} dimensionId
+ * @returns {string}
  */
 export function formatDimensionName(dimensionId) {
     if (typeof dimensionId !== 'string' || dimensionId.trim() === '') {
@@ -94,11 +86,10 @@ export function formatDimensionName(dimensionId) {
 }
 
 /**
- * Notifies online administrators of an event.
- * @param {string} baseMessage The core message to send.
- * @param {import('../types.js').CommandDependencies} dependencies Standard command dependencies.
- * @param {import('@minecraft/server').Player|null} player The player involved in the event.
- * @param {import('../types.js').PlayerAntiCheatData|null} pData The AntiCheat data for the player.
+ * @param {string} baseMessage
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {import('@minecraft/server').Player|null} player
+ * @param {import('../types.js').PlayerAntiCheatData|null} pData
  */
 export function notifyAdmins(baseMessage, dependencies, player, pData) {
     if (!dependencies || !dependencies.config) {
@@ -139,23 +130,15 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
 }
 
 /**
- * Logs a debug message if debug logging is enabled.
- * @param {string} message The message to log.
- * @param {import('../types.js').CommandDependencies} dependencies Access to config.
- * @param {string|null} [contextPlayerNameIfWatched] The name of a watched player for context.
- */
-/**
- * Logs a message to the console with a standard prefix.
- * @param {string} message The message to log.
+ * @param {string} message
  */
 export function log(message) {
     console.warn(`[AC] ${message}`);
 }
 
 /**
- * Logs an error to the console with a standard prefix and stack trace.
- * @param {string} message The error message.
- * @param {Error} [error] Optional error object to include stack trace.
+ * @param {string} message
+ * @param {Error} [error]
  */
 export function logError(message, error) {
     const errorMessage = `[AC ERROR] ${message}`;
@@ -173,9 +156,8 @@ export function debugLog(message, contextPlayerNameIfWatched = null, dependencie
 }
 
 /**
- * Finds an online player by their nameTag (case-insensitive).
- * @param {string} playerName The nameTag of the player to find.
- * @returns {import('@minecraft/server').Player|null} The player object or null if not found.
+ * @param {string} playerName
+ * @returns {import('@minecraft/server').Player|null}
  */
 export function findPlayer(playerName) {
     if (!playerName || typeof playerName !== 'string') {
@@ -186,9 +168,8 @@ export function findPlayer(playerName) {
 }
 
 /**
- * Parses a duration string (e.g., "2w", "7d", "30m", "perm") into milliseconds.
- * @param {string} durationString The duration string to parse.
- * @returns {number|null} The duration in milliseconds, Infinity for "perm", or null if invalid.
+ * @param {string} durationString
+ * @returns {number|null}
  */
 export function parseDuration(durationString) {
     if (!durationString || typeof durationString !== 'string') {
@@ -226,9 +207,8 @@ export function parseDuration(durationString) {
 }
 
 /**
- * Formats a duration in milliseconds into a human-readable string (e.g., "1h 23m 45s").
- * @param {number} ms The duration in milliseconds.
- * @returns {string} A formatted string, or "N/A" if invalid.
+ * @param {number} ms
+ * @returns {string}
  */
 export function formatSessionDuration(ms) {
     if (ms <= 0 || typeof ms !== 'number' || isNaN(ms)) {
@@ -268,9 +248,8 @@ export function formatSessionDuration(ms) {
 }
 
 /**
- * Formats a time difference into a human-readable "ago" string.
- * @param {number} msDifference The time difference in milliseconds.
- * @returns {string} A formatted string like "5m ago" or "just now".
+ * @param {number} msDifference
+ * @returns {string}
  */
 export function formatTimeDifference(msDifference) {
     if (msDifference < 0 || typeof msDifference !== 'number' || isNaN(msDifference)) {
@@ -310,11 +289,10 @@ export function formatTimeDifference(msDifference) {
 }
 
 /**
- * Plays a configured sound for a game event.
- * @param {import('@minecraft/server').Player|null} primaryPlayer The primary player for the event.
- * @param {string} eventName The key of the sound event in config.
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
- * @param {import('@minecraft/server').Player|null} [targetPlayerContext] Optional secondary player context.
+ * @param {import('@minecraft/server').Player|null} primaryPlayer
+ * @param {string} eventName
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {import('@minecraft/server').Player|null} [targetPlayerContext]
  */
 export function playSoundForEvent(primaryPlayer, eventName, dependencies, targetPlayerContext = null) {
     const { config, playerUtils } = dependencies; // playerUtils for isAdmin if needed
@@ -335,10 +313,6 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
     };
 
 
-    /**
- * Helper to play a sound to a specific player.
- * @param {import('@minecraft/server').Player} playerInstance The player to play the sound for.
-     */
     const playToPlayer = (playerInstance) => {
         if (playerInstance?.isValid()) {
             try {
@@ -382,12 +356,11 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
 }
 
 /**
- * Parses command arguments for a target player and a reason string.
- * @param {string[]} args The array of command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies For accessing getString.
- * @param {number} [reasonStartIndex=1] The index where the reason starts.
- * @param {string} [defaultReasonKey='common.value.noReasonProvided'] Default reason key.
- * @returns {{targetPlayerName: string|undefined, reason: string}} Parsed player name and reason.
+ * @param {string[]} args
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {number} [reasonStartIndex=1]
+ * @param {string} [defaultReasonKey='common.value.noReasonProvided']
+ * @returns {{targetPlayerName: string|undefined, reason: string}}
  */
 export function parsePlayerAndReasonArgs(args, reasonStartIndex = 1, defaultReasonKey = 'common.value.noReasonProvided', dependencies) {
     const { getString } = dependencies; // playerUtils was unused here, getString is directly on dependencies or via playerUtils from caller
@@ -407,15 +380,14 @@ export function parsePlayerAndReasonArgs(args, reasonStartIndex = 1, defaultReas
 }
 
 /**
- * Validates the target of a command.
- * @param {import('@minecraft/server').Player} issuer The command issuer.
- * @param {string|undefined} targetPlayerName The name of the target player.
- * @param {import('../types.js').Dependencies} dependencies Standard command dependencies.
- * @param {object} [options] Optional parameters.
- * @param {boolean} [options.allowSelf=false] Whether to allow self-targeting.
- * @param {string} [options.commandName='command'] The name of the command for error messages.
- * @param {boolean} [options.requireOnline=true] Whether the target must be online.
- * @returns {import('@minecraft/server').Player|null} The target Player object or null if validation fails.
+ * @param {import('@minecraft/server').Player} issuer
+ * @param {string|undefined} targetPlayerName
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} [options]
+ * @param {boolean} [options.allowSelf=false]
+ * @param {string} [options.commandName='command']
+ * @param {boolean} [options.requireOnline=true]
+ * @returns {import('@minecraft/server').Player|null}
  */
 export function validateCommandTarget(issuer, targetPlayerName, dependencies, options = {}) {
     const { getString } = dependencies; // Removed playerUtils
