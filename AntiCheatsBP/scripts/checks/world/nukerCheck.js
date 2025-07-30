@@ -1,9 +1,3 @@
-/**
- * @file Implements a check to detect Nuker hacks by analyzing the rate of block breaking by a player.
- * @module AntiCheatsBP/scripts/checks/world/nukerCheck
- * Relies on `pData.blockBreakEvents` (an array of timestamps) being populated by block break event handlers.
- */
-
 // Constants for magic numbers
 const defaultNukerCheckIntervalMs = 200;
 const defaultNukerMaxBreaksShortInterval = 4;

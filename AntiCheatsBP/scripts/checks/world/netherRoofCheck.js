@@ -1,7 +1,3 @@
-/**
- * @file Checks if a player is on the Nether roof, which is often restricted.
- * @module AntiCheatsBP/scripts/checks/world/netherRoofCheck
- */
 import * as mc from '@minecraft/server';
 
 /**

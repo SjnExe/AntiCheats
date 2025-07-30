@@ -1,9 +1,4 @@
 /**
- * @file Implements checks related to player client system information, such as render distance.
- * @module AntiCheatsBP/scripts/checks/player/clientInfoChecks
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

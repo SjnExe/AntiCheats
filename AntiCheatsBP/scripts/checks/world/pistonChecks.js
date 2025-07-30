@@ -1,9 +1,3 @@
-/**
- * @file Piston related checks, primarily for detecting potential lag machines
- * @module AntiCheatsBP/scripts/checks/world/pistonChecks
- * by monitoring rapid and sustained piston activations.
- */
-
 // Default configuration values
 const defaultPistonActivityMapMaxSize = 2000;
 const defaultPistonActivityEntryTimeoutSeconds = 300;

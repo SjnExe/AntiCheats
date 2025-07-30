@@ -1,10 +1,4 @@
 /**
- * @file Implements a check to prevent players from using or placing banned items.
- * @module AntiCheatsBP/scripts/checks/world/illegalItemCheck
- * Banned items are defined in the server configuration.
- */
-
-/**
  * Checks if a player is attempting to use or place an item that is on a configured ban list.
  * If a banned item action is detected, the event is cancelled, and configured actions are executed.
  * This check is typically called from `ItemUseBeforeEvent`, `ItemUseOnBeforeEvent`, or `PlayerPlaceBlockBeforeEvent` handlers.

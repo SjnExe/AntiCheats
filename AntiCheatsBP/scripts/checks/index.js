@@ -1,9 +1,3 @@
-/**
- * @file Barrel file for exporting all individual cheat detection modules.
- * @module AntiCheatsBP/scripts/checks/index
- * This allows other parts of the system to import all checks from a single source.
- */
-
 // Movement Checks
 export * from './movement/flyCheck.js';
 export * from './movement/speedCheck.js';
