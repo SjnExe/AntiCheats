@@ -172,34 +172,9 @@ export function updatePlayerNametag(player, dependencies) {
     const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
     const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
 
-    // Attempt to derive base name more reliably if current nameTag seems to have a prefix
-    let baseName = player.name ?? getString('common.value.player'); // Default to system name
-    const currentNameTag = player.nameTag;
-
-    if (currentNameTag && typeof currentNameTag === 'string' && currentNameTag.length > 0 && currentNameTag !== baseName) {
-        // Find the longest matching prefix to avoid issues with overlapping prefixes (e.g., "admin" and "superadmin")
-        let longestPrefix = '';
-        for (const def of sortedRankDefinitions) {
-            if (def.nametagPrefix && currentNameTag.startsWith(def.nametagPrefix) && def.nametagPrefix.length > longestPrefix.length) {
-                longestPrefix = def.nametagPrefix;
-            }
-        }
-
-        if (longestPrefix.length > 0) {
-            const potentialBase = currentNameTag.substring(longestPrefix.length);
-            // If stripping the prefix leaves a non-empty string, use it. Otherwise, fall back to the player's actual name.
-            baseName = potentialBase.length > 0 ? potentialBase : player.name;
-        } else {
-            // If no known prefix matches, but the nametag is different, assume the entire nametag is the intended base name.
-            // This handles custom names set by other plugins or commands.
-            baseName = currentNameTag;
-        }
-    }
-
-    // If after all checks baseName is empty (e.g. player.name was empty), default again.
-    if (!baseName || baseName.trim() === '') {
-        baseName = getString('common.value.player');
-    }
+    // Always use the player's canonical name as the base to prevent corruption.
+    const baseName = player.name;
+    const currentNameTag = player.nameTag; // Keep for logging
 
 
     player.nameTag = nametagToApply + baseName;
