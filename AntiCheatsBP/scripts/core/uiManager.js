@@ -2205,6 +2205,7 @@ Object.assign(uiDynamicItemGenerators, {
     },
 });
 
+
 /**
  * Navigates to the next page of logs in the logViewerPanel.
  * Navigates to the next page of logs in the `logViewerPanel`.
@@ -2214,11 +2215,10 @@ Object.assign(uiDynamicItemGenerators, {
  * @param {object} context Current panel context. Expected to contain `currentPage` and `totalPages`.
  */
 async function goToNextLogPage(player, dependencies, context) {
-    const { playerUtils } = dependencies;
     let { currentPage = 1 } = context; // currentPage can be incremented
     const totalPages = context.totalPages ?? 1; // Get totalPages from context or default to 1
 
-    playerUtils.debugLog(`[UiManager.goToNextLogPage] Current: ${currentPage}, Total: ${totalPages}`, player.nameTag, dependencies);
+    dependencies.playerUtils.debugLog(`[UiManager.goToNextLogPage] Current: ${currentPage}, Total: ${totalPages}`, player.name, dependencies);
     if (currentPage < totalPages) {
         currentPage++;
     }
@@ -2234,9 +2234,8 @@ async function goToNextLogPage(player, dependencies, context) {
  * @param {object} context Current panel context.
  */
 async function goToPrevLogPage(player, dependencies, context) {
-    const { playerUtils } = dependencies;
     let { currentPage = 1 } = context;
-    playerUtils.debugLog(`[UiManager.goToPrevLogPage] Current: ${currentPage}`, player.nameTag, dependencies);
+    dependencies.playerUtils.debugLog(`[UiManager.goToPrevLogPage] Current: ${currentPage}`, player.name, dependencies);
     if (currentPage > 1) {
         currentPage--;
     }
