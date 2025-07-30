@@ -2135,7 +2135,7 @@ const uiActionFunctions = {
      * @param {object} context Context object with the reportId.
      */
     confirmClearReport: async (player, dependencies, context) => {
-        const { reportManager, playerUtils } = dependencies;
+        const { reportManager } = dependencies;
         const { reportId } = context;
 
         await _showConfirmationModal(

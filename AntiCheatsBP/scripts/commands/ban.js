@@ -90,7 +90,7 @@ export function execute(
         bannedByForRecord,
         isAutoModAction,
         autoModCheckType,
-        dependencies
+        dependencies,
     );
 
     if (banAdded) {

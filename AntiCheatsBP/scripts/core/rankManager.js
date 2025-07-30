@@ -145,7 +145,7 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function updatePlayerNametag(player, dependencies) {
-    const { config, playerUtils, getString } = dependencies;
+    const { config, playerUtils } = dependencies;
     const playerNameForLog = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
