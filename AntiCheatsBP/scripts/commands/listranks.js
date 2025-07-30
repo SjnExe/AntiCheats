@@ -1,6 +1,3 @@
-/**
- * @file Defines the !listranks command to display available ranks and their properties.
- */
 import { rankDefinitions as allRankDefinitions } from '../core/ranksConfig.js';
 
 /** @type {import('../types.js').CommandDefinition} */

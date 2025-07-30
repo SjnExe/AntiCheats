@@ -1,7 +1,3 @@
-/**
- * @file Defines the !reload command, which reloads the server's scripts and functions.
- */
-
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'reload',

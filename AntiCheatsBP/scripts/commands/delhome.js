@@ -1,7 +1,3 @@
-/**
- * @file Defines the !delhome command.
- * @module AntiCheatsBP/scripts/commands/delhome
- */
 import { deleteHome } from '../core/homesManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */

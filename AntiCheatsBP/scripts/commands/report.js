@@ -1,4 +1,3 @@
-// Defines the !report command, allowing players to report others for rule violations.
 import * as reportManager from '../core/reportManager.js';
 
 const minReportReasonLength = 10;

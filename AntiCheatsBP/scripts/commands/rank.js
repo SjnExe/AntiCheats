@@ -1,7 +1,3 @@
-/**
- * @file Defines the !rank command, which manages player ranks.
- */
-
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'rank',

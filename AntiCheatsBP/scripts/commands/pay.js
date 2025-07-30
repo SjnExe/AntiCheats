@@ -1,7 +1,3 @@
-/**
- * @file Defines the !pay command.
- * @module AntiCheatsBP/scripts/commands/pay
- */
 import { getBalance, subtractBalance, addBalance } from '../core/economyManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */

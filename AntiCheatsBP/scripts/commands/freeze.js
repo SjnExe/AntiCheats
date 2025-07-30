@@ -1,7 +1,3 @@
-/**
- * /**
- * @file Defines the !freeze command for administrators to immobilize or release players.
- */
 import * as mc from '@minecraft/server';
 
 // Default configuration values

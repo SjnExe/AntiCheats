@@ -1,6 +1,3 @@
-/**
- * @file Defines the !reports command, which opens the report management UI.
- */
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'reports',

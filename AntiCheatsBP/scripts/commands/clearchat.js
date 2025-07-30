@@ -1,7 +1,3 @@
-/**
- * @file Defines the !clearchat command for administrators to clear the global chat.
- */
-
 // Default configuration values
 const defaultChatClearLinesCount = 150;
 const clearChatFailureThresholdMessages = 5;

@@ -1,7 +1,3 @@
-/**
- * @file Defines the !restart command, which reloads the entire world, including resource and behavior packs.
- */
-
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'restart',

@@ -1,8 +1,3 @@
-/**
- * @file Defines the !spawn command.
- * @module AntiCheatsBP/scripts/commands/spawn
- */
-
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'spawn',

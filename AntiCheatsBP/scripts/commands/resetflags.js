@@ -1,8 +1,3 @@
-/**
- * @file Defines the !resetflags command for administrators to clear a player's accumulated AntiCheat flags
- * and associated violation tracking data. Also aliased by !clearwarnings.
- */
-
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'resetflags',

@@ -1,7 +1,3 @@
-/**
- * @file Defines the !sethome command.
- * @module AntiCheatsBP/scripts/commands/sethome
- */
 import { setHome } from '../core/homesManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */

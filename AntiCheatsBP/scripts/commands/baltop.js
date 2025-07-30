@@ -1,8 +1,3 @@
-/**
- * @file Defines the !baltop command.
- * @module AntiCheatsBP/scripts/commands/baltop
- */
-
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'baltop',

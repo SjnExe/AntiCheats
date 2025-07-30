@@ -1,7 +1,3 @@
-/**
- * @file Defines the !help command, which provides players with a list of available commands
- * or detailed information about a specific command based on their permission level.
- */
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'help',
