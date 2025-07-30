@@ -1,4 +1,3 @@
-// Defines the !vanish command for administrators to become invisible to other players.
 import * as mc from '@minecraft/server';
 
 const veryLongEffectDuration = 2000000;

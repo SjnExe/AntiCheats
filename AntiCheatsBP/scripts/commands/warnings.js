@@ -1,4 +1,3 @@
-// Defines the !warnings command for administrators to view a summary of a player's AntiCheat flags.
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'warnings',

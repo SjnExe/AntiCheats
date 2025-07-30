@@ -1,6 +1,3 @@
-/**
- * @file Defines the !watch command for administrators to manage detailed logging for a specific player.
- */
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'watch',
