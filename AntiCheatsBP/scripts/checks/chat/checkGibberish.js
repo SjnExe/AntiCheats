@@ -1,9 +1,4 @@
 /**
- * @file Detects gibberish or keyboard-mashed messages.
- * @module AntiCheatsBP/scripts/checks/chat/checkGibberish
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

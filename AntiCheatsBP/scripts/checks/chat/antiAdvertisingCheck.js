@@ -1,9 +1,4 @@
 /**
- * @file Detects potential advertising in chat messages.
- * @module AntiCheatsBP/scripts/checks/chat/antiAdvertisingCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

@@ -1,9 +1,4 @@
 /**
- * @file Detects excessive capitalization in chat messages.
- * @module AntiCheatsBP/scripts/checks/chat/capsAbuseCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

@@ -1,9 +1,4 @@
 /**
- * @file Detects excessive symbol usage in chat messages.
- * @module AntiCheatsBP/scripts/checks/chat/symbolSpamCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
