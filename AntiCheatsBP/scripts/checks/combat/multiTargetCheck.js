@@ -4,11 +4,6 @@
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
 
-// Constants for magic numbers
-const defaultMultiTargetMaxHistory = 20;
-const defaultMultiTargetThreshold = 3;
-const distinctTargetsSampleLimitMulti = 5;
-
 /**
  * Checks for Multi-Target Killaura by analyzing recent hit entity patterns.
  * @param {import('@minecraft/server').Player} player The attacking player.
@@ -49,7 +44,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     pData.isDirtyForSave = true;
 
     const windowMs = config?.multiTargetWindowMs ?? 1000; // 1000 is fine (in ignore list)
-    const maxHistory = config?.multiTargetMaxHistory ?? defaultMultiTargetMaxHistory;
+    const maxHistory = config?.multiTargetMaxHistory ?? 20;
 
     const originalCountBeforeTimeFilter = pData.recentHits.length;
     pData.recentHits = pData.recentHits.filter(hit => (now - hit.timestamp) <= windowMs);
@@ -62,7 +57,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
         pData.isDirtyForSave = true;
     }
 
-    const threshold = config?.multiTargetThreshold ?? defaultMultiTargetThreshold;
+    const threshold = config?.multiTargetThreshold ?? 3;
 
     if (pData.recentHits.length < threshold) {
         return;
@@ -82,7 +77,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
             targetsHit: distinctTargets.size.toString(),
             windowSeconds: (windowMs / 1000).toFixed(1), // 1000 is fine
             threshold: threshold.toString(),
-            targetIdsSample: Array.from(distinctTargets).slice(0, distinctTargetsSampleLimitMulti).join(', '),
+            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '),
         };
         const actionProfileKey = config?.multiTargetActionProfileName ?? 'combatMultiTargetAura';
 

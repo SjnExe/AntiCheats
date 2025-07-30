@@ -1,9 +1,5 @@
 import * as mc from '@minecraft/server';
 
-// Constants for magic numbers
-const defaultEntitySpamTimeWindowMs = 2000;
-const defaultEntitySpamMaxSpawnsInWindow = 5;
-
 /**
  * Checks for entity spamming based on spawn rate of monitored entity types by a player.
  * This is typically called when an entity is spawned, and the potential spawner is identified.
@@ -55,7 +51,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     pData.recentEntitySpamTimestamps[entityType].push(currentTime);
     pData.isDirtyForSave = true;
 
-    const windowMs = config.entitySpamTimeWindowMs || defaultEntitySpamTimeWindowMs;
+    const windowMs = config.entitySpamTimeWindowMs || 2000;
     const originalCount = pData.recentEntitySpamTimestamps[entityType].length;
 
     pData.recentEntitySpamTimestamps[entityType] = pData.recentEntitySpamTimestamps[entityType].filter(
@@ -66,7 +62,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
         pData.isDirtyForSave = true;
     }
 
-    const maxSpawns = config.entitySpamMaxSpawnsInWindow || defaultEntitySpamMaxSpawnsInWindow;
+    const maxSpawns = config.entitySpamMaxSpawnsInWindow || 5;
     const actionProfileKey = config.entitySpamActionProfileName ?? 'worldAntiGriefEntityspam';
 
     if (pData.recentEntitySpamTimestamps[entityType].length > maxSpawns) {

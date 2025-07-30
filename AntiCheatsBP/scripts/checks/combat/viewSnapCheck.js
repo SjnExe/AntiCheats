@@ -3,14 +3,6 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
-// Constants for magic numbers
-const defaultInvalidPitchMin = -90.5;
-const defaultInvalidPitchMax = 90.5;
-const yawFlipThreshold = 180;
-const degreesInCircle = 360;
-const msPerTick = 50;
-const defaultMaxPitchSnapPerTick = 75;
-
 /**
  * Checks for invalid pitch and rapid view snaps after an attack.
  * @param {import('@minecraft/server').Player} player The player to check.
@@ -34,8 +26,8 @@ export async function checkViewSnap(player, pData, dependencies) {
     const currentYaw = currentRotation.y;
     const watchedPlayerName = pData.isWatched ? playerName : null;
 
-    const invalidPitchMin = config?.invalidPitchThresholdMin ?? defaultInvalidPitchMin;
-    const invalidPitchMax = config?.invalidPitchThresholdMax ?? defaultInvalidPitchMax;
+    const invalidPitchMin = config?.invalidPitchThresholdMin ?? -90.5;
+    const invalidPitchMax = config?.invalidPitchThresholdMax ?? 90.5;
 
     const invalidPitchActionProfileKey = config?.invalidPitchActionProfileName ?? 'combatInvalidPitch';
 
@@ -54,14 +46,14 @@ export async function checkViewSnap(player, pData, dependencies) {
         const deltaPitch = Math.abs(currentPitch - (pData.lastPitch ?? currentPitch));
         let deltaYaw = Math.abs(currentYaw - (pData.lastYaw ?? currentYaw));
 
-        if (deltaYaw > yawFlipThreshold) {
-            deltaYaw = degreesInCircle - deltaYaw;
+        if (deltaYaw > 180) {
+            deltaYaw = 360 - deltaYaw;
         }
 
         const ticksSinceLastAttack = currentTick - pData.lastAttackTick;
-        const postAttackTimeMs = ticksSinceLastAttack * msPerTick;
+        const postAttackTimeMs = ticksSinceLastAttack * 50;
 
-        const maxPitchSnapPerTick = config?.maxPitchSnapPerTick ?? defaultMaxPitchSnapPerTick;
+        const maxPitchSnapPerTick = config?.maxPitchSnapPerTick ?? 75;
         const pitchSnapActionProfileKey = config?.pitchSnapActionProfileName ?? 'combatViewSnapPitch';
 
         if (ticksSinceLastAttack > 0) {

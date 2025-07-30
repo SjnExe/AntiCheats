@@ -1,13 +1,5 @@
 import { getOptimalToolForBlock, calculateRelativeBlockBreakingPower } from '../../utils/index.js';
 
-// Constants for magic numbers
-const defaultAutoToolSwitchToOptimalWindowTicks = 2;
-const defaultAutoToolSwitchBackWindowTicks = 5;
-const significantPowerIncreaseMultiplier = 1.5;
-const highPowerThreshold = 5;
-const defaultAutoToolBreakAttemptTimeoutTicks = 200;
-const switchBackStateAdditionalTimeoutTicks = 20;
-
 /**
  * Checks for AutoTool behavior by analyzing tool switches around block break events.
  * This involves two parts:
@@ -29,8 +21,8 @@ export async function checkAutoTool(player, pData, dependencies) {
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
-    const switchToOptimalWindowTicks = config.autoToolSwitchToOptimalWindowTicks ?? defaultAutoToolSwitchToOptimalWindowTicks;
-    const switchBackWindowTicks = config.autoToolSwitchBackWindowTicks ?? defaultAutoToolSwitchBackWindowTicks;
+    const switchToOptimalWindowTicks = config.autoToolSwitchToOptimalWindowTicks ?? 2;
+    const switchBackWindowTicks = config.autoToolSwitchBackWindowTicks ?? 5;
     const actionProfileKey = config.autoToolActionProfileName ?? 'worldAutoTool';
 
     if (
@@ -57,9 +49,9 @@ export async function checkAutoTool(player, pData, dependencies) {
                         const initialPower = calculateRelativeBlockBreakingPower(player, blockPermutation, initialToolStack);
                         const newPower = optimalToolInfo.speed;
 
-                        const isSignificantlyBetter = (newPower > initialPower * significantPowerIncreaseMultiplier) ||
+                        const isSignificantlyBetter = (newPower > initialPower * 1.5) ||
                                                     (newPower === Infinity && initialPower < 1000) || // 1000 is fine
-                                                    (newPower > highPowerThreshold && initialPower < 1); // 1 is fine
+                                                    (newPower > 5 && initialPower < 1); // 1 is fine
 
                         if (isSignificantlyBetter) {
                             pData.switchedToOptimalToolForBreak = true;
@@ -114,7 +106,7 @@ export async function checkAutoTool(player, pData, dependencies) {
         }
     }
 
-    const timeoutForBreakAttempt = config.autoToolBreakAttemptTimeoutTicks ?? defaultAutoToolBreakAttemptTimeoutTicks;
+    const timeoutForBreakAttempt = config.autoToolBreakAttemptTimeoutTicks ?? 200;
     if (pData.isAttemptingBlockBreak && (currentTick - (pData.breakAttemptStartTick ?? 0) > timeoutForBreakAttempt)) { // 0 is fine
         playerUtils.debugLog(`[AutoToolCheck] Stale break attempt timed out for ${player.name}. Block: ${pData.breakingBlockTypeId ?? 'N/A'}`, watchedPrefix, dependencies);
         pData.isAttemptingBlockBreak = false;
@@ -124,7 +116,7 @@ export async function checkAutoTool(player, pData, dependencies) {
         pData.isDirtyForSave = true;
     }
 
-    const timeoutForSwitchBackState = (config.autoToolSwitchBackWindowTicks ?? defaultAutoToolSwitchBackWindowTicks) + switchBackStateAdditionalTimeoutTicks;
+    const timeoutForSwitchBackState = (config.autoToolSwitchBackWindowTicks ?? 5) + 20;
     if (
         pData.optimalToolSlotForLastBreak !== null &&
         (pData.lastBreakCompleteTick ?? 0) > 0 && // 0 is fine
