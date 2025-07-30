@@ -1,3 +1,8 @@
+import {
+    system,
+    world,
+} from '@minecraft/server';
+
 // A simple, early-stage error handler to catch issues during the initial script load phase.
 // This is crucial for diagnosing problems that prevent the main error handling mechanisms from starting.
 try {
@@ -14,12 +19,6 @@ try {
     // which would be highly unusual but is included for completeness.
     console.error(`[AntiCheat] CRITICAL: Failed to subscribe to watchdog event: ${e}`);
 }
-
-
-import {
-    system,
-    world,
-} from '@minecraft/server';
 
 import {
     logError,
