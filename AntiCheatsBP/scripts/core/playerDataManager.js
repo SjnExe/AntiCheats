@@ -287,6 +287,10 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
             pData.isDirtyForSave = true;
             scheduledFlagPurges.delete(player.nameTag);
             await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
+
+            // Immediately save the player's data to ensure the flag purge is persisted atomically.
+            await saveDirtyPlayerData(player, dependencies);
+
             playerUtils.debugLog(`[PlayerDataManager] Executed scheduled flag purge for ${player.nameTag} upon join.`, player.nameTag, dependencies);
             logManager.addLog({ actionType: 'flagsPurgedOnJoin', targetName: player.nameTag, targetId: player.id, context: 'PlayerDataManager.ensurePlayerDataInitialized' }, dependencies);
         }
