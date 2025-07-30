@@ -1,8 +1,3 @@
-// Default configuration values
-const defaultPistonActivityMapMaxSize = 2000;
-const defaultPistonActivityEntryTimeoutSeconds = 300;
-const millisecondsPerSecond = 1000;
-
 /** @type {Map<string, { activations: number[], lastLogTime: number }>} Stores activity data for pistons. Key: string representation of piston location and dimension. Value: { activations: number[], lastLogTime: number } */
 const pistonActivityData = new Map();
 
@@ -70,8 +65,8 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
 
     pistonActivityData.set(pistonKey, data);
 
-    const maxMapSize = config.pistonActivityMapMaxSize ?? defaultPistonActivityMapMaxSize;
-    const entryTimeoutMs = (config.pistonActivityEntryTimeoutSeconds ?? defaultPistonActivityEntryTimeoutSeconds) * millisecondsPerSecond;
+    const maxMapSize = config.pistonActivityMapMaxSize ?? 2000;
+    const entryTimeoutMs = (config.pistonActivityEntryTimeoutSeconds ?? 300) * 1000;
 
     if (pistonActivityData.size > maxMapSize) {
         const cleanupCutoffTime = currentTime - entryTimeoutMs;

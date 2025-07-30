@@ -3,14 +3,6 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
-// Constants for magic numbers
-const ticksPerSecondSpeed = 20;
-const defaultMaxHorizontalSpeedVanillaSprint = 5.7;
-const defaultSpeedEffectMultiplierPerLevel = 0.20;
-const defaultSpeedToleranceBuffer = 0.5;
-const speedLoggingDecimalPlaces = 3;
-const defaultSpeedGroundConsecutiveTicksThreshold = 5;
-
 /**
  * Checks for speed-related hacks by analyzing player's horizontal movement speed.
  * Considers game mode, effects (Speed), and whether the player is on ground or airborne.
@@ -52,20 +44,20 @@ export async function checkSpeed(player, pData, dependencies) {
     }
 
     const hSpeed = Math.sqrt((pData.velocity.x ** 2) + (pData.velocity.z ** 2));
-    const hSpeedBPS = hSpeed * ticksPerSecondSpeed;
+    const hSpeedBPS = hSpeed * 20;
 
-    let maxAllowedSpeedBPS = config?.maxHorizontalSpeedVanillaSprint ?? defaultMaxHorizontalSpeedVanillaSprint;
+    let maxAllowedSpeedBPS = config?.maxHorizontalSpeedVanillaSprint ?? 5.7;
 
     const speedAmplifier = pData.speedAmplifier ?? -1; // -1 is fine
     if (speedAmplifier >= 0) { // 0 is fine
-        maxAllowedSpeedBPS *= (1 + ((speedAmplifier + 1) * (config?.speedEffectMultiplierPerLevel ?? defaultSpeedEffectMultiplierPerLevel))); // 1 is fine
+        maxAllowedSpeedBPS *= (1 + ((speedAmplifier + 1) * (config?.speedEffectMultiplierPerLevel ?? 0.20))); // 1 is fine
     }
 
-    maxAllowedSpeedBPS += (config?.speedToleranceBuffer ?? defaultSpeedToleranceBuffer);
+    maxAllowedSpeedBPS += (config?.speedToleranceBuffer ?? 0.5);
 
     if (pData.isWatched && config?.enableDebugLogging) {
         playerUtils?.debugLog(
-            `[SpeedCheck] Processing for ${playerName}. HSpeedBPS=${hSpeedBPS.toFixed(speedLoggingDecimalPlaces)}, MaxAllowedBPS=${maxAllowedSpeedBPS.toFixed(speedLoggingDecimalPlaces)}, GroundSpeedingTicks=${pData.consecutiveOnGroundSpeedingTicks ?? 0}, OnGround=${player.isOnGround}`,
+            `[SpeedCheck] Processing for ${playerName}. HSpeedBPS=${hSpeedBPS.toFixed(3)}, MaxAllowedBPS=${maxAllowedSpeedBPS.toFixed(3)}, GroundSpeedingTicks=${pData.consecutiveOnGroundSpeedingTicks ?? 0}, OnGround=${player.isOnGround}`,
             watchedPlayerName, dependencies,
         );
     }
@@ -77,7 +69,7 @@ export async function checkSpeed(player, pData, dependencies) {
             pData.consecutiveOnGroundSpeedingTicks = (pData.consecutiveOnGroundSpeedingTicks || 0) + 1; // 0 and 1 are fine
             pData.isDirtyForSave = true;
 
-            const groundTicksThreshold = config?.speedGroundConsecutiveTicksThreshold ?? defaultSpeedGroundConsecutiveTicksThreshold;
+            const groundTicksThreshold = config?.speedGroundConsecutiveTicksThreshold ?? 5;
             if (pData.consecutiveOnGroundSpeedingTicks >= groundTicksThreshold) {
                 let activeEffectsString = '';
                 const effects = player.getEffects();
@@ -86,14 +78,14 @@ export async function checkSpeed(player, pData, dependencies) {
                 }
 
                 const violationDetails = {
-                    detectedSpeedBps: hSpeedBPS.toFixed(speedLoggingDecimalPlaces),
-                    maxAllowedBps: maxAllowedSpeedBPS.toFixed(speedLoggingDecimalPlaces),
+                    detectedSpeedBps: hSpeedBPS.toFixed(3),
+                    maxAllowedBps: maxAllowedSpeedBPS.toFixed(3),
                     consecutiveTicks: (pData.consecutiveOnGroundSpeedingTicks ?? 0).toString(), // 0 is fine
                     onGround: player.isOnGround.toString(),
                     activeEffects: activeEffectsString,
                 };
                 await actionManager?.executeCheckAction(player, groundActionProfileKey, violationDetails, dependencies);
-                playerUtils?.debugLog(`[SpeedCheck] Flagged ${playerName} for ground speed. Speed: ${hSpeedBPS.toFixed(speedLoggingDecimalPlaces)} > ${maxAllowedSpeedBPS.toFixed(speedLoggingDecimalPlaces)} for ${pData.consecutiveOnGroundSpeedingTicks} ticks.`, watchedPlayerName, dependencies);
+                playerUtils?.debugLog(`[SpeedCheck] Flagged ${playerName} for ground speed. Speed: ${hSpeedBPS.toFixed(3)} > ${maxAllowedSpeedBPS.toFixed(3)} for ${pData.consecutiveOnGroundSpeedingTicks} ticks.`, watchedPlayerName, dependencies);
 
                 // Reset the counter after flagging
                 pData.consecutiveOnGroundSpeedingTicks = 0;

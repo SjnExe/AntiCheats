@@ -3,21 +3,6 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
-const defaultJumpBoostYVelocityBonus = 0.2;
-const defaultMaxYVelocityPositive = 0.42;
-const yVelocityGraceTicks = 10;
-const defaultFlySustainedVerticalSpeedThreshold = 0.45;
-const defaultFlySustainedOffGroundTicksThreshold = 10;
-const defaultFlyHoverVerticalSpeedThreshold = 0.08;
-const defaultFlyHoverOffGroundTicksThreshold = 20;
-const defaultFlyHoverMaxFallDistanceThreshold = 1.0;
-const defaultFlyHoverNearGroundThreshold = 2.5;
-const minVerticalSpeedForSlowFallingGrace = -0.01; // If player has slow fall and is falling faster than this (more negative), they are exempt from hover.
-const slowFallingHoverFallDistanceMultiplier = 1.5; // Player with slow fall can accumulate this much more fallDistance before hover triggers.
-const loggingDecimalPlacesFly = 3;
-const genericDecimalPlacesFly = 2;
-
-
 /**
  * Checks for fly-related hacks by analyzing player's vertical movement, airborne state,
  * and active effects (expected to be pre-processed into `pData`).
@@ -60,17 +45,17 @@ export async function checkFly(player, pData, dependencies) {
     if (config?.enableHighYVelocityCheck && !pData.hasLevitation) {
         const currentYVelocity = pData.velocity?.y ?? 0;
         const jumpBoostAmplifierValue = pData.jumpBoostAmplifier ?? 0;
-        const jumpBoostBonus = jumpBoostAmplifierValue * (config?.jumpBoostYVelocityBonus ?? defaultJumpBoostYVelocityBonus);
-        const baseYVelocityPositive = config?.maxYVelocityPositive ?? defaultMaxYVelocityPositive;
+        const jumpBoostBonus = jumpBoostAmplifierValue * (config?.jumpBoostYVelocityBonus ?? 0.2);
+        const baseYVelocityPositive = config?.maxYVelocityPositive ?? 0.42;
         const effectiveMaxYVelocity = baseYVelocityPositive + jumpBoostBonus;
 
         if (pData.isWatched) {
-            playerUtils?.debugLog(`[FlyCheck][Y-Velo] ${playerName}: CurrentYVelo: ${currentYVelocity.toFixed(loggingDecimalPlacesFly)}, BaseMax: ${baseYVelocityPositive.toFixed(loggingDecimalPlacesFly)}, JumpBoostLvl: ${jumpBoostAmplifierValue}, JumpBoostBonus: ${jumpBoostBonus.toFixed(loggingDecimalPlacesFly)}, EffectiveMax: ${effectiveMaxYVelocity.toFixed(loggingDecimalPlacesFly)}`, watchedPlayerName, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Y-Velo] ${playerName}: CurrentYVelo: ${currentYVelocity.toFixed(3)}, BaseMax: ${baseYVelocityPositive.toFixed(3)}, JumpBoostLvl: ${jumpBoostAmplifierValue}, JumpBoostBonus: ${jumpBoostBonus.toFixed(3)}, EffectiveMax: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPlayerName, dependencies);
         }
 
         const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity);
         const ticksSinceLastElytra = currentTick - (pData.lastUsedElytraTick ?? -Infinity);
-        const graceTicks = config?.yVelocityGraceTicks ?? yVelocityGraceTicks;
+        const graceTicks = config?.yVelocityGraceTicks ?? 10;
 
         const underGraceCondition = (
             ticksSinceLastDamage <= graceTicks ||
@@ -98,8 +83,8 @@ export async function checkFly(player, pData, dependencies) {
 
         if (currentYVelocity > effectiveMaxYVelocity && !underGraceCondition) {
             const violationDetails = {
-                yVelocity: currentYVelocity.toFixed(loggingDecimalPlacesFly),
-                effectiveMaxYVelocity: effectiveMaxYVelocity.toFixed(loggingDecimalPlacesFly),
+                yVelocity: currentYVelocity.toFixed(3),
+                effectiveMaxYVelocity: effectiveMaxYVelocity.toFixed(3),
                 jumpBoostLevel: (pData.jumpBoostAmplifier ?? 0).toString(),
                 onGround: player.isOnGround.toString(),
                 gracePeriodActive: underGraceCondition.toString(),
@@ -111,7 +96,7 @@ export async function checkFly(player, pData, dependencies) {
             };
             const highYVelocityActionProfileKey = config?.highYVelocityActionProfileName ?? 'movementHighYVelocity';
             await actionManager?.executeCheckAction(player, highYVelocityActionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[FlyCheck][Y-Velo] Flagged ${playerName}. Velo: ${currentYVelocity.toFixed(loggingDecimalPlacesFly)}, Max: ${effectiveMaxYVelocity.toFixed(loggingDecimalPlacesFly)}`, watchedPlayerName, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Y-Velo] Flagged ${playerName}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPlayerName, dependencies);
         }
     }
 
@@ -120,28 +105,28 @@ export async function checkFly(player, pData, dependencies) {
     }
 
     if (pData.hasLevitation && (pData.velocity?.y ?? 0) > 0) {
-        playerUtils?.debugLog(`[FlyCheck] ${playerName} allowing upward movement due to levitation. VSpeed: ${(pData.velocity?.y ?? 0).toFixed(genericDecimalPlacesFly)}`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} allowing upward movement due to levitation. VSpeed: ${(pData.velocity?.y ?? 0).toFixed(2)}`, watchedPlayerName, dependencies);
         return;
     }
     if (pData.hasSlowFalling && (pData.velocity?.y ?? 0) < 0) {
-        playerUtils?.debugLog(`[FlyCheck] ${playerName} noting slow descent due to Slow Falling. VSpeed: ${(pData.velocity?.y ?? 0).toFixed(genericDecimalPlacesFly)}. Hover/Sustained checks might still apply if not actually falling significantly.`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} noting slow descent due to Slow Falling. VSpeed: ${(pData.velocity?.y ?? 0).toFixed(2)}. Hover/Sustained checks might still apply if not actually falling significantly.`, watchedPlayerName, dependencies);
         // Don't return yet, as hovering with slow fall might still be an issue if not losing altitude.
     }
 
 
     const verticalSpeed = pData.velocity?.y ?? 0;
     if (pData.isWatched) {
-        playerUtils?.debugLog(`[FlyCheck] Processing Sustained/Hover for ${playerName}. VSpeed=${verticalSpeed.toFixed(loggingDecimalPlacesFly)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}, FallDist=${pData.fallDistance?.toFixed(genericDecimalPlacesFly)}`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[FlyCheck] Processing Sustained/Hover for ${playerName}. VSpeed=${verticalSpeed.toFixed(3)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}, FallDist=${pData.fallDistance?.toFixed(2)}`, watchedPlayerName, dependencies);
     }
 
-    const sustainedThreshold = config?.flySustainedVerticalSpeedThreshold ?? defaultFlySustainedVerticalSpeedThreshold;
-    const sustainedTicks = config?.flySustainedOffGroundTicksThreshold ?? defaultFlySustainedOffGroundTicksThreshold;
+    const sustainedThreshold = config?.flySustainedVerticalSpeedThreshold ?? 0.45;
+    const sustainedTicks = config?.flySustainedOffGroundTicksThreshold ?? 10;
 
     if (!player.isOnGround && verticalSpeed > sustainedThreshold && !player.isClimbing && !pData.hasLevitation && !player.isInWater) {
         if (pData.consecutiveOffGroundTicks > sustainedTicks) {
             const violationDetails = {
                 type: 'sustainedVertical',
-                verticalSpeed: verticalSpeed.toFixed(loggingDecimalPlacesFly),
+                verticalSpeed: verticalSpeed.toFixed(3),
                 offGroundTicks: (pData.consecutiveOffGroundTicks ?? 0).toString(),
                 isClimbing: player.isClimbing.toString(),
                 isInWater: player.isInWater.toString(),
@@ -149,17 +134,17 @@ export async function checkFly(player, pData, dependencies) {
             };
             const sustainedFlyActionProfileKey = config?.sustainedFlyActionProfileName ?? 'movementSustainedFly';
             await actionManager?.executeCheckAction(player, sustainedFlyActionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[FlyCheck][Sustained] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(loggingDecimalPlacesFly)}, OffGround: ${pData.consecutiveOffGroundTicks}t`, watchedPlayerName, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Sustained] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.consecutiveOffGroundTicks}t`, watchedPlayerName, dependencies);
         }
     }
 
-    const hoverVSpeedThreshold = config?.flyHoverVerticalSpeedThreshold ?? defaultFlyHoverVerticalSpeedThreshold;
-    let hoverOffGroundTicks = config?.flyHoverOffGroundTicksThreshold ?? defaultFlyHoverOffGroundTicksThreshold;
-    let hoverMaxFallDist = config?.flyHoverMaxFallDistanceThreshold ?? defaultFlyHoverMaxFallDistanceThreshold;
-    const hoverMinHeight = config?.flyHoverNearGroundThreshold ?? defaultFlyHoverNearGroundThreshold;
+    const hoverVSpeedThreshold = config?.flyHoverVerticalSpeedThreshold ?? 0.08;
+    let hoverOffGroundTicks = config?.flyHoverOffGroundTicksThreshold ?? 20;
+    let hoverMaxFallDist = config?.flyHoverMaxFallDistanceThreshold ?? 1.0;
+    const hoverMinHeight = config?.flyHoverNearGroundThreshold ?? 2.5;
 
     if (pData.hasSlowFalling) {
-        hoverMaxFallDist *= slowFallingHoverFallDistanceMultiplier;
+        hoverMaxFallDist *= 1.5;
         // Players with slow falling can hover very easily. We apply a stricter (lower) tick count to catch this.
         hoverOffGroundTicks = config?.flyHoverOffGroundTicksSlowFalling ?? Math.floor(hoverOffGroundTicks / 2);
     }
@@ -171,7 +156,7 @@ export async function checkFly(player, pData, dependencies) {
         !player.isClimbing &&
         !player.isInWater &&
         !pData.hasLevitation &&
-        !(pData.hasSlowFalling && verticalSpeed < minVerticalSpeedForSlowFallingGrace)
+        !(pData.hasSlowFalling && verticalSpeed < -0.01)
     ) {
         const playerLocY = player.location.y;
         const lastGroundY = pData.lastOnGroundPosition?.y;
@@ -184,10 +169,10 @@ export async function checkFly(player, pData, dependencies) {
         if (heightAboveLastGround > hoverMinHeight) {
             const violationDetails = {
                 type: 'flyHover',
-                verticalSpeed: verticalSpeed.toFixed(loggingDecimalPlacesFly),
+                verticalSpeed: verticalSpeed.toFixed(3),
                 offGroundTicks: (pData.consecutiveOffGroundTicks ?? 0).toString(),
-                fallDistance: (pData.fallDistance ?? 0).toFixed(genericDecimalPlacesFly),
-                heightAboveLastGround: heightAboveLastGround.toFixed(genericDecimalPlacesFly),
+                fallDistance: (pData.fallDistance ?? 0).toFixed(2),
+                heightAboveLastGround: heightAboveLastGround.toFixed(2),
                 isClimbing: player.isClimbing.toString(),
                 isInWater: player.isInWater.toString(),
                 hasLevitation: (pData.hasLevitation ?? false).toString(),
@@ -195,9 +180,9 @@ export async function checkFly(player, pData, dependencies) {
             };
             const hoverFlyActionProfileKey = config?.hoverFlyActionProfileName ?? 'movementFlyHover';
             await actionManager?.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(loggingDecimalPlacesFly)}, OffGround: ${pData.consecutiveOffGroundTicks}t, FallDist: ${pData.fallDistance?.toFixed(genericDecimalPlacesFly)}, Height: ${heightAboveLastGround.toFixed(genericDecimalPlacesFly)}`, watchedPlayerName, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.consecutiveOffGroundTicks}t, FallDist: ${pData.fallDistance?.toFixed(2)}, Height: ${heightAboveLastGround.toFixed(2)}`, watchedPlayerName, dependencies);
         } else if (pData.isWatched) {
-            playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover speed/tick criteria but height (${heightAboveLastGround.toFixed(genericDecimalPlacesFly)}) not > min (${hoverMinHeight}). LastGroundY: ${lastGroundY}`, watchedPlayerName, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover speed/tick criteria but height (${heightAboveLastGround.toFixed(2)}) not > min (${hoverMinHeight}). LastGroundY: ${lastGroundY}`, watchedPlayerName, dependencies);
         }
     }
 }

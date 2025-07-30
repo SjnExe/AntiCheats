@@ -1,26 +1,5 @@
 import * as mc from '@minecraft/server';
 
-// Default configuration values used if not provided in config.js
-const defaultTowerPlacementHistoryLength = 20;
-const defaultTowerMinHeight = 5;
-const defaultTowerMaxPitchWhilePillaring = -30;
-const ticksPerSecond = 20;
-const defaultDownwardScaffoldMinBlocks = 3;
-const defaultDownwardScaffoldMinHorizontalSpeed = 3.0;
-const defaultFlatRotationConsecutiveBlocks = 4;
-const initialMinObservedPitch = 91;
-const initialMaxObservedPitch = -91;
-const defaultFlatRotationPitchHorizontalMin = -5.0;
-const defaultFlatRotationPitchHorizontalMax = 5.0;
-const defaultFlatRotationPitchDownwardMin = -90.0;
-const defaultFlatRotationPitchDownwardMax = -85.0;
-const degreesHalfCircle = 180;
-const degreesFullCircle = 360;
-const defaultBlockSpamMaxBlocksInWindow = 8;
-const defaultBlockSpamDensityTimeWindowTicks = 60;
-const defaultBlockSpamDensityThresholdPercentage = 70;
-
-
 /**
  * Checks for tower-like upward building (pillaring straight up with suspicious pitch).
  * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
@@ -55,7 +34,7 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
         tick: currentTick,
     };
     pData.recentBlockPlacements.push(newPlacement);
-    if (pData.recentBlockPlacements.length > (config.towerPlacementHistoryLength ?? defaultTowerPlacementHistoryLength)) {
+    if (pData.recentBlockPlacements.length > (config.towerPlacementHistoryLength ?? 20)) {
         pData.recentBlockPlacements.shift();
     }
     pData.isDirtyForSave = true;
@@ -97,8 +76,8 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
     }
     pData.isDirtyForSave = true;
 
-    const minHeight = config.towerMinHeight ?? defaultTowerMinHeight;
-    const maxPitchValue = config.towerMaxPitchWhilePillaring ?? defaultTowerMaxPitchWhilePillaring;
+    const minHeight = config.towerMinHeight ?? 5;
+    const maxPitchValue = config.towerMaxPitchWhilePillaring ?? -30;
 
     if ((pData.consecutivePillarBlocks ?? 0) >= minHeight && pitch > maxPitchValue) {
         const violationDetails = {
@@ -281,7 +260,7 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const blockLocation = block.location;
     const velocity = player.getVelocity();
-    const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * ticksPerSecond;
+    const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20;
 
     let isContinuingSequence = false;
     const maxTickGap = config.downwardScaffoldMaxTickGap ?? 10;
@@ -301,8 +280,8 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
     pData.lastDownwardScaffoldBlockLocation = { x: blockLocation.x, y: blockLocation.y, z: blockLocation.z };
     pData.isDirtyForSave = true;
 
-    const minBlocks = config.downwardScaffoldMinBlocks ?? defaultDownwardScaffoldMinBlocks;
-    const minHSpeed = config.downwardScaffoldMinHorizontalSpeed ?? defaultDownwardScaffoldMinHorizontalSpeed;
+    const minBlocks = config.downwardScaffoldMinBlocks ?? 3;
+    const minHSpeed = config.downwardScaffoldMinHorizontalSpeed ?? 3.0;
 
     if ((pData.consecutiveDownwardBlocks ?? 0) >= minBlocks && horizontalSpeedBPS >= minHSpeed) {
         const violationDetails = {
@@ -339,7 +318,7 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
         return;
     }
 
-    const consecutiveBlocksToAnalyze = config.flatRotationConsecutiveBlocks ?? defaultFlatRotationConsecutiveBlocks;
+    const consecutiveBlocksToAnalyze = config.flatRotationConsecutiveBlocks ?? 4;
     if (!pData.recentBlockPlacements || pData.recentBlockPlacements.length < consecutiveBlocksToAnalyze) {
         return;
     }
@@ -347,14 +326,14 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const relevantPlacements = pData.recentBlockPlacements.slice(-consecutiveBlocksToAnalyze);
 
-    let minObservedPitch = initialMinObservedPitch;
-    let maxObservedPitch = initialMaxObservedPitch;
+    let minObservedPitch = 91;
+    let maxObservedPitch = -91;
     let allPitchesInHorizontalRange = true;
     let allPitchesInDownwardRange = true;
-    const horizontalMin = config.flatRotationPitchHorizontalMin ?? defaultFlatRotationPitchHorizontalMin;
-    const horizontalMax = config.flatRotationPitchHorizontalMax ?? defaultFlatRotationPitchHorizontalMax;
-    const downwardMin = config.flatRotationPitchDownwardMin ?? defaultFlatRotationPitchDownwardMin;
-    const downwardMax = config.flatRotationPitchDownwardMax ?? defaultFlatRotationPitchDownwardMax;
+    const horizontalMin = config.flatRotationPitchHorizontalMin ?? -5.0;
+    const horizontalMax = config.flatRotationPitchHorizontalMax ?? 5.0;
+    const downwardMin = config.flatRotationPitchDownwardMin ?? -90.0;
+    const downwardMax = config.flatRotationPitchDownwardMax ?? -85.0;
 
     for (const placement of relevantPlacements) {
         if (placement.pitch < minObservedPitch) {
@@ -379,8 +358,8 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     if (relevantPlacements.length > 1) {
         for (let i = 1; i < relevantPlacements.length; i++) {
             let diff = Math.abs(relevantPlacements[i].yaw - firstYaw);
-            if (diff > degreesHalfCircle) {
-                diff = degreesFullCircle - diff;
+            if (diff > 180) {
+                diff = 360 - diff;
             }
             if (diff > maxIndividualYawDifference) {
                 maxIndividualYawDifference = diff;
@@ -473,7 +452,7 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
         pData.isDirtyForSave = true;
     }
 
-    const maxBlocks = config.blockSpamMaxBlocksInWindow || defaultBlockSpamMaxBlocksInWindow;
+    const maxBlocks = config.blockSpamMaxBlocksInWindow || 8;
     if (pData.recentBlockSpamTimestamps.length > maxBlocks) {
         const violationDetails = {
             playerName: player.nameTag,
@@ -524,7 +503,7 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
 
     const newBlockLocation = block.location;
     let playerPlacedBlocksInVolumeCount = 0;
-    const densityTimeWindowTicks = config.blockSpamDensityTimeWindowTicks ?? defaultBlockSpamDensityTimeWindowTicks;
+    const densityTimeWindowTicks = config.blockSpamDensityTimeWindowTicks ?? 60;
     const monitoredTypes = config.blockSpamDensityMonitoredBlockTypes ?? [];
 
     for (const record of pData.recentBlockPlacements) {
@@ -548,7 +527,7 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
     }
 
     const densityPercentage = (playerPlacedBlocksInVolumeCount / totalVolumeBlocks) * 100;
-    const thresholdPercentage = config.blockSpamDensityThresholdPercentage ?? defaultBlockSpamDensityThresholdPercentage;
+    const thresholdPercentage = config.blockSpamDensityThresholdPercentage ?? 70;
 
     if (densityPercentage > thresholdPercentage) {
         const violationDetails = {

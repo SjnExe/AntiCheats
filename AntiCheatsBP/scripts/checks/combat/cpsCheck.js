@@ -3,9 +3,6 @@
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
 
-// Constants for magic numbers
-const defaultMaxCpsThreshold = 20;
-
 /**
  * Checks if a player is clicking at an abnormally high rate (CPS).
  * @param {import('@minecraft/server').Player} player The player to check.
@@ -42,7 +39,7 @@ export async function checkCps(player, pData, dependencies) {
         playerUtils.debugLog(`[CpsCheck] Processing for ${player.name}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix, dependencies);
     }
 
-    const maxThreshold = config.maxCpsThreshold ?? defaultMaxCpsThreshold;
+    const maxThreshold = config.maxCpsThreshold ?? 20;
     const actionProfileKey = config.cpsHighActionProfileName ?? 'combatCpsHigh';
 
     if (eventsInWindow > maxThreshold) {

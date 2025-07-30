@@ -6,14 +6,6 @@ import * as mc from '@minecraft/server';
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
 
-// Constants for magic numbers
-const loggingDecimalPlaces = 3;
-const defaultCreativeReach = 6.0;
-const defaultSurvivalReach = 3.0;
-const defaultReachBuffer = 0.5; // Combined buffer for latency and minor movement
-const violationDetailDecimalPlaces = 2;
-const maxRaycastDistance = 10; // Max distance to raycast for entities.
-
 /**
  * Checks if a player is attacking an entity from an excessive distance.
  * This check uses a raycast from the player's view to find the first entity.
@@ -41,18 +33,18 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
     let maxReachDistBase;
     switch (gameMode) {
         case mc.GameMode.creative:
-            maxReachDistBase = config?.reachDistanceCreative ?? defaultCreativeReach;
+            maxReachDistBase = config?.reachDistanceCreative ?? 6.0;
             break;
         case mc.GameMode.survival:
         case mc.GameMode.adventure:
-            maxReachDistBase = config?.reachDistanceSurvival ?? defaultSurvivalReach;
+            maxReachDistBase = config?.reachDistanceSurvival ?? 3.0;
             break;
         default:
             playerUtils?.debugLog(`[ReachCheck] Unsupported game mode '${mc.GameMode[gameMode]}' for player ${playerName}. Skipping reach check.`, watchedPlayerName, dependencies);
             return;
     }
 
-    const reachBuffer = config?.reachBuffer ?? defaultReachBuffer;
+    const reachBuffer = config?.reachBuffer ?? 0.5;
     const maxAllowedReach = maxReachDistBase + reachBuffer;
 
     const eyeLocation = player.getEyeLocation();
@@ -65,7 +57,7 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
     // Perform two independent checks: one for pure distance, one for line-of-sight obstruction.
     const isDistanceViolation = distanceToTarget > maxAllowedReach;
 
-    const viewEntities = player.getEntitiesFromViewDirection({ maxDistance: maxRaycastDistance });
+    const viewEntities = player.getEntitiesFromViewDirection({ maxDistance: 10 });
     const firstEntity = viewEntities.length > 0 ? viewEntities[0].entity : null;
     const isLineOfSightViolation = !firstEntity || firstEntity.id !== targetEntity.id;
 
@@ -79,10 +71,10 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
 
         const violationDetails = {
             reason: violationReason,
-            distance: distanceToTarget.toFixed(loggingDecimalPlaces),
-            maxAllowed: maxAllowedReach.toFixed(loggingDecimalPlaces),
-            baseMax: maxReachDistBase.toFixed(violationDetailDecimalPlaces),
-            buffer: reachBuffer.toFixed(violationDetailDecimalPlaces),
+            distance: distanceToTarget.toFixed(3),
+            maxAllowed: maxAllowedReach.toFixed(3),
+            baseMax: maxReachDistBase.toFixed(2),
+            buffer: reachBuffer.toFixed(2),
             targetEntityType: targetEntity.typeId,
             targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''),
             playerGameMode: mc.GameMode[gameMode] ?? String(gameMode),
@@ -91,6 +83,6 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
         const actionProfileKey = config?.reachCheckActionProfileName ?? 'combatReachAttack';
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[ReachCheck] Flagged ${playerName} for reach. Reason: ${violationReason}. Distance: ${distanceToTarget.toFixed(loggingDecimalPlaces)}, Max: ${maxAllowedReach.toFixed(loggingDecimalPlaces)}.`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[ReachCheck] Flagged ${playerName} for reach. Reason: ${violationReason}. Distance: ${distanceToTarget.toFixed(3)}, Max: ${maxAllowedReach.toFixed(3)}.`, watchedPlayerName, dependencies);
     }
 }
