@@ -75,21 +75,29 @@ export function execute(
 
     const bannedByForRecord = isAutoModAction ? 'AutoMod' : issuerName;
 
-    const banAdded = playerDataManager?.addBan(
+    const targetPData = playerDataManager.getPlayerData(targetOnlinePlayer.id);
+    if (!targetPData) {
+        // This should ideally not happen if the player is online, but as a safeguard:
+        throw new CommandError(getString('command.ban.error.noPlayerData', { playerName: targetOnlinePlayer.nameTag }));
+    }
+
+    const banAdded = playerDataManager.addPlayerStateRestriction(
         targetOnlinePlayer,
+        targetPData,
+        'ban',
         durationMs,
         reason,
         bannedByForRecord,
         isAutoModAction,
         autoModCheckType,
-        dependencies,
+        dependencies
     );
 
     if (banAdded) {
-        const banInfo = playerDataManager?.getBanInfo(targetOnlinePlayer, dependencies);
+        const banInfo = targetPData.banInfo;
         const actualReason = banInfo?.reason ?? reason;
         const actualBannedBy = banInfo?.bannedBy ?? bannedByForRecord;
-        const unbanTime = banInfo?.unbanTime ?? (Date.now() + durationMs);
+        const unbanTime = banInfo?.expiryTimestamp ?? (Date.now() + durationMs);
 
         const durationDisplay = durationMs === Infinity ? getString('ban.duration.permanent') : getString('ban.duration.expires', { expiryDate: new Date(unbanTime).toLocaleString() });
 
