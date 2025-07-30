@@ -12,19 +12,12 @@ let logsInMemory = [];
 /** @type {boolean} */
 let logsAreDirty = false;
 
-/**
- * Converts a string to camelCase.
- * @param {string} str The string to convert.
- * @returns {string} The camelCased string.
- */
 function toCamelCase(str) {
     if (!str) return '';
     return str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
 }
 
-/**
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
- */
+/** @param {import('../types.js').CommandDependencies} dependencies */
 export function initializeLogCache(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
     try {
@@ -46,8 +39,8 @@ export function initializeLogCache(dependencies) {
 }
 
 /**
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
- * @returns {Promise<boolean>} True on success, false on error.
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {Promise<boolean>}
  */
 export async function persistLogCacheToDisk(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
@@ -67,8 +60,8 @@ export async function persistLogCacheToDisk(dependencies) {
 }
 
 /**
- * @param {import('../types.js').LogEntry} logEntry The log entry object.
- * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
+ * @param {import('../types.js').LogEntry} logEntry
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function addLog(logEntry, dependencies) {
     const { playerUtils } = dependencies;
@@ -103,8 +96,8 @@ export function addLog(logEntry, dependencies) {
 }
 
 /**
- * @param {number} [count] The number of most recent logs to retrieve.
- * @returns {Array<import('../types.js').LogEntry>} An array of log objects.
+ * @param {number} [count]
+ * @returns {Array<import('../types.js').LogEntry>}
  */
 export function getLogs(count) {
     if (typeof count === 'number' && count > 0 && count < logsInMemory.length) {

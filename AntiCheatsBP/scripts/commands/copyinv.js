@@ -10,14 +10,10 @@ export const definition = {
 };
 
 /**
- * Executes the !copyinv command.
- * Allows an admin to overwrite their own inventory with a copy of a target player's inventory,
- * after a confirmation step.
- * @async
- * @param {import('@minecraft/server').Player} player - The admin player issuing the command.
- * @param {string[]} args - Command arguments: <playername>.
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * Executes the copyinv command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, playerDataManager, getString } = dependencies;

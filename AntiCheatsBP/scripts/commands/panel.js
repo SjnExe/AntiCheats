@@ -8,16 +8,14 @@ export const definition = {
 
 /**
  * Executes the panel command.
- * @async
- * @param {import('@minecraft/server').Player} player The player executing the command.
- * @param {string[]} _args Command arguments (not used in this command).
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
- * @returns {Promise<void>}
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} _args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, _args, dependencies) {
     const { uiManager, logManager, getString, playerUtils, rankManager, permissionLevels } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
-    let initialPanelId = 'mainUserPanel'; // Declare here with a default
+    let initialPanelId = 'mainUserPanel';
 
     if (!player?.isValid()) {
         console.warn('[PanelCommand] Invalid player object.');
@@ -26,8 +24,7 @@ export async function execute(player, _args, dependencies) {
 
     try {
         const userPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
-        // initialPanelId is already declared, just assign based on logic
-        if (userPermLevel <= permissionLevels.admin) { // Admins and above see admin panel
+        if (userPermLevel <= permissionLevels.admin) {
             initialPanelId = 'mainAdminPanel';
         }
 
@@ -35,7 +32,7 @@ export async function execute(player, _args, dependencies) {
             uiManager.clearPlayerNavStack(player.id);
         }
 
-        await uiManager.showPanel(player, initialPanelId, dependencies, { playerName: player.nameTag }); // Pass initial context
+        await uiManager.showPanel(player, initialPanelId, dependencies, { playerName: player.nameTag });
 
         logManager?.addLog({
             adminName: playerName, // field is adminName but used for player initiating UI
@@ -55,7 +52,7 @@ export async function execute(player, _args, dependencies) {
             context: 'PanelCommand.execute',
             adminName: playerName,
             targetId: player.id,
-            details: { panelIdAttempted: initialPanelId || 'mainAdmin/User', errorMessage: error.message }, // initialPanelId might not be set if error is early
+            details: { panelIdAttempted: initialPanelId || 'mainAdmin/User', errorMessage: error.message },
             errorStack: error.stack || error.toString(),
         }, dependencies);
     }

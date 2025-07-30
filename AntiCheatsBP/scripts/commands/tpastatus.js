@@ -7,13 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !tpastatus command.
- * Allows players to enable/disable receiving TPA requests, or check their current TPA status.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [on|off|status].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the tpastatus command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, tpaManager, getString, logManager } = dependencies;

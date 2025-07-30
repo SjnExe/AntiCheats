@@ -7,26 +7,22 @@ export const definition = {
 };
 
 /**
- * Executes the !unban command.
- * Removes a ban from the specified player. If the ban was due to an AutoMod action
- * that also reset flags, this command might not automatically restore those flags.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [playername].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @param {string} [invokedBy] - Source of the command invocation (e.g., 'PlayerCommand', 'AutoMod', 'System').
- * @param {boolean} [isAutoModAction] - Whether this execution is part of an AutoMod action.
- * @param {string | null} [autoModCheckType] - The specific check type if invoked by AutoMod.
- * @param {string | null} [programmaticUnbanReason] - Reason for the unban if not from player command arguments.
- * @returns {void}
+ * Executes the unban command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {string} [invokedBy]
+ * @param {boolean} [isAutoModAction]
+ * @param {string | null} [autoModCheckType]
+ * @param {string | null} [programmaticUnbanReason]
  */
 export function execute(
     player,
     args,
     dependencies,
     invokedBy = 'PlayerCommand',
-    isAutoModAction = false, // Retained for consistency
-    autoModCheckType = null,  // Retained for consistency
+    isAutoModAction = false,
+    autoModCheckType = null,
     programmaticUnbanReason = null,
 ) {
     const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;
@@ -45,27 +41,17 @@ export function execute(
         return;
     }
 
-    // For unban, we might need to operate on an offline player's data.
-    // The current structure heavily relies on an online targetPlayer object to get pData.
-    // This is a limitation if a system (e.g., timed ban expiry) needs to unban an offline player.
-    // For this refactor, we'll adapt for system calls on ONLINE players,
-    // and acknowledge the offline limitation.
-
     let targetOnlinePlayer;
 
     if (invokedBy === 'PlayerCommand' && player) {
-        // Admin unbanning usually requires target to be online for confirmation / pData access.
         targetOnlinePlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'unban', requireOnline: true });
         if (!targetOnlinePlayer) {
             return;
         }
-    } else { // System or AutoMod call
+    } else {
         targetOnlinePlayer = playerUtils.findPlayer(targetPlayerName);
         if (!targetOnlinePlayer || !targetOnlinePlayer.isValid()) {
             console.warn(`[UnbanCommand.execute] ${issuerName} call: Target player '${targetPlayerName}' not found online. Offline unban via this command is currently limited.`);
-            // Note: A full offline unban system would involve loading/modifying persisted data directly
-            // without a Player object, which is beyond current scope of `playerDataManager.removeBan` typically.
-            // For now, system unbans via this command will only work if player is online.
             logManager?.addLog({
                 actionType: 'error.cmd.unban.targetOffline',
                 context: 'UnbanCommand.execute',
@@ -105,15 +91,13 @@ export function execute(
     const wasPreviouslyAutoModBan = banInfo.isAutoMod;
     const previousAutoModCheckType = banInfo.triggeringCheckType;
 
-    const unbanned = playerDataManager?.removeBan(targetOnlinePlayer, dependencies); // Relies on online player object
+    const unbanned = playerDataManager?.removeBan(targetOnlinePlayer, dependencies);
 
     if (unbanned) {
         const successMessage = getString('command.unban.success', { playerName: targetOnlinePlayer.nameTag });
         if (player) {
             player.sendMessage(successMessage);
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-        } else {
-            // console.log(`[UnbanCommand] ${successMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
         }
 
         const logDetails = programmaticUnbanReason
@@ -152,8 +136,6 @@ export function execute(
             const notifyMsg = getString('command.unban.notify.unbanned', { adminName: issuerName, targetName: targetOnlinePlayer.nameTag });
             playerUtils?.notifyAdmins(notifyMsg, dependencies, null, targetPData);
         }
-
-
     } else {
         const failureMessage = getString('command.unban.failure', { playerName: targetOnlinePlayer.nameTag });
         if (player) {

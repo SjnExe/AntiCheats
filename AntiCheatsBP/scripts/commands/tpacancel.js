@@ -7,12 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !tpacancel command.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [playerName].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the tpacancel command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, tpaManager, getString, logManager } = dependencies;

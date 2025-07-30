@@ -9,12 +9,10 @@ export const definition = {
 };
 
 /**
- * Executes the !gmsp (gamemode spectator) command.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [playername].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the gmsp (gamemode spectator) command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;

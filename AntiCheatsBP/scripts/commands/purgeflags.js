@@ -9,16 +9,13 @@ export const definition = {
 };
 
 /**
- * Executes the !purgeflags command.
- * For online players, it immediately purges their flags and associated data.
- * For offline players, it currently logs the attempt and informs the admin that
- * full offline processing is pending (e.g., will be handled on next join).
- * @param {import('@minecraft/server').Player} player The player executing the command.
- * @param {string[]} args Command arguments: [playerName].
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * Executes the purgeflags command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, currentTick, getString } = dependencies; // Removed mc
+    const { config, playerUtils, logManager, currentTick, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
     const usageMessage = `§cUsage: ${prefix}${definition.syntax}`;
@@ -32,7 +29,6 @@ export async function execute(player, args, dependencies) {
     const targetPlayerOnline = playerUtils?.findPlayer(targetPlayerName, dependencies);
 
     if (targetPlayerOnline && targetPlayerOnline.isValid()) {
-        // Player is online, proceed with existing logic
         const pData = getPlayerData(targetPlayerOnline.id);
         if (!pData) {
             playerUtils?.sendMessage(player, getString('command.purgeflags.noData', { playerName: targetPlayerOnline.nameTag }));
@@ -80,16 +76,6 @@ export async function execute(player, args, dependencies) {
             playerUtils?.debugLog(`[PurgeFlagsCommand CRITICAL] Failed to save purged data for online player ${targetPlayerOnline.nameTag} by ${adminName}.`, adminName, dependencies);
         }
     } else {
-        // Player is not online, attempt to handle as offline player
-        // This is where the new logic for offline players would go.
-        // For now, we'll add a message indicating this functionality is pending
-        // or will be handled by a deferred mechanism.
-
-        // Placeholder: Assume we need a way to get the player's ID if they are offline,
-        // perhaps from a name history or by trusting the input name if it's unique.
-        // This part is complex and depends on how playerDataManager can be extended.
-
-        // Player is not online, schedule the purge for when they next join.
         const scheduleSuccess = await scheduleFlagPurge(targetPlayerName, dependencies);
 
         if (scheduleSuccess) {

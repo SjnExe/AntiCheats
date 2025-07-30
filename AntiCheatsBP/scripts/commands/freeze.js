@@ -14,16 +14,13 @@ export const definition = {
 };
 
 /**
- * Executes the !freeze command.
- * Applies or removes a 'frozen' tag and strong slowness/weakness effects to the target player.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: <playername> [on|off|toggle|status].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @param {string} [invokedBy] - Source of the command invocation (e.g., 'PlayerCommand', 'AutoMod', 'System').
- * @param {boolean} [isAutoModAction] - Whether this execution is part of an AutoMod action.
- * @param {string | null} [autoModCheckType] - The specific check type if invoked by AutoMod.
- * @returns {void}
+ * Executes the freeze command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {string} [invokedBy]
+ * @param {boolean} [isAutoModAction]
+ * @param {string | null} [autoModCheckType]
  */
 export function execute(
     player,
@@ -32,7 +29,6 @@ export function execute(
     invokedBy = 'PlayerCommand',
     isAutoModAction = false,
     autoModCheckType = null,
-    // No programmaticReason needed for freeze as it's a state change
 ) {
     const { config, playerUtils, logManager, getString } = dependencies;
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
@@ -62,10 +58,8 @@ export function execute(
         targetPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'freeze', allowSelf: false });
         if (!targetPlayer) {
             return;
-        } // validateCommandTarget sends messages
-
-        // No canAdminActionTarget needed for freeze as it's typically a base admin perm
-    } else { // System or AutoMod call
+        }
+    } else {
         targetPlayer = playerUtils.findPlayer(targetPlayerName);
         if (!targetPlayer || !targetPlayer.isValid()) {
             console.warn(`[FreezeCommand.execute] ${issuerName} call: Target player '${targetPlayerName}' not found or invalid.`);
@@ -132,8 +126,6 @@ export function execute(
             if (player) {
                 player.sendMessage(successMsg);
                 playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-            } else {
-                // console.log(`[FreezeCommand] ${successMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
             }
 
             if (config?.notifyOnAdminUtilCommandUsage !== false && invokedBy === 'PlayerCommand') {
@@ -175,8 +167,6 @@ export function execute(
             if (player) {
                 player.sendMessage(successMsg);
                 playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-            } else {
-                // console.log(`[FreezeCommand] ${successMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
             }
 
             if (config?.notifyOnAdminUtilCommandUsage !== false && invokedBy === 'PlayerCommand') {
@@ -212,7 +202,7 @@ export function execute(
             getString('command.freeze.alreadyUnfrozen', { playerName: targetPlayer.nameTag });
         if (player) {
             player.sendMessage(alreadyMsg);
-        } else if (invokedBy !== 'PlayerCommand') { // Log if system tried an already-set state
+        } else if (invokedBy !== 'PlayerCommand') {
             playerUtils?.debugLog(`[FreezeCommand] ${issuerName} call: Player ${targetPlayer.nameTag} already in desired freeze state (${targetFreezeState}).`, null, dependencies);
         }
     }

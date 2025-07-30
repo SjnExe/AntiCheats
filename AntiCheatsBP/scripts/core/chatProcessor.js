@@ -3,11 +3,11 @@ const maxMessageSnippetLength = 50;
 const defaultChatDuringCombatCooldownSeconds = 4;
 const defaultMaxMessageLength = 256;
 /**
- * @param {import('@minecraft/server').Player} player The player who sent the message.
- * @param {import('../types.js').PlayerAntiCheatData} pData The player's data.
- * @param {string} originalMessage The original message content.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').PlayerAntiCheatData} pData
+ * @param {string} originalMessage
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function processChatMessage(player, pData, originalMessage, eventData, dependencies) {
     const { config, playerUtils, checks, playerDataManager, logManager, actionManager, rankManager } = dependencies;

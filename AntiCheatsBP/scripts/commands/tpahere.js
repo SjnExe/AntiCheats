@@ -10,13 +10,10 @@ export const definition = {
 };
 
 /**
- * Executes the !tpahere command.
- * Initiates a teleport request from the command issuer, asking a target player to teleport to the issuer's location.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command (requester).
- * @param {string[]} args - Command arguments: [playerName].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the tpahere command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, tpaManager, getString, logManager } = dependencies;

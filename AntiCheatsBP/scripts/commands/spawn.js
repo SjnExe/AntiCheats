@@ -7,10 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !spawn command.
- * @param {import('@minecraft/server').Player} player The player executing the command.
- * @param {string[]} args Command arguments.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * Executes the spawn command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { getString, mc, config, permissionLevels, rankManager } = dependencies;

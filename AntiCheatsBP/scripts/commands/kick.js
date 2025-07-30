@@ -7,17 +7,14 @@ export const definition = {
 };
 
 /**
- * Executes the !kick command.
- * Removes a specified player from the server with an optional reason.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: <playername> [reason].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @param {string} [invokedBy] - Source of the command invocation (e.g., 'PlayerCommand', 'AutoMod', 'System').
- * @param {boolean} [isAutoModAction] - Whether this execution is part of an AutoMod action.
- * @param {string | null} [autoModCheckType] - The specific check type if invoked by AutoMod.
- * @param {string | null} [programmaticReason] - Reason for the kick if not from player command arguments.
- * @returns {void}
+ * Executes the kick command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {string} [invokedBy]
+ * @param {boolean} [isAutoModAction]
+ * @param {string | null} [autoModCheckType]
+ * @param {string | null} [programmaticReason]
  */
 export function execute(
     player,
@@ -31,8 +28,6 @@ export function execute(
     const { config, playerUtils, logManager, playerDataManager, rankManager, getString } = dependencies;
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
-
-    // Determine targetPlayerName from args[0]
     const targetPlayerName = args[0];
     let reason;
 
@@ -42,9 +37,6 @@ export function execute(
         reason = getString('command.kick.automodReason', { checkType: autoModCheckType || 'violations' });
     } else {
         const parsedArgsUtil = playerUtils.parsePlayerAndReasonArgs(args, 1, 'common.value.noReasonProvided', dependencies);
-        // Note: parsePlayerAndReasonArgs assumes args[0] is player, args[1] starts reason.
-        // If called programmatically with args like [target, reasonForAutoMod], this might misinterpret.
-        // For now, if programmaticReason is not used, AutoMod should ensure args[1] is the reason or it will take default.
         reason = parsedArgsUtil.reason;
     }
     const usageMessage = `§cUsage: ${prefix}kick <playername> [reason]`;
@@ -62,16 +54,14 @@ export function execute(
     let foundPlayer;
     if (invokedBy === 'PlayerCommand' && player) {
         foundPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'kick' });
-        if (!foundPlayer) {
-            return;
-        } // validateCommandTarget sends messages
+        if (!foundPlayer) return;
 
         const permCheck = rankManager.canAdminActionTarget(player, foundPlayer, 'kick', dependencies);
         if (!permCheck.allowed) {
             player.sendMessage(getString(permCheck.messageKey || 'command.kick.noPermission', permCheck.messageParams));
             return;
         }
-    } else { // System or AutoMod call
+    } else {
         foundPlayer = playerUtils.findPlayer(targetPlayerName);
         if (!foundPlayer || !foundPlayer.isValid()) {
             console.warn(`[KickCommand.execute] ${issuerName} call: Target player '${targetPlayerName}' not found or invalid.`);
@@ -101,10 +91,9 @@ export function execute(
             const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: issuerName, reason });
             playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
         } else if (isAutoModAction && config?.notifyOnAutoModAction !== false) {
-            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: issuerName, reason }); // issuerName will be AutoMod
-            playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, null, targetPData); // Pass null for player if AutoMod
+            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: issuerName, reason });
+            playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, null, targetPData);
         }
-
 
         logManager?.addLog({
             adminName: issuerName,

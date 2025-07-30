@@ -25,9 +25,6 @@ const lastPlayerRequestTimestamp = new Map(); // Stores last request time for co
 /** @type {Map<string, PlayerTpaStatus>} */
 const playerTpaStatuses = new Map(); // Stores player TPA acceptance status, keyed by player name.
 
-/**
- * @returns {string} A unique request ID.
- */
 function generateRequestId() {
     // Simple UUID v4 like generator
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -38,11 +35,11 @@ function generateRequestId() {
 }
 
 /**
- * @param {mc.Player} requester The player making the request.
- * @param {mc.Player} target The player being requested to.
- * @param {('tpa'|'tpahere')} type The type of TPA request.
- * @param {CommandDependencies} dependencies Standard dependencies object.
- * @returns {TpaRequest|{error: string, remaining?: number}} The created request or an error object.
+ * @param {import('@minecraft/server').Player} requester
+ * @param {import('@minecraft/server').Player} target
+ * @param {('tpa'|'tpahere')} type
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {import('../types.js').TpaRequest|{error: string, remaining?: number}}
  */
 export function addRequest(requester, target, type, dependencies) {
     const { config, playerUtils, logManager } = dependencies; // Removed getString
@@ -86,9 +83,9 @@ export function addRequest(requester, target, type, dependencies) {
 }
 
 /**
- * @param {string} playerAName Name of one player involved.
- * @param {string} [playerBName] Optional name of the other player.
- * @returns {TpaRequest|undefined} The found request, or undefined.
+ * @param {string} playerAName
+ * @param {string} [playerBName]
+ * @returns {import('../types.js').TpaRequest|undefined}
  */
 export function findRequest(playerAName, playerBName) {
     for (const request of activeRequests.values()) {
@@ -107,8 +104,8 @@ export function findRequest(playerAName, playerBName) {
 }
 
 /**
- * @param {string} playerName The system name of the player.
- * @returns {TpaRequest[]} An array of TPA requests.
+ * @param {string} playerName
+ * @returns {import('../types.js').TpaRequest[]}
  */
 export function findRequestsForPlayer(playerName) {
     const results = [];
@@ -121,9 +118,9 @@ export function findRequestsForPlayer(playerName) {
 }
 
 /**
- * @param {string} requestId The ID of the request to remove.
- * @param {CommandDependencies} dependencies Standard dependencies object.
- * @returns {boolean} True if removed, false otherwise.
+ * @param {string} requestId
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean}
  */
 export function removeRequest(requestId, dependencies) {
     if (activeRequests.has(requestId)) {
@@ -135,9 +132,9 @@ export function removeRequest(requestId, dependencies) {
 }
 
 /**
- * @param {string} requestId The ID of the request to accept.
- * @param {CommandDependencies} dependencies Standard dependencies object.
- * @returns {boolean} True if accepted, false otherwise.
+ * @param {string} requestId
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean}
  */
 export function acceptRequest(requestId, dependencies) {
     const { config, playerUtils, getString, logManager, mc: minecraftSystem } = dependencies;
@@ -190,8 +187,8 @@ export function acceptRequest(requestId, dependencies) {
 }
 
 /**
- * @param {string} requestId The ID of the request to execute.
- * @param {CommandDependencies} dependencies Standard dependencies object.
+ * @param {string} requestId
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function executeTeleport(requestId, dependencies) {
     const { playerUtils, getString, logManager, mc: minecraftSystem } = dependencies;
@@ -271,10 +268,10 @@ export async function executeTeleport(requestId, dependencies) {
 }
 
 /**
- * @param {string} requestId The ID of the request to cancel.
- * @param {string} reasonMessagePlayer The message key to send to players.
- * @param {string} reasonMessageLog The reason to log.
- * @param {CommandDependencies} dependencies Standard dependencies object.
+ * @param {string} requestId
+ * @param {string} reasonMessagePlayer
+ * @param {string} reasonMessageLog
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog, dependencies) {
     const { playerUtils, logManager, getString, mc: minecraftSystem } = dependencies; // getString was already in dependencies, no need to re-destructure
@@ -303,8 +300,8 @@ export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog,
 }
 
 /**
- * @param {string} requestId The ID of the request.
- * @param {CommandDependencies} dependencies Standard dependencies object.
+ * @param {string} requestId
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function declineRequest(requestId, dependencies) {
     const { playerUtils, getString, logManager, mc: minecraftSystem } = dependencies;
@@ -341,9 +338,7 @@ export function declineRequest(requestId, dependencies) {
     removeRequest(requestId, dependencies);
 }
 
-/**
- * @param {CommandDependencies} dependencies Standard dependencies object.
- */
+/** @param {import('../types.js').CommandDependencies} dependencies */
 export function clearExpiredRequests(dependencies) {
     const { playerUtils, getString, logManager, mc: minecraftSystem } = dependencies;
     const now = Date.now();
@@ -382,8 +377,8 @@ export function clearExpiredRequests(dependencies) {
 }
 
 /**
- * @param {string} playerName The system name of the player.
- * @returns {PlayerTpaStatus} The player's TPA status.
+ * @param {string} playerName
+ * @returns {import('../types.js').PlayerTpaStatus}
  */
 export function getPlayerTpaStatus(playerName) {
     if (!playerTpaStatuses.has(playerName)) {
@@ -393,9 +388,9 @@ export function getPlayerTpaStatus(playerName) {
 }
 
 /**
- * @param {string} playerName The system name of the player.
- * @param {boolean} accepts Whether the player accepts TPA requests.
- * @param {CommandDependencies} dependencies Standard dependencies object.
+ * @param {string} playerName
+ * @param {boolean} accepts
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function setPlayerTpaStatus(playerName, accepts, dependencies) {
     const { playerUtils, logManager } = dependencies;
@@ -406,9 +401,7 @@ export function setPlayerTpaStatus(playerName, accepts, dependencies) {
     logManager?.addLog({ actionType: 'tpaStatusSet', targetName: playerName, details: `Accepts TPA: ${accepts}` }, dependencies);
 }
 
-/**
- * @returns {TpaRequest[]} An array of TPA requests.
- */
+/** @returns {import('../types.js').TpaRequest[]} */
 export function getRequestsInWarmup() {
     const warmupRequests = [];
     for (const request of activeRequests.values()) {
@@ -420,8 +413,8 @@ export function getRequestsInWarmup() {
 }
 
 /**
- * @param {TpaRequest} request The TPA request to check.
- * @param {CommandDependencies} dependencies Standard dependencies object.
+ * @param {import('../types.js').TpaRequest} request
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function checkPlayerMovementDuringWarmup(request, dependencies) {
     const { config, playerUtils, getString, mc: minecraftSystem } = dependencies;

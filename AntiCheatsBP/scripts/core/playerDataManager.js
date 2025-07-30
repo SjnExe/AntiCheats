@@ -19,9 +19,8 @@ const scheduledFlagPurgesKey = 'anticheat:scheduled_flag_purges';
  */
 
 /**
- * Loads the map of scheduled flag purges from a world dynamic property.
  * @param {import('../types.js').Dependencies} dependencies
- * @returns {Promise<Map<string, ScheduledPurge>>}
+ * @returns {Promise<Map<string, import('../types.js').ScheduledPurge>>}
  */
 async function _loadScheduledFlagPurges(dependencies) {
     const { world, playerUtils } = dependencies;
@@ -61,7 +60,7 @@ async function _loadScheduledFlagPurges(dependencies) {
 
 
 /**
- * @param {Map<string, ScheduledPurge>} purges
+ * @param {Map<string, import('../types.js').ScheduledPurge>} purges
  * @param {import('../types.js').Dependencies} dependencies
  */
 async function _saveScheduledFlagPurges(purges, dependencies) {

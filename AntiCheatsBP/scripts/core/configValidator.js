@@ -1,80 +1,39 @@
-/**
- * @param {*} value The value to check.
- * @returns {boolean}
- */
 function isString(value) {
     return typeof value === 'string';
 }
-/**
- * @param {*} value The value to check.
- * @returns {boolean}
- */
 function isNumber(value) {
     return typeof value === 'number' && !isNaN(value);
 }
-/**
- * @param {*} value The value to check.
- * @returns {boolean}
- */
 function isBoolean(value) {
     return typeof value === 'boolean';
 }
-/**
- * @param {*} value The value to check.
- * @returns {boolean}
- */
 function isArray(value) {
     return Array.isArray(value);
 }
-/**
- * @param {*} value The value to check.
- * @returns {boolean}
- */
 function isObject(value) {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
-/**
- * @param {*} colorCode
- */
 function isValidColorCode(colorCode) {
     return isString(colorCode) && /^§[0-9a-fk-or]$/.test(colorCode);
 }
-/**
- * @param {*} str
- */
 function isValidCamelCase(str) {
     if (!isString(str) || str.length === 0) {
         return false;
     }
     return /^[a-z]+([A-Z][a-z0-9]*)*$/.test(str);
 }
-/**
- * @param {*} num
- */
 function isPositiveNumber(num) {
     return isNumber(num) && num > 0;
 }
-/**
- * @param {*} num
- */
 function isNonNegativeNumber(num) {
     return isNumber(num) && num >= 0;
 }
-/**
- * @param {*} durationStr
- */
 function isValidDurationString(durationStr) {
     if (!isString(durationStr)) {
         return false;
     }
     return /^\d+[smhd]$/.test(durationStr) || /^\d+$/.test(durationStr);
 }
-/**
- * @param {object} obj
- * @param {Array<object>} fieldDefs
- * @param {string} context
- * @param {Array<string>} errors
- */
 function ensureFields(obj, fieldDefs, context, errors) {
     if (!isObject(obj)) {
         errors.push(`${context}: Expected an object, but got ${typeof obj}.`);
@@ -187,11 +146,11 @@ function ensureFields(obj, fieldDefs, context, errors) {
     return allFieldsValidOverall;
 }
 /**
- * @param {object} config The `defaultConfigSettings` object.
- * @param {object} actionProfiles The `checkActionProfiles` object.
- * @param {string[]} knownCommands An array of known command names.
- * @param {object} [commandAliasesMap] Optional command aliases map.
- * @returns {string[]} An array of error messages.
+ * @param {object} config
+ * @param {object} actionProfiles
+ * @param {string[]} knownCommands
+ * @param {object} [commandAliasesMap]
+ * @returns {string[]}
  */
 export function validateMainConfig(config, actionProfiles, knownCommands, commandAliasesMap) {
     const errors = [];
@@ -445,8 +404,8 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
     return errors;
 }
 /**
- * @param {object} actionProfiles The `checkActionProfiles` object.
- * @returns {string[]} An array of error messages.
+ * @param {object} actionProfiles
+ * @returns {string[]}
  */
 export function validateActionProfiles(actionProfiles) {
     const errors = [];
@@ -531,9 +490,9 @@ export function validateActionProfiles(actionProfiles) {
     return errors;
 }
 /**
- * @param {object} autoModConfig The `automodConfig` object.
- * @param {object} actionProfiles The `checkActionProfiles` object.
- * @returns {string[]} An array of error messages.
+ * @param {object} autoModConfig
+ * @param {object} actionProfiles
+ * @returns {string[]}
  */
 export function validateAutoModConfig(autoModConfig, actionProfiles) {
     const errors = [];
@@ -629,10 +588,10 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
     return errors;
 }
 /**
- * @param {object} ranksConfig The ranks configuration object.
- * @param {string} mainConfigOwnerName The owner's name from the main config.
- * @param {string} mainConfigAdminTag The admin tag from the main config.
- * @returns {string[]} An array of error messages.
+ * @param {object} ranksConfig
+ * @param {string} mainConfigOwnerName
+ * @param {string} mainConfigAdminTag
+ * @returns {string[]}
  */
 export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfigAdminTag) {
     const errors = [];

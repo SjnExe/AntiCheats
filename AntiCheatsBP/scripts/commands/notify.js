@@ -7,15 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !notify command.
- * Allows administrators to toggle their AntiCheat notifications on/off or check their current status.
- * Preferences are stored using a field in PlayerAntiCheatData (`pData.notificationsEnabled`).
- * Player tags are secondary and can be used for persistence if pData is not fully loaded/saved immediately.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [on|off|toggle|status].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the notify command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { playerUtils, logManager, config, playerDataManager, getString } = dependencies;

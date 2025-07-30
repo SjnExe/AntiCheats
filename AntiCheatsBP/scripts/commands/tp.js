@@ -18,13 +18,6 @@ export const definition = {
     permissionLevel: 1, // admin
 };
 
-/**
- * Parses dimension ID string to a valid Minecraft Dimension object.
- * @param {string | undefined} dimensionId - The dimension ID string (e.g., "overworld", "nether", "the_end").
- * @param {import('@minecraft/server').Player} currentPlayer - The player whose dimension to use as default if string is invalid/undefined.
- * @param {import('../types.js').Dependencies} dependencies - For logging.
- * @returns {import('@minecraft/server').Dimension | undefined} The Dimension object or undefined if invalid.
- */
 function parseDimension(dimensionId, currentPlayer, dependencies) {
     const { playerUtils } = dependencies;
     if (!dimensionId) {
@@ -45,17 +38,10 @@ function parseDimension(dimensionId, currentPlayer, dependencies) {
 }
 
 /**
- * Executes the !tp command.
- * Handles teleporting a player to another player or to specific coordinates.
- * Syntax examples:
- * !tp PlayerToMove TargetPlayerDestination
- * !tp PlayerToMove X Y Z [Dimension]
- * !tp X Y Z [Dimension] (teleports self)
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments.
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * Executes the tp command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;

@@ -1,13 +1,7 @@
 /**
- * @typedef {import('../types.js').Player} Player
- * @typedef {import('../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../types.js').Dependencies} Dependencies
- */
-
-/**
  * Gets a player's balance.
- * @param {Player} player
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {number}
  */
 export function getBalance(player, dependencies) {
@@ -18,9 +12,9 @@ export function getBalance(player, dependencies) {
 
 /**
  * Sets a player's balance.
- * @param {Player} player
+ * @param {import('../types.js').Player} player
  * @param {number} amount
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {boolean}
  */
 export function setBalance(player, amount, dependencies) {
@@ -35,8 +29,8 @@ export function setBalance(player, amount, dependencies) {
 
 /**
  * Updates the economy leaderboard with a player's current balance.
- * @param {Player} player
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function updateLeaderboard(player, dependencies) {
     const { playerDataManager, world, config } = dependencies;
@@ -82,9 +76,9 @@ export function updateLeaderboard(player, dependencies) {
 
 /**
  * Adds to a player's balance.
- * @param {Player} player
+ * @param {import('../types.js').Player} player
  * @param {number} amount
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {boolean}
  */
 export function addBalance(player, amount, dependencies) {
@@ -99,9 +93,9 @@ export function addBalance(player, amount, dependencies) {
 
 /**
  * Subtracts from a player's balance.
- * @param {Player} player
+ * @param {import('../types.js').Player} player
  * @param {number} amount
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {boolean}
  */
 export function subtractBalance(player, amount, dependencies) {

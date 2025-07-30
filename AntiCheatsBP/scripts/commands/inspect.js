@@ -7,13 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !inspect command.
- * Displays detailed AntiCheat information about a target player to the command issuer.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: <playername>.
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the inspect command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;

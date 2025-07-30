@@ -126,21 +126,13 @@ export async function handleChatCommand(eventData, dependencies) {
     await executeCommand(player, commandDef, commandExecute, args, dependencies);
 }
 
-/**
- * @param {string} commandName The name of the command.
- * @param {import('../types.js').CommandDefinition} commandDef The command's definition.
- * @param {import('../types.js').Config} config The system's configuration.
- * @returns {boolean} True if the command is enabled, false otherwise.
- */
 function isCommandEnabled(commandName, config) {
     const commandConfig = config?.commandSettings?.[commandName];
     // The single source of truth is now the config. Default to false if not specified.
     return commandConfig?.enabled ?? false;
 }
 
-/**
- * @returns {string[]} An array of command names.
- */
+/** @returns {string[]} */
 export function getAllRegisteredCommandNames() {
     return Array.from(commandFilePaths.keys());
 }
