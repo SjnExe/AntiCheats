@@ -1,7 +1,3 @@
-/**
- * @file Handles chat message processing, checks, and formatting.
- * @module AntiCheatsBP/scripts/core/chatProcessor
- */
 import * as mc from '@minecraft/server';
 const maxMessageSnippetLength = 50;
 const defaultChatDuringCombatCooldownSeconds = 4;

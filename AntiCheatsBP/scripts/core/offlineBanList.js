@@ -1,11 +1,4 @@
 /**
- * @file Defines a static, offline ban list.
- * @module AntiCheatsBP/scripts/core/offlineBanList
- * This list is used to ban players by name or XUID without them needing to be online.
- * It is intended to be edited directly by server administrators in the addon files.
- */
-
-/**
  * @typedef {object} OfflineBanEntry
  * @property {string} [playerName] The case-insensitive name of the player to ban.
  * @property {string} [xuid] The XUID of the player to ban.

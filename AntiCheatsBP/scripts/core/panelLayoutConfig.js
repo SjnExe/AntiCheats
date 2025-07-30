@@ -1,10 +1,4 @@
 /**
- * @file Defines the layout configurations for various UI panels,
- * allowing dynamic, hierarchical, and permission-based generation.
- * @module AntiCheatsBP/scripts/core/panelLayoutConfig
- */
-
-/**
  * Represents a single interactive item within a panel, typically displayed as a button.
  *
  * Dynamic Text and Icons:

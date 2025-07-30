@@ -1,7 +1,3 @@
-/**
- * @file Manages player ranks, permissions, and display properties.
- * @module AntiCheatsBP/scripts/core/rankManager
- */
 import * as mc from '@minecraft/server';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './ranksConfig.js';
 

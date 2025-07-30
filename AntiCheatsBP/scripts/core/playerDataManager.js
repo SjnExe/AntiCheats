@@ -1,8 +1,3 @@
-/**
- * @file Manages all aspects of player data.
- * @module AntiCheatsBP/scripts/core/playerDataManager
- */
-
 import { logError } from '../utils/playerUtils.js';
 import { offlineBanList } from './offlineBanList.js';
 

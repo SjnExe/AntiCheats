@@ -1,9 +1,4 @@
 /**
- * @file Validates the structure and values of configuration files.
- * @module AntiCheatsBP/scripts/core/configValidator
- */
-
-/**
  * @param {*} value The value to check.
  * @returns {boolean}
  */

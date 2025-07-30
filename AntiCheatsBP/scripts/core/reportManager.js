@@ -1,7 +1,3 @@
-/**
- * @file Manages player-submitted reports.
- * @module AntiCheatsBP/scripts/core/reportManager
- */
 import { logError } from '../utils/playerUtils.js';
 
 /** @type {string} */

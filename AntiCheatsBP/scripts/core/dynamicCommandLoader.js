@@ -1,8 +1,3 @@
-/**
- * @file Handles the dynamic loading of command modules.
- * @module AntiCheatsBP/scripts/core/dynamicCommandLoader
- */
-
 import { commandDefinitionMap, commandExecutionMap, commandFilePaths } from './commandManager.js';
 
 /**

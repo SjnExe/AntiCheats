@@ -1,7 +1,3 @@
-/**
- * @file Manages TPA (teleport request) operations.
- * @module AntiCheatsBP/scripts/core/tpaManager
- */
 import { logError } from '../utils/playerUtils.js';
 
 // Constants for UUID generation

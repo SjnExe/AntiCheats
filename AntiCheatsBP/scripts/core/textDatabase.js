@@ -1,8 +1,3 @@
-/**
- * @file Defines a key-value store for reusable UI and message strings.
- * @module AntiCheatsBP/scripts/core/textDatabase
- */
-
 export const stringDB = {
     // Common UI elements
     'common.button.back': '§l§cBack§r',

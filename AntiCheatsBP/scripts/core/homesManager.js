@@ -1,9 +1,4 @@
 /**
- * @file Manages player homes.
- * @module AntiCheatsBP/scripts/core/homesManager
- */
-
-/**
  * @typedef {import('../types.js').Player} Player
  * @typedef {import('../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../types.js').Dependencies} Dependencies

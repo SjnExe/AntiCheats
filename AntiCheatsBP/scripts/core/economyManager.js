@@ -1,9 +1,4 @@
 /**
- * @file Manages the economy system.
- * @module AntiCheatsBP/scripts/core/economyManager
- */
-
-/**
  * @typedef {import('../types.js').Player} Player
  * @typedef {import('../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../types.js').Dependencies} Dependencies
