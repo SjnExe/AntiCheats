@@ -50,7 +50,6 @@ const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
 const tpaSystemTickInterval = 20;
 
 let currentTick = 0;
-let isProcessingTick = false;
 
 /**
  * Initializes the AntiCheat system.
@@ -93,27 +92,10 @@ function performInitializations() {
     });
     playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Tick loop active.', 'System', dependencies);
 
-    system.runInterval(async () => {
-        try {
-            await mainTick();
-        } catch (e) {
-            logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
-            try {
-                logManager.addLog({
-                    actionType: 'error.main.tick.unhandled.rejection',
-                    context: 'Main.TickLoop.TopLevel',
-                    details: {
-                        errorMessage: e?.message,
-                        stack: e?.stack,
-                    },
-                }, dependencies);
-            } catch (loggingError) {
-                logError(`CRITICAL: Failed to write to structured log during top-level tick error: ${loggingError.message}`, loggingError);
-            }
-        }
-    });
+    // Start the main processing loop.
+    system.run(mainTick);
 
-
+    // The TPA system runs on its own separate, simpler interval.
     system.runInterval(() => tpaTick(dependencies), tpaSystemTickInterval);
 }
 /**
@@ -228,32 +210,29 @@ function validateConfigurations() {
 }
 /**
  * Processes all tasks for a single system tick.
+ * This function uses a chained `system.run` to schedule its next execution,
+ * ensuring sequential processing without overlapping and without skipping ticks.
  */
 async function mainTick() {
-    if (isProcessingTick) {
-        return;
-    }
-
-    isProcessingTick = true;
     try {
         await processTick();
     } catch (e) {
-        logError(`Unhandled error in main tick processing: ${e?.message}`, e);
-
+        logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
         try {
             logManager.addLog({
-                actionType: 'error.main.tick.unhandled',
-                context: 'Main.TickLoop',
+                actionType: 'error.main.tick.unhandled.rejection',
+                context: 'Main.TickLoop.TopLevel',
                 details: {
                     errorMessage: e?.message,
                     stack: e?.stack,
                 },
             }, dependencies);
         } catch (loggingError) {
-            logError(`CRITICAL: Failed to write to structured log during main tick error: ${loggingError.message}`, loggingError);
+            logError(`CRITICAL: Failed to write to structured log during top-level tick error: ${loggingError.message}`, loggingError);
         }
     } finally {
-        isProcessingTick = false;
+        // Schedule the next tick processing. This creates a chain that runs sequentially.
+        system.run(mainTick);
     }
 }
 
