@@ -128,10 +128,6 @@ export const panelDefinitions = {
             },
         ],
     },
-    /**
-     * @description Panel to display a list of currently online players.
-     * Items are dynamically generated. Allows navigation to playerActionsPanel for a selected player.
-     */
     onlinePlayersPanel: {
         title: '§lOnline Players§r',
         parentPanelId: 'playerManagementPanel',
@@ -148,10 +144,6 @@ export const panelDefinitions = {
             },
         ],
     },
-    /**
-     * @description Panel to display a list of currently online players who are being watched.
-     * Items are dynamically generated. Allows navigation to playerActionsPanel for a selected player.
-     */
     watchedPlayersPanel: {
         title: '§lWatched Players (Online)§r',
         parentPanelId: 'playerManagementPanel',

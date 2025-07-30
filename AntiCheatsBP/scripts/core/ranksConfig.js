@@ -29,15 +29,15 @@
  */
 export const defaultChatFormatting = {
     prefixText: '§8[§7Member§8] ',
-    nameColor: '§7',   // Grey
-    messageColor: '§f', // White
+    nameColor: '§7',
+    messageColor: '§f',
 };
 
 /**
  * Default nametag prefix.
  * @type {string}
  */
-export const defaultNametagPrefix = '§7Member §f\n'; // Example: "§7Member §f\nPlayerName"
+export const defaultNametagPrefix = '§7Member §f\n';
 
 /**
  * Default permission level for players not matching any specific rank.
@@ -48,51 +48,49 @@ export const defaultPermissionLevel = 1024;
 
 /**
  * Array of all rank definitions.
- * Ensure `id` properties are lowercase for consistent lookup by RankManager (which converts to lowercase).
- * `priority` is crucial: lower numbers are checked first and take precedence.
  * @type {RankDefinition[]}
  */
 export const rankDefinitions = [
     {
-        id: 'owner', // lowercase, as handled by RankManager
+        id: 'owner',
         name: 'Owner',
-        priority: 0, // The lowest number, checked first.
-        permissionLevel: 0, // Highest permission
+        priority: 0,
+        permissionLevel: 0,
         chatFormatting: {
             prefixText: '§8[§cOwner§8] ',
-            nameColor: '§c',   // Red
-            messageColor: '§f', // White
+            nameColor: '§c',
+            messageColor: '§f',
         },
         nametagPrefix: '§cOwner §f\n',
         conditions: [
-            { type: 'ownerName' }, // Relies on config.ownerPlayerName
+            { type: 'ownerName' },
         ],
     },
     {
-        id: 'admin', // lowercase
+        id: 'admin',
         name: 'Admin',
         priority: 10,
         permissionLevel: 1,
         chatFormatting: {
             prefixText: '§8[§bAdmin§8] ',
-            nameColor: '§b',   // Aqua
-            messageColor: '§f', // White
+            nameColor: '§b',
+            messageColor: '§f',
         },
         nametagPrefix: '§bAdmin §f\n',
         conditions: [
-            { type: 'adminTag' }, // Relies on config.adminTag
+            { type: 'adminTag' },
         ],
-        assignableBy: 0, // Only Owner can assign/remove Admin by default
+        assignableBy: 0,
     },
     {
-        id: 'member', // lowercase, Default/Fallback rank
+        id: 'member',
         name: 'Member',
-        priority: 1000, // The highest number, checked last.
+        priority: 1000,
         permissionLevel: defaultPermissionLevel,
-        chatFormatting: defaultChatFormatting, // Uses the exported default object
-        nametagPrefix: defaultNametagPrefix,   // Uses the exported default object
+        chatFormatting: defaultChatFormatting,
+        nametagPrefix: defaultNametagPrefix,
         conditions: [
-            { type: 'default' }, // This should always be last or have the highest priority number
+            { type: 'default' },
         ],
     },
 ];

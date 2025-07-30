@@ -2,16 +2,10 @@ import * as mc from '@minecraft/server';
 import { kits } from './kits.js';
 
 /**
- * @typedef {import('../types.js').Player} Player
- * @typedef {import('../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../types.js').Dependencies} Dependencies
- */
-
-/**
  * Gives a kit to a player.
- * @param {Player} player
+ * @param {import('../types.js').Player} player
  * @param {string} kitName
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {{success: boolean, message: string}}
  */
 export function giveKit(player, kitName, dependencies) {
@@ -53,8 +47,7 @@ export function giveKit(player, kitName, dependencies) {
 }
 
 /**
- * Formats a cooldown time into a human-readable string.
- * @param {number} ms The cooldown time in milliseconds.
+ * @param {number} ms
  * @returns {string}
  */
 function formatCooldown(ms) {

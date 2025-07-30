@@ -62,13 +62,13 @@ function formatAutomodMessage(template, context) {
     return message;
 }
 /**
- * @param {import('@minecraft/server').Player} player - The player to action.
- * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
- * @param {string} actionType - The type of action (e.g., 'warn', 'kick', 'tempBan') (camelCase).
- * @param {import('../types.js').AutoModActionParameters & { flagThresholdInternal?: number }} parameters - Parameters for the action, including flagThreshold.
- * @param {string} checkType - The check type that triggered this action (already standardized, e.g., 'playerAntiGmc').
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the action was processed (even if it internally failed but was logged), false otherwise.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').PlayerAntiCheatData} pData
+ * @param {string} actionType
+ * @param {import('../types.js').AutoModActionParameters & { flagThresholdInternal?: number }} parameters
+ * @param {string} checkType
+ * @param {import('../types.js').Dependencies} dependencies
+ * @returns {boolean} True if the action was processed, false otherwise.
  */
 function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
     const { playerUtils, logManager, config: globalConfig, playerDataManager } = dependencies;
@@ -327,12 +327,12 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
     }
     return actionProcessed;
 }
+
 /**
- * @param {import('@minecraft/server').Player} player - The player to process actions for.
- * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
- * @param {string} checkType - The specific check type (e.g., 'movementFlyHover', 'playerAntiGmc') to evaluate rules for.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
- * @returns {Promise<void>}
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').PlayerAntiCheatData} pData
+ * @param {string} checkType
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function processAutoModActions(player, pData, checkType, dependencies) {
     const { config: globalConfig, playerUtils, automodConfig: moduleAutomodConfig } = dependencies;

@@ -21,11 +21,6 @@ const configUiTruncateKeepLength = 27;
  */
 const playerNavigationStacks = new Map();
 
-/**
- * @param {string} playerId The ID of the player.
- * @param {string} panelId The ID of the panel.
- * @param {object} context The context for the panel.
- */
 function pushToPlayerNavStack(playerId, panelId, context) {
     if (!playerNavigationStacks.has(playerId)) {
         playerNavigationStacks.set(playerId, []);
@@ -38,8 +33,8 @@ function pushToPlayerNavStack(playerId, panelId, context) {
 }
 
 /**
- * @param {string} playerId The ID of the player.
- * @returns {{panelId: string, context: object}|null} The popped panel state or null.
+ * @param {string} playerId
+ * @returns {{panelId: string, context: object}|null}
  */
 function popFromPlayerNavStack(playerId) {
     if (!playerNavigationStacks.has(playerId)) {
@@ -49,9 +44,7 @@ function popFromPlayerNavStack(playerId) {
     return stack.pop() || null;
 }
 
-/**
- * @param {string} playerId The ID of the player.
- */
+/** @param {string} playerId */
 function clearPlayerNavStack(playerId) {
     if (playerNavigationStacks.has(playerId)) {
         playerNavigationStacks.set(playerId, []);
@@ -59,8 +52,8 @@ function clearPlayerNavStack(playerId) {
 }
 
 /**
- * @param {string} playerId The ID of the player.
- * @returns {boolean} True if the stack implies no logical "back" operation.
+ * @param {string} playerId
+ * @returns {boolean}
  */
 function isNavStackAtRoot(playerId) {
     if (!playerNavigationStacks.has(playerId)) {
@@ -70,8 +63,8 @@ function isNavStackAtRoot(playerId) {
 }
 
 /**
- * @param {string} playerId The ID of the player.
- * @returns {{panelId: string, context: object}|null} The current panel state or null.
+ * @param {string} playerId
+ * @returns {{panelId: string, context: object}|null}
  */
 function getCurrentTopOfNavStack(playerId) {
     if (!playerNavigationStacks.has(playerId)) {
@@ -98,11 +91,10 @@ function getCurrentTopOfNavStack(playerId) {
  */
 const uiDynamicItemGenerators = {
     /**
- * Generates panel items for each helpful link in the configuration.
- * @param {import('@minecraft/server').Player} player The player viewing the panel.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The current panel context.
- * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]}
      */
     generateHelpfulLinkItems: (player, dependencies, context) => {
         const { config } = dependencies;
@@ -140,11 +132,10 @@ const uiDynamicItemGenerators = {
         return items;
     },
     /**
- * Generates panel items for each server rule in the configuration.
- * @param {import('@minecraft/server').Player} player The player viewing the panel.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The current panel context.
- * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]}
      */
     generateServerRuleItems: (player, dependencies, context) => {
         const { config } = dependencies;
@@ -178,11 +169,10 @@ const uiDynamicItemGenerators = {
         return items;
     },
     /**
- * Generates panel items for each general tip in the configuration.
- * @param {import('@minecraft/server').Player} player The player viewing the panel.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The current panel context.
- * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]}
      */
     generateGeneralTipItems: (player, dependencies, context) => {
         const { config } = dependencies;
@@ -215,10 +205,9 @@ const uiDynamicItemGenerators = {
         return items;
     },
     /**
- * Generates panel items for each online player.
- * @param {import('@minecraft/server').Player} player The admin player viewing the panel.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]}
      */
     generateOnlinePlayerItems: (player, dependencies) => {
         const { playerDataManager } = dependencies;
@@ -265,10 +254,9 @@ const uiDynamicItemGenerators = {
         return items;
     },
     /**
- * Generates panel items for each watched online player.
- * @param {import('@minecraft/server').Player} player The admin player viewing the panel.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]}
      */
     generateWatchedPlayerItems: (player, dependencies) => {
         const { playerDataManager } = dependencies;
@@ -310,9 +298,9 @@ const uiDynamicItemGenerators = {
 // --- End Dynamic Item Generators ---
 
 /**
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The context from the calling panel.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} context
  */
 async function showResetFlagsFormImpl(player, dependencies, context) {
     const { playerUtils, commandExecutionMap, logManager } = dependencies;
@@ -362,8 +350,8 @@ async function showResetFlagsFormImpl(player, dependencies, context) {
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
  */
 async function showConfigCategoriesListImpl(player, dependencies) {
     const { playerUtils, config } = dependencies;
@@ -478,9 +466,9 @@ async function showConfigCategoriesListImpl(player, dependencies) {
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with config key details.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} context
  */
 async function showEditSingleConfigValueFormImpl(player, dependencies, context) {
     const { playerUtils, config, logManager } = dependencies;
@@ -588,14 +576,14 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
 }
 
 /**
- * @param {import('@minecraft/server').Player} adminPlayer The player to show the modal to.
- * @param {string} titleString The title of the modal.
- * @param {string} bodyString The body text of the modal.
- * @param {string} confirmToggleLabelString The label for the confirmation toggle.
- * @param {Function} onConfirmCallback Async function to execute on confirmation.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} [bodyParams] Optional parameters for the bodyString.
- * @returns {Promise<boolean>} True if confirmed, false otherwise.
+ * @param {import('@minecraft/server').Player} adminPlayer
+ * @param {string} titleString
+ * @param {string} bodyString
+ * @param {string} confirmToggleLabelString
+ * @param {Function} onConfirmCallback
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} [bodyParams]
+ * @returns {Promise<boolean>}
  */
 async function _showConfirmationModal(adminPlayer, titleString, bodyString, confirmToggleLabelString, onConfirmCallback, dependencies, bodyParams = {}) {
     const { playerUtils, logManager } = dependencies;
@@ -629,8 +617,8 @@ async function _showConfirmationModal(adminPlayer, titleString, bodyString, conf
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
  */
 async function confirmClearChatImpl(player, dependencies) {
     const { playerUtils, commandExecutionMap } = dependencies;
@@ -653,8 +641,8 @@ async function confirmClearChatImpl(player, dependencies) {
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
  */
 async function confirmLagClearImpl(player, dependencies) {
     const { playerUtils, commandExecutionMap } = dependencies;
@@ -684,8 +672,8 @@ async function confirmLagClearImpl(player, dependencies) {
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
  */
 async function displayActionLogsModalImpl(player, dependencies) {
     const { playerUtils, logManager } = dependencies;
@@ -756,9 +744,9 @@ async function displayActionLogsModalImpl(player, dependencies) {
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The current panel context.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} context
  */
 async function showModLogFilterModalImpl(player, dependencies, context) {
     const { playerUtils, logManager, config } = dependencies;
@@ -813,9 +801,9 @@ async function showModLogFilterModalImpl(player, dependencies, context) {
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The player viewing the logs.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with log filtering and pagination details.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} context
  */
 async function displaySpecificLogsPageImpl(player, dependencies, context) {
     const { playerUtils, logManager, config } = dependencies;
@@ -901,10 +889,10 @@ async function displaySpecificLogsPageImpl(player, dependencies, context) {
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The player viewing the panel.
- * @param {string} panelId The ID of the panel to display.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} [currentContext] Optional context object for the panel.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string} panelId
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} [currentContext]
  */
 async function showPanel(player, panelId, dependencies, currentContext = {}) {
     const { playerUtils, logManager, rankManager, config } = dependencies;
@@ -1224,9 +1212,9 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The player initiating the view.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context from the calling panel.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} context
  */
 async function prepareBanUnbanLogsViewer(player, dependencies, context) {
     const { logManager, config, playerUtils } = dependencies;
@@ -1250,9 +1238,9 @@ async function prepareBanUnbanLogsViewer(player, dependencies, context) {
 }
 
 /**
- * @param {import('@minecraft/server').Player} player The player initiating the view.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context from the calling panel.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} context
  */
 async function prepareMuteUnmuteLogsViewer(player, dependencies, context) {
     const { logManager, config, playerUtils } = dependencies;
@@ -1299,11 +1287,7 @@ const uiActionFunctions = {
         } catch (e) {
             playerUtils.debugLog(`Error showing MyStats modal: ${e}`, player.nameTag, dependencies);
             player.sendMessage(playerUtils.getString('common.error.genericForm') || '§cError: Could not display stats.');
-            // Log error if necessary with logManager
         } finally {
-            // Return to the panel that called this function.
-            // The 'context' here is the context of 'myStatsPanel'.
-            // 'myStatsPanel' is the panel that has the button calling 'showMyStatsPageContent'.
             await showPanel(player, 'myStatsPanel', dependencies, context);
         }
     },
@@ -1842,7 +1826,7 @@ const uiActionFunctions = {
  * @param {object} context Context object with target player details.
      */
     confirmClearPlayerInventory: async (player, dependencies, context) => {
-        const { playerUtils, commandExecutionMap, logManager } = dependencies; // logManager is used by callback
+        const { playerUtils, commandExecutionMap, logManager } = dependencies;
         const adminPlayerName = player.name;
         const { targetPlayerName } = context; // Removed targetPlayerId
 
@@ -2203,12 +2187,9 @@ Object.assign(uiDynamicItemGenerators, {
 
 
 /**
- * Navigates to the next page of logs in the logViewerPanel.
- * Navigates to the next page of logs in the `logViewerPanel`.
- * @async
- * @param {import('@minecraft/server').Player} player The player navigating.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Current panel context. Expected to contain `currentPage` and `totalPages`.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} context
  */
 async function goToNextLogPage(player, dependencies, context) {
     let { currentPage = 1 } = context; // currentPage can be incremented
@@ -2224,10 +2205,9 @@ async function goToNextLogPage(player, dependencies, context) {
 }
 
 /**
- * Navigates to the next page of logs.
- * @param {import('@minecraft/server').Player} player The player navigating.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Current panel context.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} context
  */
 async function goToPrevLogPage(player, dependencies, context) {
     let { currentPage = 1 } = context;
@@ -2245,9 +2225,9 @@ async function goToPrevLogPage(player, dependencies, context) {
 
 
 /**
- * @param {import('@minecraft/server').Player} adminPlayer The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context from the calling panel.
+ * @param {import('@minecraft/server').Player} adminPlayer
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {object} context
  */
 async function showInspectPlayerForm(adminPlayer, dependencies, context) {
     const { playerUtils, logManager, commandExecutionMap } = dependencies;
@@ -2303,7 +2283,4 @@ async function showInspectPlayerForm(adminPlayer, dependencies, context) {
     }
 }
 
-/**
- * Main exported functions for UI management.
- */
 export { showPanel, clearPlayerNavStack };

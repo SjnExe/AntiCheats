@@ -1,22 +1,12 @@
 /**
- * @typedef {import('../types.js').Player} Player
- * @typedef {import('../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../types.js').Dependencies} Dependencies
- * @typedef {import('../types.js').Vector3} Vector3
- */
-
-/**
- * @typedef {object} Home
- * @property {string} name
- * @property {Vector3} location
- * @property {string} dimensionId
+ * @typedef {import('../types.js').Home} Home
  */
 
 /**
  * Sets a home for a player.
- * @param {Player} player
+ * @param {import('../types.js').Player} player
  * @param {string} homeName
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {{success: boolean, message: string}}
  */
 export function setHome(player, homeName, dependencies) {
@@ -47,9 +37,9 @@ export function setHome(player, homeName, dependencies) {
 
 /**
  * Gets a player's home by name.
- * @param {Player} player
+ * @param {import('../types.js').Player} player
  * @param {string} homeName
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {Home|null}
  */
 export function getHome(player, homeName, dependencies) {
@@ -62,9 +52,9 @@ export function getHome(player, homeName, dependencies) {
 
 /**
  * Deletes a player's home by name.
- * @param {Player} player
+ * @param {import('../types.js').Player} player
  * @param {string} homeName
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {{success: boolean, message: string}}
  */
 export function deleteHome(player, homeName, dependencies) {
@@ -86,8 +76,8 @@ export function deleteHome(player, homeName, dependencies) {
 
 /**
  * Gets all of a player's homes.
- * @param {Player} player
- * @param {Dependencies} dependencies
+ * @param {import('../types.js').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {Home[]}
  */
 export function getHomes(player, dependencies) {

@@ -1,5 +1,4 @@
 export const stringDB = {
-    // Common UI elements
     'common.button.back': '§l§cBack§r',
     'common.button.close': '§l§cClose§r',
     'common.button.confirm': '§l§aConfirm§r',

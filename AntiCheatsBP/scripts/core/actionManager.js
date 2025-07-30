@@ -16,11 +16,12 @@ function formatViolationDetails(violationDetails) {
         })
         .join(', ');
 }
+
 /**
- * @param {string | undefined} template - The message template with placeholders like {playerName}, {checkType}, {detailsString}, and any keys from violationDetails.
- * @param {string} playerName - The name of the player involved.
- * @param {string} checkType - The type of check that was triggered (camelCase).
- * @param {import('../types.js').ViolationDetails | undefined} violationDetails - An object containing details of the violation.
+ * @param {string | undefined} template
+ * @param {string} playerName
+ * @param {string} checkType
+ * @param {import('../types.js').ViolationDetails | undefined} violationDetails
  * @returns {string} The formatted message.
  */
 function formatActionMessage(template, playerName, checkType, violationDetails) {
@@ -48,11 +49,14 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
         return placeholder;
     });
 }
+
 /**
- * @param {import('@minecraft/server').Player | null} player - The player involved, or null if not player-specific.
- * @param {string} checkType - The identifier for the check type (camelCase). This should match keys in `checkActionProfiles`.
- * @param {import('../types.js').ViolationDetails | undefined} [violationDetails] - An object containing specific details about the violation.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player | null} player
+ * @param {import('../types.js').ActionProfileEntry} profile
+ * @param {string} flagReasonMessage
+ * @param {string} checkType
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../types.js').ViolationDetails | undefined} [violationDetails]
  * @returns {Promise<void>}
  */
 async function _handleFlagging(player, profile, flagReasonMessage, checkType, dependencies, violationDetails) {

@@ -3,6 +3,11 @@
 This document is an archive of completed tasks.
 
 ---
+- **Task:** Code Cleanup in core directory
+- **Objective:** Review all files in `AntiCheatsBP/scripts/core/` to remove unnecessary comments, unused code, and excessive empty lines, while adhering to the project's coding standards.
+- **Assignee:** Jules (AI Assistant)
+- **Status:** Completed
+---
 - **Task:** Code Cleanup in commands directory
 - **Objective:** Review all files in `AntiCheatsBP/scripts/commands/` to remove unnecessary comments, unused code, and excessive empty lines, while adhering to the project's coding standards.
 - **Assignee:** Jules (AI Assistant)

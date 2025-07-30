@@ -12,7 +12,4 @@
  * @type {OfflineBanEntry[]}
  */
 export const offlineBanList = [
-    // Example entries:
-    // { playerName: 'SomeGriefer', reason: 'Persistent griefing.', bannedBy: 'AdminName' },
-    // { xuid: '1234567890123456', reason: 'X-Ray usage.', bannedBy: 'AdminName' },
 ];
