@@ -154,12 +154,14 @@ export async function checkFly(player, pData, dependencies) {
     }
 
     const hoverVSpeedThreshold = config?.flyHoverVerticalSpeedThreshold ?? defaultFlyHoverVerticalSpeedThreshold;
-    const hoverOffGroundTicks = config?.flyHoverOffGroundTicksThreshold ?? defaultFlyHoverOffGroundTicksThreshold;
+    let hoverOffGroundTicks = config?.flyHoverOffGroundTicksThreshold ?? defaultFlyHoverOffGroundTicksThreshold;
     let hoverMaxFallDist = config?.flyHoverMaxFallDistanceThreshold ?? defaultFlyHoverMaxFallDistanceThreshold;
     const hoverMinHeight = config?.flyHoverNearGroundThreshold ?? defaultFlyHoverNearGroundThreshold;
 
     if (pData.hasSlowFalling) {
         hoverMaxFallDist *= slowFallingHoverFallDistanceMultiplier;
+        // Players with slow falling can hover very easily. We apply a stricter (lower) tick count to catch this.
+        hoverOffGroundTicks = config?.flyHoverOffGroundTicksSlowFalling ?? Math.floor(hoverOffGroundTicks / 2);
     }
 
     if (!player.isOnGround &&
