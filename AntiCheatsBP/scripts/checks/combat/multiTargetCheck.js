@@ -1,9 +1,4 @@
 /**
- * @file Detects Killaura-like behavior (hitting multiple targets rapidly).
- * @module AntiCheatsBP/scripts/checks/combat/multiTargetCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData

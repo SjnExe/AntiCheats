@@ -1,9 +1,4 @@
 /**
- * @file Checks for abnormally high Clicks Per Second (CPS).
- * @module AntiCheatsBP/scripts/checks/combat/cpsCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */

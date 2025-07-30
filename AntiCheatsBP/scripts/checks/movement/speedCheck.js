@@ -1,11 +1,4 @@
 /**
- * @file Implements a check to detect players moving horizontally faster than allowed.
- * @module AntiCheatsBP/scripts/checks/movement/speedCheck
- * Relies on `pData.velocity` (updated in main tick loop) and `pData.speedAmplifier`
- * (assumed to be updated by `updateTransientPlayerData` based on player effects).
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
