@@ -1,7 +1,3 @@
-/**
- * @file Manages the storage and retrieval of action logs.
- * @module AntiCheatsBP/scripts/core/logManager
- */
 import { logError } from '../utils/playerUtils.js';
 
 /** @type {string} */

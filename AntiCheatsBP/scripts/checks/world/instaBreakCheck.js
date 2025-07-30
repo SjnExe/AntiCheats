@@ -1,8 +1,3 @@
-/**
- * @file Implements checks for InstaBreak, including breaking unbreakable blocks
- * @module AntiCheatsBP/scripts/checks/world/instaBreakCheck
- * and breaking blocks significantly faster than legitimately possible.
- */
 import * as mc from '@minecraft/server';
 
 /**

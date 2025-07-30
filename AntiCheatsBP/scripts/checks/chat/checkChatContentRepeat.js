@@ -1,9 +1,4 @@
 /**
- * @file Detects players repeating the same message content.
- * @module AntiCheatsBP/scripts/checks/chat/checkChatContentRepeat
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

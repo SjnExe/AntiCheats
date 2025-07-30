@@ -1,6 +1,3 @@
-/**
- * @file Defines the !tpaccept command for players to accept incoming TPA requests.
- */
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'tpaccept',

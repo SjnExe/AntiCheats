@@ -1,9 +1,4 @@
 /**
- * @file Detects excessive character repetition in chat messages.
- * @module AntiCheatsBP/scripts/checks/chat/charRepeatCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

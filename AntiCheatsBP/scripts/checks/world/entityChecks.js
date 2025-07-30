@@ -1,7 +1,3 @@
-/**
- * @file Implements checks related to entity spawning and interactions, primarily for AntiGrief.
- * @module AntiCheatsBP/scripts/checks/world/entityChecks
- */
 import * as mc from '@minecraft/server';
 
 // Constants for magic numbers

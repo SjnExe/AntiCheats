@@ -1,9 +1,4 @@
 /**
- * @file Detects simple impersonation attempts in chat.
- * @module AntiCheatsBP/scripts/checks/chat/checkSimpleImpersonation
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

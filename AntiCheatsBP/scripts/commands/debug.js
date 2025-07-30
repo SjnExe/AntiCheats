@@ -1,8 +1,5 @@
 import { world } from '@minecraft/server';
 
-/**
- * @file Defines the !debug command for managing the AntiCheat's debugging features.
- */
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'debug',

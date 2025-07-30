@@ -58,7 +58,6 @@ This project uses a simple task management system in the `Dev/tasks/` directory.
   - Run `npm run lint` to check for linting issues.
   - Run `npm run lint:fix` to automatically fix many common issues.
   - Please ensure your changes pass linting before submitting.
-  - JSDoc specific linting rules are enforced using `eslint-plugin-jsdoc`. The detailed configuration, including enabled and customized rules, can be found in `eslint.config.js`. Adherence to these rules is important for maintaining JSDoc quality and consistency. Core JSDoc formatting guidelines in `Dev/StandardizationGuidelines.md` should also be followed as a general reference.
 
 ## 6. Planning and Communication
 

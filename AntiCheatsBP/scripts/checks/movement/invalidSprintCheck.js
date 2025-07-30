@@ -1,11 +1,3 @@
-/**
- * @file Implements a check to detect if a player is sprinting under conditions that should prevent it
- * @module AntiCheatsBP/scripts/checks/movement/invalidSprintCheck
- * (e.g., while sneaking, blind, riding, low hunger, using item, or charging bow).
- * Relies on player state from Minecraft API (e.g., `isSprinting`, `isSneaking`) and
- * assumes `pData` fields like `blindnessTicks`, `isUsingConsumable`, `isChargingBow`
- * are updated by `updateTransientPlayerData` or relevant event handlers.
- */
 import * as mc from '@minecraft/server';
 
 /**

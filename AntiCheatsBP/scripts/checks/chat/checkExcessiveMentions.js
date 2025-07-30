@@ -1,9 +1,4 @@
 /**
- * @file Detects excessive user mentions in chat messages.
- * @module AntiCheatsBP/scripts/checks/chat/checkExcessiveMentions
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

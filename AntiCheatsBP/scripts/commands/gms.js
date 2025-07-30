@@ -1,7 +1,3 @@
-/**
- * /**
- * @file Defines the !gms command for administrators to set a player's gamemode to Survival.
- */
 import * as mc from '@minecraft/server';
 
 /** @type {import('../types.js').CommandDefinition} */

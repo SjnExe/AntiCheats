@@ -1,4 +1,3 @@
-// Defines the !tpa command for players to request teleporting to another player.
 const defaultTpaRequestTimeoutSeconds = 60;
 
 /** @type {import('../types.js').CommandDefinition} */

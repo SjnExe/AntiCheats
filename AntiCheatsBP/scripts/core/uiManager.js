@@ -1,7 +1,3 @@
-/**
- * @file Manages the display of dynamic, hierarchical UI panels and modal forms.
- * @module AntiCheatsBP/scripts/core/uiManager
- */
 import { world } from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from '../core/panelLayoutConfig.js';

@@ -1,7 +1,3 @@
-/**
- * @file Defines the !viewreports command.
- * Allows administrators to view player-submitted reports.
- */
 import * as reportManager from '../core/reportManager.js';
 
 // Default configuration values

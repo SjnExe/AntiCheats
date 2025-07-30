@@ -1,7 +1,3 @@
-/**
- * @file Defines the !balance command.
- * @module AntiCheatsBP/scripts/commands/balance
- */
 import { getBalance } from '../core/economyManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */

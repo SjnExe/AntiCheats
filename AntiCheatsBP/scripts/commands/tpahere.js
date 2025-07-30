@@ -1,7 +1,3 @@
-/**
- * @file Defines the !tpahere command for players to request another player to teleport to them.
- */
-
 // Default configuration values
 const defaultTpaRequestTimeoutSeconds = 60;
 

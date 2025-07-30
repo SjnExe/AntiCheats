@@ -1,7 +1,3 @@
-/**
- * /**
- * @file Defines the !gma command for administrators to set a player's gamemode to Adventure.
- */
 import * as mc from '@minecraft/server';
 
 /** @type {import('../types.js').CommandDefinition} */

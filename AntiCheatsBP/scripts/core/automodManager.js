@@ -1,7 +1,3 @@
-/**
- * @file Manages automated moderation actions based on player flags and configured rules.
- * @module AntiCheatsBP/scripts/core/automodManager
- */
 const secondsPerMinute = 60;
 const minutesPerHour = 60;
 const hoursPerDay = 24;

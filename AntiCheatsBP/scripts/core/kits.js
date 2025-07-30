@@ -1,9 +1,4 @@
 /**
- * @file Defines the available kits.
- * @module AntiCheatsBP/scripts/core/kits
- */
-
-/**
  * @typedef {object} KitItem
  * @property {string} itemId
  * @property {number} amount

@@ -1,9 +1,4 @@
 /**
- * @file Detects players sending chat messages too frequently.
- * @module AntiCheatsBP/scripts/checks/chat/messageRateCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
@@ -39,7 +34,6 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
     const actionProfileKey = config?.fastMessageSpamActionProfileName ?? 'chatSpamFastMessage';
 
     const { playerDataManager } = dependencies; // Ensure playerDataManager is available
-    // let shouldCancelBasedOnProfile = false; // Removed as it's unused
     let actionWasAwaited = false;
 
     if (pData.lastChatMessageTimestamp && pData.lastChatMessageTimestamp > 0) {
@@ -59,7 +53,6 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
             const profile = dependencies.checkActionProfiles?.[actionProfileKey];
             if (profile?.cancelMessage) {
                 eventData.cancel = true; // Set cancel before await
-                // shouldCancelBasedOnProfile = true; // Removed as it's unused
             }
 
             await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
@@ -82,8 +75,4 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
         pData.isDirtyForSave = true;
     }
 
-    // The final if (shouldCancelBasedOnProfile) block is removed as cancellation is handled before await.
-    // If actionManager could set eventData.cancel = false, and we need to re-assert true,
-    // then the original structure (with the lint error) was more robust for that specific scenario.
-    // Assuming actionManager doesn't fight the cancellation.
 }

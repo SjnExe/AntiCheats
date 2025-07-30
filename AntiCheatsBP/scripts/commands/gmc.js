@@ -1,7 +1,3 @@
-/**
- * /**
- * @file Defines the !gmc command for administrators to set a player's gamemode to Creative.
- */
 import * as mc from '@minecraft/server';
 
 /** @type {import('../types.js').CommandDefinition} */

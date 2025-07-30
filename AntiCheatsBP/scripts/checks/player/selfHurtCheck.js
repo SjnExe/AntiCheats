@@ -1,8 +1,3 @@
-/**
- * @file Implements a check to detect suspicious self-inflicted damage, specifically when a player
- * @module AntiCheatsBP/scripts/checks/player/selfHurtCheck
- * damages themselves via a direct entity attack (which is normally not possible without cheats).
- */
 import * as mc from '@minecraft/server';
 
 /**

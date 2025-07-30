@@ -1,9 +1,4 @@
 /**
- * @file Checks for invalid player view pitch and rapid view snaps.
- * @module AntiCheatsBP/scripts/checks/combat/viewSnapCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

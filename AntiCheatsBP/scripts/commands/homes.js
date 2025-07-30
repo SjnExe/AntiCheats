@@ -1,7 +1,3 @@
-/**
- * @file Defines the !homes command.
- * @module AntiCheatsBP/scripts/commands/homes
- */
 import { getHomes } from '../core/homesManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */

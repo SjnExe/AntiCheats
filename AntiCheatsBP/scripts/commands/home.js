@@ -1,7 +1,3 @@
-/**
- * @file Defines the !home command.
- * @module AntiCheatsBP/scripts/commands/home
- */
 import { getHome } from '../core/homesManager.js';
 import * as mc from '@minecraft/server';
 

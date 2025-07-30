@@ -1,6 +1,3 @@
-/**
- * @file Defines the !unmute command for administrators to allow a muted player to chat again.
- */
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'unmute',

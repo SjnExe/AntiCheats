@@ -1,8 +1,3 @@
-/**
- * @file Defines the !purgeflags command.
- * This command allows administrators to completely clear all flags,
- * violation history, and AutoMod state for a specified player.
- */
 import { getPlayerData, saveDirtyPlayerData, initializeDefaultPlayerData, scheduleFlagPurge } from '../core/playerDataManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */

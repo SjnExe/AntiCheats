@@ -1,7 +1,3 @@
-/**
- * @file Script for the !rules command, displays server rules to the player.
- */
-
 import { MessageFormData } from '@minecraft/server-ui';
 
 /** @type {import('../types.js').CommandDefinition} */

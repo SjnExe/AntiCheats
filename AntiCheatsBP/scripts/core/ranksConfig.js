@@ -1,9 +1,4 @@
 /**
- * @file Configuration for server ranks, properties, and conditions.
- * @module AntiCheatsBP/scripts/core/ranksConfig
- */
-
-/**
  * @typedef {object} ChatFormatting
  * @property {string} [prefixText=''] The text part of the rank prefix.
  * @property {string} [nameColor='§7'] The color code for the player's name.

@@ -1,9 +1,4 @@
 /**
- * @file Detects Unicode abuse (e.g., Zalgo text) in chat messages.
- * @module AntiCheatsBP/scripts/checks/chat/checkUnicodeAbuse
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

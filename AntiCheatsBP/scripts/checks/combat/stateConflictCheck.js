@@ -1,9 +1,4 @@
 /**
- * @file Checks for players attacking while in states that should prevent combat.
- * @module AntiCheatsBP/scripts/checks/combat/stateConflictCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData

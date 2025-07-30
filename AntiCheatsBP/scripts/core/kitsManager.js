@@ -1,7 +1,3 @@
-/**
- * @file Manages player kits.
- * @module AntiCheatsBP/scripts/core/kitsManager
- */
 import * as mc from '@minecraft/server';
 import { kits } from './kits.js';
 

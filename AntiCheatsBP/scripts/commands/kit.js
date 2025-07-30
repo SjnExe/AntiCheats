@@ -1,7 +1,3 @@
-/**
- * @file Defines the !kit command.
- * @module AntiCheatsBP/scripts/commands/kit
- */
 import { giveKit } from '../core/kitsManager.js';
 import { kits } from '../core/kits.js';
 

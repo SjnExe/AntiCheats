@@ -27,7 +27,6 @@ export default [
     // Base JS configuration
     {
         files: ['**/*.js'],
-        // ...jsdoc.configs['flat/recommended-typescript-error'],
         languageOptions: {
             ecmaVersion: 'latest',
             sourceType: 'module',
@@ -69,12 +68,6 @@ export default [
                 'asyncArrow': 'always',
             }],
             'arrow-spacing': ['error', { 'before': true, 'after': true }],
-
-            // JSDoc rules
-            // 'jsdoc/require-param-description': 'warn',
-            // 'jsdoc/require-returns-description': 'warn',
-            // 'jsdoc/check-tag-names': ['error', { 'definedTags': ['remarks', 'beta'] }],
-            // 'jsdoc/no-undefined-types': ['error', { 'disableReporting': true }],
         },
     },
     // JSONC configuration

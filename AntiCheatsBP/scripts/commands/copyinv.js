@@ -1,6 +1,3 @@
-/**
- * @file Defines the !copyinv command for administrators to copy another player's inventory.
- */
 import { ModalFormData } from '@minecraft/server-ui';
 import * as mc from '@minecraft/server';
 

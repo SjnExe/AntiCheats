@@ -1,6 +1,4 @@
 /**
- * @file Stores the configuration for the AutoMod system.
- * @module AntiCheatsBP/scripts/core/automodConfig
  * @typedef {import('../types.js').AutoModActionParameters} AutoModActionParameters
  * @typedef {import('../types.js').AutoModTierRule} AutoModTierRule
  * @typedef {object} AutoModRuleDef

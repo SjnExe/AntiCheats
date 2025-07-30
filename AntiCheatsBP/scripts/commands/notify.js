@@ -1,4 +1,3 @@
-// Defines the !notify command for administrators to manage their AntiCheat system notification preferences.
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'notify',

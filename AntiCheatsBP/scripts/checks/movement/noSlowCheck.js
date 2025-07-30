@@ -1,12 +1,4 @@
 /**
- * @file Implements a check to detect if a player is moving faster than allowed while performing actions
- * @module AntiCheatsBP/scripts/checks/movement/noSlowCheck
- * that should typically slow them down (e.g., eating, sneaking, charging a bow, using a shield).
- * Relies on player state flags in `pData` (e.g., `isUsingConsumable`, `isChargingBow`, `isUsingShield`) and
- * assumes `pData.speedAmplifier` is updated by `updateTransientPlayerData`.
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */

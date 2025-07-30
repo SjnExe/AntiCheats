@@ -1,4 +1,3 @@
-// Defines the !clearreports command, allowing administrators to clear player-submitted reports.
 import { clearAllReports, clearReportById, clearReportsForPlayer } from '../core/reportManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */

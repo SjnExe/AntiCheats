@@ -1,9 +1,4 @@
 /**
- * @file Detects swear words in chat messages.
- * @module AntiCheatsBP/scripts/checks/chat/swearCheck
- */
-
-/**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
