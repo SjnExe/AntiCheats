@@ -7,10 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !baltop command.
- * @param {import('@minecraft/server').Player} player The player executing the command.
- * @param {string[]} args Command arguments.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * Executes the baltop command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, getString } = dependencies;

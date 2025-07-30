@@ -7,13 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !tpaccept command.
- * Allows a player to accept a pending TPA request made to them.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command (the one accepting).
- * @param {string[]} args - Command arguments: [playerName] (optional, name of player whose request to accept).
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * Executes the tpaccept command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, tpaManager, getString, logManager } = dependencies;

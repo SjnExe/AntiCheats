@@ -7,7 +7,7 @@ export const definition = {
 };
 
 /**
- * Executes the !rank command.
+ * Executes the rank command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
  * @param {import('../types.js').Dependencies} dependencies
@@ -91,7 +91,7 @@ export async function execute(player, args, dependencies) {
             player?.sendMessage(getString('command.addrank.errorAssign', { errorMessage: e.message }));
             console.error(`[RankCommand CRITICAL] Error assigning rank ${rankDef.id} to ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
         }
-    } else { // remove
+    } else {
         if (!targetPlayer.hasTag(rankTag)) {
             player.sendMessage(getString('command.removerank.notHasRank', { playerName: targetPlayer.nameTag, rankName: rankDef.name, rankTag: rankTag }));
             return;

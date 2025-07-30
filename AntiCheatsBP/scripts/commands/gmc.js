@@ -9,12 +9,10 @@ export const definition = {
 };
 
 /**
- * Executes the !gmc (gamemode creative) command.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [playername].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the gmc (gamemode creative) command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;

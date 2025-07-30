@@ -9,15 +9,13 @@ export const definition = {
 };
 
 /**
- * Executes the !gma (gamemode adventure) command.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [playername].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the gma (gamemode adventure) command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
-    const { playerUtils, logManager, getString } = dependencies; // Removed config
+    const { playerUtils, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const targetPlayerNameArg = args[0];
     const gamemodeName = mc.GameMode[mc.GameMode.adventure];

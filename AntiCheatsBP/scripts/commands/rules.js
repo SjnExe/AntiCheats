@@ -9,10 +9,10 @@ export const definition = {
 };
 
 /**
- * Executes the !rules command.
- * @param {import('@minecraft/server').Player} player The player executing the command.
- * @param {string[]} args Command arguments. If a number is provided, it shows that specific rule.
- * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
+ * Executes the rules command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, config, logManager, getString } = dependencies;

@@ -9,17 +9,13 @@ export const definition = {
 };
 
 /**
- * Executes the !listranks command.
- * Displays a list of all defined ranks, their properties (ID, name, permission level, priority),
- * conditions for assignment, and basic formatting (chat prefix, nametag).
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} _args - Command arguments (not used in this command).
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the listranks command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} _args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, _args, dependencies) {
-    const { logManager, playerUtils, getString } = dependencies; // Removed rankManager
+    const { logManager, playerUtils, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
     if (!allRankDefinitions || allRankDefinitions.length === 0) {

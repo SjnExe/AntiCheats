@@ -7,17 +7,13 @@ export const definition = {
 };
 
 /**
- * Executes the !mute command.
- * Mutes a target player for a specified duration with an optional reason.
- * Can also be invoked by AutoMod.
- * @async
- * @param {import('@minecraft/server').Player | null} player - The player issuing the command, or null if system-invoked.
- * @param {string[]} args - Command arguments: <playername> [duration] [reason].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @param {string} [invokedBy] - How the command was invoked (e.g., 'PlayerCommand', 'AutoMod').
- * @param {boolean} [isAutoModAction] - Whether this mute is a direct result of an AutoMod action.
- * @param {string|null} [autoModCheckType] - If AutoMod, the checkType (camelCase) that triggered it.
- * @returns {void}
+ * Executes the mute command.
+ * @param {import('@minecraft/server').Player | null} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {string} [invokedBy]
+ * @param {boolean} [isAutoModAction]
+ * @param {string|null} [autoModCheckType]
  */
 export function execute(
     player,
@@ -27,7 +23,7 @@ export function execute(
     isAutoModAction = false,
     autoModCheckType = null,
 ) {
-    const { config, playerUtils, playerDataManager, logManager, rankManager, getString } = dependencies; // Removed permissionLevels: depPermLevels
+    const { config, playerUtils, playerDataManager, logManager, rankManager, getString } = dependencies;
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
 
@@ -118,8 +114,6 @@ export function execute(
             if (player) {
                 player.sendMessage(successMessage);
                 playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-            } else {
-                // console.log(`[MuteCommand INFO] ${successMessage.replace(/§[a-f0-9]/g, '')}`);
             }
 
             const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);

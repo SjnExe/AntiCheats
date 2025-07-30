@@ -9,10 +9,10 @@ export const definition = {
 };
 
 /**
- * Executes the !balance command.
- * @param {import('@minecraft/server').Player} player The player executing the command.
- * @param {string[]} args Command arguments.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * Executes the balance command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { config, getString } = dependencies;

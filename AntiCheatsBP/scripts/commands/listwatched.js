@@ -9,14 +9,10 @@ export const definition = {
 };
 
 /**
- * Executes the !listwatched command.
- * Iterates through all online players, checks their 'isWatched' status via playerDataManager,
- * and reports the list of watched players to the command issuer.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} _args - Command arguments (not used in this command).
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the listwatched command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} _args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, _args, dependencies) {
     const { playerDataManager, playerUtils, logManager, getString } = dependencies;

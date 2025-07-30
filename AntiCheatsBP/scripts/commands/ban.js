@@ -10,14 +10,12 @@ export const definition = {
 
 /**
  * Executes the ban command.
- * @async
- * @param {import('@minecraft/server').Player | null} player - The player issuing the command, or null if system-invoked.
- * @param {string[]} args - The command arguments: <playername> [duration] [reason].
- * @param {import('../types.js').Dependencies} dependencies - Command dependencies.
- * @param {string} [invokedBy] - How the command was invoked (e.g., 'PlayerCommand', 'AutoMod').
- * @param {boolean} [isAutoModAction] - Whether this ban is a direct result of an AutoMod action.
- * @param {string|null} [autoModCheckType] - If by AutoMod, the checkType (camelCase) that triggered it.
- * @returns {void}
+ * @param {import('@minecraft/server').Player | null} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {string} [invokedBy]
+ * @param {boolean} [isAutoModAction]
+ * @param {string|null} [autoModCheckType]
  */
 export function execute(
     player,
@@ -50,8 +48,6 @@ export function execute(
 
     const targetOnlinePlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'ban' });
     if (!targetOnlinePlayer) {
-        // The validate function already sends a message to the player if they exist.
-        // We just need to log it for system calls.
         if (!player) {
             console.warn(`[BanCommand.execute] System call: Target player '${targetPlayerName}' not found or invalid.`);
         }
@@ -118,8 +114,6 @@ export function execute(
         if (player) {
             player.sendMessage(successMessage);
             playerUtils.playSoundForEvent(player, 'commandSuccess', dependencies);
-        } else {
-            // console.log(`[BanCommand.execute] ${successMessage.replace(/§[a-f0-9]/g, '')}`);
         }
 
         const targetPData = playerDataManager?.getPlayerData(targetOnlinePlayer.id);

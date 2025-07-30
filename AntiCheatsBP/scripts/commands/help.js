@@ -7,14 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !help command.
- * Displays a list of available commands filtered by the user's permission level,
- * or detailed information if a specific command name is provided.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [commandName].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the help command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { commandDefinitionMap, config, permissionLevels: depPermLevels, rankManager, getString, playerUtils } = dependencies;
@@ -90,11 +86,7 @@ export function execute(player, args, dependencies) {
         const categories = [
             { nameStringKey: 'command.help.category.general', minPerm: depPermLevels.member },
             { nameStringKey: 'command.help.category.teleport', minPerm: depPermLevels.member,
-                /**
-                 * Condition to check if TPA system is enabled.
-                 * @returns {boolean} True if TPA is enabled, otherwise false.
-                 */
-                condition: () => config?.enableTpaSystem === true },
+                condition: () => config?.enableTpaSystem === true }, // Condition to check if TPA system is enabled.
             { nameStringKey: 'command.help.category.moderation', minPerm: depPermLevels.moderator },
             { nameStringKey: 'command.help.category.admin', minPerm: depPermLevels.admin },
             { nameStringKey: 'command.help.category.owner', minPerm: depPermLevels.owner },

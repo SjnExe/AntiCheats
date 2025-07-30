@@ -7,13 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !watch command.
- * Sets the `isWatched` flag for the target player's AntiCheat data based on the provided action or toggles it.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: <playername> [on|off|toggle].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * Executes the watch command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;

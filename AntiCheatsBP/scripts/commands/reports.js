@@ -6,10 +6,10 @@ export const definition = {
 };
 
 /**
- * Executes the !reports command.
- * @param {import('@minecraft/server').Player} player The player executing the command.
- * @param {string[]} _args Command arguments (not used).
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * Executes the reports command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} _args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, _args, dependencies) {
     const { uiManager } = dependencies;

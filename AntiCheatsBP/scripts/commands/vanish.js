@@ -11,12 +11,10 @@ export const definition = {
 };
 
 /**
- * Executes the !vanish command.
- * @async
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args Command arguments: [on|off|toggle] [silent|notify].
- * @param {import('../types.js').Dependencies} dependencies Object containing dependencies.
- * @returns {Promise<void>}
+ * Executes the vanish command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString, rankManager } = dependencies;

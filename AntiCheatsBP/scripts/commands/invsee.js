@@ -10,13 +10,10 @@ export const definition = {
 };
 
 /**
- * Executes the !invsee command.
- * Displays the target player's inventory in a message form to the command issuer.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: <playername>.
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * Executes the invsee command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;

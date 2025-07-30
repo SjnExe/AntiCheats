@@ -7,13 +7,10 @@ export const definition = {
 };
 
 /**
- * Executes the !testnotify command.
- * Sends a test notification message to all online admins/owners.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments (the message to send).
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the testnotify command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;

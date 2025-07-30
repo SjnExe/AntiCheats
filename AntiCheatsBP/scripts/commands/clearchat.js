@@ -1,4 +1,3 @@
-// Default configuration values
 const defaultChatClearLinesCount = 150;
 const clearChatFailureThresholdMessages = 5;
 
@@ -11,13 +10,10 @@ export const definition = {
 };
 
 /**
- * Executes the !clearchat command.
- * Sends a large number of empty messages to effectively clear the chat screen for all players.
- * @async
- * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} _args - Command arguments (not used in this command).
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {void}
+ * Executes the clearchat command.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string[]} _args
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, _args, dependencies) {
     const { playerUtils, logManager, getString, config, mc } = dependencies;

@@ -9,7 +9,7 @@ export const definition = {
 };
 
 /**
- * Executes the !debug command.
+ * Executes the debug command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
  * @param {import('../types.js').Dependencies} dependencies
