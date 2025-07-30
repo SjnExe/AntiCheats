@@ -449,9 +449,10 @@ export function checkPlayerMovementDuringWarmup(request, dependencies) {
     const currentLoc = teleportingPlayer.location;
 
     const dx = initialLoc.x - currentLoc.x;
+    const dy = initialLoc.y - currentLoc.y;
     const dz = initialLoc.z - currentLoc.z;
-    // Ignoring Y for now, can add dy * dy if vertical movement should also cancel.
-    const distanceSquared = dx * dx + dz * dz;
+    // Now including Y-axis movement for a more robust check.
+    const distanceSquared = dx * dx + dy * dy + dz * dz;
 
     if (distanceSquared > movementTolerance * movementTolerance) {
         const teleportingPlayerNameTag = teleportingPlayer.nameTag;
