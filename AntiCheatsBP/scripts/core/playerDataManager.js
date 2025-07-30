@@ -4,6 +4,7 @@
  */
 
 import { logError } from '../utils/playerUtils.js';
+import { offlineBanList } from './offlineBanList.js';
 
 const maxSerializedDataLength = 30000;
 const itemUseStateExpiryMs = 5000;
@@ -242,8 +243,6 @@ export function getActivePlayers() {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @returns {Promise<import('../types.js').PlayerAntiCheatData>} A promise resolving with the player's data.
  */
-import { offlineBanList } from './offlineBanList.js';
-
 export async function ensurePlayerDataInitialized(player, currentTick, dependencies) {
     const { playerUtils, logManager } = dependencies;
 
