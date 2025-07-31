@@ -10,7 +10,7 @@
  * @param {Dependencies} dependencies The command dependencies.
  */
 export async function checkKillauraAttackWhileUsingItem(player, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies;
+    const { config, actionManager } = dependencies;
 
     if (!config.checks.killauraAttackWhileUsingItem.enabled) {
         return;
@@ -20,6 +20,6 @@ export async function checkKillauraAttackWhileUsingItem(player, pData, dependenc
         const violationDetails = {
             itemType: pData.lastUsedItem,
         };
-        await actionManager.executeCheckAction(player, "killauraAttackWhileUsingItem", violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, 'killauraAttackWhileUsingItem', violationDetails, dependencies);
     }
 }

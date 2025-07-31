@@ -576,7 +576,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
 }
 
 async function showEditConfigForm(player, dependencies, context) {
-    const { playerUtils, config, configModule } = dependencies;
+    const { config, configModule } = dependencies;
     const { configKey } = context;
     const checkConfig = config.checks[configKey.split('.')[1]];
 

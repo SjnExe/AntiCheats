@@ -10,7 +10,7 @@
  * @param {Dependencies} dependencies The command dependencies.
  */
 export async function checkKillauraNoSwing(player, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies;
+    const { config } = dependencies;
 
     if (!config.checks.killauraNoSwing.enabled) {
         return;

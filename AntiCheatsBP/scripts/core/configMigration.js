@@ -1,7 +1,3 @@
-import { world } from '@minecraft/server';
-import { playerUtils } from '../utils/playerUtils.js';
-import * as dependencies from './dependencyManager.js';
-
 const migrationScripts = {
     // Example migration from version 1 to 2
     // '2': (currentConfig) => {

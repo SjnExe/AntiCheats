@@ -41,6 +41,6 @@ export async function checkKillauraMultiAura(player, pData, dependencies) {
             windowSeconds: (calculationWindowMs / 1000).toFixed(1),
             threshold: maxTargets.toString(),
         };
-        await actionManager.executeCheckAction(player, "killauraMultiAura", violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, 'killauraMultiAura', violationDetails, dependencies);
     }
 }

@@ -178,11 +178,11 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
         }
 
         if (world.getDynamicProperty('ac:initialized')) {
-            player.sendMessage("§cAntiCheat is already initialized.");
+            player.sendMessage('§cAntiCheat is already initialized.');
             return;
         }
 
         performInitializations();
-        player.sendMessage("§aAntiCheat initialized successfully.");
+        player.sendMessage('§aAntiCheat initialized successfully.');
     }
-}, { namespaces: ["ac"] });
+}, { namespaces: ['ac'] });

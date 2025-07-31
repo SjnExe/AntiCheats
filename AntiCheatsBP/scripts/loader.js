@@ -1,5 +1,4 @@
-import { system, world } from '@minecraft/server';
-import { logError } from './modules/utils/playerUtils.js';
+import { system } from '@minecraft/server';
 import * as dependencies from './core/dependencyManager.js';
 
 try {
