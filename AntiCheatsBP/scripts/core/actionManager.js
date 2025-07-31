@@ -175,20 +175,30 @@ export async function executeCheckAction(player, checkType, violationDetails, de
 
     if (player) {
         const pData = playerDataManager.getPlayerData(player.id);
-        const flagCount = pData.flags[checkType] || 0;
+        if (!pData) return; // Guard against missing pData
 
-        if (flagCount >= checkConfig.minVlbeforePunishment) {
+        const flagData = pData.flags?.[checkType];
+        const flagCount = flagData ? flagData.count : 0;
+
+        // Ensure minVlbeforePunishment is a valid number before comparing
+        const minVl = typeof checkConfig.minVlbeforePunishment === 'number' ? checkConfig.minVlbeforePunishment : -1;
+
+        if (minVl > 0 && flagCount >= minVl) {
             switch (checkConfig.punishment) {
                 case 'kick':
                     player.kick(flagReasonMessage);
                     break;
                 case 'ban':
-                    // This is a placeholder. A proper ban system would be more complex.
-                    player.runCommandAsync(`ban "${player.name}" ${flagReasonMessage}`);
+                    playerDataManager.addPlayerStateRestriction(player, pData, 'ban', Infinity, flagReasonMessage, 'ActionManager', true, checkType, dependencies);
+                    // It's good practice to kick the player after banning them
+                    player.kick(flagReasonMessage);
                     break;
                 case 'mute':
-                    // This is a placeholder. A proper mute system would be more complex.
-                    player.runCommandAsync(`mute "${player.name}" ${checkConfig.punishmentLength || '10m'} ${flagReasonMessage}`);
+                    {
+                        const durationString = checkConfig.punishmentLength || '10m';
+                        const durationMs = dependencies.playerUtils.parseDuration(durationString);
+                        playerDataManager.addPlayerStateRestriction(player, pData, 'mute', durationMs, flagReasonMessage, 'ActionManager', true, checkType, dependencies);
+                    }
                     break;
             }
         }
