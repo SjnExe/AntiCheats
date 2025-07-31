@@ -575,6 +575,45 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
     }
 }
 
+async function showEditConfigForm(player, dependencies, context) {
+    const { playerUtils, config, configModule } = dependencies;
+    const { configKey } = context;
+    const checkConfig = config.checks[configKey.split('.')[1]];
+
+    if (!checkConfig) {
+        player.sendMessage(`§cConfiguration for "${configKey}" not found.`);
+        return;
+    }
+
+    const form = new ModalFormData().title(`Edit ${configKey}`);
+
+    form.toggle('Enabled', checkConfig.enabled);
+    form.textField('Punishment (none, kick, ban, mute)', checkConfig.punishment);
+    form.textField('Punishment Length (e.g., 10m, 1h, 1d)', checkConfig.punishmentLength);
+    form.textField('Min Violation Level', String(checkConfig.minVlbeforePunishment));
+
+    const response = await form.show(player);
+
+    if (response.canceled) {
+        return;
+    }
+
+    const [enabled, punishment, punishmentLength, minVlbeforePunishment] = response.formValues;
+
+    const newConfig = {
+        ...checkConfig,
+        enabled,
+        punishment,
+        punishmentLength,
+        minVlbeforePunishment: parseInt(minVlbeforePunishment) || 1,
+    };
+
+    configModule.updateConfigValue(`checks.${configKey.split('.')[1]}`, newConfig);
+
+    player.sendMessage(`§aConfiguration for "${configKey}" updated.`);
+    await showPanel(player, 'configEditingCombatPanel', dependencies, {});
+}
+
 /**
  * @param {import('@minecraft/server').Player} adminPlayer
  * @param {string} titleString
@@ -1435,6 +1474,7 @@ const uiActionFunctions = {
     },
     showInspectPlayerForm,
     showResetFlagsForm: showResetFlagsFormImpl,
+    showEditConfigForm,
     /**
  * Displays a modal with system information.
  * @param {import('@minecraft/server').Player} player The player viewing the info.

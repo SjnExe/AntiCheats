@@ -202,7 +202,15 @@ export const panelDefinitions = {
         title: '§l§6Configuration Editor§r',
         parentPanelId: 'mainAdminPanel',
         items: [
-            { id: 'viewConfigCategories', sortId: 10, text: 'Browse Config Categories', requiredPermLevel: 0, actionType: 'functionCall', actionValue: 'showConfigCategoriesList' },
+            { id: 'combatConfig', sortId: 10, text: 'Combat Settings', icon: 'textures/items/diamond_sword', requiredPermLevel: 0, actionType: 'openPanel', actionValue: 'configEditingCombatPanel' },
+        ],
+    },
+    configEditingCombatPanel: {
+        title: '§l§cCombat Settings§r',
+        parentPanelId: 'configEditingRootPanel',
+        items: [
+            { id: 'editReach', sortId: 10, text: 'Reach Check', requiredPermLevel: 0, actionType: 'functionCall', actionValue: 'showEditConfigForm', initialContext: { configKey: 'checks.reach' } },
+            { id: 'editCps', sortId: 20, text: 'CPS Check', requiredPermLevel: 0, actionType: 'functionCall', actionValue: 'showEditConfigForm', initialContext: { configKey: 'checks.cps' } },
         ],
     },
     playerActionsPanel: {
