@@ -1,8 +1,9 @@
 import { system, world } from '@minecraft/server';
 import * as eventHandlers from './eventHandlers.js';
 import * as dependencies from './dependencyManager.js';
-import { logError, playerUtils } from '../utils/playerUtils.js';
+import { logError, playerUtils } from '../modules/utils/playerUtils.js';
 import { migrateConfig } from './configMigration.js';
+import { mainTick } from '../main.js';
 
 const {
     config,
@@ -167,6 +168,7 @@ function performInitializations() {
         },
     });
     playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Tick loop will now be active.', 'System', dependencies);
+    system.run(mainTick);
 }
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {

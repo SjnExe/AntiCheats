@@ -23,16 +23,10 @@ const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
 const tpaSystemTickInterval = 20;
 
 let currentTick = 0;
-let notInitializedMessageSent = false;
 
-async function mainTick() {
+export async function mainTick() {
     try {
         if (!world.getDynamicProperty('ac:initialized')) {
-            if (!notInitializedMessageSent) {
-                console.warn('[AntiCheat] Not initialized. Run /function ac to initialize.');
-                playerUtils.notifyAdmins('§cAntiCheat is not initialized. Please run /function ac to set it up.', dependencies);
-                notInitializedMessageSent = true;
-            }
             return;
         }
         await processTick();
@@ -222,7 +216,6 @@ function tpaTick(dependencies) {
     }
 }
 
-system.run(mainTick);
 system.runInterval(() => {
     if (world.getDynamicProperty('ac:initialized')) {
         tpaTick(dependencies);
