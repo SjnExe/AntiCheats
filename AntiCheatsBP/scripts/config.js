@@ -12,6 +12,8 @@
  */
 
 const defaultConfigSettings = {
+    /** @type {number} The version of the configuration file. This is used for migration. */
+    configVersion: 1,
     /** @type {string} The tag for identifying admin players. */
     adminTag: 'admin',
     /** @type {string} The exact name of the server owner. Required for owner-level commands/features. Case-sensitive. */

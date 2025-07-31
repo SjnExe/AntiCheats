@@ -2,6 +2,7 @@ import { system, world } from '@minecraft/server';
 import * as eventHandlers from './eventHandlers.js';
 import * as dependencies from './dependencyManager.js';
 import { logError, playerUtils } from '../utils/playerUtils.js';
+import { migrateConfig } from './configMigration.js';
 
 const {
     config,
@@ -123,6 +124,20 @@ function performInitializations() {
     playerUtils.debugLog('Anti-Cheat Script Initializing via function...', 'System', dependencies);
 
     try {
+        const storedConfigVersion = world.getDynamicProperty('configVersion');
+        const codeConfigVersion = config.configVersion;
+
+        if (storedConfigVersion === undefined) {
+            world.setDynamicProperty('configVersion', codeConfigVersion);
+            world.setDynamicProperty('config', JSON.stringify(config));
+        } else if (storedConfigVersion < codeConfigVersion) {
+            const storedConfig = JSON.parse(world.getDynamicProperty('config'));
+            const migratedConfig = migrateConfig(storedConfig, storedConfigVersion, codeConfigVersion);
+            world.setDynamicProperty('config', JSON.stringify(migratedConfig));
+            world.setDynamicProperty('configVersion', codeConfigVersion);
+            playerUtils.notifyAdmins(`§aAntiCheat config migrated from v${storedConfigVersion} to v${codeConfigVersion}.`, dependencies);
+        }
+
         subscribeToEvents();
     } catch (e) {
         logError('CRITICAL: Failed to subscribe to events during initialization.', e);
