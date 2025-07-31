@@ -1,9 +1,12 @@
 import { system, world } from '@minecraft/server';
-import { logError } from './utils/playerUtils.js';
+import { logError } from './modules/utils/playerUtils.js';
+import * as dependencies from './core/dependencyManager.js';
 
 try {
-    system.events.beforeWatchdogTerminate.subscribe(data => {
-        console.warn(`[AntiCheat] Watchdog termination imminent. Reason: ${data.cancelationReason}`);
+    system.beforeEvents.watchdogTerminate.subscribe(data => {
+        data.cancel = true;
+        console.warn(`[AntiCheat] Watchdog termination prevented. Reason: ${data.terminateReason}`);
+        dependencies.playerUtils.notifyAdmins(`§cWatchdog termination prevented. Reason: ${data.terminateReason}`, dependencies);
     });
 } catch (e) {
     console.error(`[AntiCheat] CRITICAL: Failed to subscribe to watchdog event: ${e}`);

@@ -48,6 +48,7 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 - **Active Development:** Continuously updated with new features, improvements, and compatibility for the latest Minecraft versions.
 - **Open & Documented:** With clear documentation and an open codebase, understand how it works and even contribute!
 - **Automatic Configuration Migration:** Your settings won't get lost! The addon automatically updates your configuration to be compatible with the latest version after an update.
+- **Enhanced Stability:** Includes a watchdog handler to prevent script-related server crashes, ensuring a more stable experience.
 
 ---
 
