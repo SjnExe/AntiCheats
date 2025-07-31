@@ -89,6 +89,25 @@ While `config.js` is the central hub, some complex systems have their detailed r
   - **File:** `AntiCheatsBP/scripts/core/textDatabase.js`
   - **Purpose:** A simple key-value store for most user-facing UI text and command response messages. This allows for easier text management and potential future localization. The `playerUtils.getString(key, params)` function is used to retrieve and format these strings.
 
+- **Kits Definition (`kits.js`):**
+  - **File:** `AntiCheatsBP/scripts/core/kits.js`
+  - **Purpose:** Defines the available kits that players can claim. You can add, remove, or modify kits in this file, including their items, cooldowns, and descriptions.
+
+## ⚙️ Server Features Configuration
+
+In `config.js`, you can enable and configure several server utility features.
+
+- **Economy System:**
+  - `economy.enabled` (boolean): Set to `true` to enable the economy system (`!pay`, `!balance`, `!baltop`).
+  - `economy.startingBalance` (number): The amount of money new players start with.
+- **Homes System:**
+  - `homes.enabled` (boolean): Set to `true` to enable the homes system (`!sethome`, `!home`, etc.).
+  - `homes.maxHomes` (number): The maximum number of homes a player is allowed to set.
+- **Kits System:**
+  - `kits.enabled` (boolean): Set to `true` to enable the kits system (`!kit`). The kits themselves are defined in `AntiCheatsBP/scripts/core/kits.js`.
+- **Custom Spawn:**
+  - `spawnLocation` (object | null): Set a specific spawn location for the `!spawn` command. If `null`, the world's default spawn is used. The object should look like: `{ x: number, y: number, z: number, dimension: string }`. You can set this in-game using `!spawn set`.
+
 ## Best Practices for Configuration
 
 - **Read Comments:** `config.js` and other configuration files are usually well-commented. Read these comments carefully before changing values.

@@ -81,6 +81,10 @@ This addon is packed with features to keep your server clean:
   - Allows players to request teleports to others or summon others, with configurable cooldowns and warmup periods.
 - 📝 **Reporting System:**
   - Players can report others for violations, viewable by admins.
+- ✨ **Player & Server Utilities:**
+  - **Economy:** A simple economy system with player balances and payment commands.
+  - **Homes:** Allows players to set and teleport to their own personal "homes".
+  - **Kits:** A system for players to claim predefined kits of items with cooldowns.
 
 ➡️ **Dive Deeper:** For a full list and details of all features, check out our [**Features Overview in the Docs**](Docs/FeaturesOverview.md)!
 
