@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'restart',
     description: 'Reloads the entire world, including resource and behavior packs.',
@@ -9,7 +9,7 @@ export const definition = {
  * Executes the restart command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export function execute(player, args, { playerUtils }) {
     const { getString } = playerUtils;

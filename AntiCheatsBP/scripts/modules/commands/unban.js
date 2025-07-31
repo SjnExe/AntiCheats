@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'unban',
     syntax: '<playername>',
@@ -10,7 +10,7 @@ export const definition = {
  * Executes the unban command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  * @param {string} [invokedBy]
  * @param {boolean} [isAutoModAction]
  * @param {string | null} [autoModCheckType]

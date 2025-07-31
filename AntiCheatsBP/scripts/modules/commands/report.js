@@ -1,9 +1,9 @@
-import * as reportManager from '../core/reportManager.js';
+import * as reportManager from '../../core/reportManager.js';
 
 const minReportReasonLength = 10;
 const maxReportReasonLength = 256;
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'report',
     syntax: '!report <playername> <reason...>',
@@ -15,7 +15,7 @@ export const definition = {
  * Executes the report command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;

@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'resetflags',
     syntax: '!resetflags <playerName>',
@@ -10,7 +10,7 @@ export const definition = {
  * Executes the resetflags command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {import('../../types.js').CommandDependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;

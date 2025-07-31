@@ -1,6 +1,6 @@
-import { acVersion } from '../config.js';
+import { acVersion } from '../../config.js';
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'version',
     syntax: '',
@@ -14,7 +14,7 @@ export const definition = {
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @param {import('../../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {void}
  */
 export function execute(player, _args, dependencies) {

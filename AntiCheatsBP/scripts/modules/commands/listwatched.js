@@ -1,6 +1,6 @@
 import * as mc from '@minecraft/server';
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'listwatched',
     syntax: '',
@@ -12,7 +12,7 @@ export const definition = {
  * Executes the listwatched command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} _args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export function execute(player, _args, dependencies) {
     const { playerDataManager, playerUtils, logManager, getString } = dependencies;

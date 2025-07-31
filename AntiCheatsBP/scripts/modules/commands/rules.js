@@ -1,6 +1,6 @@
 import { MessageFormData } from '@minecraft/server-ui';
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'rules',
     description: 'Displays the server rules.',
@@ -12,7 +12,7 @@ export const definition = {
  * Executes the rules command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {import('../../types.js').CommandDependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, config, logManager, getString } = dependencies;

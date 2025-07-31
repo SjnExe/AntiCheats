@@ -1,6 +1,6 @@
 import { commandAliases } from '../config.js';
 import { loadCommand } from './dynamicCommandLoader.js';
-import { logError } from '../utils/playerUtils.js';
+import { logError } from '../modules/utils/playerUtils.js';
 import { CommandError } from '../types.js';
 
 export const commandFilePaths = new Map();

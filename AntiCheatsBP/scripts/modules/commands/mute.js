@@ -1,6 +1,6 @@
-import { CommandError } from '../types.js';
+import { CommandError } from '../../types.js';
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'mute',
     syntax: '<playername> [duration] [reason]',
@@ -12,7 +12,7 @@ export const definition = {
  * Executes the mute command.
  * @param {import('@minecraft/server').Player | null} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  * @param {string} [invokedBy]
  * @param {boolean} [isAutoModAction]
  * @param {string|null} [autoModCheckType]

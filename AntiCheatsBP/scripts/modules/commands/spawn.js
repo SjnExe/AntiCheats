@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'spawn',
     description: 'Teleports you to the server spawn point or sets it if you are an admin.',
@@ -10,7 +10,7 @@ export const definition = {
  * Executes the spawn command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { getString, mc, config, permissionLevels, rankManager } = dependencies;

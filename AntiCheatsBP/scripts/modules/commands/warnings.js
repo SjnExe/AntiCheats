@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'warnings',
     syntax: '<playername>',
@@ -13,7 +13,7 @@ export const definition = {
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @param {import('../../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {void}
  */
 export function execute(player, args, dependencies) {
