@@ -328,6 +328,9 @@ const defaultConfigSettings = {
         cps: { enabled: false, intervalTicks: 20, punishment: 'none', punishmentLength: '', minVlbeforePunishment: 1 }, // Measured over 1 second (20 ticks)
         viewSnap: { enabled: false, intervalTicks: 5 },
         multiTarget: { enabled: false, intervalTicks: 5 },
+        killauraMultiAura: { enabled: false, intervalTicks: 20, punishment: 'none', punishmentLength: '', minVlbeforePunishment: 1, windowMs: 1000, maxTargets: 3 },
+        killauraNoSwing: { enabled: false, intervalTicks: 1 },
+        killauraAttackWhileUsingItem: { enabled: false, intervalTicks: 1 },
         selfHurt: { enabled: false, intervalTicks: 4 },
         autoTool: { enabled: false, intervalTicks: 10 },
 
