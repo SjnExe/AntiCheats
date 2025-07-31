@@ -10,27 +10,45 @@
  * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
  * @param {Dependencies} dependencies Shared dependencies.
  */
+
+let compiledWhitelistPatterns = [];
+let lastLoadedWhitelistPatterns = null;
+
+function getCompiledWhitelistPatterns(config, playerUtils, watchedPlayerName, dependencies) {
+    const currentWhitelistJson = JSON.stringify(config.advertisingWhitelistPatterns);
+    if (currentWhitelistJson !== lastLoadedWhitelistPatterns) {
+        playerUtils?.debugLog('[AntiAdv] Compiling new whitelist patterns.', watchedPlayerName, dependencies);
+        compiledWhitelistPatterns = (config.advertisingWhitelistPatterns ?? []).map(pattern => {
+            if (typeof pattern !== 'string' || pattern.trim() === '') return null;
+            try {
+                return { pattern: new RegExp(pattern, 'i'), isRegex: true };
+            } catch {
+                // If it's not a valid regex, treat it as a simple string.
+                return { pattern: pattern.toLowerCase(), isRegex: false };
+            }
+        }).filter(Boolean);
+        lastLoadedWhitelistPatterns = currentWhitelistJson;
+    }
+    return compiledWhitelistPatterns;
+}
+
 function isWhitelisted(message, config, playerUtils, playerName, watchedPlayerName, dependencies) {
-    if (!Array.isArray(config.advertisingWhitelistPatterns) || config.advertisingWhitelistPatterns.length === 0) {
+    const compiledPatterns = getCompiledWhitelistPatterns(config, playerUtils, watchedPlayerName, dependencies);
+    if (compiledPatterns.length === 0) {
         return false;
     }
 
     const lowerCaseMessage = message.toLowerCase();
 
-    for (const wlPattern of config.advertisingWhitelistPatterns) {
-        if (typeof wlPattern !== 'string' || wlPattern.trim() === '') {
-            continue;
-        }
-        try {
-            // Try as regex first
-            if (new RegExp(wlPattern, 'i').test(message)) {
-                playerUtils?.debugLog(`[AntiAdv] Message for ${playerName} whitelisted by regex: '${wlPattern}'.`, watchedPlayerName, dependencies);
+    for (const p of compiledPatterns) {
+        if (p.isRegex) {
+            if (p.pattern.test(message)) {
+                playerUtils?.debugLog(`[AntiAdv] Message for ${playerName} whitelisted by regex: '${p.pattern.source}'.`, watchedPlayerName, dependencies);
                 return true;
             }
-        } catch (eRegexWl) {
-            // Fallback to simple string inclusion if the pattern is not a valid regex.
-            if (lowerCaseMessage.includes(wlPattern.toLowerCase())) {
-                playerUtils?.debugLog(`[AntiAdv] Message for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
+        } else {
+            if (lowerCaseMessage.includes(p.pattern)) {
+                playerUtils?.debugLog(`[AntiAdv] Message for ${playerName} whitelisted by include: '${p.pattern}'.`, watchedPlayerName, dependencies);
                 return true;
             }
         }
