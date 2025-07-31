@@ -4,7 +4,7 @@ import {
 } from '@minecraft/server';
 import {
     logError,
-} from './utils/playerUtils.js';
+} from './modules/utils/playerUtils.js';
 import * as dependencies from './core/dependencyManager.js';
 
 const {
