@@ -724,5 +724,5 @@ export async function addFlag(player, flagType, reason, dependencies, violationD
     playerUtils.debugLog(logMessage, pData.isWatched ? player.nameTag : null, dependencies);
 
     // Trigger AutoMod check once after adding all flags.
-    await automodManager.processAutoModActions(player, pData, flagType, dependencies);
+    await automodManager.processAutoModActions(player, pData, flagType, dependencies, violationDetails);
 }

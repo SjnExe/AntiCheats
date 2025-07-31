@@ -156,7 +156,7 @@ export async function checkFly(player, pData, dependencies) {
         !player.isClimbing &&
         !player.isInWater &&
         !pData.hasLevitation &&
-        !(pData.hasSlowFalling && verticalSpeed < -0.01)
+        !(pData.hasSlowFalling && verticalSpeed < (config.flyHoverSlowFallingMinVSpeed ?? -0.01))
     ) {
         const playerLocY = player.location.y;
         const lastGroundY = pData.lastOnGroundPosition?.y;
