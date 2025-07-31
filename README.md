@@ -47,6 +47,8 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 - **Highly Customizable:** Fine-tune almost every aspect, from detection sensitivity to automated actions, to perfectly suit your server's needs.
 - **Active Development:** Continuously updated with new features, improvements, and compatibility for the latest Minecraft versions.
 - **Open & Documented:** With clear documentation and an open codebase, understand how it works and even contribute!
+- **Automatic Configuration Migration:** Your settings won't get lost! The addon automatically updates your configuration to be compatible with the latest version after an update.
+- **Enhanced Stability:** Includes a watchdog handler to prevent script-related server crashes, ensuring a more stable experience.
 
 ---
 
@@ -93,12 +95,15 @@ Get up and running in minutes!
 3. **Enable Beta APIs (CRITICAL!):**
    - In your world settings, go to the "Experiments" section.
    - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features (as specified in its `manifest.json`) and will not function correctly with all features without this setting enabled.
-4. **Prioritize:** Ensure `AntiCheatsBP` is at the **TOP** of your behavior pack list. This is crucial for the AntiCheat to function correctly.
-5. **👑 Set Owner (CRUCIAL!):**
+4. **Initialize the Addon (CRITICAL!):**
+   - Once in your world, run the command `/function ac`.
+   - This command initializes the addon, sets up necessary components, and must be run for the AntiCheat to work.
+5. **Prioritize:** Ensure `AntiCheatsBP` is at the **TOP** of your behavior pack list. This is crucial for the AntiCheat to function correctly.
+6. **👑 Set Owner (CRUCIAL!):**
    - Open `AntiCheatsBP/scripts/config.js`. (Note: `.mcaddon` files are zip archives; you may need to rename to `.zip` or use an archive tool to access the contents if editing manually.)
    - Set `ownerPlayerName` to your **exact** in-game name (case-sensitive). This grants you full control!
-6. **🎮 Explore:** Join your world and type `!panel` (or `!ui`) to open the Admin UI.
-7. **🔧 Configure (Optional but Recommended):**
+7. **🎮 Explore:** Join your world and type `!panel` (or `!ui`) to open the Admin UI.
+8. **🔧 Configure (Optional but Recommended):**
    - Review other core settings (admin tag, command prefix, etc.) in `AntiCheatsBP/scripts/config.js`.
    - Explore the in-game settings panel (`!panel`) for more specific check configurations.
    - For detailed setup and advanced options, visit our [**Setup and Configuration Guide**](Docs/ConfigurationGuide.md).

@@ -7,7 +7,6 @@
 /** @type {{[key: string]: import('../types.js').ActionProfileEntry}} */
 export const checkActionProfiles = {
     movementFlyHover: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected Fly (Hover). Details: {detailsString}',
@@ -34,7 +33,6 @@ export const checkActionProfiles = {
         },
     },
     movementSpeedGround: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected excessive ground speed. Speed: {speedBps} BPS (Max: {maxAllowedBps})',
@@ -64,7 +62,6 @@ export const checkActionProfiles = {
         },
     },
     movementNoFall: {
-        enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected suspicious fall damage negation (NoFall). Fall Distance: {fallDistance}m. Details: {detailsString}',
@@ -93,7 +90,6 @@ export const checkActionProfiles = {
         },
     },
     movementNoSlow: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected movement faster than allowed for current action ({action}). Speed: {speed}bps (Max: {maxAllowedSpeed}bps)',
@@ -108,7 +104,6 @@ export const checkActionProfiles = {
         },
     },
     movementInvalidSprint: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected sprinting under invalid conditions ({condition}).',
@@ -123,7 +118,6 @@ export const checkActionProfiles = {
         },
     },
     movementNetherRoof: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Detected on Nether Roof at {x},{y},{z}.',
@@ -138,7 +132,6 @@ export const checkActionProfiles = {
         },
     },
     movementHighYVelocity: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Excessive vertical velocity detected: {yVelocity} m/s.',
@@ -153,7 +146,6 @@ export const checkActionProfiles = {
         },
     },
     movementSustainedFly: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Sustained flight detected for {duration} ticks.',
@@ -168,7 +160,6 @@ export const checkActionProfiles = {
         },
     },
     combatReachAttack: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected excessive reach during combat. Distance: {distance} (Max: {maxAllowed})',
@@ -183,7 +174,6 @@ export const checkActionProfiles = {
         },
     },
     combatCpsHigh: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected abnormally high CPS. Count: {cpsCount} in {windowSeconds}s. Max: {threshold}',
@@ -198,7 +188,6 @@ export const checkActionProfiles = {
         },
     },
     combatViewSnapPitch: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected suspicious pitch snap after attack. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
@@ -213,7 +202,6 @@ export const checkActionProfiles = {
         },
     },
     combatViewSnapYaw: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected suspicious yaw snap after attack. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
@@ -228,7 +216,6 @@ export const checkActionProfiles = {
         },
     },
     combatInvalidPitch: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected invalid view pitch. Pitch: {pitch}° (Limits: {minLimit}° to {maxLimit}°)',
@@ -243,7 +230,6 @@ export const checkActionProfiles = {
         },
     },
     combatMultiTargetAura: {
-        enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})',
@@ -258,7 +244,6 @@ export const checkActionProfiles = {
         },
     },
     combatAttackWhileSleeping: {
-        enabled: true,
         flag: {
             increment: 5,
             reason: 'System detected player attacking while sleeping. Target: {targetEntityType}',
@@ -273,7 +258,6 @@ export const checkActionProfiles = {
         },
     },
     combatAttackWhileConsuming: {
-        enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected player attacking while consuming an item ({itemCategory}). State: {state}',
@@ -288,7 +272,6 @@ export const checkActionProfiles = {
         },
     },
     combatAttackWhileBowCharging: {
-        enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected player attacking while charging a bow ({itemCategory}). State: {state}',
@@ -303,7 +286,6 @@ export const checkActionProfiles = {
         },
     },
     combatAttackWhileShielding: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected player attacking while actively using a shield ({itemCategory}). State: {state}',
@@ -318,7 +300,6 @@ export const checkActionProfiles = {
         },
     },
     combatLog: {
-        enabled: true,
         notifyAdmins: {
             message: '§e{playerName}§c disconnected §a{timeSinceLastCombat}s§c after combat. Details: {detailsString}',
         },
@@ -328,7 +309,6 @@ export const checkActionProfiles = {
         },
     },
     worldNuker: {
-        enabled: true,
         flag: {
             increment: 5,
             reason: 'System detected Nuker activity. Blocks: {blocksBroken} in window. Details: {detailsString}',
@@ -343,7 +323,6 @@ export const checkActionProfiles = {
         },
     },
     worldIllegalItemUse: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected use of a banned item: {itemTypeId}. Details: {detailsString}',
@@ -358,7 +337,6 @@ export const checkActionProfiles = {
         },
     },
     worldIllegalItemPlace: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected placement of a banned item: {itemTypeId} at {blockLocationX},{blockLocationY},{blockLocationZ}. Details: {detailsString}',
@@ -373,7 +351,6 @@ export const checkActionProfiles = {
         },
     },
     worldTowerBuild: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected suspicious tower-like building. Height: {height}, Look Pitch: {pitch}° (Threshold: {pitchThreshold}°)',
@@ -388,7 +365,6 @@ export const checkActionProfiles = {
         },
     },
     worldFlatRotationBuilding: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected unnatural head rotation while building. Pitch Var: {pitchVariance}, Yaw Var: {yawMaxDifferenceFromFirst}, Reason: {detectionReason}',
@@ -403,7 +379,6 @@ export const checkActionProfiles = {
         },
     },
     worldDownwardScaffold: {
-        enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected suspicious downward scaffolding. Blocks: {count}, Speed: {horizontalSpeedBPS}bps (MinSpeed: {minHorizontalSpeedBPS}bps)',
@@ -418,7 +393,6 @@ export const checkActionProfiles = {
         },
     },
     worldAirPlace: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected block placed against air/liquid. Block: {blockType} at {x},{y},{z} targeting {targetFaceType}.',
@@ -433,7 +407,6 @@ export const checkActionProfiles = {
         },
     },
     worldFastPlace: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected blocks being placed too quickly. Blocks: {count} in {windowMs}ms (Max: {maxBlocks})',
@@ -448,7 +421,6 @@ export const checkActionProfiles = {
         },
     },
     worldAutoTool: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected suspicious tool switching (AutoTool). Block: {blockType}, ToolUsed: {toolUsed}, Pattern: {switchPattern}',
@@ -463,7 +435,6 @@ export const checkActionProfiles = {
         },
     },
     worldInstaBreakUnbreakable: {
-        enabled: true,
         flag: {
             increment: 10,
             reason: 'Attempted to break an unbreakable block: {blockType} at {x},{y},{z}.',
@@ -479,7 +450,6 @@ export const checkActionProfiles = {
         cancelEvent: true,
     },
     worldInstaBreakSpeed: {
-        enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected block broken too fast: {blockType}. Expected: {expectedTicks}t, Actual: {actualTicks}t',
@@ -494,7 +464,6 @@ export const checkActionProfiles = {
         },
     },
     playerNameSpoof: {
-        enabled: true,
         flag: {
             increment: 5,
             reason: 'System detected an invalid player nameTag ({reasonDetail}). NameTag: \'{currentNameTagDisplay}\'',
@@ -509,7 +478,6 @@ export const checkActionProfiles = {
         },
     },
     playerAntiGmc: {
-        enabled: true,
         flag: {
             increment: 10,
             reason: 'System detected unauthorized Creative Mode. Switched to {switchToMode}: {autoSwitched}',
@@ -524,7 +492,6 @@ export const checkActionProfiles = {
         },
     },
     playerInventoryModSwitchUse: {
-        enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected suspicious inventory manipulation (Switch-Use). Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}',
@@ -539,7 +506,6 @@ export const checkActionProfiles = {
         },
     },
     playerInventoryModMoveLocked: {
-        enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected suspicious inventory manipulation (Move-Locked). Detail: {reasonDetail}. Item: {itemTypeInvolved}, Slot: {slotChanged}, Action: {actionInProgress}',
@@ -554,7 +520,6 @@ export const checkActionProfiles = {
         },
     },
     playerInvalidRenderDistance: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Client reported an excessive render distance: {reportedDistance} chunks (Max: {maxAllowed} chunks).',
@@ -569,7 +534,6 @@ export const checkActionProfiles = {
         },
     },
     playerSelfHurt: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected suspicious self-inflicted damage. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}',
@@ -584,7 +548,6 @@ export const checkActionProfiles = {
         },
     },
     actionFastUse: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected item being used too quickly: {itemType}. Cooldown: {cooldownMs}ms, Actual: {actualTimeMs}ms',
@@ -599,7 +562,6 @@ export const checkActionProfiles = {
         },
     },
     chatSpamFastMessage: {
-        enabled: true,
         flag: {
             type: 'chatSpamFast',
             increment: 1,
@@ -616,7 +578,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatSpamMaxWords: {
-        enabled: true,
         flag: {
             type: 'chatSpamMaxWords',
             increment: 1,
@@ -633,7 +594,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     playerChatDuringCombat: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Attempted to chat too soon after combat ({timeSinceCombat}s ago).',
@@ -649,7 +609,6 @@ export const checkActionProfiles = {
         },
     },
     playerChatDuringItemUse: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Attempted to chat while actively using an item ({itemUseState}).',
@@ -665,7 +624,6 @@ export const checkActionProfiles = {
         },
     },
     chatSwearViolation: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Swear word detected in message: {detectedSwear}. Message: {originalMessage}',
@@ -682,7 +640,6 @@ export const checkActionProfiles = {
         customAction: 'mutePlayer',
     },
     chatAdvertisingDetected: {
-        enabled: true,
         flag: {
             type: 'chatAdvertising',
             reason: 'Potential advertisement detected: {detectedLink}. Message: {originalMessage}',
@@ -698,7 +655,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatCapsAbuseDetected: {
-        enabled: true,
         flag: {
             type: 'chatCapsAbuse',
             reason: 'Message contained excessive capitalization ({percentage}% CAPS). Message: {originalMessage}',
@@ -714,7 +670,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatCharRepeatDetected: {
-        enabled: true,
         flag: {
             type: 'chatCharRepeat',
             reason: 'Message contained repeated characters: \'{char}\' x{count}. Message: {originalMessage}',
@@ -730,7 +685,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatSymbolSpamDetected: {
-        enabled: true,
         flag: {
             type: 'chatSymbolSpam',
             reason: 'Sent a message with a high percentage of symbols ({percentage}%). Message: {originalMessage}',
@@ -746,7 +700,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatContentRepeat: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Repeated message content detected: {repeatedMessageSnippet}',
@@ -762,7 +715,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatUnicodeAbuse: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Unicode (e.g., Zalgo) abuse detected. Reason: {flagReason}. Message: {messageSnippet}',
@@ -778,7 +730,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatGibberish: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Gibberish or unreadable message detected. Reasons: {triggerReasons}. Message: {messageSnippet}',
@@ -794,7 +745,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatExcessiveMentions: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Excessive user mentions in message. Reasons: {triggerReasons}. Message: {messageSnippet}',
@@ -810,7 +760,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatImpersonationAttempt: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'Attempt to impersonate server/staff message. Matched: {matchedPattern}. Message: {messageSnippet}',
@@ -826,7 +775,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatNewline: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Message contained newline characters. Message: {message}',
@@ -842,7 +790,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     chatMaxLength: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Message exceeded maximum length ({messageLength}/{maxLength}). Snippet: {messageSnippet}',
@@ -858,7 +805,6 @@ export const checkActionProfiles = {
         cancelMessage: true,
     },
     worldAntiGriefTntPlace: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Player attempted to place TNT without authorization at {x},{y},{z}. Action: {actionTaken}.',
@@ -874,7 +820,6 @@ export const checkActionProfiles = {
         cancelEvent: true,
     },
     worldAntiGriefWitherSpawn: {
-        enabled: true,
         flag: {
             increment: 5,
             reason: 'Player involved in unauthorized Wither spawn or Wither killed by AntiGrief. Context: {playerNameOrContext}. Action: {actionTaken}.',
@@ -890,7 +835,6 @@ export const checkActionProfiles = {
         cancelEvent: true,
     },
     worldAntiGriefFire: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'Player involved in unauthorized fire incident. Context: {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
@@ -906,7 +850,6 @@ export const checkActionProfiles = {
         cancelEvent: true,
     },
     worldAntiGriefLava: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'Player involved in unauthorized lava placement. Context: {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
@@ -922,7 +865,6 @@ export const checkActionProfiles = {
         cancelEvent: true,
     },
     worldAntiGriefWater: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Player involved in unauthorized water placement. Context: {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
@@ -938,7 +880,6 @@ export const checkActionProfiles = {
         cancelEvent: true,
     },
     worldAntiGriefBlockspam: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Player suspected of block spamming. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}.',
@@ -953,7 +894,6 @@ export const checkActionProfiles = {
         },
     },
     worldAntiGriefEntityspam: {
-        enabled: true,
         flag: {
             increment: 1,
             reason: 'Player suspected of entity spamming. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}.',
@@ -968,7 +908,6 @@ export const checkActionProfiles = {
         },
     },
     worldAntiGriefBlockspamDensity: {
-        enabled: true,
         flag: {
             increment: 2,
             reason: 'Player suspected of block spamming (high density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}.',
@@ -983,7 +922,6 @@ export const checkActionProfiles = {
         },
     },
     worldAntiGriefPistonLag: {
-        enabled: true,
         notifyAdmins: {
             message: '[AntiGrief] Rapid §bpiston activity§r detected at §a{x},{y},{z}§r in §a{dimensionId}§r. Rate: §a{rate}/sec§r over §a{duration}s§r. (Potential Lag)',
         },

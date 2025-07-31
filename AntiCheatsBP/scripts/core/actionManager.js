@@ -150,22 +150,18 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
 }
 
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
-    const { playerUtils, checkActionProfiles } = dependencies;
+    const { playerUtils, checkActionProfiles, config, playerDataManager } = dependencies;
     const playerNameForLog = player?.name ?? 'System';
+    const checkConfig = config.checks[checkType];
 
-    if (!checkActionProfiles) {
-        playerUtils?.debugLog(`[ActionManager CRITICAL] checkActionProfiles not found. Cannot process action for ${checkType}.`, null, dependencies);
+    if (!checkConfig || !checkConfig.enabled) {
+        playerUtils?.debugLog(`[ActionManager] Check '${checkType}' is disabled in config.`, null, dependencies);
         return;
     }
 
     const profile = checkActionProfiles[checkType];
     if (!profile) {
         playerUtils?.debugLog(`[ActionManager] No action profile for checkType: '${checkType}'.`, null, dependencies);
-        return;
-    }
-
-    if (!profile.enabled) {
-        playerUtils?.debugLog(`[ActionManager] Actions for '${checkType}' are disabled.`, null, dependencies);
         return;
     }
 
@@ -176,4 +172,25 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies);
     _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies);
     _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies);
+
+    if (player) {
+        const pData = playerDataManager.getPlayerData(player.id);
+        const flagCount = pData.flags[checkType] || 0;
+
+        if (flagCount >= checkConfig.minVlbeforePunishment) {
+            switch (checkConfig.punishment) {
+                case 'kick':
+                    player.kick(flagReasonMessage);
+                    break;
+                case 'ban':
+                    // This is a placeholder. A proper ban system would be more complex.
+                    player.runCommandAsync(`ban "${player.name}" ${flagReasonMessage}`);
+                    break;
+                case 'mute':
+                    // This is a placeholder. A proper mute system would be more complex.
+                    player.runCommandAsync(`mute "${player.name}" ${checkConfig.punishmentLength || '10m'} ${flagReasonMessage}`);
+                    break;
+            }
+        }
+    }
 }

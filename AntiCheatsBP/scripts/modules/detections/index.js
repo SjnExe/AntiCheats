@@ -11,7 +11,9 @@ export * from './combat/reachCheck.js';
 export * from './combat/cpsCheck.js';
 export * from './combat/viewSnapCheck.js';
 export * from './combat/multiTargetCheck.js';
-export * from './combat/stateConflictCheck.js';
+export * from './combat/killauraMultiAuraCheck.js';
+export * from './combat/killauraNoSwingCheck.js';
+export * from './combat/killauraAttackWhileUsingItemCheck.js';
 
 // World Interaction Checks
 export * from './world/nukerCheck.js';

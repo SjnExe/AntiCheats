@@ -12,6 +12,8 @@
  */
 
 const defaultConfigSettings = {
+    /** @type {number} The version of the configuration file. This is used for migration. */
+    configVersion: 1,
     /** @type {string} The tag for identifying admin players. */
     adminTag: 'admin',
     /** @type {string} The exact name of the server owner. Required for owner-level commands/features. Case-sensitive. */
@@ -272,7 +274,7 @@ const defaultConfigSettings = {
         warnings: { enabled: true },
         resetflags: { enabled: true },
         rules: { enabled: true },
-        vanish: { enabled: false },
+        vanish: { enabled: true },
         freeze: { enabled: true },
         mute: { enabled: true },
         unmute: { enabled: true },
@@ -322,10 +324,13 @@ const defaultConfigSettings = {
     /** @type {object} Master toggles for various check categories. */
     checks: {
         // Combat
-        reach: { enabled: false, intervalTicks: 4 }, // Frequent, but not every tick
-        cps: { enabled: false, intervalTicks: 20 }, // Measured over 1 second (20 ticks)
+        reach: { enabled: false, intervalTicks: 4, punishment: 'none', punishmentLength: '', minVlbeforePunishment: 1 }, // Frequent, but not every tick
+        cps: { enabled: false, intervalTicks: 20, punishment: 'none', punishmentLength: '', minVlbeforePunishment: 1 }, // Measured over 1 second (20 ticks)
         viewSnap: { enabled: false, intervalTicks: 5 },
         multiTarget: { enabled: false, intervalTicks: 5 },
+        killauraMultiAura: { enabled: false, intervalTicks: 20, punishment: 'none', punishmentLength: '', minVlbeforePunishment: 1, windowMs: 1000, maxTargets: 3 },
+        killauraNoSwing: { enabled: false, intervalTicks: 1 },
+        killauraAttackWhileUsingItem: { enabled: false, intervalTicks: 1 },
         selfHurt: { enabled: false, intervalTicks: 4 },
         autoTool: { enabled: false, intervalTicks: 10 },
 
