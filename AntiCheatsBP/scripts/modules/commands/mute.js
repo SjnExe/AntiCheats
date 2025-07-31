@@ -1,3 +1,5 @@
+import { CommandError } from '../types.js';
+
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'mute',
@@ -83,8 +85,16 @@ export function execute(
 
     try {
         const mutedByForRecord = isAutoModAction ? 'AutoMod' : issuerName;
-        const muteAdded = playerDataManager?.addMute(
+        const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
+        if (!targetPData) {
+            // This should ideally not happen if the player is online and validated, but as a safeguard:
+            throw new CommandError(getString('command.mute.error.noPlayerData', { playerName: foundPlayer.nameTag }));
+        }
+
+        const muteAdded = playerDataManager.addPlayerStateRestriction(
             foundPlayer,
+            targetPData,
+            'mute',
             durationMs,
             reason,
             mutedByForRecord,
@@ -94,9 +104,9 @@ export function execute(
         );
 
         if (muteAdded) {
-            const muteInfo = playerDataManager?.getMuteInfo(foundPlayer, dependencies);
+            const muteInfo = targetPData.muteInfo;
             const actualReason = muteInfo?.reason ?? reason;
-            const actualMutedBy = muteInfo?.bannedBy ?? mutedByForRecord;
+            const actualMutedBy = muteInfo?.restrictedBy ?? mutedByForRecord;
             const durationTextUser = durationMs === Infinity ? getString('ban.duration.permanent') : playerUtils.formatDurationFriendly(durationMs);
 
             const targetNotificationMessage = durationMs === Infinity ?
@@ -116,7 +126,6 @@ export function execute(
                 playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
             }
 
-            const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);
             if (config?.notifyOnAdminUtilCommandUsage !== false || (isAutoModAction && config?.notifyOnAutoModAction !== false)) {
                 const baseAdminNotifyMsg = getString('command.mute.notify.muted', { targetName: foundPlayer.nameTag, mutedBy: actualMutedBy, duration: durationTextUser, reason: actualReason });
                 playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
