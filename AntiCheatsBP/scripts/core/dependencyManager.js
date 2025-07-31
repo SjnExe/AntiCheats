@@ -25,6 +25,7 @@ import * as homesManager from './homesManager.js';
 import * as kitsManager from './kitsManager.js';
 import { kits } from './kits.js';
 import * as economyManager from './economyManager.js';
+import * as flagManager from './flagManager.js';
 
 export const actionManager = { executeCheckAction };
 export const chatProcessor = { processChatMessage };
