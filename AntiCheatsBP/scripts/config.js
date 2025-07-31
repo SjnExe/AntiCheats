@@ -274,7 +274,7 @@ const defaultConfigSettings = {
         warnings: { enabled: true },
         resetflags: { enabled: true },
         rules: { enabled: true },
-        vanish: { enabled: false },
+        vanish: { enabled: true },
         freeze: { enabled: true },
         mute: { enabled: true },
         unmute: { enabled: true },

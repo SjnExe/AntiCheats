@@ -295,6 +295,11 @@ async function handlePlayerSpawn(eventData, dependencies) {
             );
         }
 
+        if (player.hasTag(config.playerTags.vanished)) {
+            player.addEffect(mc.MinecraftEffectTypes.invisibility, 2000000, { amplifier: 1, showParticles: false });
+            player.runCommandAsync('gamemode spectator');
+        }
+
     } catch (error) {
         logError(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.stack || error}`, error);
         playerUtils?.debugLog(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.message}`, playerName, dependencies);
