@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'rank',
     syntax: '<add|remove> <playername> <rankId>',
@@ -10,7 +10,7 @@ export const definition = {
  * Executes the rank command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, rankManager, getString } = dependencies;

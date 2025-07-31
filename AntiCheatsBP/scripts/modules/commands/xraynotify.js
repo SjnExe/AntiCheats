@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'xraynotify',
     syntax: '[on|off|toggle|status]',
@@ -14,7 +14,7 @@ export const definition = {
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|toggle|status].
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @param {import('../../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {void}
  */
 export function execute(player, args, dependencies) {

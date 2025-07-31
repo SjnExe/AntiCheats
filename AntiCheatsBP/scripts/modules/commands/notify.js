@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'notify',
     syntax: '[on|off|toggle|status]',
@@ -10,7 +10,7 @@ export const definition = {
  * Executes the notify command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { playerUtils, logManager, config, playerDataManager, getString } = dependencies;

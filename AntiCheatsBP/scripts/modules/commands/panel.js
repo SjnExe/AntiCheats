@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'panel',
     syntax: '',
@@ -10,7 +10,7 @@ export const definition = {
  * Executes the panel command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} _args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export async function execute(player, _args, dependencies) {
     const { uiManager, logManager, getString, playerUtils, rankManager, permissionLevels } = dependencies;

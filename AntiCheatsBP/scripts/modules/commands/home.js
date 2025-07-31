@@ -1,7 +1,7 @@
-import { getHome } from '../core/homesManager.js';
+import { getHome } from '../../core/homesManager.js';
 import * as mc from '@minecraft/server';
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'home',
     description: 'Teleports you to one of your homes.',
@@ -13,7 +13,7 @@ export const definition = {
  * Executes the home command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, getString } = dependencies;

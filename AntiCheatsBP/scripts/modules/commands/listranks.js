@@ -1,6 +1,6 @@
-import { rankDefinitions as allRankDefinitions } from '../core/ranksConfig.js';
+import { rankDefinitions as allRankDefinitions } from '../../core/ranksConfig.js';
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'listranks',
     syntax: '',
@@ -12,7 +12,7 @@ export const definition = {
  * Executes the listranks command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} _args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export function execute(player, _args, dependencies) {
     const { logManager, playerUtils, getString } = dependencies;

@@ -10,7 +10,7 @@ const argsIndexPlayerTpDimension = 4;
 const minArgsPlayerTpCoordsWithDim = 5;
 
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'tp',
     syntax: '<targetPlayerNameToMove> [destinationPlayerNameOrX] [y] [z] [dimensionId]',
@@ -41,7 +41,7 @@ function parseDimension(dimensionId, currentPlayer, dependencies) {
  * Executes the tp command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;

@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'baltop',
     description: 'Shows the players with the top balances.',
@@ -10,7 +10,7 @@ export const definition = {
  * Executes the baltop command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
     const { config, getString } = dependencies;

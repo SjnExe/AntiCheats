@@ -5,7 +5,7 @@ const defaultFreezeEffectDuration = 2000000; // Very long duration for effects
 const defaultFreezeSlownessAmplifier = 255;
 const defaultFreezeWeaknessAmplifier = 255;
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'freeze',
     syntax: '<playername> [on|off|toggle|status]',
@@ -17,7 +17,7 @@ export const definition = {
  * Executes the freeze command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  * @param {string} [invokedBy]
  * @param {boolean} [isAutoModAction]
  * @param {string | null} [autoModCheckType]

@@ -1,7 +1,7 @@
 // Default configuration values
 const defaultTpaRequestTimeoutSeconds = 60;
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'tpahere',
     syntax: '<playerName>',
@@ -13,7 +13,7 @@ export const definition = {
  * Executes the tpahere command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, tpaManager, getString, logManager } = dependencies;
@@ -69,7 +69,7 @@ export function execute(player, args, dependencies) {
             playerUtils?.debugLog(`[TpaHereCommand] Failed to add TPAHere request from ${requesterName} to ${targetPlayer.nameTag}. Result: ${JSON.stringify(addResult)}`, requesterName, dependencies);
         }
     } else if (addResult && typeof addResult === 'object' && 'requestId' in addResult) {
-        const request = /** @type {import('../types.js').TpaRequest} */ (addResult);
+        const request = /** @type {import('../../types.js').TpaRequest} */ (addResult);
         const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? defaultTpaRequestTimeoutSeconds;
         player.sendMessage(getString('command.tpahere.requestSent', { playerName: targetPlayer.nameTag, timeoutSeconds: timeoutSeconds.toString(), prefix }));
 

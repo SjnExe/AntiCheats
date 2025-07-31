@@ -1,5 +1,5 @@
 import * as mc from '@minecraft/server';
-import { stringDB } from '../core/textDatabase.js';
+import { stringDB } from '../../core/textDatabase.js';
 
 // Time constants
 const millisecondsPerSecond = 1000;

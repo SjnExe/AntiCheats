@@ -6,7 +6,7 @@ const defaultWbDamageAmount = 0.5;
 const defaultWbDamageIntervalTicks = 20;
 const defaultWbTeleportAfterDamageEvents = 30;
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'worldborder',
     syntax: '<subcommand> [args...]',
@@ -18,7 +18,7 @@ export const definition = {
  * Helper to parse dimension ID from arguments or default to player's current dimension.
  * @param {string | undefined} dimensionArg - The dimension argument from the command.
  * @param {import('@minecraft/server').Player} player - The command issuer.
- * @param {import('../types.js').Dependencies} dependencies - For getString.
+ * @param {import('../../types.js').Dependencies} dependencies - For getString.
  * @returns {{dimensionId: string | null, dimensionName: string | null, error?: string}} Parsed dimension info or error.
  */
 function parseDimensionArgument(dimensionArg, player, dependencies) {
@@ -54,7 +54,7 @@ function parseDimensionArgument(dimensionArg, player, dependencies) {
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.
- * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @param {import('../../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {

@@ -1,9 +1,9 @@
-import * as reportManager from '../core/reportManager.js';
+import * as reportManager from '../../core/reportManager.js';
 
 // Default configuration values
 const defaultReportsViewPerPage = 5;
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'viewreports',
     syntax: '[playerName|reportId|page <number>]',
@@ -14,8 +14,8 @@ export const definition = {
 
 /**
  * Formats a single report entry for display.
- * @param {import('../types.js').ReportEntry} report - The report entry.
- * @param {import('../types.js').Dependencies} dependencies - For getString.
+ * @param {import('../../types.js').ReportEntry} report - The report entry.
+ * @param {import('../../types.js').Dependencies} dependencies - For getString.
  * @returns {string} Formatted string for one report.
  */
 function formatReportEntry(report, dependencies) {
@@ -41,7 +41,7 @@ function formatReportEntry(report, dependencies) {
  * Executes the !viewreports command.
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.
- * @param {import('../types.js').Dependencies} dependencies - Command dependencies.
+ * @param {import('../../types.js').Dependencies} dependencies - Command dependencies.
  * @returns {void}
  */
 export function execute(player, args, dependencies) {

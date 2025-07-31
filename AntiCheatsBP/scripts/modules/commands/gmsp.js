@@ -1,6 +1,6 @@
 import * as mc from '@minecraft/server';
 
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'gmsp',
     syntax: '[playername]',
@@ -12,7 +12,7 @@ export const definition = {
  * Executes the gmsp (gamemode spectator) command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;

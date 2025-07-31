@@ -1,4 +1,4 @@
-/** @type {import('../types.js').CommandDefinition} */
+/** @type {import('../../types.js').CommandDefinition} */
 export const definition = {
     name: 'kick',
     syntax: '<playername> [reason]',
@@ -10,7 +10,7 @@ export const definition = {
  * Executes the kick command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../../types.js').Dependencies} dependencies
  * @param {string} [invokedBy]
  * @param {boolean} [isAutoModAction]
  * @param {string | null} [autoModCheckType]
