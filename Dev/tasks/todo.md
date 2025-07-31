@@ -1,38 +1,34 @@
-# AntiCheat Addon Improvement Tasks
+# Todo List: Addon Improvements
 
-This file lists the tasks for improving the AntiCheat addon.
+This document outlines the tasks for improving our addon based on the analysis of SafeGuard and Scythe-Anticheat.
 
-## Code Quality and Maintainability
+## High Priority
 
-- [ ] **Add unit tests:**
-    - [ ] Write unit tests for critical components, such as the command manager and the configuration loader.
-    - [ ] Set up a continuous integration (CI) pipeline to run tests automatically.
+*   **[ ] Implement Function-Based Initialization:**
+    *   Create a setup function (e.g., `function setup/init`) that administrators must run to initialize the addon for the first time.
+    *   This function should create all necessary scoreboard objectives, dynamic properties, and default configurations.
+    *   Update the documentation to reflect this new setup process.
 
-## Performance
+## Medium Priority
 
-- [ ] **Provide performance guidance:**
-    - [ ] Document the performance impact of each check.
-    - [ ] Provide recommendations for configuring the addon for optimal performance.
+*   **[ ] Implement a Configuration Migration System:**
+    *   Create a system to automatically update user configurations when the addon is updated.
+    *   This system should be part of the initialization process and should check the config version.
+*   **[ ] Refactor Codebase for Modularity:**
+    *   Create a `loader.js` to handle initialization and module loading.
+    *   Separate command handlers, cheat detections, and utility functions into their own modules.
+    *   Use class extensions for `Player` and `Entity` to add custom methods.
+*   **[ ] Add a Watchdog Handler:**
+    *   Implement a `system.beforeEvents.watchdogTerminate` event listener to prevent script-related server crashes.
 
-## Usability
+## Low Priority
 
-- [ ] **Simplify configuration:**
-    - [ ] Create a user-friendly configuration guide.
-    - [ ] Provide a web-based configuration tool.
-- [ ] **Improve feedback to users:**
-    - [ ] Provide more informative error messages.
-    - [ ] Add a system for displaying in-game notifications.
-- [ ] **Add new features:**
-    - [ ] Add a command to view the current configuration.
-
-## Extensibility
-
-- [ ] **Create a developer API:**
-    - [ ] Define a clear and well-documented API for extending the addon.
-    - [ ] Provide examples of how to use the API.
-- [ ] **Improve documentation:**
-    - [ ] Create comprehensive documentation for all aspects of the addon.
-    - [ ] Provide tutorials and guides for common tasks.
-- [ ] **Create a plugin system:**
-    - [ ] Allow developers to create and share plugins that extend the addon's functionality.
-    - [ ] Create a marketplace for discovering and installing plugins.
+*   **[ ] Enhance Configuration Granularity:**
+    *   For each cheat detection, add options for `punishment`, `punishmentLength`, and `minVlbeforePunishment`.
+*   **[ ] Improve Cheat Detection Specificity:**
+    *   Break down general cheat detections into more specific checks (e.g., Killaura, Scaffold).
+*   **[ ] Expand Command System and UI:**
+    *   Add more utility commands (`invsee`, `vanish`, etc.).
+    *   Improve the UI to allow for in-game configuration editing.
+*   **[ ] Implement a Robust Flagging System:**
+    *   Create a centralized `flag()` function to record violations and handle punishments.
