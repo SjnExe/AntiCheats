@@ -26,6 +26,14 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
   - **Syntax:** `!testnotify`
   - **Description:** Sends a test admin notification to verify system functionality.
   - **Permission:** Owner
+- **`!reload`**
+  - **Syntax:** `!reload`
+  - **Description:** Reloads all script files and functions in behavior packs. This is useful for development to apply script changes without restarting the world.
+  - **Permission:** Owner
+- **`!restart`**
+  - **Syntax:** `!restart`
+  - **Description:** Reloads the entire world, including resource and behavior packs (`/reload all`).
+  - **Permission:** Owner
 
 ---
 
@@ -48,6 +56,10 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
 - **`!copyinv`** (Alias: `!ci`)
   - **Syntax:** `!copyinv <playerName>`
   - **Description:** Copies another player's inventory to your own (requires confirmation).
+  - **Permission:** Admin
+- **`!debug`**
+  - **Syntax:** `!debug <subcommand> [args...]`
+  - **Description:** Accesses debugging features and diagnostic information. Use `!debug help` for subcommands.
   - **Permission:** Admin
 - **`!endlock`** (Alias: `!el`)
   - **Syntax:** `!endlock <on|off|status>`
@@ -186,6 +198,10 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
   - **Syntax:** `!version`
   - **Description:** Displays the AntiCheat addon version.
   - **Permission:** Member
+- **`!spawn`**
+  - **Syntax:** `!spawn [set]`
+  - **Description:** Teleports you to the server spawn point. Admins can use `!spawn set` to update its location.
+  - **Permission:** Member (set requires Admin)
 
 ### TPA System Commands
 
@@ -213,6 +229,53 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     - `on`: Allow incoming TPA requests.
     - `off`: Block incoming TPA requests (auto-declines pending).
     - `status`: Shows if you are accepting TPA requests.
+  - **Permission:** Member
+
+### Economy System Commands
+
+*(Available if `economy.enabled` is true in `config.js`)*
+
+- **`!balance`**
+  - **Syntax:** `!balance`
+  - **Description:** Shows your current balance.
+  - **Permission:** Member
+- **`!baltop`**
+  - **Syntax:** `!baltop`
+  - **Description:** Shows the players with the highest balances.
+  - **Permission:** Member
+- **`!pay <playerName> <amount>`**
+  - **Syntax:** `!pay <playerName> <amount>`
+  - **Description:** Pays another player a specific amount from your balance.
+  - **Permission:** Member
+
+### Homes System Commands
+
+*(Available if `homes.enabled` is true in `config.js`)*
+
+- **`!sethome <name>`**
+  - **Syntax:** `!sethome <name>`
+  - **Description:** Sets a home at your current location.
+  - **Permission:** Member
+- **`!home <name>`**
+  - **Syntax:** `!home <name>`
+  - **Description:** Teleports you to one of your saved homes.
+  - **Permission:** Member
+- **`!delhome <name>`**
+  - **Syntax:** `!delhome <name>`
+  - **Description:** Deletes one of your homes.
+  - **Permission:** Member
+- **`!homes`**
+  - **Syntax:** `!homes`
+  - **Description:** Lists all of your currently set homes.
+  - **Permission:** Member
+
+### Kit System Commands
+
+*(Available if `kits.enabled` is true in `config.js`)*
+
+- **`!kit [name]`**
+  - **Syntax:** `!kit [name]`
+  - **Description:** Gives you a kit of items. If no name is provided, lists available kits.
   - **Permission:** Member
 
 ---

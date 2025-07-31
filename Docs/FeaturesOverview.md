@@ -186,7 +186,29 @@ The addon includes a comprehensive suite of chat checks to maintain a clean and 
   - Players can toggle their TPA acceptance status using `!tpastatus <on|off>`.
   - *Key Configs: `enableTpaSystem`, `tpaRequestTimeoutSeconds`, `tpaRequestCooldownSeconds`, `tpaTeleportWarmupSeconds`, `tpaCancelOnMoveDuringWarmup`, `tpaMovementTolerance`*
 
-### C. Player Information & Engagement
+### C. Economy System
+
+- A simple economy system that allows players to have balances and transfer money.
+- **Commands:** `!balance`, `!pay`, `!baltop`.
+- **New Player Balance:** New players start with a configurable amount of money.
+- *Key Configs: `economy.enabled`, `economy.startingBalance`*
+
+### D. Homes System
+
+- Allows players to set a limited number of "homes" they can teleport back to.
+- **Commands:** `!sethome`, `!home`, `!delhome`, `!homes`.
+- **Max Homes:** The maximum number of homes a player can set is configurable.
+- *Key Configs: `homes.enabled`, `homes.maxHomes`*
+
+### E. Kits System
+
+- Allows players to claim predefined kits of items.
+- **Commands:** `!kit`.
+- **Cooldowns:** Kits can have cooldowns to prevent them from being claimed too frequently.
+- **Customizable:** Kits are defined in `AntiCheatsBP/scripts/core/kits.js`.
+- *Key Configs: `kits.enabled`*
+
+### F. Player Information & Engagement
 
 - **Customizable Welcome Messages:** Greet players when they join the server.
   - *Key Configs: `enableWelcomerMessage`, `welcomeMessage`*
