@@ -7,7 +7,7 @@ export const commandFilePaths = new Map();
 export const commandDefinitionMap = new Map();
 export const commandExecutionMap = new Map();
 
-import * as commandFiles from '../commands/index.js';
+import * as commandFiles from '../modules/commands/index.js';
 
 function discoverCommands() {
     commandFilePaths.clear();
@@ -15,7 +15,7 @@ function discoverCommands() {
         const cmdModule = commandFiles[moduleKey];
         if (cmdModule?.definition?.name) {
             const commandName = cmdModule.definition.name.toLowerCase();
-            const filePath = `../commands/${moduleKey}.js`;
+            const filePath = `../modules/commands/${moduleKey}.js`;
             commandFilePaths.set(commandName, filePath);
         }
     }

@@ -2,7 +2,6 @@ import {
     system,
     world,
 } from '@minecraft/server';
-import './core/initializationManager.js';
 import {
     logError,
 } from './utils/playerUtils.js';

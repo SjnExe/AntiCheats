@@ -6,20 +6,20 @@ import { executeCheckAction } from './actionManager.js';
 import { automodConfig } from './automodConfig.js';
 import { processChatMessage } from './chatProcessor.js';
 import { checkActionProfiles } from './actionProfiles.js';
-import * as checks from '../checks/index.js';
+import * as checks from '../modules/detections/index.js';
 import {
     initializeCommands,
     getAllRegisteredCommandNames,
 } from './commandManager.js';
 import * as configModule from '../config.js';
 import * as playerDataManager from './playerDataManager.js';
-import * as playerUtils from '../utils/playerUtils.js';
+import * as playerUtils from '../modules/utils/playerUtils.js';
 import * as rankManager from './rankManager.js';
 import * as logManager from './logManager.js';
 import * as reportManager from './reportManager.js';
 import * as tpaManager from './tpaManager.js';
 import * as uiManager from './uiManager.js';
-import * as worldBorderManager from '../utils/worldBorderManager.js';
+import * as worldBorderManager from '../modules/utils/worldBorderManager.js';
 import * as configValidator from './configValidator.js';
 import * as homesManager from './homesManager.js';
 import * as kitsManager from './kitsManager.js';
