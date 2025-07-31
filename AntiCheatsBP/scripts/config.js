@@ -335,7 +335,15 @@ const defaultConfigSettings = {
         autoTool: { enabled: false, intervalTicks: 10 },
 
         // Movement
-        fly: { enabled: false, intervalTicks: 2 }, // High frequency needed
+        fly: {
+            enabled: false,
+            intervalTicks: 2,
+            /**
+             * The minimum vertical speed (Y-velocity) a player with Slow Falling must have to NOT be considered hovering.
+             * A negative value means they must be descending at least this fast. Default: -0.01
+             */
+            flyHoverSlowFallingMinVSpeed: -0.01,
+        }, // High frequency needed
         speed: { enabled: false, intervalTicks: 2 }, // High frequency needed
         nofall: { enabled: false, intervalTicks: 2 },
         noSlow: { enabled: false, intervalTicks: 2 },
