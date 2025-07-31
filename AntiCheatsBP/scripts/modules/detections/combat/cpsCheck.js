@@ -40,7 +40,6 @@ export async function checkCps(player, pData, dependencies) {
     }
 
     const maxThreshold = config.maxCpsThreshold ?? 20;
-    const actionProfileKey = config.cpsHighActionProfileName ?? 'combatCpsHigh';
 
     if (eventsInWindow > maxThreshold) {
         const violationDetails = {
@@ -48,6 +47,6 @@ export async function checkCps(player, pData, dependencies) {
             windowSeconds: (calculationWindowMs / 1000).toFixed(1),
             threshold: maxThreshold.toString(),
         };
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, "cps", violationDetails, dependencies);
     }
 }

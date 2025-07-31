@@ -80,9 +80,7 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
             playerGameMode: mc.GameMode[gameMode] ?? String(gameMode),
             firstEntityInView: firstEntity ? `${firstEntity.typeId} (ID: ${firstEntity.id})` : 'None',
         };
-        const actionProfileKey = config?.reachCheckActionProfileName ?? 'combatReachAttack';
-
-        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        await actionManager?.executeCheckAction(player, "reach", violationDetails, dependencies);
         playerUtils?.debugLog(`[ReachCheck] Flagged ${playerName} for reach. Reason: ${violationReason}. Distance: ${distanceToTarget.toFixed(3)}, Max: ${maxAllowedReach.toFixed(3)}.`, watchedPlayerName, dependencies);
     }
 }
