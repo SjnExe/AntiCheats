@@ -4,7 +4,7 @@ This document outlines the tasks for improving our addon based on the analysis o
 
 ## High Priority
 
-*   **[ ] Implement Function-Based Initialization:**
+*   **[x] Implement Function-Based Initialization:**
     *   Create a setup function (e.g., `function setup/init`) that administrators must run to initialize the addon for the first time.
     *   This function should create all necessary scoreboard objectives, dynamic properties, and default configurations.
     *   Update the documentation to reflect this new setup process.
