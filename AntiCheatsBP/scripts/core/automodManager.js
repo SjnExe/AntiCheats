@@ -68,9 +68,10 @@ function formatAutomodMessage(template, context) {
  * @param {import('../types.js').AutoModActionParameters & { flagThresholdInternal?: number }} parameters
  * @param {string} checkType
  * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../types.js').ViolationDetails} [violationDetails]
  * @returns {boolean} True if the action was processed, false otherwise.
  */
-function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
+function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies, violationDetails) {
     const { playerUtils, logManager, config: globalConfig, playerDataManager } = dependencies;
     const flagThresholdForRule = parameters.flagThresholdInternal || 0;
     playerUtils?.debugLog(`[AutoModManager] Dispatching action '${actionType}' for ${player?.nameTag} due to ${checkType}. Rule Params: ${JSON.stringify(parameters)}`, player?.nameTag, dependencies);
@@ -303,7 +304,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             reason: finalReasonForLog,
             details: logDetails,
             checkType,
-            actionParams: { ...parameters, flagCount },
+            actionParams: { ...parameters, flagCount, ...violationDetails },
         }, dependencies);
         const adminContext = { ...baseMessageContext };
         const finalAdminMessage = formatAutomodMessage(adminMessageTemplate, adminContext);
@@ -333,8 +334,9 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
  * @param {import('../types.js').PlayerAntiCheatData} pData
  * @param {string} checkType
  * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../types.js').ViolationDetails} [violationDetails]
  */
-export async function processAutoModActions(player, pData, checkType, dependencies) {
+export async function processAutoModActions(player, pData, checkType, dependencies, violationDetails) {
     const { config: globalConfig, playerUtils, automodConfig: moduleAutomodConfig } = dependencies;
     if (!globalConfig?.automod?.enabled) {
         return;
@@ -378,7 +380,7 @@ export async function processAutoModActions(player, pData, checkType, dependenci
     }
 
     const finalParameters = { ...(applicableRule.parameters || {}), flagThresholdInternal: applicableRule.flagThreshold };
-    const actionSuccess = await _executeAutomodAction(player, pData, applicableRule.actionType, finalParameters, checkType, dependencies);
+    const actionSuccess = await _executeAutomodAction(player, pData, applicableRule.actionType, finalParameters, checkType, dependencies, violationDetails);
 
     if (actionSuccess) {
         checkState.lastActionThreshold = applicableRule.flagThreshold;
