@@ -296,8 +296,11 @@ async function handlePlayerSpawn(eventData, dependencies) {
         }
 
         if (player.hasTag(config.playerTags.vanished)) {
-            player.addEffect(mc.MinecraftEffectTypes.invisibility, 2000000, { amplifier: 1, showParticles: false });
-            player.runCommandAsync('gamemode spectator');
+            const invisibilityEffect = mc.EffectTypes.get('invisibility');
+            if (invisibilityEffect) {
+                player.addEffect(invisibilityEffect, 2000000, { amplifier: 1, showParticles: false });
+            }
+            player.setGameMode(mc.GameMode.spectator);
         }
 
     } catch (error) {
