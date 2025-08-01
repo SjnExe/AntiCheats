@@ -523,15 +523,19 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     transient.isInsideWater = player.isInWater;
 
     if (!onGround) {
+        // If this is the first tick in the air, reset fallDistance for the new fall.
+        if (transient.ticksSinceLastOnGround === 0) {
+            pData.fallDistance = 0;
+        }
         pData.consecutiveOffGroundTicks = (pData.consecutiveOffGroundTicks || 0) + 1;
-        transient.ticksSinceLastOnGround++; // This can remain transient if not used elsewhere critically
+        transient.ticksSinceLastOnGround++;
         if (transient.isFalling) {
             pData.fallDistance = (pData.fallDistance || 0) - velocity.y;
         }
     } else {
         pData.consecutiveOffGroundTicks = 0;
         transient.ticksSinceLastOnGround = 0;
-        pData.fallDistance = 0;
+        // pData.fallDistance = 0; // REMOVED: No longer reset here.
         pData.lastOnGroundPosition = { ...player.location };
         pData.lastDimensionId = player.dimension.id; // Store dimension with ground position
 
