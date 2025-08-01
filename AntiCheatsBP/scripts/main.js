@@ -22,6 +22,9 @@ const periodicDataPersistenceIntervalTicks = 600;
 const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
 const tpaSystemTickInterval = 20;
 
+// Pre-calculate the sorted list of check names once on module load for efficiency.
+const checkNames = Object.keys(checks).sort();
+
 let currentTick = 0;
 
 export async function mainTick() {
@@ -106,16 +109,16 @@ async function processPlayer(player, dependencies, currentTick) {
     playerDataManager.updateTransientPlayerData(player, pData, dependencies);
     playerDataManager.clearExpiredItemUseStates(pData, dependencies);
 
-    const checkNames = Object.keys(checks).sort();
     const staggerTicks = config.checkStaggerTicks || 1;
-
     const playerNameHash = Array.from(player.name).reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0);
 
-    for (const checkName of checkNames) {
-        const checkIndex = checkNames.indexOf(checkName);
-        if ((currentTick + playerNameHash + checkIndex) % staggerTicks !== 0) {
+    for (let i = 0; i < checkNames.length; i++) {
+        const checkName = checkNames[i];
+        // Use the index 'i' directly for staggering, avoiding the expensive indexOf call.
+        if ((currentTick + playerNameHash + i) % staggerTicks !== 0) {
             continue;
         }
+
         const checkFunction = checks[checkName];
         if (typeof checkFunction !== 'function') {
             continue;
