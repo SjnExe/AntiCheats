@@ -30,9 +30,15 @@ let currentTick = 0;
 export async function mainTick() {
     try {
         if (!world.getDynamicProperty('ac:initialized')) {
+            // If not initialized, we still want to check again on the next tick.
+            system.run(mainTick);
             return;
         }
         await processTick();
+
+        // Schedule the next tick only after the current one has succeeded.
+        system.run(mainTick);
+
     } catch (e) {
         logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
         try {
@@ -47,8 +53,8 @@ export async function mainTick() {
         } catch (loggingError) {
             logError(`CRITICAL: Failed to write to structured log during top-level tick error: ${loggingError.message}`, loggingError);
         }
-    } finally {
-        system.run(mainTick);
+        // NOTE: The tick loop is intentionally NOT rescheduled here to prevent runaway error loops.
+        // The server admin must investigate the error and restart the server/addon.
     }
 }
 
