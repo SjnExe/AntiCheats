@@ -113,6 +113,13 @@ async function processPlayer(player, dependencies, currentTick) {
         pData.isTakingFallDamage = false;
         pData.isDirtyForSave = true;
     }
+    // If the player had a recorded fall distance from a previous tick and is now on the ground,
+    // reset the distance. This ensures the value from a fall is available for the entire tick
+    // on which the player lands, and is then cleared for the next tick.
+    if (pData.fallDistance > 0 && player.isOnGround) {
+        pData.fallDistance = 0;
+        pData.isDirtyForSave = true;
+    }
 
     playerDataManager.updateTransientPlayerData(player, pData, dependencies);
     playerDataManager.clearExpiredItemUseStates(pData, dependencies);

@@ -64,6 +64,15 @@ Below are links to specific sections particularly relevant for Add-On developmen
   - [https://bedrock.dev/](https://bedrock.dev/)
   - A community-driven documentation website for Minecraft Bedrock Edition. It provides detailed information on various aspects of addon development, including blocks, items, entities, and more.
 
+## Performance Profiling
+
+To help identify potential bottlenecks, the addon includes a basic performance profiling feature.
+
+- **Enable:** Set `enablePerformanceProfiling: true` in `AntiCheatsBP/scripts/config.js`.
+- **Logging:** When enabled, aggregated performance data for the main tick loop, individual checks, and event handlers will be logged periodically to the server console/logs (via `playerUtils.debugLog` with a `PerformanceProfile` tag).
+- **Usage:** This data can help developers pinpoint specific areas that might be consuming more resources than expected. It's recommended to only enable this for temporary debugging sessions, as continuous profiling can itself have a minor performance overhead.
+- **Configuration:** The logging interval can be adjusted with `logPerformanceProfileIntervalTicks` in the config.
+
 ## Community Anti-Cheat Projects & Resources
 
 These are community-driven open-source anti-cheat projects that serve as excellent examples and learning resources:

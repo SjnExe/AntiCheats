@@ -43,7 +43,7 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 
 - **Scripting Power:** Built entirely with the Minecraft Scripting API, offering flexibility and complex detection logic not always possible with traditional methods.
 - **Comprehensive Detection:** A wide array of checks covering movement, combat, world interactions, and player exploits.
-- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`!panel`) and extensive text commands.
+- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`!panel`) and extensive text commands. The `!ui` command is a convenient alias.
 - **Highly Customizable:** Fine-tune almost every aspect, from detection sensitivity to automated actions, to perfectly suit your server's needs.
 - **Active Development:** Continuously updated with new features, improvements, and compatibility for the latest Minecraft versions.
 - **Open & Documented:** With clear documentation and an open codebase, understand how it works and even contribute!
@@ -63,20 +63,19 @@ This addon is packed with features to keep your server clean:
   - **Player Behavior:** Anti-Gamemode Creative (AntiGMC), NameSpoof, Self-Hurt, Inventory Modifications.
   - **Chat:** Spam (fast message, max words, content repeat), Swear/Advertising filtering, CAPS/Symbol abuse, Unicode abuse, Impersonation.
 - 🛠️ **Powerful Admin & Moderation Tools:**
-  - Intuitive in-game UI (`!panel` or `!ui`) for player management, server settings, and log viewing.
-  - Extensive text commands for all administrative functions.
+  - Intuitive in-game UI (`!panel` or its alias `!ui`) for player management, server settings, and log viewing.
+  - Extensive text commands for all administrative functions (Note: the `!` prefix is configurable).
 - 💾 **Persistent Player Data Management:**
   - Flags, violation records, mutes, and bans are saved across player sessions using dynamic properties.
 - ⚙️ **Highly Configurable System:**
-  - Fine-tune detection sensitivity, toggle checks, and customize actions via `config.js`.
-  - Detailed action profiles in `actionProfiles.js` to control immediate consequences of detections.
+  - Fine-tune detection sensitivity, toggle checks, and customize actions via configuration files.
   - In-game UI settings for many common configurations.
 - 🤖 **Automated Moderation (AutoMod):**
-  - Define escalating punishments (warn, kick, mute, ban) based on accumulated flag counts for specific cheat types via `automodConfig.js`.
+  - Define escalating punishments (warn, kick, mute, ban) based on accumulated flag counts.
 - 🗺️ **Dynamic World Border System:**
-  - Per-dimension, resizable (square or circle) borders with visual cues and configurable damage for out-of-bounds players.
+  - Per-dimension, resizable (square or circle) borders with visual cues and configurable damage.
 - 🏅 **Flexible Rank System:**
-  - Define Owner, Admin, Member, and custom roles with specific permissions and visual chat/nametag prefixes via `ranksConfig.js`.
+  - Define Owner, Admin, Member, and custom roles with specific permissions and visual chat/nametag prefixes.
 - 📞 **Teleport Request System (TPA/TPAHere):**
   - Allows players to request teleports to others or summon others, with configurable cooldowns and warmup periods.
 - 📝 **Reporting System:**
@@ -98,18 +97,19 @@ Get up and running in minutes!
 2. **Install:** Apply both `AntiCheatsBP` (Behavior Pack) and `AntiCheatsRP` (Resource Pack) to your world.
 3. **Enable Beta APIs (CRITICAL!):**
    - In your world settings, go to the "Experiments" section.
-   - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features (as specified in its `manifest.json`) and will not function correctly with all features without this setting enabled.
+   - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function correctly without this setting enabled.
 4. **Initialize the Addon (CRITICAL!):**
    - Once in your world, run the command `/function ac`.
-   - This command initializes the addon, sets up necessary components, and must be run for the AntiCheat to work.
+   - This command initializes the addon and sets up necessary components. It must be run for the AntiCheat to work.
 5. **Prioritize:** Ensure `AntiCheatsBP` is at the **TOP** of your behavior pack list. This is crucial for the AntiCheat to function correctly.
 6. **👑 Set Owner (CRUCIAL!):**
-   - Open `AntiCheatsBP/scripts/config.js`. (Note: `.mcaddon` files are zip archives; you may need to rename to `.zip` or use an archive tool to access the contents if editing manually.)
-   - Set `ownerPlayerName` to your **exact** in-game name (case-sensitive). This grants you full control!
+   - Access the addon files. If you downloaded the `.mcaddon`, you may need to rename it to `.zip` to extract the contents.
+   - Open `AntiCheatsBP/scripts/config.js` in a text editor.
+   - Set `ownerPlayerName` to your **exact** in-game name (case-sensitive).
+   - **Failure to set an owner will result in no player having administrative permissions**, making it impossible to manage the addon.
 7. **🎮 Explore:** Join your world and type `!panel` (or `!ui`) to open the Admin UI.
 8. **🔧 Configure (Optional but Recommended):**
-   - Review other core settings (admin tag, command prefix, etc.) in `AntiCheatsBP/scripts/config.js`.
-   - Explore the in-game settings panel (`!panel`) for more specific check configurations.
+   - Review `AntiCheatsBP/scripts/config.js` for other core settings (like the command `prefix`).
    - For detailed setup and advanced options, visit our [**Setup and Configuration Guide**](Docs/ConfigurationGuide.md).
 
 <details>
@@ -144,22 +144,11 @@ All detailed information has been moved to our `Docs` folder for clarity:
 
 ---
 
-## Performance Considerations & Profiling
+## Performance Considerations
 
-This addon is designed to be as lightweight as possible. However, like any complex system:
+This addon is designed to be as lightweight as possible. However, performance can be influenced by the number of checks enabled, their sensitivity, and the server's player count. We recommend starting with default configurations and adjusting based on your server's needs.
 
-- The number of checks enabled and their sensitivity can influence server performance.
-- Very high player counts on servers with limited resources might see a slight impact.
-
-We recommend starting with default configurations and adjusting based on your server's specific needs and performance characteristics.
-
-**Performance Profiling:**
-To help identify potential bottlenecks, the addon includes a basic performance profiling feature.
-
-- **Enable:** Set `enablePerformanceProfiling: true` in `AntiCheatsBP/scripts/config.js`.
-- **Logging:** When enabled, aggregated performance data for the main tick loop, individual checks, and event handlers will be logged periodically to the server console/logs (via `playerUtils.debugLog` with a `PerformanceProfile` tag).
-- **Usage:** This data can help developers pinpoint specific areas that might be consuming more resources than expected. It's recommended to only enable this for temporary debugging sessions, as continuous profiling can itself have a minor performance overhead.
-- **Configuration:** The logging interval can be adjusted with `logPerformanceProfileIntervalTicks` in the config.
+For developers, the addon includes a basic performance profiling feature that can be enabled in `config.js` to help identify potential bottlenecks. For more details, see the [**Developer README**](Dev/README.md).
 
 ---
 
@@ -173,9 +162,9 @@ Contributions are highly welcome and appreciated! Help us make this addon even b
 - **Document Changes:** Update relevant documentation in the `Docs` folder if you add or modify features.
 - **Pull Request:** Submit your changes for review. Explain what you've changed and why.
 
-Looking for a place to start? Check out our [**issues tab**](https://github.com/SjnExe/AntiCheats/issues) – we often tag issues that are great for new contributors (e.g., `good first issue` or `help wanted` when available).
+Looking for a place to start? Check out our [**issues tab**](https://github.com/SjnExe/AntiCheats/issues) – we often tag issues that are great for new contributors.
 
-➡️ For more on development processes and resources, see 📄 [**Addon Development Resources**](Dev/README.md).
+➡️ For more on development processes, see our [**Developer README**](Dev/README.md).
 
 ---
 
@@ -184,8 +173,6 @@ Looking for a place to start? Check out our [**issues tab**](https://github.com/
 This project is made possible by the community and all the developers who dedicate their time to contribute. We are incredibly grateful for every contribution, from reporting issues and suggesting new ideas to writing code and improving documentation.
 
 ➡️ You can see a list of code contributors on [**GitHub**](https://github.com/SjnExe/AntiCheats/graphs/contributors).
-
-If you're interested in helping, please see our [**Contributing section above**](#-contributing) and the [**Addon Development Resources**](Dev/README.md)!
 
 ---
 
