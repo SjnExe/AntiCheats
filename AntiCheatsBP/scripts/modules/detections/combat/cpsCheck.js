@@ -40,13 +40,15 @@ export async function checkCps(player, pData, dependencies) {
     }
 
     const maxThreshold = config.maxCpsThreshold ?? 20;
+    const actionProfileKey = config?.cpsCheckActionProfileName ?? 'combatCpsHigh';
 
     if (eventsInWindow > maxThreshold) {
         const violationDetails = {
-            cpsCount: eventsInWindow.toString(),
+            cpsCount: eventsInWindow,
             windowSeconds: (calculationWindowMs / 1000).toFixed(1),
-            threshold: maxThreshold.toString(),
+            threshold: maxThreshold,
         };
-        await dependencies.flagManager.flag(player, 'cps', violationDetails, dependencies);
+        await dependencies.actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        playerUtils.debugLog(`[CpsCheck] Flagged ${player.name} for high CPS. Count: ${eventsInWindow}, Threshold: ${maxThreshold}`, watchedPrefix, dependencies);
     }
 }

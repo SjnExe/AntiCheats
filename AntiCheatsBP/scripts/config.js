@@ -22,6 +22,8 @@ const defaultConfigSettings = {
     enableDebugLogging: false,
     /** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
     prefix: '!',
+    /** @type {boolean} If true, admins will receive AntiCheat notifications by default. They can opt-out with a command. */
+    acGlobalNotificationsDefaultOn: true,
 
     /** @type {object} Settings related to debugging and performance profiling. */
     development: {
@@ -324,11 +326,11 @@ const defaultConfigSettings = {
     /** @type {object} Master toggles for various check categories. */
     checks: {
         // Combat
-        reach: { enabled: false, intervalTicks: 4, punishment: 'none', punishmentLength: '', minVlbeforePunishment: 1 }, // Frequent, but not every tick
-        cps: { enabled: false, intervalTicks: 20, punishment: 'none', punishmentLength: '', minVlbeforePunishment: 1 }, // Measured over 1 second (20 ticks)
+        reach: { enabled: false, intervalTicks: 4 }, // Frequent, but not every tick
+        cps: { enabled: false, intervalTicks: 20 }, // Measured over 1 second (20 ticks)
         viewSnap: { enabled: false, intervalTicks: 5 },
         multiTarget: { enabled: false, intervalTicks: 5 },
-        killauraMultiAura: { enabled: false, intervalTicks: 20, punishment: 'none', punishmentLength: '', minVlbeforePunishment: 1, windowMs: 1000, maxTargets: 3 },
+        killauraMultiAura: { enabled: false, intervalTicks: 20, windowMs: 1000, maxTargets: 3 },
         killauraNoSwing: { enabled: false, intervalTicks: 1 },
         killauraAttackWhileUsingItem: { enabled: false, intervalTicks: 1 },
         selfHurt: { enabled: false, intervalTicks: 4 },

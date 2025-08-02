@@ -54,7 +54,6 @@ export const rankDefinitions = [
     {
         id: 'owner',
         name: 'Owner',
-        priority: 0,
         permissionLevel: 0,
         chatFormatting: {
             prefixText: '§8[§cOwner§8] ',
@@ -69,7 +68,6 @@ export const rankDefinitions = [
     {
         id: 'admin',
         name: 'Admin',
-        priority: 10,
         permissionLevel: 1,
         chatFormatting: {
             prefixText: '§8[§bAdmin§8] ',
@@ -85,7 +83,6 @@ export const rankDefinitions = [
     {
         id: 'member',
         name: 'Member',
-        priority: 1000,
         permissionLevel: defaultPermissionLevel,
         chatFormatting: defaultChatFormatting,
         nametagPrefix: defaultNametagPrefix,

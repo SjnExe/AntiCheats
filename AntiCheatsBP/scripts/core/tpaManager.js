@@ -12,6 +12,8 @@ const defaultTpaRequestTimeoutSeconds = 60;
 const defaultTpaTeleportWarmupSeconds = 5;
 const defaultTpaMovementTolerance = 0.5;
 
+const tpaStatePropertyKey = 'anticheat:tpaState';
+
 /**
  * @typedef {import('../types.js').TpaRequest} TpaRequest
  * @typedef {import('../types.js').CommandDependencies} CommandDependencies
@@ -20,10 +22,6 @@ const defaultTpaMovementTolerance = 0.5;
 
 /** @type {Map<string, TpaRequest>} */
 const activeRequests = new Map(); // Stores active TPA requests, keyed by requestId.
-/** @type {Map<string, number>} */
-const lastPlayerRequestTimestamp = new Map(); // Stores last request time for cooldowns, keyed by player name.
-/** @type {Map<string, PlayerTpaStatus>} */
-const playerTpaStatuses = new Map(); // Stores player TPA acceptance status, keyed by player name.
 
 function generateRequestId() {
     // Simple UUID v4 like generator
@@ -42,19 +40,24 @@ function generateRequestId() {
  * @returns {import('../types.js').TpaRequest|{error: string, remaining?: number}}
  */
 export function addRequest(requester, target, type, dependencies) {
-    const { config, playerUtils, logManager } = dependencies; // Removed getString
+    const { config, playerUtils, logManager, playerDataManager } = dependencies;
     const now = Date.now();
     const requesterName = requester?.nameTag ?? 'UnknownRequester';
     const targetName = target?.nameTag ?? 'UnknownTarget';
 
-    if (lastPlayerRequestTimestamp.has(requester.name)) {
-        const elapsedTime = now - (lastPlayerRequestTimestamp.get(requester.name) ?? 0);
-        const cooldownMs = (config?.tpa?.requestCooldownSeconds ?? defaultTpaRequestCooldownSeconds) * 1000;
-        if (elapsedTime < cooldownMs) {
-            const remainingSeconds = Math.ceil((cooldownMs - elapsedTime) / 1000);
-            playerUtils?.debugLog(`[TpaManager.addRequest] Cooldown for ${requesterName}. Remaining: ${remainingSeconds}s`, requesterName, dependencies);
-            return { error: 'cooldown', remaining: remainingSeconds };
-        }
+    const pData = playerDataManager.getPlayerData(requester.id);
+    if (!pData) {
+        // This case should ideally not happen if the command framework ensures pData exists.
+        logManager.addLog({ actionType: 'error.tpa.addRequest.noPData', context: 'TpaManager.addRequest', targetName: requesterName }, dependencies);
+        return { error: 'internalError' };
+    }
+
+    const elapsedTime = now - (pData.tpaCooldownTimestamp ?? 0);
+    const cooldownMs = (config?.tpa?.requestCooldownSeconds ?? defaultTpaRequestCooldownSeconds) * 1000;
+    if (elapsedTime < cooldownMs) {
+        const remainingSeconds = Math.ceil((cooldownMs - elapsedTime) / 1000);
+        playerUtils?.debugLog(`[TpaManager.addRequest] Cooldown for ${requesterName}. Remaining: ${remainingSeconds}s`, requesterName, dependencies);
+        return { error: 'cooldown', remaining: remainingSeconds };
     }
 
     const requestId = generateRequestId();
@@ -76,7 +79,8 @@ export function addRequest(requester, target, type, dependencies) {
     };
 
     activeRequests.set(requestId, request);
-    lastPlayerRequestTimestamp.set(requester.name, now);
+    pData.tpaCooldownTimestamp = now;
+    pData.isDirtyForSave = true;
     playerUtils?.debugLog(`[TpaManager.addRequest] Added request ${requestId}: ${requesterName} -> ${targetName}, type: ${type}`, requesterName, dependencies);
     logManager?.addLog({ actionType: 'tpaRequestSent', targetName, adminName: requesterName, details: `Type: ${type}, ID: ${requestId}` }, dependencies);
     return request;
@@ -377,28 +381,90 @@ export function clearExpiredRequests(dependencies) {
 }
 
 /**
- * @param {string} playerName
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
  * @returns {import('../types.js').PlayerTpaStatus}
  */
-export function getPlayerTpaStatus(playerName) {
-    if (!playerTpaStatuses.has(playerName)) {
-        return { playerName, acceptsTpaRequests: true, lastTpaToggleTimestamp: 0 }; // Default to accepting
+export function getPlayerTpaStatus(player, dependencies) {
+    const { playerDataManager } = dependencies;
+    const pData = playerDataManager.getPlayerData(player.id);
+
+    if (!pData) {
+        // Fallback for cases where pData might not be available, maintain default behavior
+        return { playerName: player.name, acceptsTpaRequests: true, lastTpaToggleTimestamp: 0 };
     }
-    return playerTpaStatuses.get(playerName);
+
+    return {
+        playerName: player.name,
+        acceptsTpaRequests: pData.tpaAcceptsRequests ?? true,
+        lastTpaToggleTimestamp: 0, // This property is no longer tracked for persistence.
+    };
 }
 
 /**
- * @param {string} playerName
+ * @param {import('@minecraft/server').Player} player
  * @param {boolean} accepts
  * @param {import('../types.js').CommandDependencies} dependencies
  */
-export function setPlayerTpaStatus(playerName, accepts, dependencies) {
-    const { playerUtils, logManager } = dependencies;
-    /** @type {PlayerTpaStatus} */
-    const status = { playerName, acceptsTpaRequests: accepts, lastTpaToggleTimestamp: Date.now() };
-    playerTpaStatuses.set(playerName, status);
-    playerUtils?.debugLog(`[TpaManager.setPlayerTpaStatus] ${playerName} TPA status set to: ${accepts}`, playerName, dependencies);
-    logManager?.addLog({ actionType: 'tpaStatusSet', targetName: playerName, details: `Accepts TPA: ${accepts}` }, dependencies);
+export function setPlayerTpaStatus(player, accepts, dependencies) {
+    const { playerUtils, logManager, playerDataManager } = dependencies;
+    const pData = playerDataManager.getPlayerData(player.id);
+
+    if (!pData) {
+        logManager.addLog({ actionType: 'error.tpa.setStatus.noPData', context: 'TpaManager.setPlayerTpaStatus', targetName: player.nameTag }, dependencies);
+        return;
+    }
+
+    pData.tpaAcceptsRequests = accepts;
+    pData.isDirtyForSave = true;
+
+    playerUtils?.debugLog(`[TpaManager.setPlayerTpaStatus] ${player.name} TPA status set to: ${accepts}`, player.name, dependencies);
+    logManager?.addLog({ actionType: 'tpaStatusSet', targetName: player.name, details: `Accepts TPA: ${accepts}` }, dependencies);
+}
+
+/**
+ * Loads the active TPA requests from world dynamic properties.
+ * @param {import('../types.js').CommandDependencies} dependencies
+ */
+export function loadTpaState(dependencies) {
+    const { mc, playerUtils } = dependencies;
+    try {
+        const serializedState = mc.world.getDynamicProperty(tpaStatePropertyKey);
+        if (typeof serializedState === 'string' && serializedState.length > 0) {
+            const loadedRequests = JSON.parse(serializedState);
+            if (Array.isArray(loadedRequests)) {
+                const now = Date.now();
+                let validRequestCount = 0;
+                // Clear current map just in case this is a reload
+                activeRequests.clear();
+                for (const req of loadedRequests) {
+                    // Basic validation and expiry check
+                    if (req.requestId && (req.expiryTimestamp > now || req.warmupExpiryTimestamp > now)) {
+                        activeRequests.set(req.requestId, req);
+                        validRequestCount++;
+                    }
+                }
+                playerUtils.debugLog(`[TpaManager] Loaded ${validRequestCount} active TPA requests from storage.`, 'System', dependencies);
+            }
+        }
+    } catch (e) {
+        logError(`[TpaManager] Failed to load TPA state: ${e?.message}`, e);
+    }
+}
+
+/**
+ * Persists the active TPA requests to world dynamic properties.
+ * @param {import('../types.js').CommandDependencies} dependencies
+ */
+export function persistTpaState(dependencies) {
+    const { mc } = dependencies;
+    try {
+        // Convert map values to an array for serialization
+        const requestsToSave = Array.from(activeRequests.values());
+        mc.world.setDynamicProperty(tpaStatePropertyKey, JSON.stringify(requestsToSave));
+    } catch (e) {
+        logError(`[TpaManager] Failed to persist TPA state: ${e?.message}`, e);
+    }
 }
 
 /** @returns {import('../types.js').TpaRequest[]} */

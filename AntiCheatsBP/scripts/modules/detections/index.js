@@ -45,3 +45,5 @@ export * from './chat/checkUnicodeAbuse.js';
 export * from './chat/checkGibberish.js';
 export * from './chat/checkExcessiveMentions.js';
 export * from './chat/checkSimpleImpersonation.js';
+export * from './chat/checkNewline.js';
+export * from './chat/checkMaxLength.js';

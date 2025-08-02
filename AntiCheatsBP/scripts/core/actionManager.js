@@ -168,7 +168,7 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
 }
 
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
-    const { playerUtils, checkActionProfiles, config, playerDataManager } = dependencies;
+    const { playerUtils, checkActionProfiles, config } = dependencies;
     const playerNameForLog = player?.name ?? 'System';
     const checkConfig = config.checks[checkType];
 
@@ -191,34 +191,8 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies);
     _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies);
 
-    if (player) {
-        const pData = playerDataManager.getPlayerData(player.id);
-        if (!pData) return; // Guard against missing pData
-
-        const flagData = pData.flags?.[checkType];
-        const flagCount = flagData ? flagData.count : 0;
-
-        // Ensure minVlbeforePunishment is a valid number before comparing
-        const minVl = typeof checkConfig.minVlbeforePunishment === 'number' ? checkConfig.minVlbeforePunishment : -1;
-
-        if (minVl > 0 && flagCount >= minVl) {
-            switch (checkConfig.punishment) {
-                case 'kick':
-                    player.kick(flagReasonMessage);
-                    break;
-                case 'ban':
-                    playerDataManager.addPlayerStateRestriction(player, pData, 'ban', Infinity, flagReasonMessage, 'ActionManager', true, checkType, dependencies);
-                    // It's good practice to kick the player after banning them
-                    player.kick(flagReasonMessage);
-                    break;
-                case 'mute':
-                    {
-                        const durationString = checkConfig.punishmentLength || '10m';
-                        const durationMs = dependencies.playerUtils.parseDuration(durationString);
-                        playerDataManager.addPlayerStateRestriction(player, pData, 'mute', durationMs, flagReasonMessage, 'ActionManager', true, checkType, dependencies);
-                    }
-                    break;
-            }
-        }
-    }
+    // Deprecated Punishment System (2024-07-29): The punishment logic has been centralized in automodManager.
+    // The old system of defining `punishment` and `minVlbeforePunishment` directly in the `config.js` `checks` object
+    // is now obsolete. All automated actions should be configured in `automodConfig.js`.
+    // This ensures a single, consistent, and tiered response system.
 }

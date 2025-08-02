@@ -16,6 +16,7 @@ const {
     rankManager,
     worldBorderManager,
     configValidator,
+    tpaManager,
 } = dependencies;
 
 function subscribeToEvents() {
@@ -60,6 +61,7 @@ function initializeModules() {
     logManager.initializeLogCache(dependencies);
     reportManager.initializeReportCache(dependencies);
     rankManager.initializeRanks(dependencies);
+    tpaManager.loadTpaState(dependencies);
 
     if (config.enableWorldBorderSystem) {
         const knownDims = config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];

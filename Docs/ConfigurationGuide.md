@@ -43,8 +43,9 @@ This file is extensively commented and allows you to customize a wide range of s
   - `enablePerformanceProfiling`: Toggle for collecting and logging performance metrics. Useful for identifying bottlenecks. (Default: `false`)
   - `logPerformanceProfileIntervalTicks`: How often to log performance data if `enablePerformanceProfiling` is true. (Default: `1200` ticks / 60 seconds)
 - **Cheat Detection Parameters:**
-  - Enable/disable individual cheat checks (e.g., `enableFlyCheck`, `enableReachCheck`).
-  - Adjust sensitivity, thresholds, and specific conditions for many detections (e.g., `maxCpsThreshold`, `reachDistanceSurvival`, `flySustainedVerticalSpeedThreshold`).
+  - Enable or disable individual cheat checks (e.g., `enableFlyCheck: true`).
+  - Adjust detection-specific values, such as check intervals (e.g., `intervalTicks: 4`).
+  - **Note:** This section is for *detection* parameters only. The actions taken upon detection (flagging, punishments) are configured in `actionProfiles.js` and `automodConfig.js`. The legacy system of defining punishments directly in `config.js` has been removed.
 - **Behavioral Settings:**
   - Messages for welcomer, death coordinates, etc.
   - Default settings for features like World Border damage or AutoMod mute durations.

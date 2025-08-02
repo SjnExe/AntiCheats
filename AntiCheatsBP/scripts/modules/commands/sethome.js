@@ -14,7 +14,7 @@ export const definition = {
  * @param {string[]} args
  * @param {import('../../types.js').Dependencies} dependencies
  */
-export function execute(player, args, dependencies) {
+export async function execute(player, args, dependencies) {
     const { config, playerUtils, getString } = dependencies;
 
     if (!config.homes?.enabled) {

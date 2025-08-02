@@ -175,6 +175,7 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
     }
     await logManager.persistLogCacheToDisk(dependencies);
     reportManager.persistReportsToDisk(dependencies);
+    tpaManager.persistTpaState(dependencies);
 }
 
 function tpaTick(dependencies) {
