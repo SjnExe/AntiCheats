@@ -103,6 +103,8 @@
  * @property {boolean} [isWatched=false] If detailed logging is active.
  * @property {PlayerMuteInfo|null} [muteInfo] Current mute status.
  * @property {PlayerBanInfo|null} [banInfo] Current ban status.
+ * @property {boolean} [tpaAcceptsRequests=true] If the player accepts TPA requests.
+ * @property {number} [tpaCooldownTimestamp=0] Timestamp of the last TPA request sent.
  * @property {PlayerFlagData} flags Accumulated violation flags.
  * @property {string} [lastFlagType] The type of the most recent flag.
  * @property {object} [lastViolationDetailsMap] Details of the last violation for specific checks.

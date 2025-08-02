@@ -180,6 +180,13 @@ function getDefaultInteractionState() {
     };
 }
 
+function getDefaultTpaState() {
+    return {
+        tpaAcceptsRequests: true,
+        tpaCooldownTimestamp: 0,
+    };
+}
+
 function getDefaultTransientState(playerLike) {
     return {
         lastVelocity: { x: 0, y: 0, z: 0 },
@@ -211,6 +218,7 @@ export function initializeDefaultPlayerData(playerLike, currentTick) {
         ...getDefaultMovementState(playerLike, now),
         ...getDefaultCombatState(),
         ...getDefaultInteractionState(),
+        ...getDefaultTpaState(),
         transient: getDefaultTransientState(playerLike),
     };
 }
