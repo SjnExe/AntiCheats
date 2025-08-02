@@ -531,10 +531,6 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     transient.isInsideWater = player.isInWater;
 
     if (!onGround) {
-        // If this is the first tick in the air, reset fallDistance for the new fall.
-        if (transient.ticksSinceLastOnGround === 0) {
-            pData.fallDistance = 0;
-        }
         pData.consecutiveOffGroundTicks = (pData.consecutiveOffGroundTicks || 0) + 1;
         transient.ticksSinceLastOnGround++;
         if (transient.isFalling) {
