@@ -533,8 +533,8 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         }
     } else {
         // Player is on the ground now.
-        // The final fallDistance from the flight is preserved for this tick's checks, then reset.
-        pData.fallDistance = 0;
+        // The final fallDistance from the flight is preserved for this tick's checks.
+        // It is reset at the beginning of the next tick in the main tick loop.
         pData.consecutiveOffGroundTicks = 0;
         transient.ticksSinceLastOnGround = 0;
         pData.lastOnGroundPosition = { ...player.location };
