@@ -38,34 +38,40 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
         ...violationDetails,
     };
 
-    const replacer = (key, value) => {
-        if (typeof value === 'string') {
-            return value.replace(/{(\w+)}/g, (placeholder, placeholderKey) => {
-                const replacementValue = replacements[placeholderKey];
-                if (replacementValue !== undefined) {
-                    if (typeof replacementValue === 'number' && !Number.isInteger(replacementValue)) {
-                        return replacementValue.toFixed(decimalPlacesForViolationDetails);
-                    }
-                    return String(replacementValue);
+    const performReplacement = (text) => {
+        if (typeof text !== 'string') return text;
+        return text.replace(/{(\w+)}/g, (placeholder, placeholderKey) => {
+            const replacementValue = replacements[placeholderKey];
+            if (replacementValue !== undefined) {
+                if (typeof replacementValue === 'number' && !Number.isInteger(replacementValue)) {
+                    return replacementValue.toFixed(decimalPlacesForViolationDetails);
                 }
-                return placeholder;
-            });
-        }
-        return value;
+                return String(replacementValue);
+            }
+            return placeholder;
+        });
     };
 
-    if (typeof template === 'string') {
-        return replacer(null, template);
-    }
+    const deepFormat = (data) => {
+        if (typeof data === 'string') {
+            return performReplacement(data);
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => deepFormat(item));
+        }
+        if (typeof data === 'object' && data !== null) {
+            const newObj = {};
+            for (const key in data) {
+                if (Object.prototype.hasOwnProperty.call(data, key)) {
+                    newObj[key] = deepFormat(data[key]);
+                }
+            }
+            return newObj;
+        }
+        return data; // Return numbers, booleans, null, etc. as is
+    };
 
-    if (typeof template === 'object' && template !== null) {
-        // Effective for deep replacement: stringify, replace, then parse back.
-        let templateString = JSON.stringify(template);
-        templateString = replacer(null, templateString);
-        return JSON.parse(templateString);
-    }
-
-    return template; // Should not happen with current profiles
+    return deepFormat(template);
 }
 
 /**
