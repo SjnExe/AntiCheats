@@ -79,16 +79,15 @@ async function processTick() {
         }
     }
 
-    const activePlayerData = playerDataManager.getActivePlayers();
-    for (const pData of activePlayerData) {
-        const player = world.getPlayer(pData.playerId);
-        if (player) {
-            await processPlayer(player, dependencies, currentTick);
-        }
+    const onlinePlayers = world.getAllPlayers();
+    for (const player of onlinePlayers) {
+        // processPlayer already handles invalid players, so we can just call it directly.
+        // This ensures every online player is processed every tick, fixing the race condition.
+        await processPlayer(player, dependencies, currentTick);
     }
 
     if (currentTick % periodicDataPersistenceIntervalTicks === 0) {
-        const onlinePlayers = world.getAllPlayers();
+        // We can reuse the onlinePlayers list from the loop above.
         await handlePeriodicDataPersistence(onlinePlayers, dependencies);
     }
 
