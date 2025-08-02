@@ -61,6 +61,17 @@ function formatAutomodMessage(template, context) {
     }
     return message;
 }
+function _resetCheckFlags(pData, checkType, flagData, dependencies) {
+    const { playerUtils } = dependencies;
+    if (flagData) {
+        pData.flags.totalFlags = Math.max(0, (pData.flags.totalFlags || 0) - flagData.count);
+        flagData.count = 0;
+    }
+    pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0, lastActionedFlagCount: 0 };
+    pData.isDirtyForSave = true;
+    playerUtils?.debugLog(`[AutoModManager] Reset flags for ${checkType} on ${pData.playerNameTag}.`, pData.playerNameTag, dependencies);
+}
+
 /**
  * @param {import('@minecraft/server').Player} player
  * @param {import('../types.js').PlayerAntiCheatData} pData
@@ -402,12 +413,7 @@ export async function processAutoModActions(player, pData, checkType, dependenci
 
         if (applicableRule.resetFlagsAfterAction) {
             playerUtils?.debugLog(`[AutoModManager] Resetting flags for ${checkType} on ${player?.nameTag} as per rule (Threshold: ${applicableRule.flagThreshold}, Action: ${applicableRule.actionType}).`, player?.nameTag, dependencies);
-            if (flagData) {
-                pData.flags.totalFlags = Math.max(0, (pData.flags.totalFlags || 0) - flagData.count);
-                flagData.count = 0;
-                pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0, lastActionedFlagCount: 0 };
-            }
-            pData.isDirtyForSave = true;
+            _resetCheckFlags(pData, checkType, flagData, dependencies);
         }
     }
 
@@ -417,12 +423,7 @@ export async function processAutoModActions(player, pData, checkType, dependenci
         if (lastFlagTime > 0 && (now - lastFlagTime) > (ruleSet.resetFlagsAfterSeconds * 1000)) {
             if (checkState.lastActionTimestamp <= lastFlagTime || flagData.count === 0) {
                 playerUtils?.debugLog(`[AutoModManager] Globally resetting flags for ${checkType} on ${player?.nameTag} due to inactivity (resetAfterSeconds: ${ruleSet.resetFlagsAfterSeconds}).`, player?.nameTag, dependencies);
-                if (flagData) {
-                    pData.flags.totalFlags = Math.max(0, (pData.flags.totalFlags || 0) - flagData.count);
-                    flagData.count = 0;
-                }
-                pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0, lastActionedFlagCount: 0 };
-                pData.isDirtyForSave = true;
+                _resetCheckFlags(pData, checkType, flagData, dependencies);
             }
         }
     }
