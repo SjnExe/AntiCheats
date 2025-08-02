@@ -365,7 +365,7 @@ export async function processAutoModActions(player, pData, checkType, dependenci
     // Find the highest-tier rule the player currently qualifies for.
     const applicableRule = rulesForCheck.find(rule => currentFlags >= rule.flagThreshold);
 
-    if (!applicableRule || (applicableRule.flagThreshold === checkState.lastActionThreshold && currentFlags <= checkState.lastActionedFlagCount)) {
+    if (!applicableRule || applicableRule.flagThreshold <= checkState.lastActionThreshold) {
         playerUtils?.debugLog(`[AutoModManager] No new action needed for ${player?.nameTag} for ${checkType}. Current flags: ${currentFlags}, Last action threshold: ${checkState.lastActionThreshold}.`, player?.nameTag, dependencies);
         return;
     }
