@@ -106,21 +106,20 @@ async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
             }
         }
 
-        // Update session info and log the leave event
-        const pDataAfterAction = playerDataManager.getPlayerData(playerId);
-        if (pDataAfterAction) {
-            pDataAfterAction.lastLogoutTime = Date.now();
-            pDataAfterAction.isOnline = false;
+        // Update session info and log the leave event.
+        // We continue to use the same pData object to ensure any modifications from executeCheckAction are preserved.
+        pData.lastLogoutTime = Date.now();
+        pData.isOnline = false;
 
-            const lastLocation = player.location; // Get location from the valid player object
-            const lastDimensionId = player.dimension.id.replace('minecraft:', '');
-            const lastGameModeString = pDataAfterAction.lastGameMode ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
-            let sessionDurationString = playerUtils.getString('common.value.notApplicable', dependencies) ?? 'N/A';
-            if (pDataAfterAction.sessionStartTime && pDataAfterAction.sessionStartTime > 0) {
-                sessionDurationString = formatSessionDuration(Date.now() - pDataAfterAction.sessionStartTime);
-            }
-            logManager.addLog({
-                actionType: 'playerLeave',
+        const lastLocation = player.location; // Get location from the valid player object
+        const lastDimensionId = player.dimension.id.replace('minecraft:', '');
+        const lastGameModeString = pData.lastGameMode ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
+        let sessionDurationString = playerUtils.getString('common.value.notApplicable', dependencies) ?? 'N/A';
+        if (pData.sessionStartTime && pData.sessionStartTime > 0) {
+            sessionDurationString = formatSessionDuration(Date.now() - pData.sessionStartTime);
+        }
+        logManager.addLog({
+            actionType: 'playerLeave',
                 targetName: playerName,
                 targetId: playerId,
                 details: `Last Loc: ${Math.floor(lastLocation?.x ?? 0)},${Math.floor(lastLocation?.y ?? 0)},` +
