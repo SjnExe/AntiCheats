@@ -43,7 +43,7 @@ export async function checkFly(player, pData, dependencies) {
     }
 
     if (config?.enableHighYVelocityCheck && !pData.hasLevitation) {
-        const currentYVelocity = pData.velocity?.y ?? 0;
+        const currentYVelocity = pData.transient.lastVelocity?.y ?? 0;
         const jumpBoostAmplifierValue = pData.jumpBoostAmplifier ?? 0;
         const jumpBoostBonus = jumpBoostAmplifierValue * (config?.jumpBoostYVelocityBonus ?? 0.2);
         const baseYVelocityPositive = config?.maxYVelocityPositive ?? 0.42;
@@ -104,17 +104,17 @@ export async function checkFly(player, pData, dependencies) {
         return;
     }
 
-    if (pData.hasLevitation && (pData.velocity?.y ?? 0) > 0) {
-        playerUtils?.debugLog(`[FlyCheck] ${playerName} allowing upward movement due to levitation. VSpeed: ${(pData.velocity?.y ?? 0).toFixed(2)}`, watchedPlayerName, dependencies);
+    if (pData.hasLevitation && (pData.transient.lastVelocity?.y ?? 0) > 0) {
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} allowing upward movement due to levitation. VSpeed: ${(pData.transient.lastVelocity?.y ?? 0).toFixed(2)}`, watchedPlayerName, dependencies);
         return;
     }
-    if (pData.hasSlowFalling && (pData.velocity?.y ?? 0) < 0) {
-        playerUtils?.debugLog(`[FlyCheck] ${playerName} noting slow descent due to Slow Falling. VSpeed: ${(pData.velocity?.y ?? 0).toFixed(2)}. Hover/Sustained checks might still apply if not actually falling significantly.`, watchedPlayerName, dependencies);
+    if (pData.hasSlowFalling && (pData.transient.lastVelocity?.y ?? 0) < 0) {
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} noting slow descent due to Slow Falling. VSpeed: ${(pData.transient.lastVelocity?.y ?? 0).toFixed(2)}. Hover/Sustained checks might still apply if not actually falling significantly.`, watchedPlayerName, dependencies);
         // Don't return yet, as hovering with slow fall might still be an issue if not losing altitude.
     }
 
 
-    const verticalSpeed = pData.velocity?.y ?? 0;
+    const verticalSpeed = pData.transient.lastVelocity?.y ?? 0;
     if (pData.isWatched) {
         playerUtils?.debugLog(`[FlyCheck] Processing Sustained/Hover for ${playerName}. VSpeed=${verticalSpeed.toFixed(3)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}, FallDist=${pData.fallDistance?.toFixed(2)}`, watchedPlayerName, dependencies);
     }
