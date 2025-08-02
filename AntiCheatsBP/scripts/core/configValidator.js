@@ -39,7 +39,7 @@ function ensureFields(obj, fieldDefs, context, errors) {
         errors.push(`${context}: Expected an object, but got ${typeof obj}.`);
         return false;
     }
-    let allFieldsValidOverall = true;
+    let allFieldsValid = true;
     for (const field of fieldDefs) {
         const value = obj[field.name];
         const fieldPath = `${context}.${field.name}`;
@@ -47,7 +47,7 @@ function ensureFields(obj, fieldDefs, context, errors) {
         if (!Object.prototype.hasOwnProperty.call(obj, field.name)) {
             if (!field.optional) {
                 errors.push(`${fieldPath}: Required field is missing.`);
-                allFieldsValidOverall = false;
+                allFieldsValid = false;
             }
             continue;
         }
@@ -89,7 +89,7 @@ function ensureFields(obj, fieldDefs, context, errors) {
                     case 'any': typeMatch = true; break;
                     default:
                         errors.push(`${fieldPath}: Unknown expected type '${type}' in field definition.`);
-                        allFieldsValidOverall = false;
+                        allFieldsValid = false;
                         break;
                 }
                 if (typeMatch) {
@@ -98,13 +98,13 @@ function ensureFields(obj, fieldDefs, context, errors) {
             }
             if (!typeMatch) {
                 errors.push(`${fieldPath}: Invalid type. Expected ${expectedTypes.join(' or ')}, but got ${typeof value}.`);
-                allFieldsValidOverall = false;
+                allFieldsValid = false;
                 currentFieldInitialCheckPassed = false;
             }
         }
         if (currentFieldInitialCheckPassed && field.validator) {
             if (!field.validator(value, fieldPath, errors)) {
-                allFieldsValidOverall = false;
+                allFieldsValid = false;
             }
         }
         if (currentFieldInitialCheckPassed && field.type === 'array' && field.arrayElementType && isArray(value)) {
@@ -124,26 +124,26 @@ function ensureFields(obj, fieldDefs, context, errors) {
                     } break;
                     default:
                         errors.push(`${elementPath}: Unknown expected array element type '${field.arrayElementType}' in field definition.`);
-                        allFieldsValidOverall = false;
+                        allFieldsValid = false;
                         break;
                 }
                 if (!elementMatch) {
                     errors.push(`${elementPath}: Invalid array element type. Expected ${field.arrayElementType}, but got ${typeof element}.`);
-                    allFieldsValidOverall = false;
+                    allFieldsValid = false;
                 } else if (field.arrayElementType === 'object' && field.objectProperties) {
                     if (!ensureFields(element, field.objectProperties, elementPath, errors)) {
-                        allFieldsValidOverall = false;
+                        allFieldsValid = false;
                     }
                 }
             }
         }
         if (currentFieldInitialCheckPassed && field.type === 'object' && field.objectProperties && isObject(value)) {
             if (!ensureFields(value, field.objectProperties, fieldPath, errors)) {
-                allFieldsValidOverall = false;
+                allFieldsValid = false;
             }
         }
     }
-    return allFieldsValidOverall;
+    return allFieldsValid;
 }
 /**
  * @param {object} config
