@@ -531,12 +531,6 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     transient.isSleeping = player.isSleeping;
     transient.isInsideWater = player.isInWater;
 
-    // If player was on ground last tick and is still on ground, reset fall distance.
-    // This ensures fallDistance is cleared at the start of the tick's processing.
-    if (onGround && (pData.consecutiveOffGroundTicks || 0) === 0) {
-        pData.fallDistance = 0;
-    }
-
     if (!onGround) {
         // Player is in the air
         pData.consecutiveOffGroundTicks = (pData.consecutiveOffGroundTicks || 0) + 1;
@@ -545,8 +539,9 @@ export function updateTransientPlayerData(player, pData, dependencies) {
             pData.fallDistance = (pData.fallDistance || 0) - velocity.y;
         }
     } else {
-        // Player is on the ground now. Reset the off-ground counter.
-        // The final fallDistance from the flight is preserved for this tick because the reset logic above did not run.
+        // Player is on the ground now.
+        // The final fallDistance from the flight is preserved for this tick's checks, then reset.
+        pData.fallDistance = 0;
         pData.consecutiveOffGroundTicks = 0;
         transient.ticksSinceLastOnGround = 0;
         pData.lastOnGroundPosition = { ...player.location };
