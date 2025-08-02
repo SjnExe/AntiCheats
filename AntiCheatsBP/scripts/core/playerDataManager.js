@@ -370,13 +370,6 @@ function recoverAndSerializePlayerData(dataToSave, playerLike, dependencies) {
     if (dataToSave.recentBlockPlacements) {
         dataToSave.recentBlockPlacements = [];
     }
-    if (dataToSave.flags) {
-        for (const key in dataToSave.flags) {
-            if (Array.isArray(dataToSave.flags[key])) {
-                dataToSave.flags[key] = dataToSave.flags[key].slice(-10);
-            }
-        }
-    }
 
     return JSON.stringify(dataToSave);
 }

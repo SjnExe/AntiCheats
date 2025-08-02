@@ -167,7 +167,7 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
         };
         currentPData.lastViolationDetailsMap[checkType] = detailsToStore;
         currentPData.isDirtyForSave = true;
-        playerUtils?.debugLog(`[ActionManager] Stored violation details for check '${checkType}' for ${player.name}: ${JSON.stringify(detailsToStore)}`, player.name, dependencies);
+        playerUtils?.debugLog(`[ActionManager] Stored violation details for check '${checkType}' for ${currentPData.playerNameTag}: ${JSON.stringify(detailsToStore)}`, currentPData.playerNameTag, dependencies);
     } else {
         playerUtils?.debugLog(`[ActionManager] Could not store violation details for '${checkType}' (pData not found for player).`, null, dependencies);
     }
