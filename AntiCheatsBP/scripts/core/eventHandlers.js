@@ -120,15 +120,14 @@ async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
         }
         logManager.addLog({
             actionType: 'playerLeave',
-                targetName: playerName,
-                targetId: playerId,
-                details: `Last Loc: ${Math.floor(lastLocation?.x ?? 0)},${Math.floor(lastLocation?.y ?? 0)},` +
+            targetName: playerName,
+            targetId: playerId,
+            details: `Last Loc: ${Math.floor(lastLocation?.x ?? 0)},${Math.floor(lastLocation?.y ?? 0)},` +
                          `${Math.floor(lastLocation?.z ?? 0)} in ${lastDimensionId}. GM: ${lastGameModeString}. Session: ${sessionDurationString}.`,
-                location: lastLocation ? { x: Math.floor(lastLocation.x), y: Math.floor(lastLocation.y), z: Math.floor(lastLocation.z), dimensionId: lastDimensionId } : undefined,
-                gameMode: lastGameModeString,
-                sessionDuration: sessionDurationString,
-            }, dependencies);
-        }
+            location: lastLocation ? { x: Math.floor(lastLocation.x), y: Math.floor(lastLocation.y), z: Math.floor(lastLocation.z), dimensionId: lastDimensionId } : undefined,
+            gameMode: lastGameModeString,
+            sessionDuration: sessionDurationString,
+        }, dependencies);
 
         // This is the most critical part: save the data using the valid player object
         try {
