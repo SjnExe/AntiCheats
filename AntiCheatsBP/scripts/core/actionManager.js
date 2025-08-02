@@ -38,16 +38,34 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
         ...violationDetails,
     };
 
-    return template.replace(/{(\w+)}/g, (placeholder, key) => {
-        const value = replacements[key];
-        if (value !== undefined) {
-            if (typeof value === 'number' && !Number.isInteger(value)) {
-                return value.toFixed(decimalPlacesForViolationDetails);
-            }
-            return String(value);
+    const replacer = (key, value) => {
+        if (typeof value === 'string') {
+            return value.replace(/{(\w+)}/g, (placeholder, placeholderKey) => {
+                const replacementValue = replacements[placeholderKey];
+                if (replacementValue !== undefined) {
+                    if (typeof replacementValue === 'number' && !Number.isInteger(replacementValue)) {
+                        return replacementValue.toFixed(decimalPlacesForViolationDetails);
+                    }
+                    return String(replacementValue);
+                }
+                return placeholder;
+            });
         }
-        return placeholder;
-    });
+        return value;
+    };
+
+    if (typeof template === 'string') {
+        return replacer(null, template);
+    }
+
+    if (typeof template === 'object' && template !== null) {
+        // Effective for deep replacement: stringify, replace, then parse back.
+        let templateString = JSON.stringify(template);
+        templateString = replacer(null, templateString);
+        return JSON.parse(templateString);
+    }
+
+    return template; // Should not happen with current profiles
 }
 
 /**
