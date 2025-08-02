@@ -32,6 +32,13 @@ This document outlines coding style conventions to be followed for this project 
 - Acronyms within JavaScript `camelCase` identifiers should follow standard camel casing rules (e.g., `enableAntiGmcCheck`, `tpaManager`, `playerData.tpsInfo`). This enhances consistency.
 - Example: `enableAntiGmcCheck`, `playerGmsStatus` are preferred over `enableAntiGMCCheck` or `playerGMSStatus`.
 
+### Exception for Minecraft Identifiers
+
+- When interacting with native Minecraft APIs, it is necessary to use the case style defined by the game itself.
+- Many Minecraft identifiers, such as item IDs, entity type IDs, and effect type IDs, use **`snake_case`** (e.g., `minecraft:ender_pearl`, `minecraft:zombie_pigman`, `jump_boost`).
+- When using these identifiers as string literals in the code, their original `snake_case` format **MUST** be preserved for the game to recognize them.
+- **Example:** `player.addEffect('slow_falling', ...)` is correct, whereas `player.addEffect('slowFalling', ...)` would fail.
+
 ## Command System Conventions
 
 ### Command Prefixes
