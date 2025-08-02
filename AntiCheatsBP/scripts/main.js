@@ -30,13 +30,15 @@ let currentTick = 0;
 export async function mainTick() {
     try {
         if (!world.getDynamicProperty('ac:initialized')) {
-            // If not initialized, we still want to check again on the next tick.
-            system.run(mainTick);
-            return;
+            // Not initialized yet, just reschedule and wait.
+        } else {
+            // Is initialized, so run the main processing logic.
+            await processTick();
         }
-        await processTick();
 
-        // Schedule the next tick only after the current one has succeeded.
+        // Schedule the next tick, regardless of initialization state.
+        // This avoids a race condition where initialization could happen
+        // between the check and the run command, leading to duplicate scheduled tasks.
         system.run(mainTick);
 
     } catch (e) {
