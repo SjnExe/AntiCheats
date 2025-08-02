@@ -8,31 +8,31 @@ import { commandDefinitionMap, commandExecutionMap, commandFilePaths } from './c
 export async function loadCommand(commandName, dependencies) {
     const { playerUtils } = dependencies;
     const { debugLog } = playerUtils;
-    const lowerCaseCommandName = commandName.toLowerCase();
+    const commandNameLower = commandName.toLowerCase();
 
-    if (commandDefinitionMap.has(lowerCaseCommandName)) {
-        debugLog(`[DynamicCommandLoader] '${lowerCaseCommandName}' already loaded in memory.`, null, dependencies);
+    if (commandDefinitionMap.has(commandNameLower)) {
+        debugLog(`[DynamicCommandLoader] '${commandNameLower}' already loaded in memory.`, null, dependencies);
         return {
-            definition: commandDefinitionMap.get(lowerCaseCommandName),
-            execute: commandExecutionMap.get(lowerCaseCommandName),
+            definition: commandDefinitionMap.get(commandNameLower),
+            execute: commandExecutionMap.get(commandNameLower),
         };
     }
 
-    const commandPath = commandFilePaths.get(lowerCaseCommandName);
+    const commandPath = commandFilePaths.get(commandNameLower);
     if (!commandPath) {
-        debugLog(`[DynamicCommandLoader] No path found for command '${lowerCaseCommandName}'.`, null, dependencies);
+        debugLog(`[DynamicCommandLoader] No path found for command '${commandNameLower}'.`, null, dependencies);
         return null;
     }
 
     try {
-        debugLog(`[DynamicCommandLoader] Dynamically importing '${lowerCaseCommandName}' from ${commandPath}...`, null, dependencies);
+        debugLog(`[DynamicCommandLoader] Dynamically importing '${commandNameLower}' from ${commandPath}...`, null, dependencies);
         const cmdModule = await import(commandPath);
 
         if (cmdModule?.definition?.name && typeof cmdModule.definition.name === 'string' && typeof cmdModule.execute === 'function') {
             const cmdNameLower = cmdModule.definition.name.toLowerCase();
 
-            if (cmdNameLower !== lowerCaseCommandName) {
-                console.error(`[DynamicCommandLoader CRITICAL] Command name mismatch for ${lowerCaseCommandName}: Module exported '${cmdNameLower}'. Aborting load for this command.`);
+            if (cmdNameLower !== commandNameLower) {
+                console.error(`[DynamicCommandLoader CRITICAL] Command name mismatch for ${commandNameLower}: Module exported '${cmdNameLower}'. Aborting load for this command.`);
                 return null;
             }
 
@@ -42,11 +42,11 @@ export async function loadCommand(commandName, dependencies) {
             debugLog(`[DynamicCommandLoader] Successfully loaded and cached command '${cmdNameLower}'.`, null, dependencies);
             return { definition: cmdModule.definition, execute: cmdModule.execute };
         }
-        console.error(`[DynamicCommandLoader CRITICAL] Invalid module structure for command '${lowerCaseCommandName}' at path ${commandPath}. Module: ${JSON.stringify(cmdModule)}`);
+        console.error(`[DynamicCommandLoader CRITICAL] Invalid module structure for command '${commandNameLower}' at path ${commandPath}. Module: ${JSON.stringify(cmdModule)}`);
         return null;
 
     } catch (error) {
-        console.error(`[DynamicCommandLoader CRITICAL] Failed to load command module for '${lowerCaseCommandName}' from ${commandPath}: ${error.stack || error}`);
+        console.error(`[DynamicCommandLoader CRITICAL] Failed to load command module for '${commandNameLower}' from ${commandPath}: ${error.stack || error}`);
         return null;
     }
 }

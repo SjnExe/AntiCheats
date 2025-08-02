@@ -116,7 +116,7 @@ export async function handleChatCommand(eventData, dependencies) {
     }
 
     const userPermissionLevel = getPlayerPermissionLevel(player, dependencies);
-    const requiredPermissionLevel = commandDef.permissionLevel ?? 4; // Default to a high number if undefined
+    const requiredPermissionLevel = commandDef.permissionLevel ?? 0; // Default to the highest permission level (owner)
 
     if (userPermissionLevel > requiredPermissionLevel) {
         warnPlayer(player, getString('common.error.permissionDenied'), dependencies);
