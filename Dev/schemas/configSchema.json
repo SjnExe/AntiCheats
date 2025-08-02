@@ -4,13 +4,17 @@
     "description": "Schema for the defaultConfigSettings object in AntiCheatsBP/scripts/config.js.",
     "type": "object",
     "properties": {
+        "configVersion": {
+            "type": "number",
+            "description": "The version of the configuration file. Used for migration."
+        },
         "adminTag": {
             "type": "string",
-            "description": "The tag for identifying admin players."
+            "description": "The tag for identifying admin players. Note: This is a legacy setting. It is highly recommended to use the Rank System via `ranksConfig.js` instead."
         },
         "ownerPlayerName": {
             "type": "string",
-            "description": "The exact name of the server owner. Required for owner-level commands/features. Case-sensitive."
+            "description": "The exact name of the server owner. Case-sensitive. This value is used as a fallback if no owner is defined in `ranksConfig.js`."
         },
         "enableDebugLogging": {
             "type": "boolean",
@@ -20,117 +24,120 @@
             "type": "string",
             "description": "The prefix for chat-based commands (e.g., \"!\", \".\")."
         },
-        "vanishedPlayerTag": {
-            "type": "string",
-            "description": "The tag applied to players who are vanished."
-        },
-        "frozenPlayerTag": {
-            "type": "string",
-            "description": "The tag applied to players who are frozen."
-        },
-        "enableWelcomerMessage": {
+        "acGlobalNotificationsDefaultOn": {
             "type": "boolean",
-            "description": "If true, a welcome message is sent to players when they join."
+            "description": "If true, admins will receive AntiCheat notifications by default. They can opt-out with a command."
         },
-        "welcomeMessage": {
-            "type": "string",
-            "description": "The welcome message. Placeholders: {playerName}"
-        },
-        "notifyAdminOnNewPlayerJoin": {
-            "type": "boolean",
-            "description": "If true, admins are notified when a new player joins for the first time."
-        },
-        "enableDeathCoordsMessage": {
-            "type": "boolean",
-            "description": "If true, players are sent their death coordinates upon respawning."
-        },
-        "deathCoordsMessage": {
-            "type": "string",
-            "description": "The death coordinates message. Placeholders: {x}, {y}, {z}, {dimensionId}"
-        },
-        "enableCombatLogDetection": {
-            "type": "boolean",
-            "description": "If true, enables detection of players leaving shortly after combat."
-        },
-        "combatLogThresholdSeconds": {
-            "type": "number",
-            "description": "Seconds after last combat interaction within which leaving is considered combat logging."
-        },
-        "combatLogFlagIncrement": {
-            "type": "number",
-            "description": "Number of flags to add for a combat log violation."
-        },
-        "combatLogMessage": {
-            "type": "string",
-            "description": "The admin notification message on combat log detection. Placeholders: {playerName}, {timeSinceCombat}, {incrementAmount}"
-        },
-        "enableTpaSystem": {
-            "type": "boolean",
-            "description": "If true, the TPA (Teleport Ask) system is enabled."
-        },
-        "tpaRequestTimeoutSeconds": {
-            "type": "number",
-            "description": "Seconds a TPA request remains valid before automatically expiring."
-        },
-        "tpaRequestCooldownSeconds": {
-            "type": "number",
-            "description": "Seconds a player must wait between sending TPA requests."
-        },
-        "tpaTeleportWarmupSeconds": {
-            "type": "number",
-            "description": "Seconds of warmup before a player is teleported after a TPA request is accepted. Movement or damage cancels it."
-        },
-        "tpaCancelOnMoveDuringWarmup": {
-            "type": "boolean",
-            "description": "If true, TPA is cancelled if the teleporting player moves during the warmup period."
-        },
-        "tpaMovementTolerance": {
-            "type": "number",
-            "description": "Maximum distance (in blocks) a player can move during TPA warmup before it's cancelled."
-        },
-        "discordLink": {
-            "type": "string",
-            "format": "uri",
-            "description": "Link to the server's Discord. Displayed in help or server info commands."
-        },
-        "websiteLink": {
-            "type": "string",
-            "format": "uri",
-            "description": "Link to the server's website."
-        },
-        "helpLinks": {
-            "type": "array",
-            "description": "Array of objects defining helpful links (e.g., for rules, reporting).",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "title": { "type": "string" },
-                    "url": { "type": "string", "format": "uri" }
+        "development": {
+            "type": "object",
+            "description": "Settings related to debugging and performance profiling.",
+            "properties": {
+                "enablePerformanceProfiling": {
+                    "type": "boolean",
+                    "description": "If true, enables collection and logging of performance metrics. SET TO FALSE FOR PRODUCTION."
                 },
-                "required": ["title", "url"]
+                "logPerformanceProfileIntervalTicks": {
+                    "type": "number",
+                    "description": "Interval in game ticks to log performance profile data if enabled."
+                },
+                "checkStaggerTicks": {
+                    "type": "number",
+                    "description": "Number of ticks to stagger checks over. Higher numbers reduce tick load but increase detection time. 1 = no stagger."
+                }
             }
         },
-        "generalHelpMessages": {
-            "type": "array",
-            "description": "Array of general help messages/tips.",
-            "items": { "type": "string" }
+        "playerTags": {
+            "type": "object",
+            "description": "Settings related to player status effects and tags.",
+            "properties": {
+                "vanished": {
+                    "type": "string",
+                    "description": "The tag applied to players who are vanished."
+                },
+                "frozen": {
+                    "type": "string",
+                    "description": "The tag applied to players who are frozen."
+                }
+            }
         },
-        "enableDetailedJoinLeaveLogging": {
-            "type": "boolean",
-            "description": "If true, enables detailed logging of player join and leave events to the console."
+        "playerInfo": {
+            "type": "object",
+            "description": "Settings for player welcome messages and informational messages.",
+            "properties": {
+                "enableWelcomer": { "type": "boolean" },
+                "welcomeMessage": { "type": "string" },
+                "notifyAdminOnNewPlayer": { "type": "boolean" },
+                "enableDeathCoords": { "type": "boolean" },
+                "deathCoordsMessage": { "type": "string" }
+            }
+        },
+        "combatLog": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "thresholdSeconds": { "type": "number" }
+            }
+        },
+        "tpa": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "requestTimeoutSeconds": { "type": "number" }
+            }
+        },
+        "homes": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "maxHomes": { "type": "number" }
+            }
+        },
+        "kits": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" }
+            }
+        },
+        "economy": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "startingBalance": { "type": "number" }
+            }
+        },
+        "spawnLocation": {
+            "type": ["object", "null"],
+            "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "z": { "type": "number" },
+                "dimension": { "type": "string" }
+            }
+        },
+        "serverInfo": {
+            "type": "object",
+            "properties": {
+                "discordLink": { "type": "string", "format": "uri" },
+                "websiteLink": { "type": "string", "format": "uri" },
+                "helpLinks": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "title": { "type": "string" },
+                            "url": { "type": "string", "format": "uri" }
+                        },
+                        "required": ["title", "url"]
+                    }
+                },
+                "generalHelpMessages": { "type": "array", "items": { "type": "string" } },
+                "rules": { "type": "array", "items": { "type": "string" } }
+            }
         },
         "chatChecks": {
             "type": "object",
-            "description": "Settings for chat-related checks.",
             "properties": {
-                "swear": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": { "type": "boolean" },
-                        "words": { "type": "array", "items": { "type": "string" } },
-                        "actionProfile": { "type": "string" }
-                    }
-                },
+                "swear": { "$ref": "#/definitions/chatCheck" },
                 "advertising": {
                     "type": "object",
                     "properties": {
@@ -140,657 +147,146 @@
                         "actionProfile": { "type": "string" }
                     }
                 },
-                "caps": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": { "type": "boolean" },
-                        "minLength": { "type": "number" },
-                        "percentage": { "type": "number", "minimum": 0, "maximum": 100 },
-                        "actionProfile": { "type": "string" }
-                    }
-                },
-                "charRepeat": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": { "type": "boolean" },
-                        "minLength": { "type": "number" },
-                        "threshold": { "type": "number" },
-                        "actionProfile": { "type": "string" }
-                    }
-                },
-                "symbolSpam": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": { "type": "boolean" },
-                        "minLength": { "type": "number" },
-                        "percentage": { "type": "number", "minimum": 0, "maximum": 100 },
-                        "actionProfile": { "type": "string" }
-                    }
-                },
-                "fastMessage": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": { "type": "boolean" },
-                        "thresholdMs": { "type": "number" },
-                        "actionProfile": { "type": "string" }
-                    }
-                }
+                "caps": { "$ref": "#/definitions/chatCheck" },
+                "charRepeat": { "$ref": "#/definitions/chatCheck" },
+                "symbolSpam": { "$ref": "#/definitions/chatCheck" },
+                "fastMessage": { "$ref": "#/definitions/chatCheck" }
             }
         },
         "antiGrief": {
             "type": "object",
-            "description": "Settings for anti-grief measures.",
             "properties": {
-                "tnt": {
+                "tnt": { "$ref": "#/definitions/griefAction" },
+                "wither": { "$ref": "#/definitions/griefAction" },
+                "fire": { "$ref": "#/definitions/griefAction" },
+                "lava": { "$ref": "#/definitions/griefAction" },
+                "water": { "$ref": "#/definitions/griefAction" }
+            }
+        },
+        "worldBorder": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "knownDimensions": { "type": "array", "items": { "type": "string" } },
+                "warningMessage": { "type": "string" },
+                "damage": {
                     "type": "object",
                     "properties": {
                         "enabled": { "type": "boolean" },
-                        "allowAdmins": { "type": "boolean" },
-                        "action": { "type": "string", "enum": ["remove", "warn", "flagOnly"] }
+                        "amount": { "type": "number" },
+                        "intervalTicks": { "type": "number" },
+                        "teleportAfterEvents": { "type": "number" }
                     }
                 },
-                "wither": {
+                "visuals": {
                     "type": "object",
                     "properties": {
                         "enabled": { "type": "boolean" },
-                        "allowAdmins": { "type": "boolean" },
-                        "action": { "type": "string", "enum": ["prevent", "kill", "warn", "flagOnly"] }
-                    }
-                },
-                "fire": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": { "type": "boolean" },
-                        "allowAdmins": { "type": "boolean" },
-                        "action": { "type": "string", "enum": ["extinguish", "warn", "flagOnly"] }
-                    }
-                },
-                "lava": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": { "type": "boolean" },
-                        "allowAdmins": { "type": "boolean" },
-                        "action": { "type": "string", "enum": ["remove", "warn", "flagOnly"] }
-                    }
-                },
-                "water": {
-                    "type": "object",
-                    "properties": {
-                        "enabled": { "type": "boolean" },
-                        "allowAdmins": { "type": "boolean" },
-                        "action": { "type": "string", "enum": ["remove", "warn", "flagOnly"] }
+                        "particleName": { "type": "string" },
+                        "range": { "type": "number" },
+                        "density": { "type": "number" },
+                        "wallHeight": { "type": "number" }
                     }
                 }
             }
         },
-        "enableBlockSpamAntiGrief": {
-            "type": "boolean",
-            "description": "If true, enables detection of rapid block placement (block spam by rate)."
-        },
-        "blockSpamBypassInCreative": {
-            "type": "boolean",
-            "description": "If true, players in Creative mode bypass the block spam (rate) check."
-        },
-        "blockSpamTimeWindowMs": {
-            "type": "number",
-            "description": "Time window in milliseconds to count blocks for rate-based spam detection."
-        },
-        "blockSpamMaxBlocksInWindow": {
-            "type": "number",
-            "description": "Maximum number of blocks allowed to be placed within `blockSpamTimeWindowMs`."
-        },
-        "blockSpamMonitoredBlockTypes": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Specific block types to monitor for rate-based spam. Empty array means all blocks."
-        },
-        "blockSpamAction": {
-            "type": "string",
-            "enum": ["warn", "flagOnly", "kick"],
-            "description": "Action for block spam (rate) violation."
-        },
-        "enableEntitySpamAntiGrief": {
-            "type": "boolean",
-            "description": "If true, enables detection of rapid entity spawning."
-        },
-        "entitySpamBypassInCreative": {
-            "type": "boolean",
-            "description": "If true, players in Creative mode bypass the entity spam check."
-        },
-        "entitySpamTimeWindowMs": {
-            "type": "number",
-            "description": "Time window in milliseconds to count entities for spam detection."
-        },
-        "entitySpamMaxSpawnsInWindow": {
-            "type": "number",
-            "description": "Maximum number of specified entities allowed to be spawned within `entitySpamTimeWindowMs`."
-        },
-        "entitySpamMonitoredEntityTypes": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Specific entity types to monitor for spam."
-        },
-        "entitySpamAction": {
-            "type": "string",
-            "enum": ["kill", "warn", "flagOnly"],
-            "description": "Action for entity spam violation. \"kill\" attempts to remove the spawned entities."
-        },
-        "enableBlockSpamDensityCheck": {
-            "type": "boolean",
-            "description": "If true, enables detection of high-density block placement within a small area."
-        },
-        "blockSpamDensityMonitoredBlockTypes": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Specific block types to monitor for density-based spam. Empty array means all blocks."
-        },
-        "blockSpamDensityAction": {
-            "type": "string",
-            "enum": ["warn", "flagOnly"],
-            "description": "Action for block spam (density) violation."
-        },
-        "blockSpamDensityCheckRadius": {
-            "type": "number",
-            "description": "Radius for the density check cube (e.g., 1 means a 3x3x3 cube centered on the new block)."
-        },
-        "blockSpamDensityTimeWindowTicks": {
-            "type": "number",
-            "description": "Time window in game ticks to consider recent blocks for density calculation. (e.g., 60 ticks = 3 seconds)."
-        },
-        "blockSpamDensityThresholdPercentage": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100,
-            "description": "Percentage (0-100) of volume filled by player's recent blocks within the check radius to trigger detection."
-        },
-        "enablePistonLagCheck": {
-            "type": "boolean",
-            "description": "If true, enables monitoring of rapid piston activations to detect potential lag machines."
-        },
-        "pistonActivationLogThresholdPerSecond": {
-            "type": "number",
-            "description": "Activations per second of a single piston to trigger logging/alert."
-        },
-        "pistonActivationSustainedDurationSeconds": {
-            "type": "number",
-            "description": "Duration in seconds piston activity must be sustained above threshold to trigger."
-        },
-        "pistonLagLogCooldownSeconds": {
-            "type": "number",
-            "description": "Cooldown in seconds before logging/alerting for the same piston again to prevent log spam."
-        },
-        "pistonActivityMapMaxSize": {
-            "type": "number",
-            "description": "Max size of the piston activity tracking map to prevent memory issues."
-        },
-        "pistonActivityEntryTimeoutSeconds": {
-            "type": "number",
-            "description": "Seconds after which an inactive piston entry is removed from tracking map."
-        },
-        "enableWorldBorderSystem": {
-            "type": "boolean",
-            "description": "Master switch for the entire World Border feature."
-        },
-        "worldBorderKnownDimensions": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Dimensions where world border settings are actively managed and checked."
-        },
-        "worldBorderWarningMessage": {
-            "type": "string",
-            "description": "Warning message shown to players approaching the border."
-        },
-        "worldBorderDefaultEnableDamage": {
-            "type": "boolean",
-            "description": "Default setting for whether players take damage when outside the world border."
-        },
-        "worldBorderDefaultDamageAmount": {
-            "type": "number",
-            "description": "Default damage amount per interval for players outside the border (0.5 heart = 1 damage)."
-        },
-        "worldBorderDefaultDamageIntervalTicks": {
-            "type": "number",
-            "description": "Default interval in game ticks at which damage is applied (20 ticks = 1 second)."
-        },
-        "worldBorderTeleportAfterNumDamageEvents": {
-            "type": "number",
-            "description": "Number of damage events after which a player is teleported back inside. Set to 0 or negative to disable teleport."
-        },
-        "worldBorderEnableVisuals": {
-            "type": "boolean",
-            "description": "If true, enables visual particle effects for the world border. Can be performance intensive."
-        },
-        "worldBorderParticleName": {
-            "type": "string",
-            "description": "Default particle type ID for the world border visual effect (e.g., \"minecraft:end_rod\", \"minecraft:basic_crit_particle\")."
-        },
-        "worldBorderVisualRange": {
-            "type": "number",
-            "description": "Visual range in blocks from the border where particles may appear."
-        },
-        "worldBorderParticleDensity": {
-            "type": "number",
-            "description": "Density of particles for the visual effect. Higher is denser. Affects performance."
-        },
-        "worldBorderParticleWallHeight": {
-            "type": "number",
-            "description": "Height in blocks of the particle wall visual."
-        },
-        "worldBorderParticleSegmentLength": {
-            "type": "number",
-            "description": "Length in blocks of each segment of the particle wall. Larger segments might perform better but look less continuous."
-        },
-        "worldBorderVisualUpdateIntervalTicks": {
-            "type": "number",
-            "description": "Interval in game ticks at which world border visuals are updated. Higher interval = less frequent updates, better performance."
-        },
-        "worldBorderParticleSequence": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "If populated, visuals cycle through these particles. Overrides `worldBorderParticleName`. Example: [\"minecraft:totem_particle\", \"minecraft:end_rod\"]"
-        },
-        "worldBorderEnablePulsingDensity": {
-            "type": "boolean",
-            "description": "If true, enables pulsing density effect for border visuals. Adds to visual flair but also performance cost."
-        },
-        "worldBorderPulseDensityMin": {
-            "type": "number",
-            "description": "Minimum particle density multiplier for pulsing effect (0.0 to 1.0)."
-        },
-        "worldBorderPulseDensityMax": {
-            "type": "number",
-            "description": "Maximum particle density multiplier for pulsing effect (>= `worldBorderPulseDensityMin`)."
-        },
-        "worldBorderPulseSpeed": {
-            "type": "number",
-            "description": "Speed of the pulsing effect. Higher is faster."
-        },
-        "xrayDetectionNotifyOnOreMineEnabled": {
-            "type": "boolean",
-            "description": "If true, admins are notified when players mine valuable ores."
-        },
-        "xrayDetectionMonitoredOres": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "List of block type IDs monitored for X-Ray mining notifications."
-        },
-        "xrayDetectionAdminNotifyByDefault": {
-            "type": "boolean",
-            "description": "If true, admins receive X-Ray notifications by default."
+        "xrayNotify": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "monitoredOres": { "type": "array", "items": { "type": "string" } },
+                "notifyAdminsByDefault": { "type": "boolean" }
+            }
         },
         "soundEvents": {
             "type": "object",
-            "description": "Configuration for sound events triggered by the AntiCheat system.",
             "patternProperties": {
-                "^[a-zA-Z0-9_]+$": {
+                "^[a-zA-Z0-9]+$": {
                     "type": "object",
                     "properties": {
                         "enabled": { "type": "boolean" },
                         "soundId": { "type": "string" },
-                        "volume": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+                        "volume": { "type": "number" },
                         "pitch": { "type": "number" },
-                        "target": {
-                            "type": "string",
-                            "enum": ["player", "admin", "targetPlayer", "global"]
-                        },
-                        "description": { "type": "string" }
-                    },
-                    "required": ["enabled", "soundId", "description"]
+                        "target": { "type": "string" }
+                    }
                 }
             }
         },
         "commandSettings": {
             "type": "object",
-            "description": "Allows toggling individual commands on or off.",
             "patternProperties": {
-                "^[a-zA-Z0-9_]+$": {
+                "^[a-zA-Z0-9]+$": {
                     "type": "object",
                     "properties": {
                         "enabled": { "type": "boolean" }
+                    }
+                }
+            }
+        },
+        "automod": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "defaultMuteDuration": { "type": "string" }
+            }
+        },
+        "checks": {
+            "type": "object",
+            "description": "Master toggles and settings for various check categories.",
+            "patternProperties": {
+                "^[a-zA-Z0-9]+$": {
+                    "type": "object",
+                    "properties": {
+                        "enabled": { "type": "boolean" },
+                        "intervalTicks": { "type": "number" }
                     },
                     "required": ["enabled"]
                 }
             }
-        },
-        "chatClearLinesCount": {
-            "type": "number",
-            "description": "Number of empty lines sent by !clearchat command to clear chat."
-        },
-        "reportsViewPerPage": {
-            "type": "number",
-            "description": "Number of reports displayed per page in the !viewreports command."
-        },
-        "enableAutoMod": {
-            "type": "boolean",
-            "description": "If true, the Automated Moderation system (AutoMod) is active."
-        },
-        "serverRules": {
-            "type": "string",
-            "description": "A single string containing all server rules, separated by newlines."
-        },
-        "enableReachCheck": { "type": "boolean", "description": "Master toggle for Reach checks." },
-        "enableCpsCheck": { "type": "boolean", "description": "Master toggle for CPS checks." },
-        "enableViewSnapCheck": { "type": "boolean", "description": "Master toggle for View Snap / Invalid Pitch checks." },
-        "enableMultiTargetCheck": { "type": "boolean", "description": "Master toggle for Multi-Target Killaura checks." },
-        "enableStateConflictCheck": { "type": "boolean", "description": "Master toggle for State Conflict checks." },
-        "enableFlyCheck": { "type": "boolean", "description": "Master toggle for Fly checks." },
-        "enableSpeedCheck": { "type": "boolean", "description": "Master toggle for Speed checks." },
-        "enableNofallCheck": { "type": "boolean", "description": "Master toggle for NoFall checks." },
-        "enableNukerCheck": { "type": "boolean", "description": "Master toggle for Nuker checks." },
-        "enableIllegalItemCheck": { "type": "boolean", "description": "Master toggle for Illegal Item checks." },
-        "enableSelfHurtCheck": { "type": "boolean", "description": "Master toggle for Self-Hurt checks." },
-        "enableNetherRoofCheck": { "type": "boolean", "description": "Master toggle for Nether Roof access checks." },
-        "noSlowGeneralTolerancePercent": {
-            "type": "number",
-            "minimum": 0.0,
-            "maximum": 1.0,
-            "description": "Percentage (0.0 to 1.0) of general tolerance for NoSlow check if not Speed affected."
-        },
-        "netherRoofYLevelThreshold": {
-            "type": "number",
-            "description": "The Y-level at or above which a player in the Nether is considered to be on the roof."
-        },
-        "minFallDistanceForDamage": {
-            "type": "number",
-            "description": "Minimum fall distance in blocks that is expected to cause fall damage. Used by NoFall check."
-        },
-        "jumpBoostYVelocityBonus": {
-            "type": "number",
-            "description": "Bonus Y-velocity per level of Jump Boost effect."
-        },
-        "yVelocityGraceTicks": {
-            "type": "number",
-            "description": "Grace ticks after damage/elytra use before Y-velocity checks apply strictly."
-        },
-        "flySustainedVerticalSpeedThreshold": {
-            "type": "number",
-            "description": "Threshold for vertical speed (blocks per tick, positive is upward) for sustained fly detection."
-        },
-        "flySustainedOffGroundTicksThreshold": {
-            "type": "number",
-            "description": "Number of consecutive off-ground ticks, while exceeding `flySustainedVerticalSpeedThreshold`, to trigger a fly flag."
-        },
-        "flyHoverNearGroundThreshold": {
-            "type": "number",
-            "description": "Minimum height in blocks above the last known ground position for hover detection."
-        },
-        "flyHoverVerticalSpeedThreshold": {
-            "type": "number",
-            "description": "Vertical speed (absolute value, blocks per tick) below which a player is considered hovering."
-        },
-        "flyHoverOffGroundTicksThreshold": {
-            "type": "number",
-            "description": "Number of consecutive off-ground ticks, while meeting hover conditions, to trigger a hover flag."
-        },
-        "flyHoverMaxFallDistanceThreshold": {
-            "type": "number",
-            "description": "Maximum fall distance accumulated while hovering that will not be reset."
-        },
-        "speedToleranceBuffer": {
-            "type": "number",
-            "description": "A tolerance buffer in blocks per second added to the maximum horizontal speed calculation."
-        },
-        "speedGroundConsecutiveTicksThreshold": {
-            "type": "number",
-            "description": "Number of consecutive ticks a player must exceed maximum horizontal speed on ground to be flagged."
-        },
-        "noFallMitigationBlocks": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "List of block type IDs that mitigate fall damage."
-        },
-        "enableNoSlowCheck": {
-            "type": "boolean",
-            "description": "If true, the NoSlow check is active."
-        },
-        "noSlowSpeedEffectTolerancePercent": {
-            "type": "number",
-            "minimum": 0.0,
-            "maximum": 1.0,
-            "description": "Percentage (0.0 to 1.0) of additional speed allowed if player has Speed effect for NoSlow."
-        },
-        "noSlowMaxSpeedEating": { "type": "number", "description": "Maximum horizontal speed (blocks/sec) allowed while eating or drinking." },
-        "noSlowMaxSpeedChargingBow": { "type": "number", "description": "Maximum horizontal speed (blocks/sec) allowed while charging a bow." },
-        "noSlowMaxSpeedUsingShield": { "type": "number", "description": "Maximum horizontal speed (blocks/sec) allowed while actively using/raising a shield." },
-        "noSlowMaxSpeedSneaking": { "type": "number", "description": "Maximum horizontal speed (blocks/sec) allowed while sneaking." },
-        "enableInvalidSprintCheck": { "type": "boolean", "description": "If true, the Invalid Sprint check is active." },
-        "sprintHungerLimit": { "type": "number", "description": "Minimum food level (inclusive) required to sprint." },
-        "maxCpsThreshold": {
-            "type": "number",
-            "description": "Maximum clicks per second (CPS) threshold before flagging."
-        },
-        "reachDistanceSurvival": {
-            "type": "number",
-            "description": "Maximum reach distance in blocks for Survival/Adventure mode players."
-        },
-        "reachDistanceCreative": {
-            "type": "number",
-            "description": "Maximum reach distance in blocks for Creative mode players."
-        },
-        "reachBuffer": {
-            "type": "number",
-            "description": "A small buffer in blocks added to maximum reach distance calculations."
-        },
-        "cpsCalculationWindowMs": {
-            "type": "number",
-            "description": "Time window in milliseconds over which CPS is calculated."
-        },
-        "maxPitchSnapPerTick": {
-            "type": "number",
-            "description": "Maximum degrees the player's pitch can change in a single game tick after an attack."
-        },
-        "maxYawSnapPerTick": {
-            "type": "number",
-            "description": "Maximum degrees the player's yaw can change in a single game tick after an attack."
-        },
-        "viewSnapWindowTicks": {
-            "type": "number",
-            "description": "Number of game ticks after an attack during which view snaps are monitored."
-        },
-        "invalidPitchThresholdMin": {
-            "type": "number",
-            "description": "Minimum pitch value (degrees) considered invalid."
-        },
-        "invalidPitchThresholdMax": {
-            "type": "number",
-            "description": "Maximum pitch value (degrees) considered invalid."
-        },
-        "multiTargetWindowMs": {
-            "type": "number",
-            "description": "Time window in milliseconds for detecting attacks on multiple distinct targets."
-        },
-        "multiTargetThreshold": {
-            "type": "number",
-            "description": "Number of distinct entities that must be hit within `multiTargetWindowMs` to flag."
-        },
-        "multiTargetMaxHistory": {
-            "type": "number",
-            "description": "Maximum number of recent hit target records to store per player for multi-target analysis."
-        },
-        "itemUseStateClearTicks": {
-            "type": "number",
-            "description": "Number of ticks an 'item use' state persists before auto-clearing if no explicit stop event."
-        },
-        "enableAutoToolCheck": { "type": "boolean", "description": "If true, the AutoTool check is active." },
-        "autoToolSwitchToOptimalWindowTicks": { "type": "number", "description": "Max ticks between starting break and switching to optimal tool for AutoTool." },
-        "autoToolSwitchBackWindowTicks": { "type": "number", "description": "Max ticks after breaking (with optimal tool) to detect switch back for AutoTool." },
-        "autoToolBreakAttemptTimeoutTicks": { "type": "number", "description": "Ticks after which a break attempt state for AutoTool is stale." },
-        "enableInstaBreakUnbreakableCheck": { "type": "boolean", "description": "If true, check for breaking normally unbreakable blocks is active." },
-        "instaBreakUnbreakableBlocks": { "type": "array", "items": { "type": "string" }, "description": "List of block type IDs considered normally unbreakable." },
-        "enableInstaBreakSpeedCheck": { "type": "boolean", "description": "If true, check for breaking blocks significantly faster than vanilla is active." },
-        "instaBreakTimeToleranceTicks": { "type": "number", "description": "Tolerance in game ticks for block breaking speed." },
-        "nukerMaxBreaksShortInterval": {
-            "type": "number",
-            "description": "Maximum number of blocks that can be broken within `nukerCheckIntervalMs` before flagging for Nuker."
-        },
-        "nukerCheckIntervalMs": {
-            "type": "number",
-            "description": "Time window in milliseconds for the Nuker check to count broken blocks."
-        },
-        "bannedItemsPlace": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Array of item type IDs banned from being placed by players."
-        },
-        "bannedItemsUse": {
-            "type": "array",
-            "items": { "type": "string" },
-            "description": "Array of item type IDs banned from being used by players."
-        },
-        "enableNameSpoofCheck": { "type": "boolean", "description": "If true, the NameSpoof check is active." },
-        "nameSpoofMaxLength": { "type": "number", "description": "Maximum allowed length for a player's nameTag for NameSpoof check." },
-        "nameSpoofDisallowedCharsRegex": { "type": "string", "format": "regex", "description": "Regex for disallowed characters in player nameTags." },
-        "nameSpoofMinChangeIntervalTicks": { "type": "number", "description": "Minimum interval in game ticks between allowed player nameTag changes." },
-        "enableAntiGmcCheck": { "type": "boolean", "description": "If true, the Anti-GMC check is active." },
-        "antiGmcSwitchToGameMode": { "type": "string", "enum": ["survival", "adventure", "creative", "spectator"], "description": "Gamemode to switch to if unauthorized Creative is detected and autoSwitch is true." },
-        "antiGmcAutoSwitch": { "type": "boolean", "description": "If true, automatically switch gamemode on unauthorized Creative detection." },
-        "enableInventoryModCheck": { "type": "boolean", "description": "If true, Inventory Modification checks are active." },
-        "enableFastMessageSpamCheck": { "type": "boolean", "description": "If true, the Fast Message Spam check is active." },
-        "fastMessageSpamThresholdMs": { "type": "number", "description": "Minimum time in milliseconds between messages to avoid spam flag." },
-        "fastMessageSpamActionProfileName": { "type": "string", "description": "Action profile name for fast message spam." },
-        "enableMaxWordsSpamCheck": { "type": "boolean", "description": "If true, the Max Words Spam check is active." },
-        "maxWordsSpamThreshold": { "type": "number", "description": "Maximum allowed number of words in a single chat message." },
-        "maxWordsSpamActionProfileName": { "type": "string", "description": "Action profile name for max words spam." },
-        "enableNewlineCheck": { "type": "boolean", "description": "If true, checks for newline characters in chat messages." },
-        "flagOnNewline": { "type": "boolean", "description": "If true, flags player for using newlines if `enableNewlineCheck` is true." },
-        "cancelMessageOnNewline": { "type": "boolean", "description": "If true, cancels messages with newlines if `enableNewlineCheck` is true." },
-        "enableMaxMessageLengthCheck": { "type": "boolean", "description": "If true, checks if chat messages exceed `maxMessageLength`." },
-        "maxMessageLength": { "type": "number", "description": "Maximum allowed character length for a single chat message." },
-        "flagOnMaxMessageLength": { "type": "boolean", "description": "If true, flags player for overly long messages if `enableMaxMessageLengthCheck` is true." },
-        "cancelOnMaxMessageLength": { "type": "boolean", "description": "If true, cancels overly long messages if `enableMaxMessageLengthCheck` is true." },
-        "enableChatContentRepeatCheck": { "type": "boolean", "description": "If true, checks for players sending the same or very similar messages repeatedly." },
-        "chatContentRepeatFlagPlayer": { "type": "boolean", "description": "If true, flags the player for content repeat spam." },
-        "chatContentRepeatCancelMessage": { "type": "boolean", "description": "If true, cancels the message that triggers content repeat spam." },
-        "chatContentRepeatActionProfileName": { "type": "string", "description": "Action profile name for chat content repeat violations." },
-        "enableUnicodeAbuseCheck": { "type": "boolean", "description": "If true, the Unicode Abuse (Zalgo text, excessive diacritics) check is active." },
-        "unicodeAbuseActionProfileName": { "type": "string", "description": "Action profile name for Unicode abuse violations." },
-        "enableGibberishCheck": { "type": "boolean", "description": "If true, the Gibberish Chat check is active." },
-        "gibberishMinMessageLength": { "type": "number", "description": "Minimum message length to apply gibberish check." },
-        "gibberishMinAlphaRatio": { "type": "number", "minimum": 0.0, "maximum": 1.0, "description": "Minimum ratio of alphabetic characters for gibberish check." },
-        "gibberishVowelRatioLowerBound": { "type": "number", "minimum": 0.0, "maximum": 1.0, "description": "Lower bound for vowel ratio to flag as gibberish." },
-        "gibberishVowelRatioUpperBound": { "type": "number", "minimum": 0.0, "maximum": 1.0, "description": "Upper bound for vowel ratio to flag as gibberish." },
-        "gibberishMaxConsecutiveConsonants": { "type": "number", "description": "Maximum number of consecutive consonants to flag as gibberish." },
-        "gibberishActionProfileName": { "type": "string", "description": "Action profile name for gibberish violations." },
-        "enableExcessiveMentionsCheck": { "type": "boolean", "description": "If true, the Excessive Mentions chat check is active." },
-        "mentionsMinMessageLength": { "type": "number", "description": "Minimum message length to apply excessive mentions check." },
-        "mentionsMaxUniquePerMessage": { "type": "number", "description": "Maximum number of unique users that can be mentioned in a single message." },
-        "mentionsMaxRepeatedPerMessage": { "type": "number", "description": "Maximum number of times a single user can be mentioned in a single message." },
-        "mentionsActionProfileName": { "type": "string", "description": "Action profile name for excessive mention violations." },
-        "enableSimpleImpersonationCheck": { "type": "boolean", "description": "If true, the Simple Impersonation check is active." },
-        "impersonationServerMessagePatterns": { "type": "array", "items": { "type": "string", "format": "regex" }, "description": "Regex patterns to identify server/staff message impersonation attempts." },
-        "impersonationExemptPermissionLevel": { "type": "number", "description": "Permission level at or below which players are exempt from impersonation checks." },
-        "impersonationMinMessageLengthForPatternMatch": { "type": "number", "description": "Minimum message length for impersonation pattern matching to apply." },
-        "impersonationActionProfileName": { "type": "string", "description": "Action profile name for impersonation attempts." },
-        "enableTowerCheck": { "type": "boolean", "description": "If true, the Scaffold/Tower check is active." },
-        "towerMaxTickGap": { "type": "number", "description": "Maximum time in game ticks between consecutive upward pillar blocks." },
-        "towerMinHeight": { "type": "number", "description": "Minimum number of consecutive upward blocks placed to trigger a tower flag." },
-        "towerMaxPitchWhilePillaring": { "type": "number", "description": "Maximum pitch deviation (degrees) allowed while pillaring up." },
-        "towerPlacementHistoryLength": { "type": "number", "description": "How many recent block placements to store for pattern analysis." },
-        "enableFlatRotationCheck": { "type": "boolean", "description": "If true, the Flat/Invalid Rotation While Building check is active." },
-        "flatRotationConsecutiveBlocks": { "type": "number", "description": "Number of consecutive block placements to analyze for static or flat rotation." },
-        "flatRotationMaxPitchVariance": { "type": "number", "description": "Maximum degrees of variance allowed for pitch over `flatRotationConsecutiveBlocks`." },
-        "flatRotationMaxYawVariance": { "type": "number", "description": "Maximum degrees of variance allowed for yaw over `flatRotationConsecutiveBlocks`." },
-        "flatRotationPitchHorizontalMin": { "type": "number", "description": "Minimum pitch for 'flat horizontal' building detection." },
-        "flatRotationPitchHorizontalMax": { "type": "number", "description": "Maximum pitch for 'flat horizontal' building detection." },
-        "flatRotationPitchDownwardMin": { "type": "number", "description": "Minimum pitch for 'flat downward' building detection." },
-        "flatRotationPitchDownwardMax": { "type": "number", "description": "Maximum pitch for 'flat downward' building detection." },
-        "enableDownwardScaffoldCheck": { "type": "boolean", "description": "If true, the Downward Scaffold check is active." },
-        "downwardScaffoldMinBlocks": { "type": "number", "description": "Minimum number of consecutive downward blocks placed while airborne to flag." },
-        "downwardScaffoldMaxTickGap": { "type": "number", "description": "Maximum time in game ticks between consecutive downward scaffold blocks." },
-        "downwardScaffoldMinHorizontalSpeed": { "type": "number", "description": "Minimum horizontal speed (blocks/sec) player must maintain while downward scaffolding." },
-        "enableAirPlaceCheck": { "type": "boolean", "description": "If true, the check for Placing Blocks onto Air/Liquid without proper support is active." },
-        "airPlaceSolidBlocks": { "type": "array", "items": { "type": "string" }, "description": "List of block type IDs considered 'solid' and typically require support." },
-        "enableFastUseCheck": { "type": "boolean", "description": "If true, the Fast Item Use check is active." },
-        "fastUseItemCooldowns": {
-            "type": "object",
-            "description": "Defines minimum cooldown in milliseconds between uses for specific items.",
-            "patternProperties": {
-                "^minecraft:[a-z_]+$": { "type": "number" }
-            }
-        },
-        "enableFastPlaceCheck": { "type": "boolean", "description": "If true, the Fast Block Place check is active." },
-        "fastPlaceTimeWindowMs": { "type": "number", "description": "Time window in milliseconds for fast block placement detection." },
-        "fastPlaceMaxBlocksInWindow": { "type": "number", "description": "Maximum number of blocks allowed to be placed within `fastPlaceTimeWindowMs`." },
-        "acGlobalNotificationsDefaultOn": {
-            "type": "boolean",
-            "description": "If true, admins receive general AntiCheat notifications by default."
-        },
-        "notifyAdminOnBannedPlayerAttempt": {
-            "type": "boolean",
-            "description": "If true, admins are notified when a banned player attempts to join."
-        },
-        "notifyOnAdminUtilCommandUsage": {
-            "type": "boolean",
-            "description": "If true, admins are notified when various admin utility commands are used."
-        },
-        "notifyOnCopyInventory": {
-            "type": "boolean",
-            "description": "If true, admins are notified when an admin uses the !copyinv command."
-        },
-        "notifyOnPlayerFlagged": {
-            "type": "boolean",
-            "description": "If true, admins are notified when a player is flagged by a check."
-        },
-        "notifyOnAutoModAction": {
-            "type": "boolean",
-            "description": "If true, admins are notified when AutoMod takes an action against a player."
-        },
-        "notifyOnNewPlayerReport": {
-            "type": "boolean",
-            "description": "If true, admins are notified when a new player report is submitted."
-        },
-        "notifyOnDimensionLockAttempt": {
-            "type": "boolean",
-            "description": "If true, admins are notified when a player attempts to enter a locked dimension."
-        },
-        "automodDefaultMuteDuration": {
-            "type": "string",
-            "description": "Default duration for mutes applied by AutoMod."
-        },
-        "manualMuteDefaultDuration": {
-            "type": "string",
-            "description": "Default duration for mutes applied manually by admins if no duration is specified."
-        },
-        "enableDeathEffects": {
-            "type": "boolean",
-            "description": "If true, cosmetic effects (particles, sounds) are shown when a player dies."
-        },
-        "deathEffectParticleName": {
-            "type": "string",
-            "description": "The particle effect name to spawn when a player dies."
-        },
-        "deathEffectSoundId": {
-            "type": "string",
-            "description": "The sound ID to play when a player dies."
-        },
-        "defaultDeathEffect": {
-            "type": "object",
-            "description": "Defines the default cosmetic effect shown when a player dies.",
-            "properties": {
-                "soundId": { "type": "string" },
-                "particleCommand": { "type": "string" },
-                "soundOptions": {
-                    "type": "object",
-                    "properties": {
-                        "volume": { "type": "number" },
-                        "pitch": { "type": "number" }
-                    },
-                    "required": ["volume", "pitch"]
-                }
-            },
-            "required": ["soundId", "particleCommand", "soundOptions"]
-        },
-        "enableInvalidRenderDistanceCheck": { "type": "boolean", "description": "If true, the Invalid Render Distance check is active." },
-        "maxAllowedClientRenderDistance": { "type": "number", "description": "Maximum allowed client-reported render distance in chunks." },
-        "enableChatDuringCombatCheck": { "type": "boolean", "description": "If true, the Chat During Combat check is active." },
-        "chatDuringCombatCooldownSeconds": { "type": "number", "description": "Seconds after last combat interaction during which a player cannot chat." },
-        "enableChatDuringItemUseCheck": { "type": "boolean", "description": "If true, the Chat During Item Use check is active." },
-        "nameSpoofCheckIntervalTicks": { "type": "number", "description": "Interval in game ticks for NameSpoof check." },
-        "antiGmcCheckIntervalTicks": { "type": "number", "description": "Interval in game ticks for AntiGMC check." },
-        "netherRoofCheckIntervalTicks": { "type": "number", "description": "Interval in game ticks for NetherRoof check." },
-        "autoToolCheckIntervalTicks": { "type": "number", "description": "Interval in game ticks for AutoTool check." },
-        "flatRotationCheckIntervalTicks": { "type": "number", "description": "Interval in game ticks for FlatRotationBuilding check." },
-        "invalidRenderDistanceCheckIntervalTicks": { "type": "number", "description": "Interval in game ticks for InvalidRenderDistance check." }
+        }
     },
-    "additionalProperties": false
+    "required": [
+        "configVersion",
+        "adminTag",
+        "ownerPlayerName",
+        "enableDebugLogging",
+        "prefix",
+        "acGlobalNotificationsDefaultOn",
+        "development",
+        "playerTags",
+        "playerInfo",
+        "combatLog",
+        "tpa",
+        "homes",
+        "kits",
+        "economy",
+        "serverInfo",
+        "chatChecks",
+        "antiGrief",
+        "worldBorder",
+        "xrayNotify",
+        "soundEvents",
+        "commandSettings",
+        "automod",
+        "checks"
+    ],
+    "definitions": {
+        "chatCheck": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "actionProfile": { "type": "string" }
+            },
+            "additionalProperties": true
+        },
+        "griefAction": {
+            "type": "object",
+            "properties": {
+                "enabled": { "type": "boolean" },
+                "allowAdmins": { "type": "boolean" },
+                "action": { "type": "string" }
+            }
+        }
+    }
 }
