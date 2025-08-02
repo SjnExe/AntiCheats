@@ -588,9 +588,8 @@ async function showEditConfigForm(player, dependencies, context) {
     const form = new ModalFormData().title(`Edit ${configKey}`);
 
     form.toggle('Enabled', checkConfig.enabled);
-    form.textField('Punishment (none, kick, ban, mute)', checkConfig.punishment);
-    form.textField('Punishment Length (e.g., 10m, 1h, 1d)', checkConfig.punishmentLength);
-    form.textField('Min Violation Level', String(checkConfig.minVlbeforePunishment));
+    // The punishment fields have been deprecated and removed.
+    // All punishment logic is now handled by automodConfig.js
 
     const response = await form.show(player);
 
@@ -598,14 +597,11 @@ async function showEditConfigForm(player, dependencies, context) {
         return;
     }
 
-    const [enabled, punishment, punishmentLength, minVlbeforePunishment] = response.formValues;
+    const [enabled] = response.formValues;
 
     const newConfig = {
         ...checkConfig,
         enabled,
-        punishment,
-        punishmentLength,
-        minVlbeforePunishment: parseInt(minVlbeforePunishment) || 1,
     };
 
     configModule.updateConfigValue(`checks.${configKey.split('.')[1]}`, newConfig);
