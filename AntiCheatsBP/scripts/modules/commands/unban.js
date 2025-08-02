@@ -91,7 +91,7 @@ export function execute(
     const wasPreviouslyAutoModBan = banInfo.isAutoMod;
     const previousAutoModCheckType = banInfo.triggeringCheckType;
 
-    const unbanned = playerDataManager?.removeBan(targetOnlinePlayer, dependencies);
+    const unbanned = playerDataManager?.removePlayerStateRestriction(targetPData, 'ban', dependencies);
 
     if (unbanned) {
         const successMessage = getString('command.unban.success', { playerName: targetOnlinePlayer.nameTag });
