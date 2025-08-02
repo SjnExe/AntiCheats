@@ -31,11 +31,16 @@ export function execute(
     const targetPlayerName = args[0];
     let reason;
 
-    if (invokedBy === 'AutoMod' && programmaticReason) {
+    // Prioritize a directly provided programmatic reason for any non-player invocation.
+    if (programmaticReason && invokedBy !== 'PlayerCommand') {
         reason = programmaticReason;
-    } else if (invokedBy === 'AutoMod') {
+    }
+    // If it's an automod action without a specific programmatic reason, generate a default one.
+    else if (invokedBy === 'AutoMod') {
         reason = getString('command.kick.automodReason', { checkType: autoModCheckType || 'violations' });
-    } else {
+    }
+    // For player commands (or as a fallback), parse the reason from arguments.
+    else {
         const parsedArgsUtil = playerUtils.parsePlayerAndReasonArgs(args, 1, 'common.value.noReasonProvided', dependencies);
         reason = parsedArgsUtil.reason;
     }
