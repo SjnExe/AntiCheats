@@ -62,45 +62,75 @@ export async function checkSpeed(player, pData, dependencies) {
         );
     }
 
-    const groundActionProfileKey = config?.speedGroundActionProfileName ?? 'movementSpeedGround';
+    const groundActionProfileKey = config?.checks?.speed?.speedGroundActionProfileName ?? 'movementSpeedGround';
 
     if (player.isOnGround) {
+        // Reset air speed counter when landing
+        if (pData.consecutiveAirSpeedingTicks > 0) {
+            pData.consecutiveAirSpeedingTicks = 0;
+            pData.isDirtyForSave = true;
+        }
+
         if (hSpeedBPS > maxAllowedSpeedBPS) {
-            pData.consecutiveOnGroundSpeedingTicks = (pData.consecutiveOnGroundSpeedingTicks || 0) + 1; // 0 and 1 are fine
+            pData.consecutiveOnGroundSpeedingTicks = (pData.consecutiveOnGroundSpeedingTicks || 0) + 1;
             pData.isDirtyForSave = true;
 
-            const groundTicksThreshold = config?.speedGroundConsecutiveTicksThreshold ?? 5;
+            const groundTicksThreshold = config?.checks?.speed?.speedGroundConsecutiveTicksThreshold ?? 5;
             if (pData.consecutiveOnGroundSpeedingTicks >= groundTicksThreshold) {
-                let activeEffectsString = '';
-                const effects = player.getEffects();
-                if (effects.length > 0) {
-                    activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ');
-                }
-
                 const violationDetails = {
+                    type: 'ground',
                     detectedSpeedBps: hSpeedBPS.toFixed(3),
                     maxAllowedBps: maxAllowedSpeedBPS.toFixed(3),
-                    consecutiveTicks: (pData.consecutiveOnGroundSpeedingTicks ?? 0).toString(), // 0 is fine
+                    consecutiveTicks: (pData.consecutiveOnGroundSpeedingTicks ?? 0).toString(),
                     onGround: player.isOnGround.toString(),
-                    activeEffects: activeEffectsString,
                 };
                 await actionManager?.executeCheckAction(player, groundActionProfileKey, violationDetails, dependencies);
-                playerUtils?.debugLog(`[SpeedCheck] Flagged ${playerName} for ground speed. Speed: ${hSpeedBPS.toFixed(3)} > ${maxAllowedSpeedBPS.toFixed(3)} for ${pData.consecutiveOnGroundSpeedingTicks} ticks.`, watchedPlayerName, dependencies);
-
-                // Reset the counter after flagging
-                pData.consecutiveOnGroundSpeedingTicks = 0;
-                pData.isDirtyForSave = true;
+                playerUtils?.debugLog(`[SpeedCheck][Ground] Flagged ${playerName}. Speed: ${hSpeedBPS.toFixed(3)} > ${maxAllowedSpeedBPS.toFixed(3)} for ${pData.consecutiveOnGroundSpeedingTicks} ticks.`, watchedPlayerName, dependencies);
+                pData.consecutiveOnGroundSpeedingTicks = 0; // Reset after flagging
             }
         } else {
-            if (pData.consecutiveOnGroundSpeedingTicks > 0) { // 0 is fine
-                pData.consecutiveOnGroundSpeedingTicks = 0; // 0 is fine
-                pData.isDirtyForSave = true;
+            if (pData.consecutiveOnGroundSpeedingTicks > 0) {
+                pData.consecutiveOnGroundSpeedingTicks = 0;
             }
         }
-    } else {
-        if (pData.consecutiveOnGroundSpeedingTicks > 0) { // 0 is fine
-            pData.consecutiveOnGroundSpeedingTicks = 0; // 0 is fine
+    } else { // Player is in the air
+        // Reset ground speed counter when airborne
+        if (pData.consecutiveOnGroundSpeedingTicks > 0) {
+            pData.consecutiveOnGroundSpeedingTicks = 0;
             pData.isDirtyForSave = true;
+        }
+
+        if (config?.checks?.speed?.enableAir) {
+            const maxAirSpeedBPS = config?.checks?.speed?.maxHorizontalSpeedAirborne ?? 7.5;
+            let effectiveMaxAirSpeed = maxAirSpeedBPS;
+            if (speedAmplifier >= 0) {
+                effectiveMaxAirSpeed *= (1 + ((speedAmplifier + 1) * (config?.checks?.speed?.speedEffectMultiplierPerLevel ?? 0.20)));
+            }
+            effectiveMaxAirSpeed += (config?.checks?.speed?.speedToleranceBuffer ?? 0.5);
+
+            if (hSpeedBPS > effectiveMaxAirSpeed) {
+                pData.consecutiveAirSpeedingTicks = (pData.consecutiveAirSpeedingTicks || 0) + 1;
+                pData.isDirtyForSave = true;
+
+                const airTicksThreshold = config?.checks?.speed?.speedAirConsecutiveTicksThreshold ?? 4;
+                if (pData.consecutiveAirSpeedingTicks >= airTicksThreshold) {
+                    const airActionProfileKey = config?.checks?.speed?.speedAirActionProfileName ?? 'movementSpeedAir';
+                    const violationDetails = {
+                        type: 'air',
+                        detectedSpeedBps: hSpeedBPS.toFixed(3),
+                        maxAllowedBps: effectiveMaxAirSpeed.toFixed(3),
+                        consecutiveTicks: (pData.consecutiveAirSpeedingTicks ?? 0).toString(),
+                        onGround: player.isOnGround.toString(),
+                    };
+                    await actionManager?.executeCheckAction(player, airActionProfileKey, violationDetails, dependencies);
+                    playerUtils?.debugLog(`[SpeedCheck][Air] Flagged ${playerName}. Speed: ${hSpeedBPS.toFixed(3)} > ${effectiveMaxAirSpeed.toFixed(3)} for ${pData.consecutiveAirSpeedingTicks} ticks.`, watchedPlayerName, dependencies);
+                    pData.consecutiveAirSpeedingTicks = 0; // Reset after flagging
+                }
+            } else {
+                if (pData.consecutiveAirSpeedingTicks > 0) {
+                    pData.consecutiveAirSpeedingTicks = 0;
+                }
+            }
         }
     }
 }

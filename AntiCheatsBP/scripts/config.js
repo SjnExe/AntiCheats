@@ -346,7 +346,21 @@ const defaultConfigSettings = {
              */
             flyHoverSlowFallingMinVSpeed: -0.01,
         }, // High frequency needed
-        speed: { enabled: false, intervalTicks: 2 }, // High frequency needed
+        speed: {
+            enabled: false,
+            intervalTicks: 2,
+            maxHorizontalSpeedVanillaSprint: 5.7, // BPS
+            speedEffectMultiplierPerLevel: 0.20, // 20%
+            speedToleranceBuffer: 0.5, // BPS
+            // Ground Speed
+            speedGroundConsecutiveTicksThreshold: 5,
+            speedGroundActionProfileName: 'movementSpeedGround',
+            // Air Speed
+            enableAir: false,
+            maxHorizontalSpeedAirborne: 7.5, // BPS, allows for some jump momentum
+            speedAirConsecutiveTicksThreshold: 4,
+            speedAirActionProfileName: 'movementSpeedAir',
+        },
         nofall: { enabled: false, intervalTicks: 2 },
         noSlow: { enabled: false, intervalTicks: 2 },
         invalidSprint: { enabled: false, intervalTicks: 4 },
