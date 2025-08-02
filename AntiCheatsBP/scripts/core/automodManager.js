@@ -253,6 +253,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             break;
         }
         case 'teleportSafe': {
+            const { world } = dependencies;
             const targetCoordinatesParam = parameters?.coordinates;
             if (!targetCoordinatesParam || typeof targetCoordinatesParam.y !== 'number') {
                 playerUtils?.debugLog(`[AutoModManager] Invalid or missing coordinates for teleportSafe on ${player?.nameTag}. Y-coordinate is mandatory.`, player?.nameTag, dependencies);
@@ -260,21 +261,32 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
                 actionProcessed = false;
                 break;
             }
+
+            let targetDimension = player.dimension;
+            const targetDimensionId = targetCoordinatesParam.dimensionId;
+            if (targetDimensionId && typeof targetDimensionId === 'string') {
+                try {
+                    targetDimension = world.getDimension(targetDimensionId);
+                } catch (e) {
+                    playerUtils?.debugLog(`[AutoModManager] Invalid dimensionId '${targetDimensionId}' specified for teleportSafe. Defaulting to player's current dimension. Error: ${e.message}`, player?.nameTag, dependencies);
+                }
+            }
+
             const targetX = targetCoordinatesParam.x ?? player.location.x;
             const targetZ = targetCoordinatesParam.z ?? player.location.z;
             const targetY = targetCoordinatesParam.y;
-            const teleportTargetDesc = `X:${targetX.toFixed(1)}, Y:${targetY.toFixed(1)}, Z:${targetZ.toFixed(1)}`;
+            const teleportTargetDesc = `X:${targetX.toFixed(1)}, Y:${targetY.toFixed(1)}, Z:${targetZ.toFixed(1)} in ${targetDimension.id}`;
             finalTeleportDesc = teleportTargetDesc;
             const teleportLocation = { x: targetX, y: targetY, z: targetZ };
             try {
-                const safeLocation = player?.dimension?.findClosestSafeLocation(teleportLocation, { maxHeightDifference: 5, searchDistance: 5 });
+                const safeLocation = targetDimension?.findClosestSafeLocation(teleportLocation, { maxHeightDifference: 5, searchDistance: 5 });
                 const locationToTeleport = safeLocation || teleportLocation;
                 if (safeLocation) {
                     finalTeleportDesc = `X:${safeLocation.x.toFixed(1)}, Y:${safeLocation.y.toFixed(1)}, Z:${safeLocation.z.toFixed(1)} (near requested ${teleportTargetDesc})`;
                 }
                 baseMessageContext.teleportCoordinates = finalTeleportDesc;
                 const teleportMessage = formatAutomodMessage(messageTemplate, baseMessageContext);
-                player?.teleport(locationToTeleport, { dimension: player.dimension });
+                player?.teleport(locationToTeleport, { dimension: targetDimension });
                 playerUtils?.warnPlayer(player, teleportMessage, dependencies);
                 logDetails = `Teleported player ${player?.nameTag} to ${finalTeleportDesc}. Check: ${checkType}. Message: '${teleportMessage}'`;
                 actionProcessed = true;
