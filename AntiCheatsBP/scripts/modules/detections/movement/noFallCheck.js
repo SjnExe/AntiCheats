@@ -138,9 +138,10 @@ export async function checkNoFall(player, pData, dependencies) {
             playerUtils?.debugLog(`[NoFallCheck] Flagged ${playerName} for NoFall. FallDist: ${pData.fallDistance.toFixed(2)}, MinDamageDist: ${minDamageDistance}`, watchedPlayerName, dependencies);
         }
 
-        if (pData.fallDistance > 0 || pData.isTakingFallDamage) {
+        // Fall distance is reset here. The isTakingFallDamage flag is reset at the start of the next tick
+        // in main.js to prevent race conditions.
+        if (pData.fallDistance > 0) {
             pData.fallDistance = 0;
-            pData.isTakingFallDamage = false;
             pData.isDirtyForSave = true;
         }
     }

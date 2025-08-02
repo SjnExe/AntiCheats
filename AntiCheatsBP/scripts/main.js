@@ -114,6 +114,12 @@ async function processPlayer(player, dependencies, currentTick) {
         return;
     }
 
+    // Reset per-tick state flags at the beginning of the player's tick processing.
+    if (pData.isTakingFallDamage) {
+        pData.isTakingFallDamage = false;
+        pData.isDirtyForSave = true;
+    }
+
     playerDataManager.updateTransientPlayerData(player, pData, dependencies);
     playerDataManager.clearExpiredItemUseStates(pData, dependencies);
 
