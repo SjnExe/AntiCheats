@@ -1,3 +1,5 @@
+const leaderboardPropertyKey = 'anticheat:economyLeaderboard';
+
 /**
  * Gets a player's balance.
  * @param {import('../types.js').Player} player
@@ -37,12 +39,11 @@ export function updateLeaderboard(player, dependencies) {
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
 
-    const leaderboardProperty = 'anticheat:economyLeaderboard';
     const maxLeaderboardSize = config.economy?.leaderboardSize ?? 10;
 
     let leaderboard = [];
     try {
-        const rawLeaderboard = world.getDynamicProperty(leaderboardProperty);
+        const rawLeaderboard = world.getDynamicProperty(leaderboardPropertyKey);
         if (typeof rawLeaderboard === 'string') {
             leaderboard = JSON.parse(rawLeaderboard);
         }
@@ -68,7 +69,7 @@ export function updateLeaderboard(player, dependencies) {
     }
 
     try {
-        world.setDynamicProperty(leaderboardProperty, JSON.stringify(leaderboard));
+        world.setDynamicProperty(leaderboardPropertyKey, JSON.stringify(leaderboard));
     } catch (error) {
         console.error(`[EconomyManager] Failed to save leaderboard: ${error}`);
     }

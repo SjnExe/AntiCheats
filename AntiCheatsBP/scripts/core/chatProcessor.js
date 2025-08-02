@@ -1,7 +1,5 @@
 import * as mc from '@minecraft/server';
-const maxMessageSnippetLength = 50;
 const defaultChatDuringCombatCooldownSeconds = 4;
-const defaultMaxMessageLength = 256;
 /**
  * @param {import('@minecraft/server').Player} player
  * @param {import('../types.js').PlayerAntiCheatData} pData
@@ -88,6 +86,8 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             { fn: checks?.checkCapsAbuse, enabled: config?.chatChecks?.caps?.enabled, name: 'capsAbuseCheck' },
             { fn: checks?.checkCharRepeat, enabled: config?.chatChecks?.charRepeat?.enabled, name: 'charRepeatCheck' },
             { fn: checks?.checkSymbolSpam, enabled: config?.chatChecks?.symbolSpam?.enabled, name: 'symbolSpamCheck' },
+            { fn: checks?.checkNewline, enabled: config?.enableNewlineCheck, name: 'newlineCheck' },
+            { fn: checks?.checkMaxLength, enabled: config?.enableMaxMessageLengthCheck, name: 'maxLengthCheck' },
         ];
         for (const check of chatCheckFunctions) {
             if (eventData.cancel) {
@@ -97,40 +97,6 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 await check.fn(player, eventData, pData, dependencies);
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by ${check.name}.`, playerName, dependencies);
-                    return;
-                }
-            }
-        }
-        if (!eventData.cancel && config?.enableNewlineCheck) {
-            if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
-                playerUtils?.warnPlayer(player, playerUtils.getString('chat.error.newline', dependencies));
-                const messageSnippet = originalMessage.substring(0, maxMessageSnippetLength) + (originalMessage.length > maxMessageSnippetLength ? '...' : '');
-                const shouldCancelForNewline = config.cancelMessageOnNewline !== false;
-                if (shouldCancelForNewline) {
-                    eventData.cancel = true;
-                }
-                if (config.flagOnNewline) {
-                    await actionManager?.executeCheckAction(player, 'chatNewline', { message: messageSnippet }, dependencies);
-                }
-                if (eventData.cancel) {
-                    playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by NewlineCheck.`, playerName, dependencies);
-                    return;
-                }
-            }
-        }
-        if (!eventData.cancel && config?.enableMaxMessageLengthCheck) {
-            if (originalMessage.length > (config.maxMessageLength ?? defaultMaxMessageLength)) {
-                playerUtils?.warnPlayer(player, playerUtils.getString('chat.error.maxLength', dependencies, { maxLength: config.maxMessageLength ?? defaultMaxMessageLength }));
-                const messageSnippet = originalMessage.substring(0, maxMessageSnippetLength) + (originalMessage.length > maxMessageSnippetLength ? '...' : '');
-                const shouldCancelForMaxLength = config.cancelOnMaxMessageLength !== false;
-                if (shouldCancelForMaxLength) {
-                    eventData.cancel = true;
-                }
-                if (config.flagOnMaxMessageLength) {
-                    await actionManager?.executeCheckAction(player, 'chatMaxLength', { messageLength: originalMessage.length, maxLength: config.maxMessageLength ?? defaultMaxMessageLength, messageSnippet }, dependencies);
-                }
-                if (eventData.cancel) {
-                    playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by MaxMessageLengthCheck.`, playerName, dependencies);
                     return;
                 }
             }
