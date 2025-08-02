@@ -8,6 +8,54 @@ const localEllipsisLengthSimpImp = 3;
 const debugLogSimpImpSnippetLength = 50;
 
 /**
+ * @type {Map<string, RegExp>}
+ */
+const compiledPatternsCache = new Map();
+let isCacheInitialized = false;
+
+/**
+ * Compiles and caches the regex patterns from the config.
+ * @param {Dependencies} dependencies
+ */
+function initializeAndCachePatterns(dependencies) {
+    const { config, playerUtils, logManager } = dependencies;
+    if (isCacheInitialized) return;
+
+    const serverMessagePatterns = config?.impersonationServerMessagePatterns ?? [];
+    if (!Array.isArray(serverMessagePatterns) || serverMessagePatterns.length === 0) {
+        playerUtils?.debugLog('[SimpleImpersonationCheck] No serverMessagePatterns configured to cache.', null, dependencies);
+        isCacheInitialized = true;
+        return;
+    }
+
+    for (const patternString of serverMessagePatterns) {
+        if (typeof patternString !== 'string' || patternString.trim() === '') {
+            playerUtils?.debugLog('[SimpleImpersonationCheck] Encountered empty or invalid pattern string in config during caching.', null, dependencies);
+            continue;
+        }
+        if (compiledPatternsCache.has(patternString)) continue;
+
+        try {
+            const regex = new RegExp(patternString, 'i');
+            compiledPatternsCache.set(patternString, regex);
+        } catch (e) {
+            playerUtils?.debugLog(`[SimpleImpersonationCheck CRITICAL] Invalid regex pattern '${patternString}' in config. It will not be used. Error: ${e.message}`, null, dependencies);
+            console.error(`[SimpleImpersonationCheck CRITICAL] Regex pattern error for pattern '${patternString}': ${e.stack || e.message || String(e)}`);
+            logManager?.addLog({
+                actionType: 'errorSystemConfig',
+                context: 'SimpleImpersonationCheck.regexCompilation',
+                details: { error: `Invalid regex: '${patternString}'`, message: e.message },
+                errorStack: e.stack,
+            }, dependencies);
+        }
+    }
+
+    playerUtils?.debugLog(`[SimpleImpersonationCheck] Cached ${compiledPatternsCache.size} regex patterns.`, null, dependencies);
+    isCacheInitialized = true;
+}
+
+
+/**
  * Checks a message for simple impersonation patterns.
  * @param {import('@minecraft/server').Player} player The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
@@ -16,6 +64,16 @@ const debugLogSimpImpSnippetLength = 50;
  */
 export async function checkSimpleImpersonation(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;
+
+    // Ensure patterns are cached on the first run.
+    if (!isCacheInitialized) {
+        initializeAndCachePatterns(dependencies);
+    }
+
+    if (compiledPatternsCache.size === 0) {
+        return; // No patterns to check against.
+    }
+
     const rawMessageContent = eventData.message;
     const playerName = player?.name ?? 'UnknownPlayer';
 
@@ -48,50 +106,28 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
 
-    const serverMessagePatterns = config?.impersonationServerMessagePatterns ?? [];
-    if (!Array.isArray(serverMessagePatterns) || serverMessagePatterns.length === 0) {
-        playerUtils?.debugLog(`[SimpleImpersonationCheck] No serverMessagePatterns configured. Skipping check for ${playerName}.`, watchedPlayerName, dependencies);
-        return;
-    }
-
     const actionProfileKey = config?.impersonationActionProfileName ?? defaultActionProfileKey;
 
-    for (const patternString of serverMessagePatterns) {
-        if (typeof patternString !== 'string' || patternString.trim() === '') {
-            playerUtils?.debugLog('[SimpleImpersonationCheck] Encountered empty or invalid pattern string in config.', watchedPlayerName, dependencies);
-            continue;
-        }
-        try {
-            const regex = new RegExp(patternString, 'i');
-            if (regex.test(rawMessageContent)) {
-                const messageSnippetLimit = 75; // This is a local const, might be better at top or from config if shared
-                const violationDetails = {
-                    messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - localEllipsisLengthSimpImp) }...` : rawMessageContent,
-                    matchedPattern: patternString,
-                    playerPermissionLevel: typeof playerPermission === 'number' ? playerPermission.toString() : 'Unknown',
-                    exemptPermissionLevelRequired: exemptPermissionLevel.toString(),
-                    originalMessage: rawMessageContent,
-                };
+    for (const [patternString, regex] of compiledPatternsCache.entries()) {
+        if (regex.test(rawMessageContent)) {
+            const messageSnippetLimit = 75; // This is a local const, might be better at top or from config if shared
+            const violationDetails = {
+                messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - localEllipsisLengthSimpImp) }...` : rawMessageContent,
+                matchedPattern: patternString,
+                playerPermissionLevel: typeof playerPermission === 'number' ? playerPermission.toString() : 'Unknown',
+                exemptPermissionLevelRequired: exemptPermissionLevel.toString(),
+                originalMessage: rawMessageContent,
+            };
 
-                // Await the action to ensure it completes before we potentially cancel the message and exit.
-                await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-                playerUtils?.debugLog(`[SimpleImpersonationCheck] Flagged ${playerName} for impersonation attempt. Pattern: '${patternString}'. Msg: '${rawMessageContent.substring(0, debugLogSimpImpSnippetLength)}...'`, watchedPlayerName, dependencies);
+            // Await the action to ensure it completes before we potentially cancel the message and exit.
+            await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+            playerUtils?.debugLog(`[SimpleImpersonationCheck] Flagged ${playerName} for impersonation attempt. Pattern: '${patternString}'. Msg: '${rawMessageContent.substring(0, debugLogSimpImpSnippetLength)}...'`, watchedPlayerName, dependencies);
 
-                const profile = dependencies.checkActionProfiles?.[actionProfileKey];
-                if (profile?.cancelMessage) {
-                    eventData.cancel = true;
-                }
-                return;
+            const profile = dependencies.checkActionProfiles?.[actionProfileKey];
+            if (profile?.cancelMessage) {
+                eventData.cancel = true;
             }
-        } catch (e) {
-            playerUtils?.debugLog(`[SimpleImpersonationCheck CRITICAL] Invalid regex pattern '${patternString}' in config for ${playerName}. Error: ${e.message}`, watchedPlayerName, dependencies);
-            console.error(`[SimpleImpersonationCheck CRITICAL] Regex pattern error for pattern '${patternString}': ${e.stack || e.message || String(e)}`);
-            dependencies.logManager?.addLog({
-                actionType: 'errorSystemConfig',
-                context: 'SimpleImpersonationCheck.regexCompilation',
-                details: { error: `Invalid regex: '${patternString}'`, message: e.message },
-                errorStack: e.stack,
-            }, dependencies);
+            return; // Exit after first match.
         }
     }
 }

@@ -57,11 +57,7 @@ export async function checkNoFall(player, pData, dependencies) {
             if (player.hasComponent(mc.EntityComponentTypes.Rider)) {
                 exemptReasons.push('RidingEntity');
             }
-            playerUtils?.debugLog(`[NoFallCheck] ${playerName} in exempt state: ${exemptReasons.join(', ')}. FallDistance reset.`, watchedPlayerName, dependencies);
-        }
-        if (pData.fallDistance > 0) {
-            pData.fallDistance = 0;
-            pData.isDirtyForSave = true;
+            playerUtils?.debugLog(`[NoFallCheck] ${playerName} in exempt state: ${exemptReasons.join(', ')}.`, watchedPlayerName, dependencies);
         }
         return;
     }
@@ -70,10 +66,7 @@ export async function checkNoFall(player, pData, dependencies) {
         const slimeBlockGraceTicks = config?.slimeBlockNoFallGraceTicks ?? 20;
         if ((currentTick - (pData.lastOnSlimeBlockTick ?? -Infinity)) < slimeBlockGraceTicks) {
             if (pData.isWatched) {
-                playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} recently on slime block (LastSlimeTick: ${pData.lastOnSlimeBlockTick}, CurrentTick: ${currentTick}). Fall damage check modified/bypassed. FallDistance reset.`, watchedPlayerName, dependencies);
-            }
-            if (pData.fallDistance > 0) {
-                pData.fallDistance = 0; pData.isDirtyForSave = true;
+                playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} recently on slime block (LastSlimeTick: ${pData.lastOnSlimeBlockTick}, CurrentTick: ${currentTick}). Fall damage check modified/bypassed.`, watchedPlayerName, dependencies);
             }
             return;
         }
@@ -84,10 +77,7 @@ export async function checkNoFall(player, pData, dependencies) {
 
             if (blockBelow && (config?.noFallMitigationBlocks ?? []).includes(blockBelow.typeId)) {
                 if (pData.isWatched) {
-                    playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} landed on a configured fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified. FallDistance reset.`, watchedPlayerName, dependencies);
-                }
-                if (pData.fallDistance > 0) {
-                    pData.fallDistance = 0; pData.isDirtyForSave = true;
+                    playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} landed on a configured fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified.`, watchedPlayerName, dependencies);
                 }
                 return;
             }
@@ -138,11 +128,7 @@ export async function checkNoFall(player, pData, dependencies) {
             playerUtils?.debugLog(`[NoFallCheck] Flagged ${playerName} for NoFall. FallDist: ${pData.fallDistance.toFixed(2)}, MinDamageDist: ${minDamageDistance}`, watchedPlayerName, dependencies);
         }
 
-        // Fall distance is reset here. The isTakingFallDamage flag is reset at the start of the next tick
-        // in main.js to prevent race conditions.
-        if (pData.fallDistance > 0) {
-            pData.fallDistance = 0;
-            pData.isDirtyForSave = true;
-        }
+        // The isTakingFallDamage flag is reset at the start of the next tick
+        // in main.js to prevent race conditions. Fall distance is now handled centrally.
     }
 }
