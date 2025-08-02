@@ -535,7 +535,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     } else {
         pData.consecutiveOffGroundTicks = 0;
         transient.ticksSinceLastOnGround = 0;
-        // pData.fallDistance = 0; // REMOVED: No longer reset here.
+        pData.fallDistance = 0; // RE-ADD: Reset fall distance on landing.
         pData.lastOnGroundPosition = { ...player.location };
         pData.lastDimensionId = player.dimension.id; // Store dimension with ground position
 

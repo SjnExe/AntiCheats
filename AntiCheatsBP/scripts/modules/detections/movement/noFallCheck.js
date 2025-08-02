@@ -78,17 +78,21 @@ export async function checkNoFall(player, pData, dependencies) {
             return;
         }
 
-        const blockLocationBelow = { x: Math.floor(player.location.x), y: Math.floor(player.location.y) - 1, z: Math.floor(player.location.z) };
-        const blockBelow = player.dimension.getBlock(blockLocationBelow);
+        try {
+            const blockLocationBelow = { x: Math.floor(player.location.x), y: Math.floor(player.location.y) - 1, z: Math.floor(player.location.z) };
+            const blockBelow = player.dimension.getBlock(blockLocationBelow);
 
-        if (blockBelow && (config?.noFallMitigationBlocks ?? []).includes(blockBelow.typeId)) {
-            if (pData.isWatched) {
-                playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} landed on a configured fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified. FallDistance reset.`, watchedPlayerName, dependencies);
+            if (blockBelow && (config?.noFallMitigationBlocks ?? []).includes(blockBelow.typeId)) {
+                if (pData.isWatched) {
+                    playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} landed on a configured fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified. FallDistance reset.`, watchedPlayerName, dependencies);
+                }
+                if (pData.fallDistance > 0) {
+                    pData.fallDistance = 0; pData.isDirtyForSave = true;
+                }
+                return;
             }
-            if (pData.fallDistance > 0) {
-                pData.fallDistance = 0; pData.isDirtyForSave = true;
-            }
-            return;
+        } catch (e) {
+            playerUtils?.debugLog(`[NoFallCheck] Error checking block below for ${playerName}: ${e.message}`, watchedPlayerName, dependencies);
         }
 
         if (pData.isWatched) {
@@ -103,15 +107,21 @@ export async function checkNoFall(player, pData, dependencies) {
 
         if (pData.fallDistance > minDamageDistance && !pData.isTakingFallDamage) {
             let currentHealth = 'N/A';
-            const healthComponent = player.getComponent(mc.EntityComponentTypes.Health);
-            if (healthComponent) {
-                currentHealth = healthComponent.currentValue.toString();
-            }
+            let activeEffectsString = 'N/A';
+            try {
+                const healthComponent = player.getComponent(mc.EntityComponentTypes.Health);
+                if (healthComponent) {
+                    currentHealth = healthComponent.currentValue.toString();
+                }
 
-            let activeEffectsString = 'none';
-            const effects = player.getEffects();
-            if (effects.length > 0) {
-                activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
+                const effects = player.getEffects();
+                if (effects.length > 0) {
+                    activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
+                } else {
+                    activeEffectsString = 'none';
+                }
+            } catch (e) {
+                playerUtils?.debugLog(`[NoFallCheck] Error getting health/effects for ${playerName}: ${e.message}`, watchedPlayerName, dependencies);
             }
 
             const violationDetails = {
