@@ -40,7 +40,7 @@ export async function checkCps(player, pData, dependencies) {
     }
 
     const maxThreshold = config.maxCpsThreshold ?? 20;
-    const actionProfileKey = config?.cpsCheckActionProfileName ?? 'combatCps';
+    const actionProfileKey = config?.cpsCheckActionProfileName ?? 'combatCpsHigh';
 
     if (eventsInWindow > maxThreshold) {
         const violationDetails = {

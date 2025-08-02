@@ -22,6 +22,8 @@ const defaultConfigSettings = {
     enableDebugLogging: false,
     /** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
     prefix: '!',
+    /** @type {boolean} If true, admins will receive AntiCheat notifications by default. They can opt-out with a command. */
+    acGlobalNotificationsDefaultOn: true,
 
     /** @type {object} Settings related to debugging and performance profiling. */
     development: {
