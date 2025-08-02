@@ -1,136 +1,89 @@
 # Coding Style Guidelines
 
-This document outlines coding style conventions to be followed for this project to ensure consistency and readability.
+This document outlines coding style conventions to be followed for this project to ensure consistency, readability, and maintainability. Adherence to these guidelines is expected for all contributions.
 
 ## Naming Conventions
 
-*All JavaScript identifiers (variables, function names, object properties, etc.) should generally use **`camelCase`**. This is now also enforced by ESLint where applicable.*
+The general rule for all project-specific JavaScript identifiers (variables, function names, object properties, etc.) is to use **`camelCase`**. This is enforced by ESLint where applicable.
+
+### Internal ("Private") Members
+
+- To signify that a function or a module-level variable is intended for internal use within that module only (i.e., it is not exported), it **MUST** be prefixed with a leading underscore (`_`).
+- This is a convention to communicate intent; it does not provide true privacy.
+- **Example:** `function _internalHelper() { ... }`, `const _moduleConstant = 10;`
 
 ### Configuration Variables (`AntiCheatsBP/scripts/config.js`)
 
-- Configuration variables exported from `config.js` should use **`camelCase`** (e.g., `exampleConfigValue`, `maxAllowedSpeed`).
-- This applies to all new and refactored configuration constants.
+- All configuration variables exported from `config.js` **MUST** use `camelCase` (e.g., `exampleConfigValue`, `maxAllowedSpeed`).
 
 ### General Variables & Object Properties
 
-- Local variables, function parameters, and object properties should use **`camelCase`** (e.g., `let myVariable = ...; function doSomething(someParameter) {}; const obj = { myProperty: value };`).
+- Local variables, function parameters, and object properties **MUST** use `camelCase`.
+- **Example:** `let myVariable = ...; function doSomething(someParameter) {}; const obj = { myProperty: value };`
 
 ### Functions
 
-- Function names should use **`camelCase`** (e.g., `function myFunction() {}`).
+- All exported and local function names **MUST** use `camelCase`.
+- For internal-only helper functions, see the **Internal ("Private") Members** section above.
+- **Example:** `function myFunction() {}`
 
-### Classes (if any used in the future)
+### Classes
 
-- Class names should use **`PascalCase`** (e.g., `class MyClass {}`).
+- While not currently in use, any future classes **MUST** use `PascalCase`.
+- **Example:** `class MyClass {}`
 
-### Constants (outside of `config.js` exports)
+### Constants
 
-- For any constants defined within files (not intended for external configuration via `config.js`), also use **`camelCase`** (e.g., `const maxRetries = 3;`). Avoid using `UPPER_SNAKE_CASE` to maintain consistency. If a value is truly global and fixed, it should ideally still be exposed via `config.js` using `camelCase`.
+- All constants, whether exported from `config.js` or defined locally within a file, **MUST** use `camelCase`.
+- The use of `UPPER_SNAKE_CASE` is disallowed to maintain a consistent style across the codebase.
+- **Example:** `const maxRetries = 3;`
 
-### Acronyms in Code (Variables/Functions/Properties):
+### Acronyms in Code
 
-- Acronyms within JavaScript `camelCase` identifiers should follow standard camel casing rules (e.g., `enableAntiGmcCheck`, `tpaManager`, `playerData.tpsInfo`). This enhances consistency.
-- Example: `enableAntiGmcCheck`, `playerGmsStatus` are preferred over `enableAntiGMCCheck` or `playerGMSStatus`.
+- Acronyms within `camelCase` identifiers **SHOULD** follow standard camel casing rules to enhance consistency.
+- **Example:** `enableAntiGmcCheck`, `tpaManager` are preferred over `enableAntiGMCCheck`.
 
 ### Exception for Minecraft Identifiers
 
 - When interacting with native Minecraft APIs, it is necessary to use the case style defined by the game itself.
-- Many Minecraft identifiers, such as item IDs, entity type IDs, and effect type IDs, use **`snake_case`** (e.g., `minecraft:ender_pearl`, `minecraft:zombie_pigman`, `jump_boost`).
-- When using these identifiers as string literals in the code, their original `snake_case` format **MUST** be preserved for the game to recognize them.
-- **Example:** `player.addEffect('slow_falling', ...)` is correct, whereas `player.addEffect('slowFalling', ...)` would fail.
+- Many Minecraft identifiers (e.g., item IDs, entity type IDs, effect types) use **`snake_case`**.
+- When using these identifiers as string literals, their original `snake_case` format **MUST** be preserved.
+- **Example:** `player.addEffect('slow_falling', ...)` is correct; `player.addEffect('slowFalling', ...)` would fail.
 
 ## Command System Conventions
 
-### Command Prefixes
-
-- Commands should be directly accessible via the configured `prefix` (e.g., `!`, as defined in `config.js`).
-- The previous convention of using `!ac <command>` is deprecated. Commands should now be, for example, `!ban`, `!kick`, `!panel`.
-
 ### Command Naming
 
-- Main command names should be descriptive and clear (e.g., `ban`, `kick`, `mute`, `inspect`).
-- Avoid overly short or cryptic main command names. Aliases are preferred for brevity.
-- User-facing commands (e.g., those typed in chat like `!gmc`, `!help`) should remain in their existing lowercase format.
+- User-facing commands typed in chat **MUST** be lowercase (e.g., `!gmc`, `!help`).
+- The internal registration name of a command (in its definition file) **SHOULD** be descriptive and clear (e.g., `ban`, `kick`, `mute`).
 
-### Command Aliases
+### `checkType` and `actionType` String Identifiers
 
-- Most new commands should consider having a short, convenient alias.
-- Command aliases are now defined directly within each command's definition object (typically in `AntiCheatsBP/scripts/commands/yourcommand.js`) under an `aliases` array (e.g., `aliases: ['alias1', 'alias2']`).
-- The `commandManager.js` processes these aliases, resolving them to the main command name.
-- Aliases should be unique and not conflict with other aliases or main command names.
+- `checkType` identifiers (used to link detections to actions) **MUST** be `camelCase`.
+  - **Examples:** `movementFlyHover`, `playerAntiGmc`, `worldIllegalItemPlace`.
+- `actionType` identifiers (used for logging and defining AutoMod rule actions) **MUST** be `camelCase`.
+  - **Examples (AutoMod):** `warn`, `kick`, `tempBan`.
+  - **Examples (Logging):** `detectedFlyHover`, `antigriefTntPlacement`.
 
-### `checkType` String Identifiers
+## JSDoc and Comments
 
-- `checkType` string identifiers (used in check scripts, `actionProfiles.js`, `automodConfig.js`) should use **`camelCase`**.
-- Acronyms within these identifiers should also follow standard camel casing (e.g., `playerAntiGmc`, `chatTpaRequest`).
-- Examples: `movementFlyHover`, `playerAntiGmc`, `worldIllegalItemPlace`.
-
-### `actionType` String Literals
-
-String literals used for `actionType` values (e.g., in `automodConfig.js` for AutoMod rule actions, and for `log.actionType` in `actionProfiles.js` for log categorization) should use **`camelCase`**.
-
-- Examples for AutoMod rule actions: `warn`, `kick`, `tempBan`, `mute`, `flagOnly`, `teleportSafe`.
-- Examples for `log.actionType` in action profiles: `detectedFlyHover`, `antigriefTntPlacement`, `detectedSpeedGround`.
-
-## JSDoc and Magic Numbers (Linting Rules)
-
-**JSDoc and magic number linting rules are explicitly disabled in this project and should not be re-enabled.**
-
-### JSDoc
-
-- While JSDoc can be useful, it is not enforced by the linter in this project.
-- If you choose to use JSDoc, it should be as compact as possible, where single line comment should never use multi line comment style.
-- Constants should not be used if they are not necessary.
-- There should be no unnecessary comments or empty lines.
-
-### Magic Numbers
-
-- The `no-magic-numbers` linting rule is disabled.
-- While it's good practice to avoid unexplained numbers in the code, this rule is often too strict and can lead to less readable code.
+- **JSDoc:** The `require-jsdoc` linting rule is disabled. However, if you choose to write JSDoc comments, you **SHOULD** follow a compact style. Multi-line comments (`/** ... */`) should only be used when necessary.
+- **Clarity:** There should be no unnecessary comments or empty lines. Code should be as self-documenting as possible.
 
 ## General Formatting
 
-- Follow existing code formatting for indentation (e.g., 4 spaces), spacing, and brace style.
-- Aim for clarity and readability in code structure.
-- Refer to `Dev/StandardizationGuidelines.md` for more detailed formatting rules.
+- **Indentation:** Use 4 spaces for indentation.
+- **Brace Style:** Follow the existing brace style (One True Brace Style).
+- **Readability:** Aim for clarity and readability in all code.
+- For more detailed rules, refer to `Dev/StandardizationGuidelines.md`.
 
-## Debugging and Logging
+## Logging
 
-### General Principles
-
-- **Purpose:** Logging is crucial for diagnosing issues, understanding behavior, and aiding development. Strive to make logs clear, concise, and informative.
-- **Performance:** Debug logging should have minimal to no impact on runtime performance when disabled. Expensive operations to gather data for logs (e.g., complex calculations, iterating large arrays, frequent `JSON.stringify` of large objects) MUST be conditional, typically enclosed within an `if (config.enableDebugLogging || (pData && pData.isWatched))` block or similar logic that checks if logging for that context is active.
-
-### Using `debugLog`
-
-- **Primary Tool:** The primary utility for debug logging is `debugLog(message, contextPlayerNameIfWatched, dependencies)` located in `utils/playerUtils.js`.
-- **Output Destination:** `debugLog` uses `console.warn()`, which directs output to the server console and Minecraft's Content Log GUI. It should NOT be used for messages intended for player chat. For admin notifications, use `notifyAdmins()`. For direct warnings to players, use `warnPlayer()`.
-- **Conditional Logging:** The `debugLog` function itself will only output if `dependencies.config.enableDebugLogging` is true.
-- **Contextual Information:**
-  - Always provide sufficient context in your log messages. Include relevant variable values, state indicators, function names, or event types.
-  - For player-specific actions or checks, use the `contextPlayerNameIfWatched` parameter. If this parameter is provided, `debugLog` will use a prefix like `[AC Watch - PlayerName]` which helps in filtering and focusing on specific player activity.
-  - Example: `playerUtils.debugLog(\`Player ${player.nameTag} failed fly check. Vertical speed: ${currentSpeedY}\`, player.nameTag, dependencies);`
-- **Strategic Placement:**
-  - Log entry and exit points for complex functions or event handlers, especially if they are critical paths.
-  - Log key decisions, state changes, or the results of important calculations.
-  - When a check or action is denied or fails, log the reason and the values that led to the failure.
-- **Clarity over Brevity (when active):** When debugging is active, more information is generally better, as long as it's well-structured. Don't be afraid to log multiple related variables if it helps paint a full picture.
-
-### Example of Performance-Conscious Logging
-
-```javascript
-// In a function that processes player data (pData) and has dependencies
-if (dependencies.config.enableDebugLogging || (pData && pData.isWatched)) {
-  // Expensive data gathering only happens if logging is active for this context
-  const detailedStatus = someComplexFunctionToGetStringStatus(pData);
-  const relevantEvents = pData.eventHistory.filter((event) => event.type === "critical").map((event) => event.id);
-
-  playerUtils.debugLog(`Processing player ${pData.playerName}. Status: ${detailedStatus}. Critical Event IDs: ${JSON.stringify(relevantEvents)}.`, pData.playerName, dependencies);
-}
-
-// Or, if the debugLog call is already inside a conditional block checking for isWatched:
-// (Inside a function where pData and dependencies are available, and isWatched has been checked)
-// const someValue = potentiallyExpensiveCalculation();
-// playerUtils.debugLog(`Some check for ${pData.playerName}: value is ${someValue}`, pData.playerName, dependencies);
-// Consider if potentiallyExpensiveCalculation() itself needs to be conditional if it's very heavy.
-```
+- **Purpose:** Logging is crucial for diagnosing issues and understanding behavior. Logs **SHOULD** be clear, concise, and informative.
+- **Performance:** Expensive operations to gather data for logs **MUST** be conditional on a check like `if (config.enableDebugLogging || pData?.isWatched)`.
+- **Tooling:**
+  - Use `playerUtils.debugLog()` for development messages.
+  - Use `logManager.addLog()` for persistent, structured action and error logging.
+  - Use `playerUtils.notifyAdmins()` for important real-time notifications to staff.
+  - Use `playerUtils.warnPlayer()` for direct warnings to players.
+- For detailed implementation, see the **Debugging and Logging** section in the main `README.md` or `AGENTS.md`.
