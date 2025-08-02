@@ -523,7 +523,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
 
     const onGround = player.isOnGround;
     transient.isClimbing = player.isClimbing;
-    transient.isFalling = !onGround && velocity.y < minecraftFallingVelocity;
+    transient.isFalling = !onGround && velocity.y < 0;
     transient.isGliding = player.isGliding;
     transient.isJumping = player.isJumping;
     transient.isRiding = player.isRiding;
