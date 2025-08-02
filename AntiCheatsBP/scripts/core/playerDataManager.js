@@ -3,7 +3,6 @@ import { offlineBanList } from './offlineBanList.js';
 
 const maxSerializedDataLength = 30000;
 const itemUseStateExpiryMs = 5000;
-const minecraftFallingVelocity = -0.0784;
 
 /**
  * @type {Map<string, import('../types.js').PlayerAntiCheatData>}
