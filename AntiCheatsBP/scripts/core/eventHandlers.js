@@ -70,7 +70,7 @@ function profileEventHandler(handlerName, handlerFunction) {
  * @param {import('@minecraft/server').PlayerLeaveBeforeEvent} eventData
  * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
+function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
     const { playerDataManager, playerUtils, config, logManager, actionManager, economyManager } = dependencies;
     const { player } = eventData;
     const { name: playerName, id: playerId } = player;
@@ -102,12 +102,14 @@ async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
                 );
 
                 const violationDetails = { timeSinceLastCombat: timeSinceLastCombatSeconds, incrementAmount };
-                await actionManager.executeCheckAction(player, 'combatLog', violationDetails, dependencies);
+                // Note: executeCheckAction can be async. In a sync event handler, we can't wait for it.
+                // This is acceptable for combat logging, as the action (e.g., adding a flag) doesn't
+                // need to block the leave event. The consequences will be applied regardless.
+                actionManager.executeCheckAction(player, 'combatLog', violationDetails, dependencies);
             }
         }
 
         // Update session info and log the leave event.
-        // We continue to use the same pData object to ensure any modifications from executeCheckAction are preserved.
         pData.lastLogoutTime = Date.now();
         pData.isOnline = false;
 
@@ -132,7 +134,7 @@ async function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
         // This is the most critical part: save the data using the valid player object
         try {
             // The handlePlayerLeaveBeforeEvent in playerDataManager will mark dirty and save
-            await playerDataManager.handlePlayerLeaveBeforeEvent(player, dependencies);
+            playerDataManager.handlePlayerLeaveBeforeEvent(player, dependencies);
             playerUtils.debugLog(`[EventHandler.handlePlayerLeave] Data save processed for ${playerName} on leave.`, playerName, dependencies);
         } catch (error) {
             logError(`[EventHandler.handlePlayerLeave CRITICAL] Error in handlePlayerLeaveBeforeEvent for ${playerName} on leave: ${error.stack || error}`, error);
