@@ -20,7 +20,7 @@ const {
 
 const periodicDataPersistenceIntervalTicks = 600;
 const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
-const tpaSystemTickInterval = 20;
+export const tpaSystemTickInterval = 20;
 
 // Pre-calculate the sorted list of check names once on module load for efficiency.
 const checkNames = Object.keys(checks).sort();
@@ -178,7 +178,7 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
     tpaManager.persistTpaState(dependencies);
 }
 
-function tpaTick(dependencies) {
+export function tpaTick(dependencies) {
     try {
         if (!config.enableTpaSystem) {
             return;
@@ -225,9 +225,3 @@ function tpaTick(dependencies) {
         }, dependencies);
     }
 }
-
-system.runInterval(() => {
-    if (world.getDynamicProperty('ac:initialized')) {
-        tpaTick(dependencies);
-    }
-}, tpaSystemTickInterval);

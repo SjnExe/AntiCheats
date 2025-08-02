@@ -3,7 +3,7 @@ import * as eventHandlers from './eventHandlers.js';
 import * as dependencies from './dependencyManager.js';
 import { logError, playerUtils } from '../modules/utils/playerUtils.js';
 import { migrateConfig } from './configMigration.js';
-import { mainTick } from '../main.js';
+import { mainTick, tpaTick, tpaSystemTickInterval } from '../main.js';
 
 const {
     config,
@@ -162,6 +162,12 @@ function performInitializations() {
     }
 
     world.setDynamicProperty('ac:initialized', true);
+
+    // Start the TPA system tick loop now that the system is initialized.
+    system.runInterval(() => {
+        // The tpaTick itself checks if the system is enabled in config.
+        tpaTick(dependencies);
+    }, tpaSystemTickInterval);
 
     world.sendMessage({
         'translate': 'system.core.initialized',
