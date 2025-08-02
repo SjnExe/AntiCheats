@@ -194,7 +194,8 @@ export function tpaTick(dependencies) {
 
         tpaManager.clearExpiredRequests(dependencies);
 
-        tpaManager.getRequestsInWarmup().forEach(req => {
+        const requestsInWarmup = tpaManager.getRequestsInWarmup();
+        for (const req of requestsInWarmup) {
             const requester = world.getPlayer(req.requesterName);
             const target = world.getPlayer(req.targetName);
 
@@ -203,24 +204,27 @@ export function tpaTick(dependencies) {
                 const reasonMsgKey = 'tpa.manager.error.teleportWarmupTargetInvalid';
                 const reasonLog = `A player (${invalidPlayerName}) involved in TPA request ${req.requestId} went offline during warmup.`;
                 tpaManager.cancelTeleport(req.requestId, reasonMsgKey, reasonLog, dependencies);
-                return;
+                continue; // Skip to the next request
             }
 
+            // If the request was cancelled for any reason (e.g., movement), its status will have changed.
+            // This check ensures we don't proceed with a cancelled or already processed request.
             if (req.status !== 'pendingTeleportWarmup') {
-                return;
+                continue;
             }
 
             if (config.tpaCancelOnMoveDuringWarmup) {
                 tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
+                // Re-check status, as the above function may have cancelled it.
                 if (req.status !== 'pendingTeleportWarmup') {
-                    return;
+                    continue;
                 }
             }
 
             if (Date.now() >= (req.warmupExpiryTimestamp || 0)) {
                 tpaManager.executeTeleport(req.requestId, dependencies);
             }
-        });
+        }
     } catch (e) {
         logError(`Unhandled error in tpaTick: ${e?.message}`, e);
         logManager.addLog({
