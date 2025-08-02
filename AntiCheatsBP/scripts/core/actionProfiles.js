@@ -36,7 +36,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected excessive ground speed. Speed: {speedBps} BPS (Max: {maxAllowedBps})',
-            type: 'movementSpeed',
+            type: 'movementSpeedGround',
         },
         notifyAdmins: {
             message: {
@@ -163,7 +163,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected excessive reach during combat. Distance: {distance} (Max: {maxAllowed})',
-            type: 'combatReach',
+            type: 'combatReachAttack',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bReach§r. Distance: §a{distance}§r (Max: §a{maxAllowed}§r)',
@@ -191,7 +191,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected suspicious pitch snap after attack. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
-            type: 'combatViewSnap',
+            type: 'combatViewSnapPitch',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bPitch Snap§r. Change: §a{change}°§r, Limit: §a{limit}°§r (§a{postAttackTimeMs}ms§r after attack)',
@@ -205,7 +205,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected suspicious yaw snap after attack. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
-            type: 'combatViewSnap',
+            type: 'combatViewSnapYaw',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bYaw Snap§r. Change: §a{change}°§r, Limit: §a{limit}°§r (§a{postAttackTimeMs}ms§r after attack)',
@@ -233,7 +233,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})',
-            type: 'combatAura',
+            type: 'combatMultiTargetAura',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bMulti-Target Aura§r. Targets: §a{targetsHit}§r in §a{windowSeconds}s§r (Threshold: §a{threshold}§r)',
@@ -247,7 +247,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 5,
             reason: 'System detected player attacking while sleeping. Target: {targetEntityType}',
-            type: 'combatStateConflict',
+            type: 'combatAttackWhileSleeping',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bAttacking While Sleeping§r. Target: §a{targetEntityType}§r',
@@ -261,7 +261,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected player attacking while consuming an item ({itemCategory}). State: {state}',
-            type: 'combatStateConflict',
+            type: 'combatAttackWhileConsuming',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bAttacking While Consuming§r. State: §a{state}§r, Item Category: §a{itemCategory}§r',
@@ -275,7 +275,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected player attacking while charging a bow ({itemCategory}). State: {state}',
-            type: 'combatStateConflict',
+            type: 'combatAttackWhileBowCharging',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bAttacking While Charging Bow§r. State: §a{state}§r, Item Category: §a{itemCategory}§r',
@@ -289,7 +289,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'System detected player attacking while actively using a shield ({itemCategory}). State: {state}',
-            type: 'combatStateConflict',
+            type: 'combatAttackWhileShielding',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bAttacking While Shielding§r. State: §a{state}§r, Item Category: §a{itemCategory}§r',
@@ -495,7 +495,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected suspicious inventory manipulation (Switch-Use). Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}',
-            type: 'playerInventoryMod',
+            type: 'playerInventoryModSwitchUse',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bInventoryMod (Switch-Use)§r. Detail: §a{reasonDetail}§r. Item: §a{itemType}§r, Slot: §a{slot}§r',
@@ -509,7 +509,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected suspicious inventory manipulation (Move-Locked). Detail: {reasonDetail}. Item: {itemTypeInvolved}, Slot: {slotChanged}, Action: {actionInProgress}',
-            type: 'playerInventoryMod',
+            type: 'playerInventoryModMoveLocked',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bInventoryMod (Move-Locked)§r. Detail: §a{reasonDetail}§r. Item: §a{itemTypeInvolved}§r, Slot: §a{slotChanged}§r, Action: §a{actionInProgress}§r',
@@ -523,7 +523,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Client reported an excessive render distance: {reportedDistance} chunks (Max: {maxAllowed} chunks).',
-            type: 'playerClientAnomaly',
+            type: 'playerInvalidRenderDistance',
         },
         notifyAdmins: {
             message: '§e{playerName}§r reported render distance of §a{reportedDistance}§r chunks (Max: §a{maxAllowed}§r). Potential client modification.',
@@ -563,7 +563,7 @@ export const checkActionProfiles = {
     },
     chatSpamFastMessage: {
         flag: {
-            type: 'chatSpamFast',
+            type: 'chatSpamFastMessage',
             increment: 1,
             reason: 'Sent messages too quickly ({timeSinceLastMsgMs}ms apart). Message: {messageContent}',
         },
@@ -597,7 +597,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Attempted to chat too soon after combat ({timeSinceCombat}s ago).',
-            type: 'playerChatStateViolation',
+            type: 'playerChatDuringCombat',
         },
         notifyAdmins: {
             message: '§e{playerName}§r attempted to chat during combat cooldown (§a{timeSinceCombat}s§r ago). Message cancelled.',
@@ -612,7 +612,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Attempted to chat while actively using an item ({itemUseState}).',
-            type: 'playerChatStateViolation',
+            type: 'playerChatDuringItemUse',
         },
         notifyAdmins: {
             message: '§e{playerName}§r attempted to chat while §a{itemUseState}§r. Message cancelled.',
@@ -627,7 +627,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Swear word detected in message: {detectedSwear}. Message: {originalMessage}',
-            type: 'chatLanguageViolation',
+            type: 'chatSwearViolation',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §bSwear Word§r. Word: \'§f{detectedSwear}§r\'. Message: §f{originalMessage}',
@@ -641,7 +641,7 @@ export const checkActionProfiles = {
     },
     chatAdvertisingDetected: {
         flag: {
-            type: 'chatAdvertising',
+            type: 'chatAdvertisingDetected',
             reason: 'Potential advertisement detected: {detectedLink}. Message: {originalMessage}',
             increment: 1,
         },
@@ -656,7 +656,7 @@ export const checkActionProfiles = {
     },
     chatCapsAbuseDetected: {
         flag: {
-            type: 'chatCapsAbuse',
+            type: 'chatCapsAbuseDetected',
             reason: 'Message contained excessive capitalization ({percentage}% CAPS). Message: {originalMessage}',
             increment: 1,
         },
@@ -671,7 +671,7 @@ export const checkActionProfiles = {
     },
     chatCharRepeatDetected: {
         flag: {
-            type: 'chatCharRepeat',
+            type: 'chatCharRepeatDetected',
             reason: 'Message contained repeated characters: \'{char}\' x{count}. Message: {originalMessage}',
             increment: 1,
         },
@@ -686,7 +686,7 @@ export const checkActionProfiles = {
     },
     chatSymbolSpamDetected: {
         flag: {
-            type: 'chatSymbolSpam',
+            type: 'chatSymbolSpamDetected',
             reason: 'Sent a message with a high percentage of symbols ({percentage}%). Message: {originalMessage}',
             increment: 1,
         },
@@ -778,7 +778,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Message contained newline characters. Message: {message}',
-            type: 'chatFormattingViolation',
+            type: 'chatNewline',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for using §bnewlines§r in chat. Message: §f{message}§r',
@@ -793,7 +793,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Message exceeded maximum length ({messageLength}/{maxLength}). Snippet: {messageSnippet}',
-            type: 'chatFormattingViolation',
+            type: 'chatMaxLength',
         },
         notifyAdmins: {
             message: '§e{playerName}§r flagged for §boverly long message§r (§a{messageLength}/{maxLength}§r). Snippet: §f{messageSnippet}§r',
@@ -808,7 +808,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Player attempted to place TNT without authorization at {x},{y},{z}. Action: {actionTaken}.',
-            type: 'antiGriefTnt',
+            type: 'worldAntiGriefTntPlace',
         },
         notifyAdmins: {
             message: '[AntiGrief] §e{playerName}§r attempted to place §bTNT§r at §a{x},{y},{z}§r. Action: §a{actionTaken}§r.',
@@ -823,7 +823,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 5,
             reason: 'Player involved in unauthorized Wither spawn or Wither killed by AntiGrief. Context: {playerNameOrContext}. Action: {actionTaken}.',
-            type: 'antiGriefWither',
+            type: 'worldAntiGriefWitherSpawn',
         },
         notifyAdmins: {
             message: '[AntiGrief] §cWither spawn event occurred§r. Context: §e{playerNameOrContext}§r. Action: §a{actionTaken}§r.',
@@ -838,7 +838,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'Player involved in unauthorized fire incident. Context: {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
-            type: 'antiGriefFire',
+            type: 'worldAntiGriefFire',
         },
         notifyAdmins: {
             message: '[AntiGrief] Fire event involving §e{playerNameOrContext}§r. Action: §a{actionTaken}§r. Details: {detailsString}',
@@ -853,7 +853,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'Player involved in unauthorized lava placement. Context: {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
-            type: 'antiGriefLava',
+            type: 'worldAntiGriefLava',
         },
         notifyAdmins: {
             message: '[AntiGrief] Lava placement involving §e{playerNameOrContext}§r. Action: §a{actionTaken}§r. Details: {detailsString}',
@@ -868,7 +868,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Player involved in unauthorized water placement. Context: {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
-            type: 'antiGriefWater',
+            type: 'worldAntiGriefWater',
         },
         notifyAdmins: {
             message: '[AntiGrief] Water placement involving §e{playerNameOrContext}§r. Action: §a{actionTaken}§r. Details: {detailsString}',
@@ -883,7 +883,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Player suspected of block spamming. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}.',
-            type: 'antiGriefBlockspam',
+            type: 'worldAntiGriefBlockspam',
         },
         notifyAdmins: {
             message: '[AntiGrief] §e{playerName}§r suspected of §bBlock Spam§r. Blocks: §a{count}/{maxBlocks}§r in §a{windowMs}ms§r. Type: §a{blockType}§r. Action: §a{actionTaken}§r.',
@@ -897,7 +897,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'Player suspected of entity spamming. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}.',
-            type: 'antiGriefEntityspam',
+            type: 'worldAntiGriefEntityspam',
         },
         notifyAdmins: {
             message: '[AntiGrief] §e{playerName}§r suspected of §bEntity Spam§r. Entity: §a{entityType}§r. Count: §a{count}/{maxSpawns}§r in §a{windowMs}ms§r. Action: §a{actionTaken}§r.',
@@ -911,7 +911,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'Player suspected of block spamming (high density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}.',
-            type: 'antiGriefBlockspamDensity',
+            type: 'worldAntiGriefBlockspamDensity',
         },
         notifyAdmins: {
             message: '[AntiGrief] §e{playerName}§r suspected of §bBlock Spam (Density)§r. Density: §a{densityPercentage}%§r in §a{radius}§r radius. Block: §a{blockType}§r. Action: §a{actionTaken}§r.',
