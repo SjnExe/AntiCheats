@@ -1,5 +1,21 @@
 import * as mc from '@minecraft/server';
 const defaultChatDuringCombatCooldownSeconds = 4;
+
+const ALL_CHAT_CHECKS = [
+    { fnName: 'checkSwear', configKey: 'swear', configParent: 'chatChecks', name: 'swearCheck' },
+    { fnName: 'checkMessageRate', configKey: 'fastMessage', configParent: 'chatChecks', name: 'messageRateCheck' },
+    { fnName: 'checkChatContentRepeat', configKey: 'contentRepeat', configParent: 'chatChecks', name: 'chatContentRepeatCheck' },
+    { fnName: 'checkUnicodeAbuse', configKey: 'unicodeAbuse', configParent: 'chatChecks', name: 'unicodeAbuseCheck' },
+    { fnName: 'checkGibberish', configKey: 'gibberish', configParent: 'chatChecks', name: 'gibberishCheck' },
+    { fnName: 'checkExcessiveMentions', configKey: 'excessiveMentions', configParent: 'chatChecks', name: 'excessiveMentionsCheck' },
+    { fnName: 'checkSimpleImpersonation', configKey: 'simpleImpersonation', configParent: 'chatChecks', name: 'simpleImpersonationCheck' },
+    { fnName: 'checkAntiAdvertising', configKey: 'advertising', configParent: 'chatChecks', name: 'antiAdvertisingCheck' },
+    { fnName: 'checkCapsAbuse', configKey: 'caps', configParent: 'chatChecks', name: 'capsAbuseCheck' },
+    { fnName: 'checkCharRepeat', configKey: 'charRepeat', configParent: 'chatChecks', name: 'charRepeatCheck' },
+    { fnName: 'checkSymbolSpam', configKey: 'symbolSpam', configParent: 'chatChecks', name: 'symbolSpamCheck' },
+    { fnName: 'checkNewline', configKey: 'enableNewlineCheck', configParent: null, name: 'newlineCheck' },
+    { fnName: 'checkMaxLength', configKey: 'enableMaxMessageLengthCheck', configParent: null, name: 'maxLengthCheck' },
+];
 /**
  * @param {import('@minecraft/server').Player} player
  * @param {import('../types.js').PlayerAntiCheatData} pData
@@ -74,30 +90,21 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             pData.isDirtyForSave = true;
             playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cleared ${stateCleared} for ${playerName} because a successful chat attempt interrupts the action.`, playerName, dependencies);
         }
-        const chatCheckFunctions = [
-            { fn: checks?.checkSwear, enabled: config?.chatChecks?.swear?.enabled, name: 'swearCheck' },
-            { fn: checks?.checkMessageRate, enabled: config?.chatChecks?.fastMessage?.enabled, name: 'messageRateCheck' },
-            { fn: checks?.checkChatContentRepeat, enabled: config?.chatChecks?.contentRepeat?.enabled, name: 'chatContentRepeatCheck' },
-            { fn: checks?.checkUnicodeAbuse, enabled: config?.chatChecks?.unicodeAbuse?.enabled, name: 'unicodeAbuseCheck' },
-            { fn: checks?.checkGibberish, enabled: config?.chatChecks?.gibberish?.enabled, name: 'gibberishCheck' },
-            { fn: checks?.checkExcessiveMentions, enabled: config?.chatChecks?.excessiveMentions?.enabled, name: 'excessiveMentionsCheck' },
-            { fn: checks?.checkSimpleImpersonation, enabled: config?.chatChecks?.simpleImpersonation?.enabled, name: 'simpleImpersonationCheck' },
-            { fn: checks?.checkAntiAdvertising, enabled: config?.chatChecks?.advertising?.enabled, name: 'antiAdvertisingCheck' },
-            { fn: checks?.checkCapsAbuse, enabled: config?.chatChecks?.caps?.enabled, name: 'capsAbuseCheck' },
-            { fn: checks?.checkCharRepeat, enabled: config?.chatChecks?.charRepeat?.enabled, name: 'charRepeatCheck' },
-            { fn: checks?.checkSymbolSpam, enabled: config?.chatChecks?.symbolSpam?.enabled, name: 'symbolSpamCheck' },
-            { fn: checks?.checkNewline, enabled: config?.enableNewlineCheck, name: 'newlineCheck' },
-            { fn: checks?.checkMaxLength, enabled: config?.enableMaxMessageLengthCheck, name: 'maxLengthCheck' },
-        ];
-        for (const check of chatCheckFunctions) {
-            if (eventData.cancel) {
-                break;
-            }
-            if (check.fn && check.enabled) {
-                await check.fn(player, eventData, pData, dependencies);
-                if (eventData.cancel) {
-                    playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by ${check.name}.`, playerName, dependencies);
-                    return;
+        for (const check of ALL_CHAT_CHECKS) {
+            if (eventData.cancel) break;
+
+            const isEnabled = check.configParent
+                ? config[check.configParent]?.[check.configKey]?.enabled
+                : config[check.configKey];
+
+            if (isEnabled) {
+                const checkFunction = checks[check.fnName];
+                if (typeof checkFunction === 'function') {
+                    await checkFunction(player, eventData, pData, dependencies);
+                    if (eventData.cancel) {
+                        playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by ${check.name}.`, playerName, dependencies);
+                        return;
+                    }
                 }
             }
         }
