@@ -116,7 +116,7 @@ async function processPlayer(player, dependencies, currentTick) {
     playerDataManager.clearExpiredItemUseStates(pData, dependencies);
 
     const staggerTicks = config.checkStaggerTicks || 1;
-    const playerNameHash = Array.from(player.name).reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0);
+    const playerNameHash = pData.playerNameHash ?? 0;
 
     for (let i = 0; i < checkNames.length; i++) {
         const checkName = checkNames[i];
