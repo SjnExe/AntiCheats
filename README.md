@@ -95,9 +95,9 @@ Get up and running in minutes!
 
 1. **Download:** Grab the latest `.mcaddon` from [**GitHub Releases**](https://github.com/SjnExe/AntiCheats/releases).
 2. **Install:** Apply both `AntiCheatsBP` (Behavior Pack) and `AntiCheatsRP` (Resource Pack) to your world.
-3. **Enable Scripting API (CRITICAL!):**
+3. **Enable Beta APIs (CRITICAL!):**
    - In your world settings, go to the "Experiments" section.
-   - **Enable the "Beta APIs" / "Script API" toggle.** The name of this toggle may vary depending on your Minecraft version. This addon will not function correctly without it.
+   - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function correctly without this setting enabled.
 4. **Initialize the Addon (CRITICAL!):**
    - Once in your world, run the command `/function ac`.
    - This command initializes the addon and sets up necessary components. It must be run for the AntiCheat to work.
@@ -117,7 +117,7 @@ Get up and running in minutes!
 
 Common quick checks:
 
-- **Enable "Beta APIs" / "Script API":** Make sure this experimental toggle is ON in your world settings.
+- **Enable "Beta APIs":** Make sure the "Beta APIs" experimental toggle is ON in your world settings. This addon requires it.
 - Ensure `AntiCheatsBP` is at the very top of your behavior packs.
 - Verify your `ownerPlayerName` in `config.js` is exact (case-sensitive).
 - Check Minecraft version compatibility (see badge above).
