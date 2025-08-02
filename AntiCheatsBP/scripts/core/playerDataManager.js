@@ -208,10 +208,12 @@ function getDefaultTransientState(playerLike) {
 
 export function initializeDefaultPlayerData(playerLike, currentTick) {
     const now = Date.now();
+    const playerNameHash = Array.from(playerLike.name).reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0), 0);
 
     return {
         playerId: playerLike.id,
         playerNameTag: playerLike.name,
+        playerNameHash,
         ...getDefaultSessionState(currentTick, now),
         ...getDefaultFlagsAndViolations(),
         ...getDefaultRestrictions(),
