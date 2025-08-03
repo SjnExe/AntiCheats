@@ -11,7 +11,7 @@ import {
     initializeCommands,
     getAllRegisteredCommandNames,
 } from './commandManager.js';
-import * as configModule from '../config.js';
+import { config, updateConfigValue, acVersion, editableConfigValues } from '../config.js';
 import * as playerDataManager from './playerDataManager.js';
 import * as playerUtils from '../modules/utils/playerUtils.js';
 import * as rankManager from './rankManager.js';
@@ -40,7 +40,10 @@ export {
     automodConfig,
     checkActionProfiles,
     checks,
-    configModule,
+    config,
+    updateConfigValue,
+    acVersion,
+    editableConfigValues,
     playerDataManager,
     playerUtils,
     rankManager,

@@ -10,7 +10,7 @@ const {
     automodConfig,
     checkActionProfiles,
     commandManager,
-    configModule,
+    acVersion,
     logManager,
     reportManager,
     rankManager,
@@ -83,7 +83,7 @@ function validateConfigurations() {
         defaultPermissionLevel,
     } = rankManager;
     const validationTasks = [
-        () => configValidator.validateMainConfig(configModule.defaultConfigSettings, checkActionProfiles, knownCommands, configModule.commandAliases),
+        () => configValidator.validateMainConfig(config.defaultConfigSettings, checkActionProfiles, knownCommands, config.commandAliases),
         () => configValidator.validateActionProfiles(checkActionProfiles),
         () => configValidator.validateAutoModConfig(automodConfig, checkActionProfiles),
         () => configValidator.validateRanksConfig({
@@ -172,7 +172,7 @@ function performInitializations() {
     world.sendMessage({
         'translate': 'system.core.initialized',
         'with': {
-            'version': configModule.acVersion,
+            'version': acVersion,
         },
     });
     playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Tick loop will now be active.', 'System', dependencies);
