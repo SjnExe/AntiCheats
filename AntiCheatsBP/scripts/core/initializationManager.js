@@ -164,10 +164,8 @@ function performInitializations() {
     world.setDynamicProperty('ac:initialized', true);
 
     // Start the TPA system tick loop now that the system is initialized.
-    system.runInterval(() => {
-        // The tpaTick itself checks if the system is enabled in config.
-        tpaTick(dependencies);
-    }, tpaSystemTickInterval);
+    // The tpaTick function will reschedule itself in a stable, non-overlapping loop.
+    tpaTick();
 
     world.sendMessage({
         'translate': 'system.core.initialized',
