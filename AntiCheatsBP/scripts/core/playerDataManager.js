@@ -330,7 +330,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
             playerUtils.debugLog(`[PlayerDataManager] Player ${player.nameTag} became invalid during data initialization after an error. Aborting.`, player.nameTag, dependencies);
             return null;
         }
-        const fallbackData = initializeDefaultPlayerData(player, currentTick, dependencies);
+        const fallbackData = initializeDefaultPlayerData(player, currentTick);
         activePlayerData.set(player.id, fallbackData);
         return fallbackData;
     }
