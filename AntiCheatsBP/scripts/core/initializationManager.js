@@ -3,7 +3,7 @@ import * as eventHandlers from './eventHandlers.js';
 import * as dependencies from './dependencyManager.js';
 import { logError, playerUtils } from '../modules/utils/playerUtils.js';
 import { migrateConfig } from './configMigration.js';
-import { mainTick, tpaTick, tpaSystemTickInterval } from '../main.js';
+import { mainTick, tpaTick } from '../main.js';
 
 const {
     config,
