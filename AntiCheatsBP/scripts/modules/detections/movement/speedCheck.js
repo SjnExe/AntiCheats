@@ -21,8 +21,8 @@ export async function checkSpeed(player, pData, dependencies) {
     if (!config?.enableSpeedCheck) {
         return;
     }
-    if (!pData || !pData.velocity) {
-        playerUtils?.debugLog(`[SpeedCheck] Skipping for ${playerName}: pData or pData.velocity is null/undefined.`, playerName, dependencies);
+    if (!pData || !pData.transient.lastVelocity) {
+        playerUtils?.debugLog(`[SpeedCheck] Skipping for ${playerName}: pData or pData.transient.lastVelocity is null/undefined.`, playerName, dependencies);
         return;
     }
 
@@ -43,7 +43,7 @@ export async function checkSpeed(player, pData, dependencies) {
         return;
     }
 
-    const hSpeed = Math.sqrt((pData.velocity.x ** 2) + (pData.velocity.z ** 2));
+    const hSpeed = Math.sqrt((pData.transient.lastVelocity.x ** 2) + (pData.transient.lastVelocity.z ** 2));
     const hSpeedBPS = hSpeed * 20;
 
     let maxAllowedSpeedBPS = config?.maxHorizontalSpeedVanillaSprint ?? 5.7;

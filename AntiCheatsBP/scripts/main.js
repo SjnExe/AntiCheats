@@ -179,7 +179,7 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
         }
         const pData = playerDataManager.getPlayerData(player.id);
         if (pData?.isDirtyForSave) {
-            await playerDataManager.saveDirtyPlayerData(player, dependencies);
+            playerDataManager.saveDirtyPlayerData(player, dependencies);
         }
     }
     await logManager.persistLogCacheToDisk(dependencies);

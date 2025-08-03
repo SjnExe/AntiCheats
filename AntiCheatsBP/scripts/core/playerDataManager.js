@@ -298,7 +298,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
             await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
 
             // Immediately save the player's data to ensure the flag purge is persisted atomically.
-            await saveDirtyPlayerData(player, dependencies);
+            saveDirtyPlayerData(player, dependencies);
 
             playerUtils.debugLog(`[PlayerDataManager] Executed scheduled flag purge for ${player.nameTag} upon join.`, player.nameTag, dependencies);
             logManager.addLog({ actionType: 'flagsPurgedOnJoin', targetName: player.nameTag, targetId: player.id, context: 'PlayerDataManager.ensurePlayerDataInitialized' }, dependencies);
@@ -374,7 +374,7 @@ function recoverAndSerializePlayerData(dataToSave, playerLike, dependencies) {
     return JSON.stringify(dataToSave);
 }
 
-export async function saveDirtyPlayerData(playerLike, dependencies) {
+export function saveDirtyPlayerData(playerLike, dependencies) {
     const { playerUtils, logManager, config } = dependencies;
     const pData = getPlayerData(playerLike.id);
 
@@ -408,13 +408,13 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
                 }, dependencies);
 
                 const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick);
-                await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, JSON.stringify(freshData));
+                playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, JSON.stringify(freshData));
                 activePlayerData.set(playerLike.id, freshData);
                 return true;
             }
         }
 
-        await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
+        playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
 
         pData.isDirtyForSave = false;
         pData.lastSavedTimestamp = Date.now();
@@ -603,12 +603,12 @@ export function clearExpiredItemUseStates(pData, dependencies) {
  * @param {import('@minecraft/server').Player} player The player who is leaving.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
-export async function handlePlayerLeaveBeforeEvent(player, dependencies) {
+export function handlePlayerLeaveBeforeEvent(player, dependencies) {
     const pData = getPlayerData(player.id);
     if (pData) {
         pData.isOnline = false;
         pData.isDirtyForSave = true; // Ensure data is saved on leave
-        await saveDirtyPlayerData(player, dependencies); // Pass the full, valid player object
+        saveDirtyPlayerData(player, dependencies); // Pass the full, valid player object
         activePlayerData.delete(player.id);
     }
 }
