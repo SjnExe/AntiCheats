@@ -576,7 +576,7 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
 }
 
 async function showEditConfigForm(player, dependencies, context) {
-    const { config, configModule } = dependencies;
+    const { config, updateConfigValue } = dependencies;
     const { configKey } = context;
     const checkConfig = config.checks[configKey.split('.')[1]];
 
@@ -604,7 +604,7 @@ async function showEditConfigForm(player, dependencies, context) {
         enabled,
     };
 
-    configModule.updateConfigValue(`checks.${configKey.split('.')[1]}`, newConfig);
+    updateConfigValue(`checks.${configKey.split('.')[1]}`, newConfig);
 
     player.sendMessage(`§aConfiguration for "${configKey}" updated.`);
     await showPanel(player, 'configEditingCombatPanel', dependencies, {});

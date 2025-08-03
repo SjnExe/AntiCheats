@@ -15,7 +15,7 @@ export const definition = {
  * @param {import('../../types.js').Dependencies} dependencies
  */
 export async function execute(player, args, dependencies) {
-    const { config, commandManager, configModule, playerDataManager, rankManager, checkActionProfiles } = dependencies;
+    const { config, commandManager, updateConfigValue, playerDataManager, rankManager, checkActionProfiles } = dependencies;
     const prefix = config?.prefix ?? '!';
 
     const subCommand = args[0] ? args[0].toLowerCase() : 'help';
@@ -35,7 +35,7 @@ export async function execute(player, args, dependencies) {
                     return;
                 }
 
-                const result = configModule.updateConfigValue('enableDebugLogging', newValue);
+                const result = updateConfigValue('enableDebugLogging', newValue);
                 player.sendMessage(result.success ? `§aDebug logging is now ${newValue ? 'ON' : 'OFF'}.` : `§c${result.message}`);
             }
             break;
@@ -69,7 +69,7 @@ export async function execute(player, args, dependencies) {
             handleRanksDebug(player, rankManager);
             break;
         case 'commands':
-            handleCommandsDebug(player, configModule, commandManager);
+            handleCommandsDebug(player, dependencies, commandManager);
             break;
         case 'actionprofiles':
             handleActionProfilesDebug(player, checkActionProfiles);
@@ -91,9 +91,9 @@ export async function execute(player, args, dependencies) {
     }
 }
 
-function handleConfigDebug(player, { configModule }) {
+function handleConfigDebug(player, { editableConfigValues }) {
     try {
-        const configString = JSON.stringify(configModule.editableConfigValues, (key, value) => {
+        const configString = JSON.stringify(editableConfigValues, (key, value) => {
             if (typeof value === 'function') return 'function';
             if (typeof value === 'bigint') return value.toString();
             return value;
@@ -160,13 +160,13 @@ function handleRanksDebug(player, rankManager) {
     });
 }
 
-function handleCommandsDebug(player, { commandAliases }, commandManager) {
+function handleCommandsDebug(player, { config }, commandManager) {
     const allCommands = commandManager.getAllRegisteredCommandNames();
     player.sendMessage('§2--- Registered Commands ---');
     player.sendMessage(allCommands.join(', '));
 
     player.sendMessage('\n§2--- Command Aliases ---');
-    const aliasEntries = Array.from(commandAliases.entries());
+    const aliasEntries = Array.from(config.commandAliases.entries());
     if (aliasEntries.length > 0) {
         const aliasString = aliasEntries.map(([alias, cmd]) => `${alias} -> ${cmd}`).join(', ');
         player.sendMessage(aliasString);

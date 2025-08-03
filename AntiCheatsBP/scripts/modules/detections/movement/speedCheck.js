@@ -4,6 +4,24 @@
  */
 
 /**
+ * Calculates the maximum allowed speed for a player, considering a base speed and any active Speed effects.
+ * @param {number} baseSpeed - The base speed in blocks per second (BPS).
+ * @param {number} speedAmplifier - The amplifier level of the Speed effect (-1 if not present).
+ * @param {Dependencies} dependencies - The standard dependencies object.
+ * @returns {number} The calculated maximum allowed speed in BPS.
+ */
+function calculateMaxSpeed(baseSpeed, speedAmplifier, dependencies) {
+    const { config } = dependencies;
+    let maxSpeed = baseSpeed;
+    if (speedAmplifier >= 0) {
+        const multiplier = 1 + ((speedAmplifier + 1) * (config?.checks?.speed?.speedEffectMultiplierPerLevel ?? 0.20));
+        maxSpeed *= multiplier;
+    }
+    maxSpeed += (config?.checks?.speed?.speedToleranceBuffer ?? 0.5);
+    return maxSpeed;
+}
+
+/**
  * Checks for speed-related hacks by analyzing player's horizontal movement speed.
  * Considers game mode, effects (Speed), and whether the player is on ground or airborne.
  * Flags are typically applied if speeding on ground for a consecutive number of ticks.
@@ -45,15 +63,9 @@ export async function checkSpeed(player, pData, dependencies) {
 
     const hSpeed = Math.sqrt((pData.transient.lastVelocity.x ** 2) + (pData.transient.lastVelocity.z ** 2));
     const hSpeedBPS = hSpeed * 20;
+    const speedAmplifier = pData.speedAmplifier ?? -1;
 
-    let maxAllowedSpeedBPS = config?.maxHorizontalSpeedVanillaSprint ?? 5.7;
-
-    const speedAmplifier = pData.speedAmplifier ?? -1; // -1 is fine
-    if (speedAmplifier >= 0) { // 0 is fine
-        maxAllowedSpeedBPS *= (1 + ((speedAmplifier + 1) * (config?.speedEffectMultiplierPerLevel ?? 0.20))); // 1 is fine
-    }
-
-    maxAllowedSpeedBPS += (config?.speedToleranceBuffer ?? 0.5);
+    const maxAllowedSpeedBPS = calculateMaxSpeed(config?.checks?.speed?.maxHorizontalSpeedVanillaSprint ?? 5.7, speedAmplifier, dependencies);
 
     if (pData.isWatched && config?.enableDebugLogging) {
         playerUtils?.debugLog(
@@ -101,12 +113,8 @@ export async function checkSpeed(player, pData, dependencies) {
         }
 
         if (config?.checks?.speed?.enableAir) {
-            const maxAirSpeedBPS = config?.checks?.speed?.maxHorizontalSpeedAirborne ?? 7.5;
-            let effectiveMaxAirSpeed = maxAirSpeedBPS;
-            if (speedAmplifier >= 0) {
-                effectiveMaxAirSpeed *= (1 + ((speedAmplifier + 1) * (config?.checks?.speed?.speedEffectMultiplierPerLevel ?? 0.20)));
-            }
-            effectiveMaxAirSpeed += (config?.checks?.speed?.speedToleranceBuffer ?? 0.5);
+            const baseMaxAirSpeed = config?.checks?.speed?.maxHorizontalSpeedAirborne ?? 7.5;
+            const effectiveMaxAirSpeed = calculateMaxSpeed(baseMaxAirSpeed, speedAmplifier, dependencies);
 
             if (hSpeedBPS > effectiveMaxAirSpeed) {
                 pData.consecutiveAirSpeedingTicks = (pData.consecutiveAirSpeedingTicks || 0) + 1;

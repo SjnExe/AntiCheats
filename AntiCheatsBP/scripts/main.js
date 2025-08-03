@@ -144,7 +144,6 @@ async function processPlayer(player, dependencies, currentTick) {
             const lastCheckTick = pData.lastCheckTick?.[checkName] || 0;
             const interval = checkConfig.intervalTicks || 1;
             if (currentTick - lastCheckTick >= interval) {
-                pData.lastCheckTick = pData.lastCheckTick || {};
                 pData.lastCheckTick[checkName] = currentTick;
                 try {
                     await checkFunction(player, pData, dependencies);
