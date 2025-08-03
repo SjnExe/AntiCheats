@@ -143,6 +143,14 @@ function ensureFields(obj, fieldDefs, context, errors) {
             }
         }
     }
+    const knownKeys = new Set(fieldDefs.map(f => f.name));
+    for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            if (!knownKeys.has(key)) {
+                errors.push(`${context}.${key}: Unknown key "${key}" found. It will be ignored.`);
+            }
+        }
+    }
     return allFieldsValid;
 }
 /**
@@ -371,16 +379,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'checks', type: 'object' }, // Further validation could be added for each check
     ];
     ensureFields(config, configFieldDefs, context, errors);
-    const knownKeys = configFieldDefs.map(f => f.name);
-    const manuallyHandledKeys = ['soundEvents', 'commandSettings'];
-    for (const key in config) {
-        if (!Object.prototype.hasOwnProperty.call(config, key)) {
-            continue;
-        }
-        if (!knownKeys.includes(key) && !manuallyHandledKeys.includes(key)) {
-            errors.push(`${context}.${key}: Unknown key "${key}" found in config. It will be ignored.`);
-        }
-    }
     if (commandAliasesMap) {
         if (isObject(commandAliasesMap)) {
             const aliasContext = 'config.commandAliases';
