@@ -198,10 +198,10 @@ export function tpaTick() {
         const requestsInWarmup = dependencies.tpaManager.getRequestsInWarmup();
         for (const req of requestsInWarmup) {
             const requester = world.getPlayers({
-                name: req.requesterName
+                name: req.requesterName,
             })[0];
             const target = world.getPlayers({
-                name: req.targetName
+                name: req.targetName,
             })[0];
 
             if (!requester?.isValid() || !target?.isValid()) {
