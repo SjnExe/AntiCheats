@@ -51,3 +51,5 @@ export * from './warnings.js';
 export * from './watch.js';
 export * from './worldborder.js';
 export * from './xraynotify.js';
+export * from './restart.js';
+export * from './spawn.js';
