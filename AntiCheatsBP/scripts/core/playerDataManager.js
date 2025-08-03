@@ -289,11 +289,11 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         // Handle scheduled flag purges
         const scheduledFlagPurges = await _loadScheduledFlagPurges(dependencies);
         if (scheduledFlagPurges.has(player.nameTag)) {
-            const defaultFlags = initializeDefaultPlayerData(player, currentTick).flags;
-            pData.flags = defaultFlags;
-            pData.lastFlagType = '';
-            pData.lastViolationDetailsMap = {};
-            pData.automodState = {};
+            const { flags, lastFlagType, lastViolationDetailsMap, automodState } = getDefaultFlagsAndViolations();
+            pData.flags = flags;
+            pData.lastFlagType = lastFlagType;
+            pData.lastViolationDetailsMap = lastViolationDetailsMap;
+            pData.automodState = automodState;
             pData.isDirtyForSave = true;
             scheduledFlagPurges.delete(player.nameTag);
             await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
