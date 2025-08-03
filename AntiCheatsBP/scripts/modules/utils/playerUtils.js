@@ -191,7 +191,7 @@ export function parseDuration(durationString) {
             case 'm': return value * secondsPerMinute * millisecondsPerSecond;
             case 'h': return value * minutesPerHour * secondsPerMinute * millisecondsPerSecond;
             case 'd': return value * hoursPerDay * minutesPerHour * secondsPerMinute * millisecondsPerSecond;
-            case 'w': return value * daysPerWeek * hoursPerDay * minutesPerHour * secondsPerMinute * millisecondsPerSecond; // Added weeks
+            case 'w': return value * daysPerWeek * hoursPerDay * minutesPerHour * secondsPerMinute * millisecondsPerSecond;
             default:
             // This case should ideally not be reached if the regex is correct.
                 console.warn(`[PlayerUtils.parseDuration] Unexpected unit '${unit}' from regex match.`);
