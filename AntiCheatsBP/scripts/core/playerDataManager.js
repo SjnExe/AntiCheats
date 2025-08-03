@@ -133,6 +133,7 @@ function getDefaultFlagsAndViolations() {
         lastFlagType: '',
         lastViolationDetailsMap: {},
         automodState: {},
+        lastCheckTick: {},
     };
 }
 
