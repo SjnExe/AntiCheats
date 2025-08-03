@@ -22,14 +22,30 @@ const scheduledFlagPurgesKey = 'anticheat:scheduled_flag_purges';
  * @returns {Promise<Map<string, import('../types.js').ScheduledPurge>>}
  */
 async function _loadScheduledFlagPurges(dependencies) {
-    const { world, playerUtils } = dependencies;
+    const { world, playerUtils, logManager } = dependencies;
     try {
         const data = world.getDynamicProperty(scheduledFlagPurgesKey);
         if (typeof data === 'string') {
             const parsed = JSON.parse(data);
             // Standard format: An array of {playerName, timestamp} objects
             if (Array.isArray(parsed)) {
-                return new Map(parsed.map(item => [item.playerName, item]));
+                const validPurges = parsed.filter(item =>
+                    item && typeof item.playerName === 'string' && typeof item.timestamp === 'number',
+                );
+
+                if (validPurges.length !== parsed.length) {
+                    playerUtils.debugLog('[PlayerDataManager] Filtered invalid entries from scheduled flag purges during load.', 'SystemWarn', dependencies);
+                    logManager.addLog({
+                        actionType: 'warning.pdm.loadPurges.invalidEntries',
+                        context: 'PlayerDataManager._loadScheduledFlagPurges',
+                        details: {
+                            message: 'Invalid entries were filtered during loading of scheduled purges.',
+                            totalCount: parsed.length,
+                            validCount: validPurges.length,
+                        },
+                    }, dependencies);
+                }
+                return new Map(validPurges.map(item => [item.playerName, item]));
             }
             // Legacy format check: An object like { values: ["Player1", "Player2"] }
             if (typeof parsed === 'object' && parsed !== null && Array.isArray(parsed.values)) {
@@ -48,6 +64,20 @@ async function _loadScheduledFlagPurges(dependencies) {
                     playerUtils.debugLog(`[PlayerDataManager] Error saving migrated purges: ${saveError.message}`, 'SystemError', dependencies);
                 }
                 return newMap;
+            }
+
+            // If we reach here, the format is unexpected (e.g., a non-array, non-legacy object)
+            if (parsed !== null) { // Avoid logging for a clean, uninitialized property
+                playerUtils.debugLog(`[PlayerDataManager] Unexpected data format for scheduled flag purges. Data will be reset. Found type: ${typeof parsed}`, 'SystemError', dependencies);
+                logManager.addLog({
+                    actionType: 'error.pdm.loadPurges.unexpectedFormat',
+                    context: 'PlayerDataManager._loadScheduledFlagPurges',
+                    details: {
+                        message: 'Scheduled purges data was in an unexpected format and has been reset.',
+                        dataType: typeof parsed,
+                        rawDataSample: JSON.stringify(parsed).substring(0, 100),
+                    },
+                }, dependencies);
             }
         }
     } catch (e) {
