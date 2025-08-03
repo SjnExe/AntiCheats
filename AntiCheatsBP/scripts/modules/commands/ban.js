@@ -124,7 +124,6 @@ export function execute(
             playerUtils.playSoundForEvent(player, 'commandSuccess', dependencies);
         }
 
-        const targetPData = playerDataManager?.getPlayerData(targetOnlinePlayer.id);
         if (config?.notifyOnAdminUtilCommandUsage !== false || (isAutoModAction && config?.notifyOnAutoModAction !== false)) {
             const baseAdminNotifyMsg = getString('command.ban.notify.banned', { bannedBy: actualBannedBy, targetName: targetOnlinePlayer.nameTag, durationDisplay, reason: actualReason });
             playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
