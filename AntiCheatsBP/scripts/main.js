@@ -186,24 +186,29 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
     tpaManager.persistTpaState(dependencies);
 }
 
-export function tpaTick(dependencies) {
+export function tpaTick() {
     try {
-        if (!config.enableTpaSystem) {
+        if (!dependencies.config.enableTpaSystem) {
+            // The loop is not rescheduled if the system is disabled, effectively stopping it.
             return;
         }
 
-        tpaManager.clearExpiredRequests(dependencies);
+        dependencies.tpaManager.clearExpiredRequests(dependencies);
 
-        const requestsInWarmup = tpaManager.getRequestsInWarmup();
+        const requestsInWarmup = dependencies.tpaManager.getRequestsInWarmup();
         for (const req of requestsInWarmup) {
-            const requester = world.getPlayers({ name: req.requesterName })[0];
-            const target = world.getPlayers({ name: req.targetName })[0];
+            const requester = world.getPlayers({
+                name: req.requesterName
+            })[0];
+            const target = world.getPlayers({
+                name: req.targetName
+            })[0];
 
             if (!requester?.isValid() || !target?.isValid()) {
                 const invalidPlayerName = !requester?.isValid() ? req.requesterName : req.targetName;
                 const reasonMsgKey = 'tpa.manager.error.teleportWarmupTargetInvalid';
                 const reasonLog = `A player (${invalidPlayerName}) involved in TPA request ${req.requestId} went offline during warmup.`;
-                tpaManager.cancelTeleport(req.requestId, reasonMsgKey, reasonLog, dependencies);
+                dependencies.tpaManager.cancelTeleport(req.requestId, reasonMsgKey, reasonLog, dependencies);
                 continue; // Skip to the next request
             }
 
@@ -213,8 +218,8 @@ export function tpaTick(dependencies) {
                 continue;
             }
 
-            if (config.tpaCancelOnMoveDuringWarmup) {
-                tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
+            if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
+                dependencies.tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
                 // Re-check status, as the above function may have cancelled it.
                 if (req.status !== 'pendingTeleportWarmup') {
                     continue;
@@ -222,12 +227,12 @@ export function tpaTick(dependencies) {
             }
 
             if (Date.now() >= (req.warmupExpiryTimestamp || 0)) {
-                tpaManager.executeTeleport(req.requestId, dependencies);
+                dependencies.tpaManager.executeTeleport(req.requestId, dependencies);
             }
         }
     } catch (e) {
         logError(`Unhandled error in tpaTick: ${e?.message}`, e);
-        logManager.addLog({
+        dependencies.logManager.addLog({
             actionType: 'error.main.tpaTick.unhandled',
             context: 'Main.tpaTick',
             details: {
@@ -235,5 +240,9 @@ export function tpaTick(dependencies) {
                 stack: e?.stack,
             },
         }, dependencies);
+    } finally {
+        // Use a timeout to create a stable, non-overlapping loop.
+        // This is safer than runInterval as it prevents race conditions on heavy server load.
+        system.runTimeout(tpaTick, tpaSystemTickInterval);
     }
 }
