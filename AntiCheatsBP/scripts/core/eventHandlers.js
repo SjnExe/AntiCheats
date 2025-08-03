@@ -260,16 +260,20 @@ async function handlePlayerSpawn(eventData, dependencies) {
         if (pData.deathMessageToShowOnSpawn && config.playerInfo.enableDeathCoords) {
             system.runTimeout(() => {
                 try {
-                    if (player.isValid()) {
-                        player.sendMessage(pData.deathMessageToShowOnSpawn);
+                    // Re-fetch pData inside the timeout to ensure we're acting on the most current data state.
+                    const currentPData = playerDataManager.getPlayerData(player.id);
+                    if (player.isValid() && currentPData && currentPData.deathMessageToShowOnSpawn) {
+                        player.sendMessage(currentPData.deathMessageToShowOnSpawn);
+                        playerUtils.debugLog(`[EventHandler.handlePlayerSpawn] DeathCoords: Sent to ${playerName}: '${JSON.stringify(currentPData.deathMessageToShowOnSpawn)}'`, currentPData.isWatched ? playerName : null, dependencies);
+
+                        // Only clear the data and mark for saving *after* successfully sending the message.
+                        currentPData.deathMessageToShowOnSpawn = null;
+                        currentPData.isDirtyForSave = true;
                     }
                 } catch (e) {
                     console.warn(`[EventHandler.handlePlayerSpawn] Failed to send death coords to ${playerName}: ${e.message}`);
                 }
             }, deathCoordsMessageDelayTicks);
-            playerUtils.debugLog(`[EventHandler.handlePlayerSpawn] DeathCoords: Displayed to ${playerName}: '${pData.deathMessageToShowOnSpawn}'`, pData.isWatched ? playerName : null, dependencies);
-            pData.deathMessageToShowOnSpawn = null;
-            pData.isDirtyForSave = true;
         }
 
         if (checks?.checkInvalidRenderDistance && config.checks.invalidRenderDistance.enabled) {
