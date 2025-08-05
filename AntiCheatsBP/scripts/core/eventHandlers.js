@@ -40,7 +40,7 @@ function profileEventHandler(handlerName, handlerFunction) {
                 stats.maxTime = Math.max(stats.maxTime, duration);
                 stats.minTime = Math.min(stats.minTime, duration);
                 stats.history.push(duration);
-                if (stats.history.length > dependencies.MAX_PROFILING_HISTORY) {
+                if (stats.history.length > dependencies.config.development.maxProfilingHistory) {
                     stats.history.shift();
                 }
             }
