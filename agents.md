@@ -16,10 +16,11 @@ Before implementing changes, strive to understand the relevant parts of the code
   - `AntiCheatsBP/scripts/core/actionProfiles.js`: Defines immediate consequences for cheat detections.
   - `AntiCheatsBP/scripts/core/automodConfig.js`: Defines escalating automated actions based on flag counts.
 - **Coding Conventions:** Strictly follow guidelines in `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
-- **Naming Conventions are CRITICAL:**
-  - **`checkType`**: Identifiers used in check scripts, `actionProfiles.js` (as keys), and `automodConfig.js` (as keys) **MUST be `camelCase`**. This is essential for linking detections to actions. (e.g., `movementFlyHover`, `playerAntiGmc`).
-  - **`actionType`**: String literals for actions (e.g., in `automodConfig.js` rules or `actionProfiles.js` log types) **MUST be `camelCase`**. (e.g., `warn`, `kick`, `tempBan`, `detectedFlyHover`).
-  - Most other JavaScript identifiers (variables, functions, config keys) also follow `camelCase`.
+- **Naming Conventions:**
+  - The general rule for all project-specific JavaScript identifiers is that **any code style is allowed, but not snake_case**.
+  - The use of `snake_case` (e.g., `my_variable`) or `UPPER_SNAKE_CASE` (e.g., `MY_CONSTANT`) is disallowed.
+  - An exception is when interacting with native Minecraft APIs that require `snake_case` identifiers. In those cases, the required style must be used.
+  - For full details, always refer to the latest `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
 
 ## 3. Workflow and Task Management
 

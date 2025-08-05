@@ -4,44 +4,9 @@ This document outlines coding style conventions to be followed for this project 
 
 ## Naming Conventions
 
-The general rule for all project-specific JavaScript identifiers (variables, function names, object properties, etc.) is to use **`camelCase`**. This is enforced by ESLint where applicable.
+The general rule for all project-specific JavaScript identifiers (variables, function names, object properties, etc.) is that **any code style is allowed, but not snake_case**.
 
-### Internal ("Private") Members
-
-- To signify that a function or a module-level variable is intended for internal use within that module only (i.e., it is not exported), it **MUST** be prefixed with a leading underscore (`_`).
-- This is a convention to communicate intent; it does not provide true privacy.
-- **Example:** `function _internalHelper() { ... }`, `const _moduleConstant = 10;`
-
-### Configuration Variables (`AntiCheatsBP/scripts/config.js`)
-
-- All configuration variables exported from `config.js` **MUST** use `camelCase` (e.g., `exampleConfigValue`, `maxAllowedSpeed`).
-
-### General Variables & Object Properties
-
-- Local variables, function parameters, and object properties **MUST** use `camelCase`.
-- **Example:** `let myVariable = ...; function doSomething(someParameter) {}; const obj = { myProperty: value };`
-
-### Functions
-
-- All exported and local function names **MUST** use `camelCase`.
-- For internal-only helper functions, see the **Internal ("Private") Members** section above.
-- **Example:** `function myFunction() {}`
-
-### Classes
-
-- While not currently in use, any future classes **MUST** use `PascalCase`.
-- **Example:** `class MyClass {}`
-
-### Constants
-
-- All constants, whether exported from `config.js` or defined locally within a file, **MUST** use `camelCase`.
-- The use of `UPPER_SNAKE_CASE` is disallowed to maintain a consistent style across the codebase.
-- **Example:** `const maxRetries = 3;`
-
-### Acronyms in Code
-
-- Acronyms within `camelCase` identifiers **SHOULD** follow standard camel casing rules to enhance consistency.
-- **Example:** `enableAntiGmcCheck`, `tpaManager` are preferred over `enableAntiGMCCheck`.
+The use of `snake_case` (e.g., `my_variable`) or `UPPER_SNAKE_CASE` (e.g., `MY_CONSTANT`) is disallowed to maintain a consistent style across the codebase.
 
 ### Exception for Minecraft Identifiers
 
@@ -56,14 +21,6 @@ The general rule for all project-specific JavaScript identifiers (variables, fun
 
 - User-facing commands typed in chat **MUST** be lowercase (e.g., `!gmc`, `!help`).
 - The internal registration name of a command (in its definition file) **SHOULD** be descriptive and clear (e.g., `ban`, `kick`, `mute`).
-
-### `checkType` and `actionType` String Identifiers
-
-- `checkType` identifiers (used to link detections to actions) **MUST** be `camelCase`.
-  - **Examples:** `movementFlyHover`, `playerAntiGmc`, `worldIllegalItemPlace`.
-- `actionType` identifiers (used for logging and defining AutoMod rule actions) **MUST** be `camelCase`.
-  - **Examples (AutoMod):** `warn`, `kick`, `tempBan`.
-  - **Examples (Logging):** `detectedFlyHover`, `antigriefTntPlacement`.
 
 ## JSDoc and Comments
 

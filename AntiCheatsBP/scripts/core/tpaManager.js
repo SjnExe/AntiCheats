@@ -304,8 +304,9 @@ export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog,
 }
 
 /**
- * @param {string} requestId
- * @param {import('../types.js').CommandDependencies} dependencies
+ * Declines an active TPA request, notifying relevant players and logging the action.
+ * @param {string} requestId The ID of the TPA request to decline.
+ * @param {import('../types.js').CommandDependencies} dependencies The command dependencies.
  */
 export function declineRequest(requestId, dependencies) {
     const { playerUtils, getString, logManager, mc: minecraftSystem } = dependencies;
