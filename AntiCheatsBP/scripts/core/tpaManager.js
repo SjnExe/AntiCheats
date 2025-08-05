@@ -48,7 +48,7 @@ export function addRequest(requester, target, type, dependencies) {
     const pData = playerDataManager.getPlayerData(requester.id);
     if (!pData) {
         // This case should ideally not happen if the command framework ensures pData exists.
-        logManager.addLog({ actionType: 'error.tpa.addRequest.noPData', context: 'TpaManager.addRequest', targetName: requesterName }, dependencies);
+        logManager.addLog({ actionType: 'errorTpaAddRequestNoPData', context: 'TpaManager.addRequest', targetName: requesterName }, dependencies);
         return { error: 'internalError' };
     }
 
@@ -411,7 +411,7 @@ export function setPlayerTpaStatus(player, accepts, dependencies) {
     const pData = playerDataManager.getPlayerData(player.id);
 
     if (!pData) {
-        logManager.addLog({ actionType: 'error.tpa.setStatus.noPData', context: 'TpaManager.setPlayerTpaStatus', targetName: player.nameTag }, dependencies);
+        logManager.addLog({ actionType: 'errorTpaSetStatusNoPData', context: 'TpaManager.setPlayerTpaStatus', targetName: player.nameTag }, dependencies);
         return;
     }
 
