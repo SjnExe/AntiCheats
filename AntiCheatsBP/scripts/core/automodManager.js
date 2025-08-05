@@ -56,7 +56,9 @@ function formatAutomodMessage(template, context) {
             const placeholder = `{${key}}`;
             const escapedPlaceholder = placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedPlaceholder, 'g');
-            message = message.replace(regex, String(context[key]));
+            // Using a replacer function ensures the replacement is treated as a literal string,
+            // preventing issues with special replacement patterns like `$&`.
+            message = message.replace(regex, () => String(context[key]));
         }
     }
     return message;
