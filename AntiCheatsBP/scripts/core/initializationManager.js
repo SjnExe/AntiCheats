@@ -1,7 +1,7 @@
 import { system, world } from '@minecraft/server';
 import * as eventHandlers from './eventHandlers.js';
 import * as dependencies from './dependencyManager.js';
-import { logError, playerUtils } from '../modules/utils/playerUtils.js';
+import { logError, playerUtils, getString } from '../modules/utils/playerUtils.js';
 import { migrateConfig } from './configMigration.js';
 import { mainTick, tpaTick } from '../main.js';
 
@@ -143,21 +143,45 @@ function performInitializations() {
 
         subscribeToEvents();
     } catch (e) {
-        logError('CRITICAL: Failed to subscribe to events during initialization.', e);
+        dependencies.logManager.addLog({
+            actionType: 'error.init.eventSubscription',
+            context: 'initializationManager.performInitializations',
+            details: {
+                errorCode: 'INIT_EVENT_SUB_FAIL',
+                message: 'CRITICAL: Failed to subscribe to events during initialization.',
+                rawErrorStack: e.stack,
+            },
+        }, dependencies);
         throw new Error(`Event subscription failed: ${e.message}`);
     }
 
     try {
         initializeModules();
     } catch (e) {
-        logError('CRITICAL: Failed to initialize core modules.', e);
+        dependencies.logManager.addLog({
+            actionType: 'error.init.moduleInitialization',
+            context: 'initializationManager.performInitializations',
+            details: {
+                errorCode: 'INIT_MODULE_FAIL',
+                message: 'CRITICAL: Failed to initialize core modules.',
+                rawErrorStack: e.stack,
+            },
+        }, dependencies);
         throw new Error(`Module initialization failed: ${e.message}`);
     }
 
     try {
         validateConfigurations();
     } catch (e) {
-        logError('CRITICAL: An unexpected error occurred during configuration validation.', e);
+        dependencies.logManager.addLog({
+            actionType: 'error.init.configValidation',
+            context: 'initializationManager.performInitializations',
+            details: {
+                errorCode: 'INIT_CONFIG_VALIDATION_FAIL',
+                message: 'CRITICAL: An unexpected error occurred during configuration validation.',
+                rawErrorStack: e.stack,
+            },
+        }, dependencies);
         playerUtils.notifyAdmins('A critical, unexpected error occurred during config validation. Check server logs.', dependencies);
     }
 
@@ -186,11 +210,11 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
         }
 
         if (world.getDynamicProperty('ac:initialized')) {
-            player.sendMessage('§cAntiCheat is already initialized.');
+            player.sendMessage(getString('system.core.alreadyInitialized'));
             return;
         }
 
         performInitializations();
-        player.sendMessage('§aAntiCheat initialized successfully.');
+        player.sendMessage(getString('system.core.initializedSuccess'));
     }
 }, { namespaces: ['ac'] });
