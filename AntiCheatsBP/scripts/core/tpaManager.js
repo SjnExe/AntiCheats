@@ -48,7 +48,7 @@ export function addRequest(requester, target, type, dependencies) {
     const pData = playerDataManager.getPlayerData(requester.id);
     if (!pData) {
         // This case should ideally not happen if the command framework ensures pData exists.
-        logManager.addLog({ actionType: 'errorTpaAddRequestNoPData', context: 'TpaManager.addRequest', targetName: requesterName }, dependencies);
+        logManager.addLog({ actionType: 'error.tpa.addRequest.noPData', context: 'TpaManager.addRequest', targetName: requesterName }, dependencies);
         return { error: 'internalError' };
     }
 
@@ -304,8 +304,9 @@ export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog,
 }
 
 /**
- * @param {string} requestId
- * @param {import('../types.js').CommandDependencies} dependencies
+ * Declines an active TPA request, notifying relevant players and logging the action.
+ * @param {string} requestId The ID of the TPA request to decline.
+ * @param {import('../types.js').CommandDependencies} dependencies The command dependencies.
  */
 export function declineRequest(requestId, dependencies) {
     const { playerUtils, getString, logManager, mc: minecraftSystem } = dependencies;
@@ -411,7 +412,7 @@ export function setPlayerTpaStatus(player, accepts, dependencies) {
     const pData = playerDataManager.getPlayerData(player.id);
 
     if (!pData) {
-        logManager.addLog({ actionType: 'errorTpaSetStatusNoPData', context: 'TpaManager.setPlayerTpaStatus', targetName: player.nameTag }, dependencies);
+        logManager.addLog({ actionType: 'error.tpa.setStatus.noPData', context: 'TpaManager.setPlayerTpaStatus', targetName: player.nameTag }, dependencies);
         return;
     }
 

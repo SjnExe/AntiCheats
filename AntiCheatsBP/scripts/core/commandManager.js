@@ -72,7 +72,7 @@ async function executeCommand(player, commandDef, commandExecute, args, dependen
         const errorStack = error?.stack || 'N/A';
         logError(`[CommandManager.executeCommand CRITICAL] Error executing ${commandDef.name} for ${playerName}: ${errorStack}`, error);
         addLog({
-            actionType: 'errorCommandExecute',
+            actionType: 'error.cmd.exec',
             targetName: playerName,
             targetId: player.id,
             context: `commandManager.executeCommand.${commandDef.name}`,
