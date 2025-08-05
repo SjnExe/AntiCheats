@@ -33,6 +33,8 @@ const defaultConfigSettings = {
         logPerformanceProfileIntervalTicks: 1200,
         /** @type {number} Number of ticks to stagger checks over. Higher numbers reduce tick load but increase detection time. 1 = no stagger. */
         checkStaggerTicks: 5,
+        /** @type {number} The maximum number of historical timings to keep for each event handler. */
+        maxProfilingHistory: 100,
     },
 
     /** @type {object} Settings related to player status effects and tags. */
