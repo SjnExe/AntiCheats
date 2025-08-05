@@ -1,7 +1,7 @@
 import * as mc from '@minecraft/server';
 const defaultChatDuringCombatCooldownSeconds = 4;
 
-const ALL_CHAT_CHECKS = [
+const allChatChecks = [
     { fnName: 'checkSwear', configKey: 'swear', configParent: 'chatChecks', name: 'swearCheck' },
     { fnName: 'checkMessageRate', configKey: 'fastMessage', configParent: 'chatChecks', name: 'messageRateCheck' },
     { fnName: 'checkChatContentRepeat', configKey: 'contentRepeat', configParent: 'chatChecks', name: 'chatContentRepeatCheck' },
@@ -90,7 +90,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             pData.isDirtyForSave = true;
             playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cleared ${stateCleared} for ${playerName} because a successful chat attempt interrupts the action.`, playerName, dependencies);
         }
-        for (const check of ALL_CHAT_CHECKS) {
+        for (const check of allChatChecks) {
             if (eventData.cancel) break;
 
             const isEnabled = check.configParent
