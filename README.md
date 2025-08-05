@@ -8,7 +8,7 @@
 
 [![Latest Release](https://img.shields.io/github/v/release/SjnExe/AntiCheats?label=latest%20version&display_name=tag&sort=semver&style=for-the-badge)](https://github.com/SjnExe/AntiCheats/releases/latest)
 [![GitHub All Releases](https://img.shields.io/github/downloads/SjnExe/AntiCheats/total?style=for-the-badge)](https://github.com/SjnExe/AntiCheats/releases)
-![Minecraft BE Version](https://img.shields.io/badge/Minecraft_BE-1.21.90%2B-brightgreen?style=for-the-badge&logo=minecraft)
+![Minecraft BE Version](https://img.shields.io/badge/Minecraft_BE-1.21.100%2B-brightgreen?style=for-the-badge&logo=minecraft)
 [![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AntiCheats?style=for-the-badge&logo=github)](https://github.com/SjnExe/AntiCheats/issues)
 ![Status: Under Development](https://img.shields.io/badge/Status-Under%20Development-orange?style=for-the-badge)
 [![Discord Server](https://img.shields.io/discord/633296555650318346?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/SMUHUnGyyz)

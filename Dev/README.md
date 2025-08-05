@@ -44,7 +44,7 @@ Below are links to specific sections particularly relevant for Add-On developmen
 
 ### Key Version Updates & Overviews
 
-- [Minecraft Bedrock 1.21.90 Update Notes for Creators](https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.21.90?view=minecraft-bedrock-stable)
+- [Minecraft Bedrock 1.21.100 Update Notes for Creators](https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.21.100?view=minecraft-bedrock-stable)
 - [Scripting V2.0.0 Overview](https://learn.microsoft.com/en-us/minecraft/creator/documents/scriptingv2.0.0overview?view=minecraft-bedrock-stable) (Details on API v2 changes and Custom Components V2)
 
 ### Official Mojang & Microsoft Samples/Tools
@@ -143,7 +143,7 @@ Always double-check your changes to ensure the syntax is correct and all registe
 
 ## Target Minecraft Version
 
-The addon currently targets Minecraft Bedrock version 1.21.90 and newer. Please ensure development and testing align with this version.
+The addon currently targets Minecraft Bedrock version 1.21.100 and newer. Please ensure development and testing align with this version.
 
 ## Codebase Architecture Overview
 
