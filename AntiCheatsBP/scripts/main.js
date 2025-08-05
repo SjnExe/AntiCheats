@@ -241,8 +241,10 @@ export function tpaTick() {
             },
         }, dependencies);
     } finally {
-        // Use a timeout to create a stable, non-overlapping loop.
-        // This is safer than runInterval as it prevents race conditions on heavy server load.
-        system.runTimeout(tpaTick, tpaSystemTickInterval);
+        // Use a timeout to create a stable, non-overlapping loop, but only if the system is enabled.
+        // This prevents the loop from running unnecessarily when the feature is off.
+        if (dependencies.config.enableTpaSystem) {
+            system.runTimeout(tpaTick, tpaSystemTickInterval);
+        }
     }
 }
