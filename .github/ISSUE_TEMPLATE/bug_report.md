@@ -35,7 +35,7 @@ A clear and concise description of what actually happened. Please include any er
 If applicable, add screenshots or link to videos to help explain your problem.
 
 **Environment (please complete the following information):**
-*   **Minecraft Version:** (e.g., 1.21.90)
+*   **Minecraft Version:** (e.g., 1.21.100)
 *   **AntiCheats Addon Version:** (e.g., v0.5.0 - check `!version` in-game or the release page)
 *   **Device/Platform:** (e.g., Windows 10, Android, iOS, Xbox)
 *   **Server Software (if applicable):** (e.g., Vanilla Bedrock Dedicated Server, Realm, third-party server software like PocketMine-MP with a script-supporting plugin)
