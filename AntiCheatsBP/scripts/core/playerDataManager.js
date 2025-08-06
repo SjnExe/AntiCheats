@@ -580,32 +580,6 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         }
     }
 
-    pData.speedAmplifier = -1;
-    pData.jumpBoostAmplifier = -1;
-    pData.hasSlowFalling = false;
-    pData.hasLevitation = false;
-    pData.blindnessTicks = 0;
-
-    const effects = player.getEffects();
-    for (const effect of effects) {
-        switch (effect.typeId) {
-            case 'speed':
-                pData.speedAmplifier = effect.amplifier;
-                break;
-            case 'jump_boost':
-                pData.jumpBoostAmplifier = effect.amplifier;
-                break;
-            case 'slow_falling':
-                pData.hasSlowFalling = true;
-                break;
-            case 'levitation':
-                pData.hasLevitation = true;
-                break;
-            case 'blindness':
-                pData.blindnessTicks = effect.duration;
-                break;
-        }
-    }
 
     if (pData.lastSelectedSlot !== player.selectedSlot) {
         pData.lastSelectedSlotChangeTick = currentTick;

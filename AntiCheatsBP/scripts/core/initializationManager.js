@@ -42,6 +42,8 @@ function subscribeToEvents() {
         pistonActivate: eventHandlers.handlePistonActivateAntiGrief,
         inventoryItemChanged: eventHandlers.handleInventoryItemChange,
         playerDeath: eventHandlers.handlePlayerDeath,
+        playerEffectAdded: eventHandlers.handlePlayerEffectAdded,
+        playerEffectRemoved: eventHandlers.handlePlayerEffectRemoved,
     };
 
     for (const eventName in beforeEventSubscriptions) {
