@@ -3,8 +3,11 @@ import { loadCommand } from './dynamicCommandLoader.js';
 import { logError } from '../modules/utils/playerUtils.js';
 import { CommandError } from '../types.js';
 
+/** @type {Map<string, string>} Maps command names to their file paths for dynamic loading. */
 export const commandFilePaths = new Map();
+/** @type {Map<string, import('../types.js').CommandDefinition>} Maps command names to their definitions. */
 export const commandDefinitionMap = new Map();
+/** @type {Map<string, import('../types.js').CommandExecuteFunction>} Maps command names to their execution functions. */
 export const commandExecutionMap = new Map();
 
 import * as commandFiles from '../modules/commands/index.js';
@@ -21,6 +24,10 @@ function discoverCommands() {
     }
 }
 
+/**
+ * Initializes the command system by discovering commands and setting up alias maps.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
 export function initializeCommands(dependencies) {
     const { playerUtils } = dependencies;
     const { debugLog } = playerUtils;
@@ -82,6 +89,11 @@ async function executeCommand(player, commandDef, commandExecute, args, dependen
     }
 }
 
+/**
+ * Handles an incoming chat message to check for and execute a command.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
 export async function handleChatCommand(eventData, dependencies) {
     const { sender: player, message } = eventData;
     const { config, playerUtils, rankManager, aliasToCommandMap } = dependencies;

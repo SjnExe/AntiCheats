@@ -768,6 +768,8 @@ export const stringDB = {
 
     // --- System Messages & Errors ---
     'system.core.initialized': '§a[AntiCheat] §2System Core Initialized. Version: {version}',
+    'system.core.alreadyInitialized': '§cAntiCheat is already initialized.',
+    'system.core.initializedSuccess': '§aAntiCheat initialized successfully.',
     'error.system.criticalDeps': '§cAntiCheat Error: Critical issue (HPS_DEPS). Contact admin.',
 
     // --- Player Data Notifications ---
