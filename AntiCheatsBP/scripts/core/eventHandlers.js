@@ -1260,6 +1260,71 @@ async function handlePlayerHitEntityEvent(eventData, dependencies) {
 
 profileEventHandler('handlePlayerHitEntityEvent', handlePlayerHitEntityEvent);
 
+/**
+ * Handles the event when an effect is added to a player.
+ * @param {import('@minecraft/server').PlayerEffectAddedAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
+ */
+function handlePlayerEffectAdded(eventData, dependencies) {
+    const { playerDataManager } = dependencies;
+    const { player, effect } = eventData;
+    const pData = playerDataManager.getPlayerData(player.id);
+    if (!pData) return;
+
+    switch (effect.typeId) {
+        case 'speed':
+            pData.speedAmplifier = effect.amplifier;
+            break;
+        case 'jump_boost':
+            pData.jumpBoostAmplifier = effect.amplifier;
+            break;
+        case 'slow_falling':
+            pData.hasSlowFalling = true;
+            break;
+        case 'levitation':
+            pData.hasLevitation = true;
+            break;
+        case 'blindness':
+            pData.blindnessTicks = effect.duration;
+            break;
+    }
+    pData.isDirtyForSave = true;
+}
+profileEventHandler('handlePlayerEffectAdded', handlePlayerEffectAdded);
+
+
+/**
+ * Handles the event when an effect is removed from a player.
+ * @param {import('@minecraft/server').PlayerEffectRemovedAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
+ */
+function handlePlayerEffectRemoved(eventData, dependencies) {
+    const { playerDataManager } = dependencies;
+    const { player, effectTypeId } = eventData;
+    const pData = playerDataManager.getPlayerData(player.id);
+    if (!pData) return;
+
+    switch (effectTypeId) {
+        case 'speed':
+            pData.speedAmplifier = -1;
+            break;
+        case 'jump_boost':
+            pData.jumpBoostAmplifier = -1;
+            break;
+        case 'slow_falling':
+            pData.hasSlowFalling = false;
+            break;
+        case 'levitation':
+            pData.hasLevitation = false;
+            break;
+        case 'blindness':
+            pData.blindnessTicks = 0;
+            break;
+    }
+    pData.isDirtyForSave = true;
+}
+profileEventHandler('handlePlayerEffectRemoved', handlePlayerEffectRemoved);
+
 export {
     handlePlayerLeaveBeforeEvent,
     handlePlayerSpawn,
