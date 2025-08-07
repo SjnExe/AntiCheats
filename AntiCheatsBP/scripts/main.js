@@ -192,9 +192,17 @@ export function tpaTick() {
         dependencies.tpaManager.clearExpiredRequests(dependencies);
 
         const requestsInWarmup = dependencies.tpaManager.getRequestsInWarmup();
+        if (requestsInWarmup.length === 0) {
+            return; // No requests to process
+        }
+
+        // Optimize player lookups by getting all players once and using a Map.
+        const onlinePlayers = world.getAllPlayers();
+        const playerMap = new Map(onlinePlayers.map(p => [p.name, p]));
+
         for (const req of requestsInWarmup) {
-            const requester = world.getPlayer(req.requesterName);
-            const target = world.getPlayer(req.targetName);
+            const requester = playerMap.get(req.requesterName);
+            const target = playerMap.get(req.targetName);
 
             if (!requester?.isValid() || !target?.isValid()) {
                 const invalidPlayerName = !requester?.isValid() ? req.requesterName : req.targetName;
