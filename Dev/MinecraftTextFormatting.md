@@ -50,8 +50,6 @@ These codes can be used to add styling to text. They can be combined with each o
 | :--- | :------------ | :------------------------------------------------ | :---------------------- |
 | `§l` | **Bold**      | Makes the text bold.                              | `§lBold Text`           |
 | `§o` | *Italic*      | Makes the text italic.                            | `§oItalic Text`         |
-| `§n` | <u>Underline</u> | Underlines the text. (Not supported in all contexts) | `§nUnderlined Text`     |
-| `§m` | ~~Strikethrough~~ | Adds a strikethrough to the text. (Not supported in all contexts) | `§mStrikethrough Text`  |
 | `§k` | Obfuscated    | Displays random, changing characters.             | `§kRandom`              |
 | `§r` | Reset         | Resets all formatting (color and style) to default. | `§cRed §rReset`         |
 
@@ -70,5 +68,4 @@ These codes can be used to add styling to text. They can be combined with each o
 - If you use multiple color codes in a row, only the **last** one will be applied.
 - If you use a style code before a color code, the style might be reset. Always apply the color first.
 - The `§r` (Reset) code is very useful for returning to default formatting within the same line of text without starting a new line.
-- The `§n` (Underline) and `§m` (Strikethrough) codes are not rendered in all parts of the game (e.g., chat). They are most reliably seen on signs.
 - The `§k` (Obfuscated) effect will continue until a `§r` (Reset) is used or a new color code is applied.

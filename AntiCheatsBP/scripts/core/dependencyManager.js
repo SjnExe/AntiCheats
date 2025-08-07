@@ -29,7 +29,7 @@ import * as economyManager from './economyManager.js';
 export const actionManager = { executeCheckAction };
 export const chatProcessor = { processChatMessage };
 export const commandManager = {
-    reloadCommands: initializeCommands,
+    initializeCommands: initializeCommands,
     getAllRegisteredCommandNames,
 };
 
