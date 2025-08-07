@@ -94,7 +94,7 @@ async function _handleFlagging(player, profile, flagReasonMessage, checkType, de
     const flagType = profile.flag.type || checkType;
     const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
 
-    await dependencies.playerDataManager?.addFlag(player, flagType, flagReasonMessage, dependencies, violationDetails, increment);
+    await dependencies.playerDataManager?.addFlag(player, flagType, dependencies, violationDetails, increment);
 
     dependencies.playerUtils?.debugLog(`[ActionManager] Dispatched flag action for ${player.nameTag} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.nameTag, dependencies);
 }
