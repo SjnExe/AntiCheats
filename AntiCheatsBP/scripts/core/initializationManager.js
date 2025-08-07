@@ -59,7 +59,7 @@ function initializeModules() {
     const mainModuleName = 'CoreSystem';
     playerUtils.debugLog(`[${mainModuleName}] Initializing modules...`, 'System', dependencies);
 
-    commandManager.reloadCommands(dependencies);
+    commandManager.initializeCommands(dependencies);
     logManager.initializeLogCache(dependencies);
     reportManager.initializeReportCache(dependencies);
     rankManager.initializeRanks(dependencies);
