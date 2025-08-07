@@ -150,7 +150,8 @@ The addon currently targets Minecraft Bedrock version 1.21.100 and newer. Please
 The AntiCheats addon is structured to be modular and configurable. Here's a high-level overview:
 
 - **`AntiCheatsBP/scripts/`**: This is the root for all behavior pack scripts.
-  - **`main.js`**: The entry point of the addon. It initializes all core modules, subscribes to Minecraft server events, and runs the main system tick loop for processing checks and player data updates.
+  - **`loader.js` / `initializationManager.js`**: These scripts handle the addon's startup. `loader.js` is the initial entry point, which then calls into `initializationManager.js` to subscribe to events, initialize all core modules, and start the main tick loops.
+  - **`main.js`**: This file defines the core, recurring tick loop functions (`mainTick` and `tpaTick`) that are responsible for processing all periodic checks and player data updates. These loops are started by the `initializationManager`.
   - **`config.js`**: Contains a vast array of configurable settings for various features, checks, system behaviors, and general check toggles. It also supports runtime updates for many of these values. (Note: Command aliases are now defined within individual command files, not centrally in `config.js`.)
   - **`core/`**: Houses the central manager modules that form the backbone of the addon:
     - `playerDataManager.js`: Manages runtime and persistent data for each player (`PlayerAntiCheatData`), including flags, mutes, bans, and various states needed by checks. Handles data serialization to dynamic properties.

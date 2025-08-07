@@ -1,5 +1,4 @@
 import {
-    system,
     world,
 } from '@minecraft/server';
 import {
@@ -32,9 +31,6 @@ export async function mainTick() {
         // The mainTick is only started after initialization, so no need to check the flag.
         // The main processing logic can run directly.
         await processTick();
-
-        // Schedule the next tick.
-        system.run(mainTick);
 
     } catch (e) {
         logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
@@ -236,11 +232,5 @@ export function tpaTick() {
                 stack: e?.stack,
             },
         }, dependencies);
-    } finally {
-        // Use a timeout to create a stable, non-overlapping loop, but only if the system is enabled.
-        // This prevents the loop from running unnecessarily when the feature is off.
-        if (dependencies.config.enableTpaSystem) {
-            system.runTimeout(tpaTick, tpaSystemTickInterval);
-        }
     }
 }
