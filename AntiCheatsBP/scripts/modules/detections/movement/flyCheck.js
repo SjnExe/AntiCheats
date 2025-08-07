@@ -55,11 +55,13 @@ export async function checkFly(player, pData, dependencies) {
 
         const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity);
         const ticksSinceLastElytra = currentTick - (pData.lastUsedElytraTick ?? -Infinity);
+        const ticksSinceLastOnSlime = currentTick - (pData.lastOnSlimeBlockTick ?? -Infinity);
         const graceTicks = config?.yVelocityGraceTicks ?? 10;
 
         const underGraceCondition = (
             ticksSinceLastDamage <= graceTicks ||
             ticksSinceLastElytra <= graceTicks ||
+            ticksSinceLastOnSlime <= graceTicks ||
             player.isClimbing ||
             (pData.hasSlowFalling && currentYVelocity < 0)
         );
@@ -71,6 +73,9 @@ export async function checkFly(player, pData, dependencies) {
             }
             if (ticksSinceLastElytra <= graceTicks) {
                 graceReasons.push(`recent elytra (${ticksSinceLastElytra}t)`);
+            }
+            if (ticksSinceLastOnSlime <= graceTicks) {
+                graceReasons.push(`recent slime block (${ticksSinceLastOnSlime}t)`);
             }
             if (player.isClimbing) {
                 graceReasons.push('climbing');
