@@ -20,25 +20,25 @@ To make text bold and green, you would type: `§a§lBold Green Text`. This will 
 
 Here is a list of all available color codes in Bedrock Edition.
 
-| Code | Color Name      | Example Usage      |
-| :--- | :-------------- | :----------------- |
-| `§0` | Black           | `§0Black Text`     |
-| `§1` | Dark Blue       | `§1Dark Blue Text` |
-| `§2` | Dark Green      | `§2Dark Green Text`|
-| `§3` | Dark Aqua       | `§3Dark Aqua Text` |
-| `§4` | Dark Red        | `§4Dark Red Text`  |
-| `§5` | Dark Purple     | `§5Dark Purple Text`|
-| `§6` | Gold            | `§6Gold Text`      |
-| `§7` | Gray            | `§7Gray Text`      |
-| `§8` | Dark Gray       | `§8Dark Gray Text` |
-| `§9` | Blue            | `§9Blue Text`      |
-| `§a` | Green           | `§aGreen Text`     |
-| `§b` | Aqua            | `§bAqua Text`      |
-| `§c` | Red             | `§cRed Text`       |
-| `§d` | Light Purple    | `§dLight Purple Text`|
-| `§e` | Yellow          | `§eYellow Text`    |
-| `§f` | White           | `§fWhite Text`     |
-| `§g` | Minecoin Gold   | `§gMinecoin Gold Text`|
+| Code | Color Name      | Hex Code | Example Usage      |
+| :--- | :-------------- | :------- | :----------------- |
+| `§0` | Black           | `#000000`| `§0Black Text`     |
+| `§1` | Dark Blue       | `#0000AA`| `§1Dark Blue Text` |
+| `§2` | Dark Green      | `#00AA00`| `§2Dark Green Text`|
+| `§3` | Dark Aqua       | `#00AAAA`| `§3Dark Aqua Text` |
+| `§4` | Dark Red        | `#AA0000`| `§4Dark Red Text`  |
+| `§5` | Dark Purple     | `#AA00AA`| `§5Dark Purple Text`|
+| `§6` | Gold            | `#FFAA00`| `§6Gold Text`      |
+| `§7` | Gray            | `#AAAAAA`| `§7Gray Text`      |
+| `§8` | Dark Gray       | `#555555`| `§8Dark Gray Text` |
+| `§9` | Blue            | `#5555FF`| `§9Blue Text`      |
+| `§a` | Green           | `#55FF55`| `§aGreen Text`     |
+| `§b` | Aqua            | `#55FFFF`| `§bAqua Text`      |
+| `§c` | Red             | `#FF5555`| `§cRed Text`       |
+| `§d` | Light Purple    | `#FF55FF`| `§dLight Purple Text`|
+| `§e` | Yellow          | `#FFFF55`| `§eYellow Text`    |
+| `§f` | White           | `#FFFFFF`| `§fWhite Text`     |
+| `§g` | Minecoin Gold   | `#FFD700`| `§gMinecoin Gold Text`|
 
 ---
 

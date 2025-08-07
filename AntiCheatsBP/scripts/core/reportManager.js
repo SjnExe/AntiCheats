@@ -1,4 +1,4 @@
-import { logError } from '../utils/playerUtils.js';
+import { logError } from '../modules/utils/playerUtils.js';
 
 /** @type {string} */
 const reportsPropertyKey = 'anticheat:reportsV1';

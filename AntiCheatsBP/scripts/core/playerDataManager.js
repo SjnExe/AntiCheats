@@ -1,4 +1,4 @@
-import { logError } from '../utils/playerUtils.js';
+import { logError } from '../modules/utils/playerUtils.js';
 import { offlineBanList } from './offlineBanList.js';
 
 const maxSerializedDataLength = 30000;
