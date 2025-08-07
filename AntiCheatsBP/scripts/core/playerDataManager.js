@@ -686,13 +686,12 @@ export function removePlayerStateRestriction(pData, stateType, dependencies) {
  * Adds a flag or multiple flags to a player's data and triggers the automod check.
  * @param {import('@minecraft/server').Player} player The player object.
  * @param {string} flagType The type of flag to add (e.g., 'movementFlyHover').
- * @param {string} reason A descriptive reason for the flag.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @param {import('../types.js').ViolationDetails} [violationDetails] Specific details about the violation.
  * @param {number} [amount=1] The number of flags of this type to add.
  * @returns {Promise<void>}
  */
-export async function addFlag(player, flagType, reason, dependencies, violationDetails, amount = 1) {
+export async function addFlag(player, flagType, dependencies, violationDetails, amount = 1) {
     if (amount <= 0) return;
 
     const { playerDataManager, automodManager, playerUtils } = dependencies;
