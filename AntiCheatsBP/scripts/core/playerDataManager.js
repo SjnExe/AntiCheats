@@ -387,7 +387,7 @@ function recoverAndSerializePlayerData(dataToSave, playerLike, dependencies) {
     return JSON.stringify(dataToSave);
 }
 
-export function saveDirtyPlayerData(playerLike, dependencies) {
+export async function saveDirtyPlayerData(playerLike, dependencies) {
     const { playerUtils, logManager, config } = dependencies;
     const pData = getPlayerData(playerLike.id);
 
@@ -421,13 +421,13 @@ export function saveDirtyPlayerData(playerLike, dependencies) {
                 }, dependencies);
 
                 const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick);
-                playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, JSON.stringify(freshData));
+                await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, JSON.stringify(freshData));
                 activePlayerData.set(playerLike.id, freshData);
                 return true;
             }
         }
 
-        playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
+        await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
 
         pData.isDirtyForSave = false;
         pData.lastSavedTimestamp = Date.now();
@@ -593,12 +593,12 @@ export function clearExpiredItemUseStates(pData, dependencies) {
  * @param {import('@minecraft/server').Player} player The player who is leaving.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
-export function handlePlayerLeaveBeforeEvent(player, dependencies) {
+export async function handlePlayerLeaveBeforeEvent(player, dependencies) {
     const pData = getPlayerData(player.id);
     if (pData) {
         pData.isOnline = false;
         pData.isDirtyForSave = true; // Ensure data is saved on leave
-        saveDirtyPlayerData(player, dependencies); // Pass the full, valid player object
+        await saveDirtyPlayerData(player, dependencies); // Pass the full, valid player object
         activePlayerData.delete(player.id);
     }
 }

@@ -1275,6 +1275,9 @@ function handlePlayerEffectAdded(eventData, dependencies) {
         case 'speed':
             pData.speedAmplifier = effect.amplifier;
             break;
+        case 'haste':
+            pData.hasteAmplifier = effect.amplifier;
+            break;
         case 'jump_boost':
             pData.jumpBoostAmplifier = effect.amplifier;
             break;
@@ -1307,6 +1310,9 @@ function handlePlayerEffectRemoved(eventData, dependencies) {
     switch (effectTypeId) {
         case 'speed':
             pData.speedAmplifier = -1;
+            break;
+        case 'haste':
+            pData.hasteAmplifier = -1;
             break;
         case 'jump_boost':
             pData.jumpBoostAmplifier = -1;

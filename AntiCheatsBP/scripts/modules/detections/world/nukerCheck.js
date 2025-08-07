@@ -39,18 +39,24 @@ export async function checkNuker(player, pData, dependencies) {
         playerUtils.debugLog(`[NukerCheck] Processing for ${player.nameTag}. Broke ${brokenBlocksInWindow} blocks in last ${checkIntervalMs}ms.`, watchedPrefix, dependencies);
     }
 
-    const maxBreaks = config.nukerMaxBreaksShortInterval ?? 4;
+    const baseMaxBreaks = config.nukerMaxBreaksShortInterval ?? 4;
+    const hasteAmplifier = pData.hasteAmplifier ?? -1;
+    const hasteBonus = (hasteAmplifier + 1) * (config.nukerBlocksPerHasteLevel ?? 2);
+    const maxBreaks = baseMaxBreaks + hasteBonus;
+
     const actionProfileKey = config.nukerActionProfileName ?? 'worldNuker';
 
     if (brokenBlocksInWindow > maxBreaks) {
         if (pData.isWatched || config.enableDebugLogging) {
             const eventSummary = pData.blockBreakEvents.slice(-5).map(ts => now - ts).join(', ');
-            playerUtils.debugLog(`[NukerCheck] ${player.nameTag}: Flagging. EventsInWindow: ${brokenBlocksInWindow}, Threshold: ${maxBreaks}, TimeWindow: ${checkIntervalMs}ms. Recent Event Ages (ms from now): [${eventSummary}]`, watchedPrefix, dependencies);
+            playerUtils.debugLog(`[NukerCheck] ${player.nameTag}: Flagging. EventsInWindow: ${brokenBlocksInWindow}, Threshold: ${maxBreaks} (Base: ${baseMaxBreaks}, HasteLvl: ${hasteAmplifier}, HasteBonus: ${hasteBonus}), TimeWindow: ${checkIntervalMs}ms. Recent Event Ages (ms from now): [${eventSummary}]`, watchedPrefix, dependencies);
         }
         const violationDetails = {
             blocksBroken: brokenBlocksInWindow.toString(),
             checkWindowMs: checkIntervalMs.toString(),
             threshold: maxBreaks.toString(),
+            baseThreshold: baseMaxBreaks.toString(),
+            hasteLevel: hasteAmplifier.toString(),
         };
 
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);

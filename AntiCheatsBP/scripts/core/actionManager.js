@@ -193,6 +193,13 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     const flagReasonMessage = formatActionMessage(baseReasonTemplate, playerNameForLog, checkType, violationDetails);
 
     await _handleFlagging(player, profile, flagReasonMessage, checkType, dependencies, violationDetails);
+
+    // After any await, the player object might have become invalid. Check before proceeding.
+    if (player && !player.isValid()) {
+        playerUtils?.debugLog(`[ActionManager] Player ${playerNameForLog} became invalid after flagging. Aborting further actions for check '${checkType}'.`, null, dependencies);
+        return;
+    }
+
     _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies);
     _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies);
     _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies);
