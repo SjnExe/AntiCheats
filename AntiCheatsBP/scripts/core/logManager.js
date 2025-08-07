@@ -14,9 +14,7 @@ let logsAreDirty = false;
 
 function toCamelCase(str) {
     if (!str) return '';
-    return str.toLowerCase().replace(/([_][a-z])/g, (group) =>
-        group.toUpperCase().replace('_', '')
-    );
+    return str.toLowerCase().replace(/([_][a-z])/g, (group) => group.toUpperCase().replace('_', ''));
 }
 
 /** @param {import('../types.js').CommandDependencies} dependencies */
