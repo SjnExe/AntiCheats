@@ -7,8 +7,8 @@ const secondsPerMinute = 60;
 const minutesPerHour = 60;
 const hoursPerDay = 24;
 const daysPerWeek = 7;
-const _avgDaysPerMonth = 30.4375; // Prefixed as unused in this file
-const _avgDaysPerYear = 365.25; // Prefixed as unused in this file
+const avgDaysPerMonth = 30.4375;
+const avgDaysPerYear = 365.25;
 
 
 /**
@@ -264,8 +264,8 @@ export function formatTimeDifference(msDifference) {
     const hours = Math.floor(minutes / minutesPerHour);
     const days = Math.floor(hours / hoursPerDay);
     const weeks = Math.floor(days / daysPerWeek);
-    const months = Math.floor(days / _avgDaysPerMonth); // Using prefixed version
-    const years = Math.floor(days / _avgDaysPerYear); // Using prefixed version
+    const months = Math.floor(days / avgDaysPerMonth);
+    const years = Math.floor(days / avgDaysPerYear);
 
     if (years > 0) {
         return `${years}y ago`;

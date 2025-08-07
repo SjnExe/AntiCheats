@@ -448,12 +448,13 @@ export function updateConfigValue(key, value) {
     try {
         if (expectedType === 'boolean') {
             if (typeof value === 'string') {
-                if (value.toLowerCase() === 'true') {
+                const lowerValue = value.toLowerCase();
+                if (lowerValue === 'true' || lowerValue === '1') {
                     coercedValue = true;
-                } else if (value.toLowerCase() === 'false') {
+                } else if (lowerValue === 'false' || lowerValue === '0') {
                     coercedValue = false;
                 } else {
-                    throw new Error('must be "true" or "false"');
+                    throw new Error('must be "true", "false", "1", or "0"');
                 }
             } else if (typeof value !== 'boolean') {
                 throw new Error(`expected boolean, got ${typeof value}`);

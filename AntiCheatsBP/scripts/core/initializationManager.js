@@ -46,13 +46,13 @@ function subscribeToEvents() {
         playerEffectRemoved: eventHandlers.handlePlayerEffectRemoved,
     };
 
-    for (const eventName in beforeEventSubscriptions) {
+    Object.keys(beforeEventSubscriptions).forEach(eventName => {
         world.beforeEvents[eventName].subscribe((eventData) => beforeEventSubscriptions[eventName](eventData, dependencies));
-    }
+    });
 
-    for (const eventName in afterEventSubscriptions) {
+    Object.keys(afterEventSubscriptions).forEach(eventName => {
         world.afterEvents[eventName].subscribe((eventData) => afterEventSubscriptions[eventName](eventData, dependencies));
-    }
+    });
 }
 
 function initializeModules() {
