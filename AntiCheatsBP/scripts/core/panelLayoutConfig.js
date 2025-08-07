@@ -84,23 +84,23 @@ export const panelDefinitions = {
         ],
     },
     mainUserPanel: {
-        title: 'Player Information Panel',
+        title: '§l§gPlayer Information Panel§r',
         parentPanelId: null,
         items: [
             {
-                id: 'myStats', sortId: 10, text: 'My AntiCheat Stats', icon: 'textures/ui/icon_bestfriend',
+                id: 'myStats', sortId: 10, text: '§bMy AntiCheat Stats§r', icon: 'textures/ui/icon_bestfriend',
                 requiredPermLevel: 1024, actionType: 'openPanel', actionValue: 'myStatsPanel',
             },
             {
-                id: 'serverRules', sortId: 20, text: 'Server Rules', icon: 'textures/ui/scroll_filled',
+                id: 'serverRules', sortId: 20, text: '§eServer Rules§r', icon: 'textures/ui/scroll_filled',
                 requiredPermLevel: 1024, actionType: 'openPanel', actionValue: 'serverRulesPanel',
             },
             {
-                id: 'helpfulLinks', sortId: 30, text: 'Helpful Links', icon: 'textures/ui/icon_Details',
+                id: 'helpfulLinks', sortId: 30, text: '§9Helpful Links§r', icon: 'textures/ui/icon_Details',
                 requiredPermLevel: 1024, actionType: 'openPanel', actionValue: 'helpfulLinksPanel',
             },
             {
-                id: 'generalTips', sortId: 40, text: 'General Tips', icon: 'textures/ui/light_bulb_momented',
+                id: 'generalTips', sortId: 40, text: '§aGeneral Tips§r', icon: 'textures/ui/light_bulb_momented',
                 requiredPermLevel: 1024, actionType: 'openPanel', actionValue: 'generalTipsPanel',
             },
         ],
@@ -268,7 +268,7 @@ export const panelDefinitions = {
         title: '§l§bYour Stats§r',
         parentPanelId: 'mainUserPanel',
         items: [
-            { id: 'displayMyStats', sortId: 10, text: 'View My Stats Details', requiredPermLevel: 1024, actionType: 'functionCall', actionValue: 'showMyStatsPageContent' },
+            { id: 'displayMyStats', sortId: 10, text: '§eView My Stats Details§r', requiredPermLevel: 1024, actionType: 'functionCall', actionValue: 'showMyStatsPageContent' },
         ],
     },
     serverRulesPanel: {
@@ -286,7 +286,7 @@ export const panelDefinitions = {
         ],
     },
     generalTipsPanel: {
-        title: 'General Tips',
+        title: '§l§aGeneral Tips§r',
         parentPanelId: 'mainUserPanel',
         dynamicItemGeneratorKey: 'generateGeneralTipItems',
         items: [
