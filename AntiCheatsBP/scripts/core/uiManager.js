@@ -1,7 +1,7 @@
 import { world } from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from '../core/panelLayoutConfig.js';
-import { logError } from '../utils/playerUtils.js';
+import { logError } from '../modules/utils/playerUtils.js';
 
 // Constants for showInspectPlayerForm
 const inspectPlayerTitle = '§l§3Inspect Player§r';

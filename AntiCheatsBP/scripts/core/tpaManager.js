@@ -1,4 +1,4 @@
-import { logError } from '../utils/playerUtils.js';
+import { logError } from '../modules/utils/playerUtils.js';
 
 // Constants for UUID generation
 const uuidRandomMultiplier = 16;

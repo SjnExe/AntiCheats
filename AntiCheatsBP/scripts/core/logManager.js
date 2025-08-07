@@ -1,4 +1,4 @@
-import { logError } from '../utils/playerUtils.js';
+import { logError } from '../modules/utils/playerUtils.js';
 
 /** @type {string} */
 const logPropertyKey = 'anticheat:actionLogsV1'; // Using _v1 suffix for potential future format changes.
