@@ -46,20 +46,20 @@ function subscribeToEvents() {
         playerEffectRemoved: eventHandlers.handlePlayerEffectRemoved,
     };
 
-    Object.keys(beforeEventSubscriptions).forEach(eventName => {
+    for (const eventName in beforeEventSubscriptions) {
         world.beforeEvents[eventName].subscribe((eventData) => beforeEventSubscriptions[eventName](eventData, dependencies));
-    });
+    }
 
-    Object.keys(afterEventSubscriptions).forEach(eventName => {
+    for (const eventName in afterEventSubscriptions) {
         world.afterEvents[eventName].subscribe((eventData) => afterEventSubscriptions[eventName](eventData, dependencies));
-    });
+    }
 }
 
 function initializeModules() {
     const mainModuleName = 'CoreSystem';
     playerUtils.debugLog(`[${mainModuleName}] Initializing modules...`, 'System', dependencies);
 
-    commandManager.initializeCommands(dependencies);
+    commandManager.reloadCommands(dependencies);
     logManager.initializeLogCache(dependencies);
     reportManager.initializeReportCache(dependencies);
     rankManager.initializeRanks(dependencies);

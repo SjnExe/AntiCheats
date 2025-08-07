@@ -65,9 +65,9 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
         playerUtils?.debugLog(`[ReachCheck] ${playerName}: DistOK: ${!isDistanceViolation}, LoSOK: ${!isLineOfSightViolation}. First entity in view: ${firstEntity?.typeId ?? 'None'}. Target: ${targetEntity.typeId}`, watchedPlayerName, dependencies);
     }
 
-    // A violation occurs if the distance is too great. The line-of-sight check is for logging/debugging only.
-    if (isDistanceViolation) {
-        const violationReason = 'Distance';
+    // A violation occurs if the distance is too great OR if the line of sight is obstructed.
+    if (isDistanceViolation || isLineOfSightViolation) {
+        const violationReason = isDistanceViolation ? (isLineOfSightViolation ? 'Distance and Line-of-Sight' : 'Distance') : 'Line-of-Sight';
 
         const violationDetails = {
             reason: violationReason,

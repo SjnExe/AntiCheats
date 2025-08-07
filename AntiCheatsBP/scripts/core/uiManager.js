@@ -715,15 +715,16 @@ async function displayActionLogsModalImpl(player, dependencies) {
     const adminPlayerName = player.name;
     playerUtils?.debugLog(`[UiManager.displayActionLogsModalImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
     let logText = '§g--- All Action Logs ---\n§r';
-    const allLogs = logManager.getLogs ? logManager.getLogs() : [];
-    const maxLogsToShow = 50;
-    const logsToShow = allLogs.slice(0, maxLogsToShow);
-
-    if (logsToShow.length === 0) {
+    const logs = logManager.getLogs ? logManager.getLogs() : [];
+    if (!logs || logs.length === 0) {
         logText += 'No action logs found.';
     } else {
-        for (const log of logsToShow) {
-            if (!log) continue;
+        const maxLogsToShow = 50;
+        const startIndex = Math.max(0, logs.length - maxLogsToShow);
+        for (let i = startIndex; i < logs.length; i++) {
+            const log = logs[i]; if (!log) {
+                continue;
+            }
             const timestamp = new Date(log.timestamp || Date.now()).toLocaleString();
             let entry = `§7[${timestamp}] §e${log.actor || 'System'} §f${log.actionType || 'unknownAction'}`;
             if (log.targetName) {
@@ -735,8 +736,12 @@ async function displayActionLogsModalImpl(player, dependencies) {
                     detailsString = log.details;
                 } else if (typeof log.details === 'object') {
                     const detailParts = [];
-                    if (log.details.reason) detailParts.push(`Reason: ${log.details.reason}`);
-                    if (log.details.durationDisplay) detailParts.push(`Duration: ${log.details.durationDisplay}`);
+                    if (log.details.reason) {
+                        detailParts.push(`Reason: ${log.details.reason}`);
+                    }
+                    if (log.details.durationDisplay) {
+                        detailParts.push(`Duration: ${log.details.durationDisplay}`);
+                    }
                     for (const key in log.details) {
                         if (key !== 'reason' && key !== 'durationDisplay' && !['rawErrorStack', 'stack', 'errorCode', 'message'].includes(key) && Object.prototype.hasOwnProperty.call(log.details, key)) {
                             detailParts.push(`${key}: ${log.details[key]}`);
@@ -748,10 +753,10 @@ async function displayActionLogsModalImpl(player, dependencies) {
             if (detailsString) {
                 entry += ` §7(${detailsString})§r`;
             }
-            logText += `${entry}\n`;
+            logText += `${entry }\n`;
         }
-        if (allLogs.length > maxLogsToShow) {
-            logText += `\n§o(Showing latest ${maxLogsToShow} of ${allLogs.length} entries. More may exist.)§r`;
+        if (logs.length > maxLogsToShow) {
+            logText += `\n§o(Showing latest ${maxLogsToShow} of ${logs.length} entries. More may exist.)§r`;
         }
     }
     const modal = new ModalFormData().title('§l§3Action Logs (All)§r').content(logText.trim());

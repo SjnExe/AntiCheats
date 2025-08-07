@@ -47,8 +47,26 @@ async function _loadScheduledFlagPurges(dependencies) {
                 }
                 return new Map(validPurges.map(item => [item.playerName, item]));
             }
+            // Legacy format check: An object like { values: ["Player1", "Player2"] }
+            if (typeof parsed === 'object' && parsed !== null && Array.isArray(parsed.values)) {
+                playerUtils.debugLog('[PlayerDataManager] Migrating legacy scheduled flag purges format.', 'System', dependencies);
+                const newMap = new Map();
+                for (const playerName of parsed.values) {
+                    if (typeof playerName === 'string') {
+                        newMap.set(playerName, { playerName, timestamp: Date.now() });
+                    }
+                }
+                // Immediately save in the new format to complete migration
+                try {
+                    await _saveScheduledFlagPurges(newMap, dependencies);
+                } catch (saveError) {
+                    logError(`[PlayerDataManager] Failed to save migrated scheduled flag purges, but proceeding with in-memory data. Error: ${saveError.message}`, saveError);
+                    playerUtils.debugLog(`[PlayerDataManager] Error saving migrated purges: ${saveError.message}`, 'SystemError', dependencies);
+                }
+                return newMap;
+            }
 
-            // If we reach here, the format is unexpected (e.g., a non-array object)
+            // If we reach here, the format is unexpected (e.g., a non-array, non-legacy object)
             if (parsed !== null) { // Avoid logging for a clean, uninitialized property
                 playerUtils.debugLog(`[PlayerDataManager] Unexpected data format for scheduled flag purges. Data will be reset. Found type: ${typeof parsed}`, 'SystemError', dependencies);
                 logManager.addLog({

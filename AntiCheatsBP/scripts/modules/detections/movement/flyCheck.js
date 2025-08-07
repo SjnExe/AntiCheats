@@ -116,25 +116,25 @@ export async function checkFly(player, pData, dependencies) {
 
     const verticalSpeed = pData.transient.lastVelocity?.y ?? 0;
     if (pData.isWatched) {
-        playerUtils?.debugLog(`[FlyCheck] Processing Sustained/Hover for ${playerName}. VSpeed=${verticalSpeed.toFixed(3)}, OffGroundTicks=${pData.transient.ticksSinceLastOnGround}, FallDist=${pData.fallDistance?.toFixed(2)}`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[FlyCheck] Processing Sustained/Hover for ${playerName}. VSpeed=${verticalSpeed.toFixed(3)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}, FallDist=${pData.fallDistance?.toFixed(2)}`, watchedPlayerName, dependencies);
     }
 
     const sustainedThreshold = config?.flySustainedVerticalSpeedThreshold ?? 0.45;
     const sustainedTicks = config?.flySustainedOffGroundTicksThreshold ?? 10;
 
     if (!player.isOnGround && verticalSpeed > sustainedThreshold && !player.isClimbing && !pData.hasLevitation && !player.isInWater) {
-        if (pData.transient.ticksSinceLastOnGround > sustainedTicks) {
+        if (pData.consecutiveOffGroundTicks > sustainedTicks) {
             const violationDetails = {
                 type: 'sustainedVertical',
                 verticalSpeed: verticalSpeed.toFixed(3),
-                offGroundTicks: (pData.transient.ticksSinceLastOnGround ?? 0).toString(),
+                offGroundTicks: (pData.consecutiveOffGroundTicks ?? 0).toString(),
                 isClimbing: player.isClimbing.toString(),
                 isInWater: player.isInWater.toString(),
                 hasLevitation: (pData.hasLevitation ?? false).toString(),
             };
             const sustainedFlyActionProfileKey = config?.sustainedFlyActionProfileName ?? 'movementSustainedFly';
             await actionManager?.executeCheckAction(player, sustainedFlyActionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[FlyCheck][Sustained] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.transient.ticksSinceLastOnGround}t`, watchedPlayerName, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Sustained] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.consecutiveOffGroundTicks}t`, watchedPlayerName, dependencies);
         }
     }
 
@@ -151,7 +151,7 @@ export async function checkFly(player, pData, dependencies) {
 
     if (!player.isOnGround &&
         Math.abs(verticalSpeed) < hoverVSpeedThreshold &&
-        (pData.transient.ticksSinceLastOnGround ?? 0) > hoverOffGroundTicks &&
+        (pData.consecutiveOffGroundTicks ?? 0) > hoverOffGroundTicks &&
         (pData.fallDistance ?? 0) < hoverMaxFallDist &&
         !player.isClimbing &&
         !player.isInWater &&
@@ -170,7 +170,7 @@ export async function checkFly(player, pData, dependencies) {
             const violationDetails = {
                 type: 'flyHover',
                 verticalSpeed: verticalSpeed.toFixed(3),
-                offGroundTicks: (pData.transient.ticksSinceLastOnGround ?? 0).toString(),
+                offGroundTicks: (pData.consecutiveOffGroundTicks ?? 0).toString(),
                 fallDistance: (pData.fallDistance ?? 0).toFixed(2),
                 heightAboveLastGround: heightAboveLastGround.toFixed(2),
                 isClimbing: player.isClimbing.toString(),
@@ -180,7 +180,7 @@ export async function checkFly(player, pData, dependencies) {
             };
             const hoverFlyActionProfileKey = config?.hoverFlyActionProfileName ?? 'movementFlyHover';
             await actionManager?.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.transient.ticksSinceLastOnGround}t, FallDist: ${pData.fallDistance?.toFixed(2)}, Height: ${heightAboveLastGround.toFixed(2)}`, watchedPlayerName, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.consecutiveOffGroundTicks}t, FallDist: ${pData.fallDistance?.toFixed(2)}, Height: ${heightAboveLastGround.toFixed(2)}`, watchedPlayerName, dependencies);
         } else if (pData.isWatched) {
             playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover speed/tick criteria but height (${heightAboveLastGround.toFixed(2)}) not > min (${hoverMinHeight}). LastGroundY: ${lastGroundY}`, watchedPlayerName, dependencies);
         }
