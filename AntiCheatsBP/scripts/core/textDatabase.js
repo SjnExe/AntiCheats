@@ -321,8 +321,8 @@ export const stringDB = {
     // --- help.js ---
     'command.help.unknownCommand': '§cUnknown command: {prefix}{commandName}',
     'command.help.noPermission': '§cCommand {prefix}{commandName} not found or you do not have permission.',
-    'command.help.header': '§6--- Available Commands (Prefix: {prefix}) ---§r',
-    'command.help.specific.header': '§6--- Help: {prefix}{commandName} ---',
+    'command.help.header': '§g--- Available Commands (Prefix: {prefix}) ---§r',
+    'command.help.specific.header': '§g--- Help: {prefix}{commandName} ---',
     'command.help.specific.syntax': '§eSyntax: {prefix}{commandName} {syntaxArgs}',
     'command.help.specific.description': '§7Description: {description}',
     'command.help.specific.permission': '§7Permission: {permLevelName} (Level {permissionLevel})',
@@ -331,7 +331,7 @@ export const stringDB = {
     'command.help.category.moderation': '§cModeration Commands:§r',
     'command.help.category.admin': '§cAdministrative Commands:§r',
     'command.help.category.owner': '§4Owner Commands:§r',
-    'command.help.entryFormat': '§e{prefix}{commandName} {syntaxArgs}§7 - {description}',
+    'command.help.entryFormat': '§e{prefix}{commandName} {syntaxArgs} §8-§7 {description}',
     'command.help.noCommandsAvailable': '§7No commands available to you at this time.',
 
     // --- inspect.js ---
