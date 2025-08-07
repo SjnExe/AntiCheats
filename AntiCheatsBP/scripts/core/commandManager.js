@@ -1,6 +1,5 @@
 import { commandAliases } from '../config.js';
 import { loadCommand } from './dynamicCommandLoader.js';
-import { logError } from '../modules/utils/playerUtils.js';
 import { CommandError } from '../types.js';
 
 /** @type {Map<string, string>} Maps command names to their file paths for dynamic loading. */

@@ -3,7 +3,7 @@ import * as eventHandlers from './eventHandlers.js';
 import * as dependencies from './dependencyManager.js';
 import { logError, playerUtils, getString } from '../modules/utils/playerUtils.js';
 import { migrateConfig } from './configMigration.js';
-import { mainTick, tpaTick } from '../main.js';
+import { mainTick, tpaTick, tpaSystemTickInterval } from '../main.js';
 
 const {
     config,
@@ -189,18 +189,17 @@ function performInitializations() {
 
     world.setDynamicProperty('ac:initialized', true);
 
-    // Start the TPA system tick loop now that the system is initialized.
-    // The tpaTick function will reschedule itself in a stable, non-overlapping loop.
-    tpaTick();
-
     world.sendMessage({
         'translate': 'system.core.initialized',
         'with': {
             'version': acVersion,
         },
     });
-    playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Tick loop will now be active.', 'System', dependencies);
-    system.run(mainTick);
+    playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Starting tick loops.', 'System', dependencies);
+    system.runInterval(mainTick, 1);
+    if (config.enableTpaSystem) {
+        system.runInterval(tpaTick, tpaSystemTickInterval);
+    }
 }
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {
