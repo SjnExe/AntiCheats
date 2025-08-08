@@ -1,6 +1,6 @@
-import { isNetherLocked, setNetherLocked } from '../../utils/worldStateUtils.js';
+import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
 
-/** @type {import('../../types.js').CommandDefinition} */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'netherlock',
     syntax: '<on|off|status>',
@@ -12,7 +12,7 @@ export const definition = {
  * Executes the netherlock command.
  * @param {import('@minecraft/server').Player} player
  * @param {string[]} args
- * @param {import('../../types.js').Dependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
