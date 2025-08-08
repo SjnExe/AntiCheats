@@ -154,40 +154,44 @@ export async function checkFly(player, pData, dependencies) {
         hoverOffGroundTicks = config?.flyHoverOffGroundTicksSlowFalling ?? Math.floor(hoverOffGroundTicks / 2);
     }
 
-    if (!player.isOnGround &&
+    // Check for hover/low-gravity movement
+    const isHoverCandidate = !player.isOnGround &&
         Math.abs(verticalSpeed) < hoverVSpeedThreshold &&
         (pData.transient.ticksSinceLastOnGround ?? 0) > hoverOffGroundTicks &&
         (pData.fallDistance ?? 0) < hoverMaxFallDist &&
         !player.isClimbing &&
         !player.isInWater &&
         !pData.hasLevitation &&
-        !(pData.hasSlowFalling && verticalSpeed < (config.flyHoverSlowFallingMinVSpeed ?? -0.01))
-    ) {
+        !(pData.hasSlowFalling && verticalSpeed < (config.flyHoverSlowFallingMinVSpeed ?? -0.01));
+
+    if (isHoverCandidate) {
         const playerLocY = player.location.y;
         const lastGroundY = pData.lastOnGroundPosition?.y;
-        let heightAboveLastGround = hoverMinHeight + 1.0;
+
+        // Only proceed if we have a valid last ground position in the same dimension.
         if (typeof lastGroundY === 'number' && pData.lastDimensionId === player.dimension.id) {
-            heightAboveLastGround = playerLocY - lastGroundY;
-        }
+            const heightAboveLastGround = playerLocY - lastGroundY;
 
-
-        if (heightAboveLastGround > hoverMinHeight) {
-            const violationDetails = {
-                type: 'flyHover',
-                verticalSpeed: verticalSpeed.toFixed(3),
-                offGroundTicks: (pData.transient.ticksSinceLastOnGround ?? 0).toString(),
-                fallDistance: (pData.fallDistance ?? 0).toFixed(2),
-                heightAboveLastGround: heightAboveLastGround.toFixed(2),
-                isClimbing: player.isClimbing.toString(),
-                isInWater: player.isInWater.toString(),
-                hasLevitation: (pData.hasLevitation ?? false).toString(),
-                hasSlowFalling: (pData.hasSlowFalling ?? false).toString(),
-            };
-            const hoverFlyActionProfileKey = config?.hoverFlyActionProfileName ?? 'movementFlyHover';
-            await actionManager?.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.transient.ticksSinceLastOnGround}t, FallDist: ${pData.fallDistance?.toFixed(2)}, Height: ${heightAboveLastGround.toFixed(2)}`, watchedPlayerName, dependencies);
+            if (heightAboveLastGround > hoverMinHeight) {
+                const violationDetails = {
+                    type: 'flyHover',
+                    verticalSpeed: verticalSpeed.toFixed(3),
+                    offGroundTicks: (pData.transient.ticksSinceLastOnGround ?? 0).toString(),
+                    fallDistance: (pData.fallDistance ?? 0).toFixed(2),
+                    heightAboveLastGround: heightAboveLastGround.toFixed(2),
+                    isClimbing: player.isClimbing.toString(),
+                    isInWater: player.isInWater.toString(),
+                    hasLevitation: (pData.hasLevitation ?? false).toString(),
+                    hasSlowFalling: (pData.hasSlowFalling ?? false).toString(),
+                };
+                const hoverFlyActionProfileKey = config?.hoverFlyActionProfileName ?? 'movementFlyHover';
+                await actionManager?.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
+                playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.transient.ticksSinceLastOnGround}t, FallDist: ${pData.fallDistance?.toFixed(2)}, Height: ${heightAboveLastGround.toFixed(2)}`, watchedPlayerName, dependencies);
+            } else if (pData.isWatched) {
+                playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover criteria but height (${heightAboveLastGround.toFixed(2)}) was not > min (${hoverMinHeight}).`, watchedPlayerName, dependencies);
+            }
         } else if (pData.isWatched) {
-            playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover speed/tick criteria but height (${heightAboveLastGround.toFixed(2)}) not > min (${hoverMinHeight}). LastGroundY: ${lastGroundY}`, watchedPlayerName, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover criteria but could not determine height above ground. LastGroundY=${lastGroundY}, LastDim=${pData.lastDimensionId}, CurrDim=${player.dimension.id}`, watchedPlayerName, dependencies);
         }
     }
 }
