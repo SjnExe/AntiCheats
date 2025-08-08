@@ -471,7 +471,7 @@ async function _loadPlayerDataFromDynamicProperties(player, dependencies) {
             return null;
         }
 
-        pData.transient = {};
+        pData.transient = getDefaultTransientState(player);
         return pData;
 
     } catch (error) {
