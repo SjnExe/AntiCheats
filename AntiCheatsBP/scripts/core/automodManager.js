@@ -372,7 +372,7 @@ export async function processAutoModActions(player, pData, checkType, dependenci
         return;
     }
 
-    const rulesForCheck = ruleSet.tiers?.sort((a, b) => b.flagThreshold - a.flagThreshold) || [];
+    const rulesForCheck = ruleSet.tiers?.slice().sort((a, b) => b.flagThreshold - a.flagThreshold) || [];
     if (rulesForCheck.length === 0) {
         return;
     }

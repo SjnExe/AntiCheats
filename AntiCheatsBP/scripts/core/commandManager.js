@@ -1,6 +1,7 @@
 import { commandAliases } from '../config.js';
 import { loadCommand } from './dynamicCommandLoader.js';
 import { CommandError } from '../types.js';
+import { defaultPermissionLevel } from './ranksConfig.js';
 
 /** @type {Map<string, string>} Maps command names to their file paths for dynamic loading. */
 export const commandFilePaths = new Map();
@@ -126,7 +127,7 @@ export async function handleChatCommand(eventData, dependencies) {
     }
 
     const userPermissionLevel = getPlayerPermissionLevel(player, dependencies);
-    const requiredPermissionLevel = commandDef.permissionLevel ?? 0; // Default to the highest permission level (owner)
+    const requiredPermissionLevel = commandDef.permissionLevel ?? defaultPermissionLevel;
 
     if (userPermissionLevel > requiredPermissionLevel) {
         warnPlayer(player, getString('common.error.permissionDenied'), dependencies);
