@@ -120,7 +120,7 @@ export function getBorderSettings(dimensionId, dependencies) {
         if (typeof settingsJson !== 'string') {
             // This indicates corrupted data type if property exists but isn't a string.
             console.warn(`[WorldBorderManager] Corrupted border settings for dimension '${dimensionId}'. Expected string, got ${typeof settingsJson}. Key: ${propertyKey}`);
-            logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_corruption', details: `Dimension ${dimensionId}: Expected string for dynamic property, got ${typeof settingsJson}. Key: ${propertyKey}` }, dependencies);
+            logManager?.addLog({ actionType: 'error.worldborder.getBorderSettings.corruption', context: 'getBorderSettings', details: { message: `Dimension ${dimensionId}: Expected string for dynamic property, got ${typeof settingsJson}. Key: ${propertyKey}` } }, dependencies);
             return null;
         }
 
@@ -129,7 +129,7 @@ export function getBorderSettings(dimensionId, dependencies) {
             settings = JSON.parse(settingsJson);
         } catch (parseError) {
             console.error(`[WorldBorderManager] Failed to parse border settings JSON for dimension '${dimensionId}'. Error: ${parseError.stack || parseError}. JSON: "${settingsJson}"`);
-            logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_json_parse_fail', details: `Dimension ${dimensionId}: JSON parse error. Error: ${parseError.message}. Key: ${propertyKey}`, errorStack: parseError.stack || parseError.toString() }, dependencies);
+            logManager?.addLog({ actionType: 'error.worldborder.getBorderSettings.jsonParseFail', context: 'getBorderSettings', details: { message: `Dimension ${dimensionId}: JSON parse error. Error: ${parseError.message}. Key: ${propertyKey}`, rawErrorStack: parseError.stack || parseError.toString() } }, dependencies);
             return null;
         }
 
@@ -137,14 +137,14 @@ export function getBorderSettings(dimensionId, dependencies) {
         if (!settings || typeof settings.centerX !== 'number' || typeof settings.centerZ !== 'number' ||
             typeof settings.enabled !== 'boolean' || typeof settings.dimensionId !== 'string') {
             console.warn(`[WorldBorderManager] Invalid or corrupt common settings structure for dimension '${dimensionId}'. Settings: ${JSON.stringify(settings)}`);
-            logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_invalid_structure', details: `Dimension ${dimensionId}: Invalid common settings structure. Loaded: ${JSON.stringify(settings)}. Key: ${propertyKey}` }, dependencies);
+            logManager?.addLog({ actionType: 'error.worldborder.getBorderSettings.invalidStructure', context: 'getBorderSettings', details: { message: `Dimension ${dimensionId}: Invalid common settings structure. Loaded: ${JSON.stringify(settings)}. Key: ${propertyKey}` } }, dependencies);
             return null;
         }
 
         // Validate dimensionId consistency
         if (settings.dimensionId !== dimensionId) {
             console.warn(`[WorldBorderManager] Mismatch in dimensionId for '${dimensionId}'. Expected '${dimensionId}', got '${settings.dimensionId}' in stored data. Key: ${propertyKey}`);
-            logManager?.addLog({ actionType: 'system_warning', context: 'getBorderSettings_dimension_mismatch', details: `Dimension ${dimensionId}: Mismatch in stored dimensionId. Expected ${dimensionId}, got ${settings.dimensionId}. Key: ${propertyKey}` }, dependencies);
+            logManager?.addLog({ actionType: 'warning.worldborder.getBorderSettings.dimensionMismatch', context: 'getBorderSettings', details: { message: `Dimension ${dimensionId}: Mismatch in stored dimensionId. Expected ${dimensionId}, got ${settings.dimensionId}. Key: ${propertyKey}` } }, dependencies);
             // Continue, but this is a warning sign. Could choose to return null if strict consistency is required.
         }
 
@@ -152,18 +152,18 @@ export function getBorderSettings(dimensionId, dependencies) {
         if (settings.shape === 'square') {
             if (typeof settings.halfSize !== 'number' || settings.halfSize <= 0) {
                 console.warn(`[WorldBorderManager] Invalid or non-positive 'halfSize' for square border in '${dimensionId}'. Value: ${settings.halfSize}`);
-                logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_invalid_halfsize', details: `Dimension ${dimensionId}: Invalid square halfSize: ${settings.halfSize}. Key: ${propertyKey}` }, dependencies);
+                logManager?.addLog({ actionType: 'error.worldborder.getBorderSettings.invalidHalfsize', context: 'getBorderSettings', details: { message: `Dimension ${dimensionId}: Invalid square halfSize: ${settings.halfSize}. Key: ${propertyKey}` } }, dependencies);
                 return null;
             }
         } else if (settings.shape === 'circle') {
             if (typeof settings.radius !== 'number' || settings.radius <= 0) {
                 console.warn(`[WorldBorderManager] Invalid or non-positive 'radius' for circle border in '${dimensionId}'. Value: ${settings.radius}`);
-                logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_invalid_radius', details: `Dimension ${dimensionId}: Invalid circle radius: ${settings.radius}. Key: ${propertyKey}` }, dependencies);
+                logManager?.addLog({ actionType: 'error.worldborder.getBorderSettings.invalidRadius', context: 'getBorderSettings', details: { message: `Dimension ${dimensionId}: Invalid circle radius: ${settings.radius}. Key: ${propertyKey}` } }, dependencies);
                 return null;
             }
         } else if (settings.shape !== undefined) { // Allows shape to be undefined if border is disabled (though 'enabled' flag is primary)
             console.warn(`[WorldBorderManager] Unknown or invalid shape '${settings.shape}' for dimension '${dimensionId}'.`);
-            logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_invalid_shape', details: `Dimension ${dimensionId}: Unknown shape: ${settings.shape}. Key: ${propertyKey}` }, dependencies);
+            logManager?.addLog({ actionType: 'error.worldborder.getBorderSettings.invalidShape', context: 'getBorderSettings', details: { message: `Dimension ${dimensionId}: Unknown shape: ${settings.shape}. Key: ${propertyKey}` } }, dependencies);
             return null; // Or default to a disabled state if preferred
         }
 
@@ -177,7 +177,7 @@ export function getBorderSettings(dimensionId, dependencies) {
     } catch (error) {
         // Catch any other unexpected errors during dynamic property access or other logic
         console.error(`[WorldBorderManager] Unexpected error in getBorderSettings for dimension '${dimensionId}': ${error.stack || error}`);
-        logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_unexpected_exception', details: `Dimension ${dimensionId}: Unexpected error: ${error.message}. Key: ${propertyKey}`, errorStack: error.stack || error.toString() }, dependencies);
+        logManager?.addLog({ actionType: 'error.worldborder.getBorderSettings.unexpectedException', context: 'getBorderSettings', details: { message: `Dimension ${dimensionId}: Unexpected error: ${error.message}. Key: ${propertyKey}`, rawErrorStack: error.stack || error.toString() } }, dependencies);
     }
 
     return null; // Default return if any error path leads here
@@ -365,7 +365,7 @@ export function processWorldBorderResizing(dependencies) {
                 dimBorderSettings.resizeDurationMs = undefined;
                 if (saveBorderSettings(dimId, dimBorderSettings, dependencies)) {
                     playerUtils.debugLog(`[WorldBorderManager] Border resize in ${playerUtils.formatDimensionName(dimId)} completed. New size: ${targetSize}.`, 'System', dependencies);
-                    logManager.addLog({ adminName: 'System', actionType: 'worldborder_resize_complete', targetName: dimId, details: `Resize to ${targetSize} complete.` }, dependencies);
+                    logManager.addLog({ adminName: 'System', actionType: 'worldborder.resize.complete', targetName: dimId, details: { message: `Resize to ${targetSize} complete.` } }, dependencies);
                 } else {
                     playerUtils.debugLog(`[WorldBorderManager] Failed to save completed border resize for ${dimId}.`, 'System', dependencies);
                 }
