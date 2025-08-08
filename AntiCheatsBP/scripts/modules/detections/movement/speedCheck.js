@@ -54,10 +54,21 @@ export async function checkSpeed(player, pData, dependencies) {
             pData.consecutiveOnGroundSpeedingTicks = 0;
             pData.isDirtyForSave = true;
         }
+        // Record the tick of the last exempt state to provide a grace period.
+        pData.lastSpeedExemptTick = dependencies.currentTick;
+        pData.isDirtyForSave = true;
+
         if (config?.enableDebugLogging && pData.isWatched) {
             const exemptReason = player.isFlying ? 'Flying' : player.isGliding ? 'Gliding' : player.isClimbing ? 'Climbing' : player.isInWater ? 'InWater' : player.isRiding ? 'Riding' : 'OnIce';
             playerUtils?.debugLog(`[SpeedCheck] ${playerName} in exempt state (${exemptReason}). Skipping speed check.`, watchedPlayerName, dependencies);
         }
+        return;
+    }
+
+    // Grace period after an exempt state ends (e.g., dismounting a horse, landing from elytra)
+    const gracePeriodTicks = config?.checks?.speed?.postExemptionGraceTicks ?? 20; // 1 second grace period
+    if (pData.lastSpeedExemptTick && (dependencies.currentTick - pData.lastSpeedExemptTick) < gracePeriodTicks) {
+        playerUtils?.debugLog(`[SpeedCheck] ${playerName} is within post-exemption grace period. Skipping speed check.`, watchedPlayerName, dependencies);
         return;
     }
 
