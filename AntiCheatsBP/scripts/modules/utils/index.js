@@ -5,10 +5,12 @@ import {
 import {
     getOptimalToolForBlock,
     calculateRelativeBlockBreakingPower,
+    getExpectedBreakTicks,
 } from './itemUtils.js';
 
 export {
     logError,
     getOptimalToolForBlock,
     calculateRelativeBlockBreakingPower,
+    getExpectedBreakTicks,
 };
