@@ -174,14 +174,8 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
 }
 
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
-    const { playerUtils, checkActionProfiles, config } = dependencies;
+    const { playerUtils, checkActionProfiles } = dependencies;
     const playerNameForLog = player?.name ?? 'System';
-    const checkConfig = config.checks[checkType];
-
-    if (!checkConfig || !checkConfig.enabled) {
-        playerUtils?.debugLog(`[ActionManager] Check '${checkType}' is disabled in config.`, null, dependencies);
-        return;
-    }
 
     const profile = checkActionProfiles[checkType];
     if (!profile) {
