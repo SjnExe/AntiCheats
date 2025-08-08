@@ -108,8 +108,8 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
     }
 
     const allPlayers = mc.world.getAllPlayers();
-    const notificationsOffTag = 'notifications_off';
-    const notificationsOnTag = 'notifications_on';
+    const notificationsOffTag = 'notificationsOff';
+    const notificationsOnTag = 'notificationsOn';
 
     for (const p of allPlayers) {
         if (isAdmin(p, dependencies)) {
