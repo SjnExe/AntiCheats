@@ -13,28 +13,22 @@ export const definition = {
  * @param {import('../../types.js').Dependencies} dependencies
  */
 export function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, playerDataManager, getString } = dependencies;
-    const adminName = player?.nameTag ?? 'UnknownAdmin';
+    const { playerUtils, logManager, config, getString } = dependencies;
+    const adminName = player?.name ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
 
-    const pDataKeyForNotifications = 'notificationsEnabled';
+    // These tags must match the ones used in playerUtils.notifyAdmins
+    const notificationsOnTag = 'notificationsOn';
+    const notificationsOffTag = 'notificationsOff';
 
     const subCommand = args[0]?.toLowerCase() || 'toggle';
 
-    const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) {
-        playerUtils?.debugLog(`[NotifyCommand CRITICAL] pData not found for admin ${adminName}. Cannot reliably manage notifications.`, adminName, dependencies);
-        player.sendMessage(getString('common.error.playerDataNotFound'));
-        return;
-    }
-
-    let currentPreference;
-    if (typeof pData[pDataKeyForNotifications] === 'boolean') {
-        currentPreference = pData[pDataKeyForNotifications];
-    } else {
-        currentPreference = config?.acGlobalNotificationsDefaultOn ?? true;
-    }
-
+    // Determine current state based on tags
+    const hasOn = player.hasTag(notificationsOnTag);
+    const hasOff = player.hasTag(notificationsOffTag);
+    const isDefaultOn = config?.acGlobalNotificationsDefaultOn ?? true;
+    // Player has notifications if they have the ON tag, or if they have neither tag and the default is ON.
+    const currentPreference = hasOn || (!hasOn && !hasOff && isDefaultOn);
 
     let newPreference;
     let responseMessageKey;
@@ -54,7 +48,7 @@ export function execute(player, args, dependencies) {
             break;
         case 'status': {
             const statusText = currentPreference ? getString('common.boolean.yes').toUpperCase() : getString('common.boolean.no').toUpperCase();
-            const sourceTextKey = typeof pData[pDataKeyForNotifications] === 'boolean' ?
+            const sourceTextKey = (hasOn || hasOff) ?
                 'command.notify.status.source.explicit' :
                 'command.notify.status.source.default';
             player.sendMessage(getString('command.notify.status', { statusText, sourceText: getString(sourceTextKey) }));
@@ -71,15 +65,21 @@ export function execute(player, args, dependencies) {
     }
 
     try {
-        pData[pDataKeyForNotifications] = newPreference;
-        pData.isDirtyForSave = true;
+        // Update tags based on the new preference
+        if (newPreference) {
+            player.removeTag(notificationsOffTag);
+            player.addTag(notificationsOnTag);
+        } else {
+            player.removeTag(notificationsOnTag);
+            player.addTag(notificationsOffTag);
+        }
 
         player.sendMessage(getString(responseMessageKey));
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         const logMessageAction = newPreference ? 'enabled' : 'disabled';
         const logActionType = newPreference ? 'notifyEnabledUser' : 'notifyDisabledUser';
-        playerUtils?.debugLog(`[NotifyCommand] Admin ${adminName} ${logMessageAction} AntiCheat notifications. New preference: ${newPreference}`, adminName, dependencies);
+        playerUtils?.debugLog(`[NotifyCommand] Admin ${adminName} ${logMessageAction} AntiCheat notifications.`, adminName, dependencies);
         logManager?.addLog({
             adminName,
             actionType: logActionType,
@@ -88,7 +88,7 @@ export function execute(player, args, dependencies) {
 
     } catch (error) {
         player.sendMessage(getString('command.notify.error.update'));
-        console.error(`[NotifyCommand CRITICAL] Error setting notification preference for ${adminName}: ${error.stack || error}`);
+        console.error(`[NotifyCommand CRITICAL] Error setting notification tags for ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             adminName,
