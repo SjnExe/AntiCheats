@@ -81,7 +81,7 @@ async function executeCommand(player, commandDef, commandExecute, args, dependen
             targetName: playerName,
             targetId: player.id,
             context: `commandManager.executeCommand.${commandDef.name}`,
-            details: { errorCode: 'CMD_EXEC_FAIL', message: errorMessage, rawErrorStack: errorStack, meta: { command: commandDef.name, args: args.join(', ') } },
+            details: { errorCode: 'CMD_EXEC_FAIL', message: errorMessage, rawErrorStack: errorStack, meta: { command: commandDef.name, args: args } },
         }, dependencies);
         playSoundForEvent(player, 'commandError', dependencies);
     }

@@ -709,6 +709,9 @@ export async function addFlag(player, flagType, dependencies, violationDetails, 
     pData.flags[flagType].lastDetectionTime = Date.now();
     pData.flags.totalFlags = (pData.flags.totalFlags || 0) + amount;
     pData.lastFlagType = flagType;
+    if (violationDetails) {
+        pData.lastViolationDetailsMap[flagType] = violationDetails;
+    }
     pData.isDirtyForSave = true;
 
     const logMessage = amount > 1

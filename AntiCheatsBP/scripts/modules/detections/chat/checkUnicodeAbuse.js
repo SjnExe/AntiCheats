@@ -56,7 +56,9 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     }
 
     if (baseCharCount === 0 && diacriticCount > 0) {
-        if (diacriticCount >= absoluteMaxDiacritics || (maxDiacriticRatio <= 1.0 && diacriticCount > 0)) { // 1.0 is not magic
+        // If there are no base characters, a ratio check is meaningless.
+        // We only check against the absolute diacritic limit in this case.
+        if (diacriticCount >= absoluteMaxDiacritics) {
             const violationDetails = {
                 messageSnippet: rawMessageContent.length > messageSnippetLimitUnicode ? `${rawMessageContent.substring(0, messageSnippetLimitUnicode - localEllipsisLengthUnicode) }...` : rawMessageContent,
                 diacriticCount: diacriticCount.toString(),

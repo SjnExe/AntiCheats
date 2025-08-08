@@ -9,7 +9,7 @@ import {
     formatSessionDuration,
     log,
     logError,
-} from '../utils/index.js';
+} from '../modules/utils/index.js';
 const defaultCombatLogThresholdSeconds = 15;
 const deathCoordsMessageDelayTicks = 5;
 const defaultFoodUseDurationSeconds = 1.6;
