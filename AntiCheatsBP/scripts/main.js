@@ -71,11 +71,10 @@ async function processTick() {
     }
 
     const onlinePlayers = world.getAllPlayers();
-    for (const player of onlinePlayers) {
-        // processPlayer already handles invalid players, so we can just call it directly.
-        // This ensures every online player is processed every tick, fixing the race condition.
-        await processPlayer(player, dependencies, currentTick);
-    }
+    // Start processing for all players concurrently and gather the promises.
+    const playerProcessingPromises = onlinePlayers.map(player => processPlayer(player, dependencies, currentTick));
+    // Wait for all player processing to complete before moving on.
+    await Promise.all(playerProcessingPromises);
 
     if (currentTick % periodicDataPersistenceIntervalTicks === 0) {
         // We can reuse the onlinePlayers list from the loop above.
