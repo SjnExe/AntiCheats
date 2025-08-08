@@ -1,6 +1,6 @@
 import { world } from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
-import { panelDefinitions } from '../core/panelLayoutConfig.js';
+import { panelDefinitions } from './panelLayoutConfig.js';
 import { logError } from '../modules/utils/playerUtils.js';
 
 // Constants for showInspectPlayerForm
