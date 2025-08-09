@@ -17,6 +17,7 @@ const {
     worldBorderManager,
     configValidator,
     tpaManager,
+    playerDataManager,
 } = dependencies;
 
 function subscribeToEvents() {
@@ -63,6 +64,7 @@ function initializeModules() {
     logManager.initializeLogCache(dependencies);
     reportManager.initializeReportCache(dependencies);
     rankManager.initializeRanks(dependencies);
+    playerDataManager.initializeScheduledFlagPurges(dependencies);
     tpaManager.loadTpaState(dependencies);
 
     if (config.enableWorldBorderSystem) {

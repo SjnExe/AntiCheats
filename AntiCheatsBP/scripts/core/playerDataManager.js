@@ -18,26 +18,28 @@ const scheduledFlagPurgesKey = 'anticheat:scheduled_flag_purges';
  */
 
 /**
- * @param {import('../types.js').Dependencies} dependencies
- * @returns {Promise<Map<string, import('../types.js').ScheduledPurge>>}
+ * @type {Map<string, ScheduledPurge>}
  */
-async function _loadScheduledFlagPurges(dependencies) {
+let scheduledFlagPurgesCache = new Map();
+
+/**
+ * @param {import('../types.js').Dependencies} dependencies
+ */
+export async function initializeScheduledFlagPurges(dependencies) {
     const { world, playerUtils, logManager } = dependencies;
     try {
         const data = world.getDynamicProperty(scheduledFlagPurgesKey);
         if (typeof data === 'string') {
             const parsed = JSON.parse(data);
-            // Standard format: An array of {playerName, timestamp} objects
             if (Array.isArray(parsed)) {
                 const validPurges = parsed.filter(item =>
                     item && typeof item.playerName === 'string' && typeof item.timestamp === 'number',
                 );
-
                 if (validPurges.length !== parsed.length) {
                     playerUtils.debugLog('[PlayerDataManager] Filtered invalid entries from scheduled flag purges during load.', 'SystemWarn', dependencies);
                     logManager.addLog({
                         actionType: 'warning.pdm.loadPurges.invalidEntries',
-                        context: 'PlayerDataManager._loadScheduledFlagPurges',
+                        context: 'PlayerDataManager.initializeScheduledFlagPurges',
                         details: {
                             message: 'Invalid entries were filtered during loading of scheduled purges.',
                             totalCount: parsed.length,
@@ -45,45 +47,32 @@ async function _loadScheduledFlagPurges(dependencies) {
                         },
                     }, dependencies);
                 }
-                return new Map(validPurges.map(item => [item.playerName, item]));
-            }
-
-            // If we reach here, the format is unexpected (e.g., a non-array object)
-            if (parsed !== null) { // Avoid logging for a clean, uninitialized property
+                scheduledFlagPurgesCache = new Map(validPurges.map(item => [item.playerName, item]));
+            } else if (parsed !== null) {
                 playerUtils.debugLog(`[PlayerDataManager] Unexpected data format for scheduled flag purges. Data will be reset. Found type: ${typeof parsed}`, 'SystemError', dependencies);
-                logManager.addLog({
-                    actionType: 'error.pdm.loadPurges.unexpectedFormat',
-                    context: 'PlayerDataManager._loadScheduledFlagPurges',
-                    details: {
-                        message: 'Scheduled purges data was in an unexpected format and has been reset.',
-                        dataType: typeof parsed,
-                        rawDataSample: JSON.stringify(parsed).substring(0, 100),
-                    },
-                }, dependencies);
             }
         }
     } catch (e) {
         logError(`[PlayerDataManager] Failed to load scheduled flag purges: ${e.message}`, e);
-        playerUtils.debugLog(`[PlayerDataManager] Error loading scheduled flag purges: ${e.message}`, 'SystemError', dependencies);
     }
-    return new Map();
 }
 
+function _getScheduledFlagPurgesFromCache() {
+    return scheduledFlagPurgesCache;
+}
 
 /**
- * @param {Map<string, import('../types.js').ScheduledPurge>} purges
  * @param {import('../types.js').Dependencies} dependencies
  */
-async function _saveScheduledFlagPurges(purges, dependencies) {
+async function _saveScheduledFlagPurges(dependencies) {
     const { world } = dependencies;
     try {
-        const arrayToSave = Array.from(purges.values());
+        const arrayToSave = Array.from(scheduledFlagPurgesCache.values());
         world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(arrayToSave));
     } catch (e) {
         logError(`[PlayerDataManager] Failed to save scheduled flag purges: ${e}`, e);
     }
 }
-
 
 /**
  * @param {import('../types.js').Dependencies} dependencies
@@ -91,13 +80,13 @@ async function _saveScheduledFlagPurges(purges, dependencies) {
 export async function cleanupStaleScheduledFlagPurges(dependencies) {
     const { config, playerUtils, logManager } = dependencies;
     const maxAgeDays = config.scheduledFlagPurgeMaxAgeDays ?? 30;
-    if (maxAgeDays <= 0) return; // Feature disabled
+    if (maxAgeDays <= 0) return;
 
     const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
     const now = Date.now();
     let purgesModified = false;
 
-    const scheduledFlagPurges = await _loadScheduledFlagPurges(dependencies);
+    const scheduledFlagPurges = _getScheduledFlagPurgesFromCache();
     if (scheduledFlagPurges.size === 0) return;
 
     const purgesToDelete = [];
@@ -112,7 +101,7 @@ export async function cleanupStaleScheduledFlagPurges(dependencies) {
         for (const playerName of purgesToDelete) {
             scheduledFlagPurges.delete(playerName);
         }
-        await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
+        await _saveScheduledFlagPurges(dependencies);
 
         playerUtils.debugLog(`[PlayerDataManager] Cleaned up ${purgesToDelete.length} stale scheduled flag purges.`, 'System', dependencies);
         logManager.addLog({
@@ -249,10 +238,6 @@ export function getPlayerData(playerId) {
 /**
  * @returns {Array<import('../types.js').PlayerAntiCheatData>} An array of all active player data.
  */
-export function getActivePlayers() {
-    return Array.from(activePlayerData.values());
-}
-
 /**
  * @param {import('@minecraft/server').Player} player The player object.
  * @param {number} currentTick The current server tick.
@@ -299,7 +284,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         }
 
         // Handle scheduled flag purges
-        const scheduledFlagPurges = await _loadScheduledFlagPurges(dependencies);
+        const scheduledFlagPurges = _getScheduledFlagPurgesFromCache();
         if (scheduledFlagPurges.has(player.nameTag)) {
             const { flags, lastFlagType, lastViolationDetailsMap, automodState } = getDefaultFlagsAndViolations();
             pData.flags = flags;
@@ -308,10 +293,10 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
             pData.automodState = automodState;
             pData.isDirtyForSave = true;
             scheduledFlagPurges.delete(player.nameTag);
-            await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
+            await _saveScheduledFlagPurges(dependencies);
 
             // Immediately save the player's data to ensure the flag purge is persisted atomically.
-            saveDirtyPlayerData(player, dependencies);
+            await saveDirtyPlayerData(player, dependencies);
 
             playerUtils.debugLog(`[PlayerDataManager] Executed scheduled flag purge for ${player.nameTag} upon join.`, player.nameTag, dependencies);
             logManager.addLog({ actionType: 'flagsPurgedOnJoin', targetName: player.nameTag, targetId: player.id, context: 'PlayerDataManager.ensurePlayerDataInitialized' }, dependencies);
@@ -364,8 +349,21 @@ function trimPlayerData(dataToSave) {
     return dataToSave;
 }
 
+/**
+ * Creates a serializable version of the player data, excluding transient properties.
+ * @param {import('../types.js').PlayerAntiCheatData} pData The full player data.
+ * @returns {object} A serializable copy of the player data.
+ */
+function _getSerializableData(pData) {
+    const dataToSave = { ...pData };
+    delete dataToSave.transient;
+    return dataToSave;
+}
+
+
 function recoverAndSerializePlayerData(dataToSave, playerLike, dependencies) {
     const { logManager } = dependencies;
+    const originalSize = JSON.stringify(dataToSave).length;
 
     logManager.addLog({
         actionType: 'warning.pdm.dpWrite.sizeLimit',
@@ -374,17 +372,59 @@ function recoverAndSerializePlayerData(dataToSave, playerLike, dependencies) {
         details: {
             errorCode: 'PDM_DP_SIZE_EXCEEDED_RECOVERY_ATTEMPT',
             message: `Serialized player data for ${playerLike.name} exceeds size limit. Attempting recovery.`,
-            meta: { originalSize: JSON.stringify(dataToSave).length },
+            meta: { originalSize: originalSize },
         },
     }, dependencies);
 
+    // Stage 1: Trim historical arrays by 50%
+    if (dataToSave.blockBreakTimestamps.length > 25) {
+        dataToSave.blockBreakTimestamps = dataToSave.blockBreakTimestamps.slice(-25);
+    }
+    if (dataToSave.chatMessageTimestamps.length > 25) {
+        dataToSave.chatMessageTimestamps = dataToSave.chatMessageTimestamps.slice(-25);
+    }
+    if (dataToSave.lastViolationDetailsMap) {
+        // Keep only the most recent 10 violation details
+        const recentKeys = Object.keys(dataToSave.lastViolationDetailsMap).slice(-10);
+        const trimmedDetails = {};
+        for (const key of recentKeys) {
+            trimmedDetails[key] = dataToSave.lastViolationDetailsMap[key];
+        }
+        dataToSave.lastViolationDetailsMap = trimmedDetails;
+    }
+
+    let serializedData = JSON.stringify(dataToSave);
+    if (serializedData.length <= maxSerializedDataLength) {
+        logManager.addLog({
+            actionType: 'info.pdm.dpWrite.recoverySuccess',
+            context: 'playerDataManager.saveDirtyPlayerData.recovery',
+            targetName: playerLike.name,
+            details: { message: 'Data trimming stage 1 was successful.', originalSize, finalSize: serializedData.length },
+        }, dependencies);
+        return serializedData;
+    }
+
+    // Stage 2: Clear historical arrays completely
     dataToSave.blockBreakTimestamps = [];
     dataToSave.chatMessageTimestamps = [];
     if (dataToSave.recentBlockPlacements) {
         dataToSave.recentBlockPlacements = [];
     }
+    dataToSave.lastViolationDetailsMap = {}; // Clear all violation details as a last resort before reset
 
-    return JSON.stringify(dataToSave);
+    serializedData = JSON.stringify(dataToSave);
+    if (serializedData.length <= maxSerializedDataLength) {
+        logManager.addLog({
+            actionType: 'warning.pdm.dpWrite.recoverySuccessStage2',
+            context: 'playerDataManager.saveDirtyPlayerData.recovery',
+            targetName: playerLike.name,
+            details: { message: 'Data trimming stage 2 (clearing arrays) was successful.', originalSize, finalSize: serializedData.length },
+        }, dependencies);
+        return serializedData;
+    }
+
+    // If it's still too large, return null to indicate failure
+    return null;
 }
 
 export async function saveDirtyPlayerData(playerLike, dependencies) {
@@ -393,37 +433,35 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
 
     if (!pData || !pData.isDirtyForSave) return false;
 
-    if (typeof playerLike.setDynamicProperty !== 'function') {
-        logError(`[PlayerDataManager CRITICAL] Attempted to save data for ${playerLike.name ?? playerLike.id} without a valid player object. Data save aborted.`);
+    if (typeof playerLike?.setDynamicProperty !== 'function') {
+        logError(`[PlayerDataManager CRITICAL] Attempted to save data for an invalid player-like object (ID: ${playerLike?.id}). Data save aborted.`);
         return false;
     }
 
     try {
-        let dataToSave = { ...pData };
-        delete dataToSave.transient;
-
-        dataToSave = trimPlayerData(dataToSave);
+        let dataToSave = _getSerializableData(pData);
+        dataToSave = trimPlayerData(dataToSave); // Initial standard trim
         let serializedData = JSON.stringify(dataToSave);
 
         if (serializedData.length > maxSerializedDataLength) {
             serializedData = recoverAndSerializePlayerData(dataToSave, playerLike, dependencies);
 
-            if (serializedData.length > maxSerializedDataLength) {
+            if (serializedData === null) {
+                // Recovery failed, data is still too large.
+                // Log a critical error but DO NOT reset the data. We prevent the save instead.
                 logManager.addLog({
-                    actionType: 'error.pdm.dpWrite.recoveryFail',
+                    actionType: 'error.pdm.dpWrite.recoveryFail.saveAborted',
                     context: 'playerDataManager.saveDirtyPlayerData.recovery',
                     targetName: playerLike.name,
                     details: {
-                        errorCode: 'PDM_DP_RECOVERY_FAILED_DATA_RESET',
-                        message: `Data recovery failed for ${playerLike.name}. Size after trimming is still too large. Resetting player data to prevent corruption.`,
-                        meta: { trimmedSize: serializedData.length },
+                        errorCode: 'PDM_DP_RECOVERY_FAILED_SAVE_ABORTED',
+                        message: `Data recovery failed for ${playerLike.name}. Size after all trimming is still too large. The current data state will NOT be saved to prevent corruption, but remains active in memory.`,
+                        meta: { finalSize: JSON.stringify(dataToSave).length },
                     },
                 }, dependencies);
-
-                const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick);
-                await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, JSON.stringify(freshData));
-                activePlayerData.set(playerLike.id, freshData);
-                return true;
+                // We intentionally don't save, so the oversized data remains in memory for this session
+                // but doesn't corrupt the stored dynamic property.
+                return false;
             }
         }
 
@@ -609,9 +647,9 @@ export async function handlePlayerLeaveBeforeEvent(player, dependencies) {
  * @returns {Promise<boolean>} True if scheduled successfully.
  */
 export async function scheduleFlagPurge(playerName, dependencies) {
-    const scheduledFlagPurges = await _loadScheduledFlagPurges(dependencies);
+    const scheduledFlagPurges = _getScheduledFlagPurgesFromCache();
     scheduledFlagPurges.set(playerName, { playerName, timestamp: Date.now() });
-    await _saveScheduledFlagPurges(scheduledFlagPurges, dependencies);
+    await _saveScheduledFlagPurges(dependencies);
     dependencies.playerUtils.debugLog(`[PlayerDataManager] Scheduled flag purge for offline player: ${playerName}`, null, dependencies);
     return true;
 }

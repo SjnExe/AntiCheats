@@ -1268,6 +1268,7 @@ profileEventHandler('handlePlayerHitEntityEvent', handlePlayerHitEntityEvent);
 function handlePlayerEffectAdded(eventData, dependencies) {
     const { playerDataManager } = dependencies;
     const { player, effect } = eventData;
+    if (!player.isValid()) return;
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
 
@@ -1304,6 +1305,7 @@ profileEventHandler('handlePlayerEffectAdded', handlePlayerEffectAdded);
 function handlePlayerEffectRemoved(eventData, dependencies) {
     const { playerDataManager } = dependencies;
     const { player, effectTypeId } = eventData;
+    if (!player.isValid()) return;
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
 
