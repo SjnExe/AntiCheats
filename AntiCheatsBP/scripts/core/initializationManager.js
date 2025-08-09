@@ -1,28 +1,18 @@
+/**
+ * @file Manages the addon's initialization process, including event subscriptions,
+ *       module setup, configuration validation, and the startup command.
+ */
+
 import { system, world } from '@minecraft/server';
 import * as eventHandlers from './eventHandlers.js';
-import * as dependencies from './dependencyManager.js';
-import { logError, playerUtils, getString } from '../modules/utils/playerUtils.js';
+import { dependencies, initializeCoreDependencies } from './dependencies.js';
 import { migrateConfig } from './configMigration.js';
 import { mainTick, tpaTick, tpaSystemTickInterval } from '../main.js';
 
-const {
-    config,
-    automodConfig,
-    checkActionProfiles,
-    commandManager,
-    acVersion,
-    logManager,
-    reportManager,
-    rankManager,
-    worldBorderManager,
-    configValidator,
-    tpaManager,
-    playerDataManager,
-} = dependencies;
+const { playerUtils, config, logManager } = dependencies;
 
 function subscribeToEvents() {
-    const mainModuleName = 'CoreSystem';
-    playerUtils.debugLog(`[${mainModuleName}] Subscribing to events...`, 'System', dependencies);
+    playerUtils.debugLog('[CoreSystem] Subscribing to events...', 'System', dependencies);
 
     const beforeEventSubscriptions = {
         chatSend: eventHandlers.handleBeforeChatSend,
@@ -47,55 +37,38 @@ function subscribeToEvents() {
         playerEffectRemoved: eventHandlers.handlePlayerEffectRemoved,
     };
 
-    Object.keys(beforeEventSubscriptions).forEach(eventName => {
-        world.beforeEvents[eventName].subscribe((eventData) => beforeEventSubscriptions[eventName](eventData, dependencies));
-    });
+    for (const eventName in beforeEventSubscriptions) {
+        system.beforeEvents[eventName].subscribe((eventData) => {
+            try {
+                beforeEventSubscriptions[eventName](eventData, dependencies);
+            } catch (e) {
+                playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
+            }
+        });
+    }
 
-    Object.keys(afterEventSubscriptions).forEach(eventName => {
-        world.afterEvents[eventName].subscribe((eventData) => afterEventSubscriptions[eventName](eventData, dependencies));
-    });
-}
-
-function initializeModules() {
-    const mainModuleName = 'CoreSystem';
-    playerUtils.debugLog(`[${mainModuleName}] Initializing modules...`, 'System', dependencies);
-
-    commandManager.initializeCommands(dependencies);
-    logManager.initializeLogCache(dependencies);
-    reportManager.initializeReportCache(dependencies);
-    rankManager.initializeRanks(dependencies);
-    playerDataManager.initializeScheduledFlagPurges(dependencies);
-    tpaManager.loadTpaState(dependencies);
-
-    if (config.enableWorldBorderSystem) {
-        const knownDims = config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
-        knownDims.forEach(dimId => worldBorderManager.getBorderSettings(dimId, dependencies));
-        playerUtils.debugLog(`[${mainModuleName}] World border settings loaded.`, 'System', dependencies);
+    for (const eventName in afterEventSubscriptions) {
+        system.afterEvents[eventName].subscribe((eventData) => {
+            try {
+                afterEventSubscriptions[eventName](eventData, dependencies);
+            } catch (e) {
+                playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
+            }
+        });
     }
 }
 
 function validateConfigurations() {
-    const mainModuleName = 'CoreSystem';
-    playerUtils.debugLog(`[${mainModuleName}] Validating configurations...`, 'System', dependencies);
+    const { configValidator, commandManager, rankManager, automodConfig, checkActionProfiles } = dependencies;
+    playerUtils.debugLog('[CoreSystem] Validating configurations...', 'System', dependencies);
     const allValidationErrors = [];
     const knownCommands = commandManager.getAllRegisteredCommandNames();
 
-    const {
-        rankDefinitions,
-        defaultChatFormatting,
-        defaultNametagPrefix,
-        defaultPermissionLevel,
-    } = rankManager;
     const validationTasks = [
         () => configValidator.validateMainConfig(config.defaultConfigSettings, checkActionProfiles, knownCommands, config.commandAliases),
         () => configValidator.validateActionProfiles(checkActionProfiles),
         () => configValidator.validateAutoModConfig(automodConfig, checkActionProfiles),
-        () => configValidator.validateRanksConfig({
-            rankDefinitions,
-            defaultChatFormatting,
-            defaultNametagPrefix,
-            defaultPermissionLevel,
-        }, config.ownerPlayerName, config.adminTag),
+        () => configValidator.validateRanksConfig(rankManager.ranks, config.ownerPlayerName, config.adminTag),
     ];
 
     const errorContexts = ['config.js', 'actionProfiles.js', 'automodConfig.js', 'ranksConfig.js'];
@@ -104,7 +77,7 @@ function validateConfigurations() {
         const errors = task();
         if (errors.length > 0) {
             const context = errorContexts[index];
-            playerUtils.debugLog(`[${mainModuleName}] ${context} validation errors found:`, 'SystemCritical', dependencies);
+            playerUtils.debugLog(`[CoreSystem] ${context} validation errors found:`, 'SystemCritical', dependencies);
             errors.forEach(err => playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
             allValidationErrors.push(...errors.map(e => `[${context}] ${e}`));
         }
@@ -123,7 +96,7 @@ function validateConfigurations() {
         }
 
     } else {
-        playerUtils.debugLog(`[${mainModuleName}] All configurations validated successfully.`, 'System', dependencies);
+        playerUtils.debugLog('[CoreSystem] All configurations validated successfully.', 'System', dependencies);
     }
 }
 
@@ -131,6 +104,9 @@ function performInitializations() {
     playerUtils.debugLog('Anti-Cheat Script Initializing via function...', 'System', dependencies);
 
     try {
+        // Initialize all modules through the new dependency container
+        initializeCoreDependencies();
+
         const storedConfigVersion = world.getDynamicProperty('configVersion');
         const codeConfigVersion = config.configVersion;
 
@@ -146,8 +122,9 @@ function performInitializations() {
         }
 
         subscribeToEvents();
+
     } catch (e) {
-        dependencies.logManager.addLog({
+        logManager.addLog({
             actionType: 'error.init.eventSubscription',
             context: 'initializationManager.performInitializations',
             details: {
@@ -160,24 +137,9 @@ function performInitializations() {
     }
 
     try {
-        initializeModules();
-    } catch (e) {
-        dependencies.logManager.addLog({
-            actionType: 'error.init.moduleInitialization',
-            context: 'initializationManager.performInitializations',
-            details: {
-                errorCode: 'INIT_MODULE_FAIL',
-                message: 'CRITICAL: Failed to initialize core modules.',
-                rawErrorStack: e.stack,
-            },
-        }, dependencies);
-        throw new Error(`Module initialization failed: ${e.message}`);
-    }
-
-    try {
         validateConfigurations();
     } catch (e) {
-        dependencies.logManager.addLog({
+        logManager.addLog({
             actionType: 'error.init.configValidation',
             context: 'initializationManager.performInitializations',
             details: {
@@ -194,30 +156,36 @@ function performInitializations() {
     world.sendMessage({
         'translate': 'system.core.initialized',
         'with': {
-            'version': acVersion,
+            'version': dependencies.acVersion,
         },
     });
     playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Starting tick loops.', 'System', dependencies);
-    system.runInterval(mainTick, 1);
+    system.runInterval(() => mainTick(dependencies), 1);
     if (config.enableTpaSystem) {
-        system.runInterval(tpaTick, tpaSystemTickInterval);
+        system.runInterval(() => tpaTick(dependencies), tpaSystemTickInterval);
     }
 }
 
 system.afterEvents.scriptEventReceive.subscribe((event) => {
     if (event.id === 'ac:init') {
-        const player = event.sourceEntity;
+        const { sourceEntity: player } = event;
+
         if (!player || !player.hasTag(config.adminTag)) {
-            logError('ac:init script event received from a non-admin or non-player source.');
+            playerUtils.logError('ac:init script event received from a non-admin or non-player source.');
             return;
         }
 
         if (world.getDynamicProperty('ac:initialized')) {
-            player.sendMessage(getString('system.core.alreadyInitialized'));
+            player.sendMessage(playerUtils.getString('system.core.alreadyInitialized', { dependencies }));
             return;
         }
 
-        performInitializations();
-        player.sendMessage(getString('system.core.initializedSuccess'));
+        try {
+            performInitializations();
+            player.sendMessage(playerUtils.getString('system.core.initializedSuccess', { dependencies }));
+        } catch (e) {
+            player.sendMessage(`§cERROR: AntiCheat initialization failed. Check server logs. ${e.message}`);
+            playerUtils.logError(`Initialization failed after /function ac command: ${e.message}`, e);
+        }
     }
 }, { namespaces: ['ac'] });

@@ -30,7 +30,7 @@ export async function checkKillauraMultiAura(player, pData, dependencies) {
 
     const recentAttacks = pData.attackEvents.filter(event =>
         event.timestamp >= windowStartTime &&
-        event.damageSource.cause === EntityDamageCause.entityAttack
+        event.damageSource.cause === EntityDamageCause.entityAttack,
     );
     const uniqueTargets = new Set(recentAttacks.map(event => event.targetId));
 
