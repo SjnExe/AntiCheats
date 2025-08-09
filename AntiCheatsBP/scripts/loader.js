@@ -1,19 +1,29 @@
-import { system, world } from '@minecraft/server';
-import * as dependencies from './core/dependencyManager.js';
+/**
+ * @file loader.js
+ * @description This is the entry point for the AntiCheats script module.
+ *              Its primary role is to set up the watchdog termination handler
+ *              and then load the main initialization scripts.
+ */
+
+import { system } from '@minecraft/server';
+import { log, logError } from './core/startupLogger.js';
 
 try {
     system.beforeEvents.watchdogTerminate.subscribe(data => {
         data.cancel = true;
-        dependencies.playerUtils.log(`Watchdog termination prevented. Reason: ${data.terminateReason}`);
-        if (world.getDynamicProperty('ac:initialized')) {
-            dependencies.playerUtils.notifyAdmins(`§cWatchdog termination prevented. Reason: ${data.terminateReason}`, dependencies);
-        }
+        log(`Watchdog termination prevented. Reason: ${data.terminateReason}`);
     });
 } catch (e) {
-    dependencies.playerUtils.logError(`CRITICAL: Failed to subscribe to watchdog event: ${e}`);
+    logError('CRITICAL: Failed to subscribe to watchdog event. The addon may not function correctly.', e);
 }
 
-import './core/initializationManager.js';
-import './main.js';
-
-dependencies.playerUtils.log('Loader script executed.');
+// Import the main modules to start the initialization process.
+// The order is important: main.js contains functions that initializationManager.js will call.
+try {
+    log('Loading core modules...');
+    import('./main.js');
+    import('./core/initializationManager.js');
+    log('Core modules loaded into execution context.');
+} catch (e) {
+    logError('CRITICAL: Failed to load core modules. The addon will not start.', e);
+}

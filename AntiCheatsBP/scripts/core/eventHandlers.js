@@ -621,7 +621,7 @@ async function handleEntityHurt(eventData, dependencies) {
                     attackerPData.attackEvents.push({
                         targetId: victimPlayer.id,
                         timestamp: now,
-                        damageSource: damageSource
+                        damageSource: damageSource,
                     });
                     attackerPData.lastAttackTick = currentTick;
                     attackerPData.lastPitch = attackerPlayer.getRotation().pitch;

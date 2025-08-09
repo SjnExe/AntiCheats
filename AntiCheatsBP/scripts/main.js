@@ -1,37 +1,16 @@
-import {
-    world,
-} from '@minecraft/server';
-import {
-    logError,
-} from './modules/utils/playerUtils.js';
-import * as dependencies from './core/dependencyManager.js';
-
-const {
-    config,
-    checks,
-    playerDataManager,
-    logManager,
-    reportManager,
-    worldBorderManager,
-    playerUtils,
-    tpaManager,
-} = dependencies;
+import { world } from '@minecraft/server';
+import { logError } from './modules/utils/playerUtils.js';
 
 const periodicDataPersistenceIntervalTicks = 600;
 const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
 export const tpaSystemTickInterval = 20;
 
-// Pre-calculate the sorted list of check names once on module load for efficiency.
-const checkNames = Object.keys(checks).sort();
-
 let currentTick = 0;
 
-export async function mainTick() {
+export async function mainTick(dependencies) {
+    const { logManager } = dependencies;
     try {
-        // The mainTick is only started after initialization, so no need to check the flag.
-        // The main processing logic can run directly.
-        await processTick();
-
+        await processTick(dependencies);
     } catch (e) {
         logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
         try {
@@ -46,12 +25,11 @@ export async function mainTick() {
         } catch (loggingError) {
             logError(`CRITICAL: Failed to write to structured log during top-level tick error: ${loggingError.message}`, loggingError);
         }
-        // NOTE: The tick loop is intentionally NOT rescheduled here to prevent runaway error loops.
-        // The server admin must investigate the error and restart the server/addon.
     }
 }
 
-async function processTick() {
+async function processTick(dependencies) {
+    const { config, worldBorderManager, playerDataManager, playerUtils, logManager } = dependencies;
     currentTick++;
 
     if (config.enableWorldBorderSystem) {
@@ -60,7 +38,7 @@ async function processTick() {
         } catch (e) {
             playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', dependencies);
             logManager.addLog({
-                actionType: 'errorMainWorldBorderResize',
+                actionType: 'error.main.worldBorderResize',
                 context: 'Main.TickLoop.worldBorderResizing',
                 details: {
                     errorMessage: e.message,
@@ -71,13 +49,10 @@ async function processTick() {
     }
 
     const onlinePlayers = world.getAllPlayers();
-    // Start processing for all players concurrently and gather the promises.
     const playerProcessingPromises = onlinePlayers.map(player => processPlayer(player, dependencies, currentTick));
-    // Wait for all player processing to complete before moving on.
     await Promise.all(playerProcessingPromises);
 
     if (currentTick % periodicDataPersistenceIntervalTicks === 0) {
-        // We can reuse the onlinePlayers list from the loop above.
         await handlePeriodicDataPersistence(onlinePlayers, dependencies);
     }
 
@@ -87,6 +62,8 @@ async function processTick() {
 }
 
 async function processPlayer(player, dependencies, currentTick) {
+    const { config, checks, playerDataManager, playerUtils, logManager, worldBorderManager } = dependencies;
+
     if (!player?.isValid()) {
         return;
     }
@@ -103,14 +80,10 @@ async function processPlayer(player, dependencies, currentTick) {
         return;
     }
 
-    // Reset per-tick state flags at the beginning of the player's tick processing.
     if (pData.isTakingFallDamage) {
         pData.isTakingFallDamage = false;
         pData.isDirtyForSave = true;
     }
-    // If the player had a recorded fall distance from a previous tick and is now on the ground,
-    // reset the distance. This ensures the value from a fall is available for the entire tick
-    // on which the player lands, and is then cleared for the next tick.
     if (pData.fallDistance > 0 && player.isOnGround) {
         pData.fallDistance = 0;
         pData.isDirtyForSave = true;
@@ -121,10 +94,10 @@ async function processPlayer(player, dependencies, currentTick) {
 
     const staggerTicks = config.checkStaggerTicks || 1;
     const playerNameHash = pData.playerNameHash ?? 0;
+    const checkNames = Object.keys(checks).sort();
 
     for (let i = 0; i < checkNames.length; i++) {
         const checkName = checkNames[i];
-        // Use the index 'i' directly for staggering, avoiding the expensive indexOf call.
         if ((currentTick + playerNameHash + i) % staggerTicks !== 0) {
             continue;
         }
@@ -166,6 +139,7 @@ async function processPlayer(player, dependencies, currentTick) {
 }
 
 async function handlePeriodicDataPersistence(allPlayers, dependencies) {
+    const { playerUtils, playerDataManager, logManager, reportManager, tpaManager } = dependencies;
     playerUtils.debugLog('Performing periodic data persistence.', 'System', dependencies);
     for (const player of allPlayers) {
         if (!player.isValid()) {
@@ -181,18 +155,17 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
     tpaManager.persistTpaState(dependencies);
 }
 
-export function tpaTick() {
+export function tpaTick(dependencies) {
+    const { config, tpaManager, logManager } = dependencies;
     try {
-        if (!dependencies.config.enableTpaSystem) {
-            // The loop is not rescheduled if the system is disabled, effectively stopping it.
+        if (!config.enableTpaSystem) {
             return;
         }
 
-        dependencies.tpaManager.clearExpiredRequests(dependencies);
+        tpaManager.clearExpiredRequests(dependencies);
 
-        const requestsInWarmup = dependencies.tpaManager.getRequestsInWarmup();
+        const requestsInWarmup = tpaManager.getRequestsInWarmup();
         if (requestsInWarmup.length > 0) {
-            // Optimize player lookups by getting all players once and using a Map.
             const onlinePlayers = world.getAllPlayers();
             const playerMap = new Map(onlinePlayers.map(p => [p.name, p]));
 
@@ -204,32 +177,29 @@ export function tpaTick() {
                     const invalidPlayerName = !requester?.isValid() ? req.requesterName : req.targetName;
                     const reasonMsgKey = 'tpa.manager.error.teleportWarmupTargetInvalid';
                     const reasonLog = `A player (${invalidPlayerName}) involved in TPA request ${req.requestId} went offline during warmup.`;
-                    dependencies.tpaManager.cancelTeleport(req.requestId, reasonMsgKey, reasonLog, dependencies);
-                    continue; // Skip to the next request
+                    tpaManager.cancelTeleport(req.requestId, reasonMsgKey, reasonLog, dependencies);
+                    continue;
                 }
 
-                // If the request was cancelled for any reason (e.g., movement), its status will have changed.
-                // This check ensures we don't proceed with a cancelled or already processed request.
                 if (req.status !== 'pendingTeleportWarmup') {
                     continue;
                 }
 
-                if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
-                    dependencies.tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
-                    // Re-check status, as the above function may have cancelled it.
+                if (config.tpaCancelOnMoveDuringWarmup) {
+                    tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
                     if (req.status !== 'pendingTeleportWarmup') {
                         continue;
                     }
                 }
 
                 if (Date.now() >= (req.warmupExpiryTimestamp || 0)) {
-                    dependencies.tpaManager.executeTeleport(req.requestId, dependencies);
+                    tpaManager.executeTeleport(req.requestId, dependencies);
                 }
             }
         }
     } catch (e) {
         logError(`Unhandled error in tpaTick: ${e?.message}`, e);
-        dependencies.logManager.addLog({
+        logManager.addLog({
             actionType: 'error.main.tpaTick.unhandled',
             context: 'Main.tpaTick',
             details: {
