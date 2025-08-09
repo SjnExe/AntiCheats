@@ -191,42 +191,40 @@ export function tpaTick() {
         dependencies.tpaManager.clearExpiredRequests(dependencies);
 
         const requestsInWarmup = dependencies.tpaManager.getRequestsInWarmup();
-        if (requestsInWarmup.length === 0) {
-            return; // No requests to process
-        }
+        if (requestsInWarmup.length > 0) {
+            // Optimize player lookups by getting all players once and using a Map.
+            const onlinePlayers = world.getAllPlayers();
+            const playerMap = new Map(onlinePlayers.map(p => [p.name, p]));
 
-        // Optimize player lookups by getting all players once and using a Map.
-        const onlinePlayers = world.getAllPlayers();
-        const playerMap = new Map(onlinePlayers.map(p => [p.name, p]));
+            for (const req of requestsInWarmup) {
+                const requester = playerMap.get(req.requesterName);
+                const target = playerMap.get(req.targetName);
 
-        for (const req of requestsInWarmup) {
-            const requester = playerMap.get(req.requesterName);
-            const target = playerMap.get(req.targetName);
+                if (!requester?.isValid() || !target?.isValid()) {
+                    const invalidPlayerName = !requester?.isValid() ? req.requesterName : req.targetName;
+                    const reasonMsgKey = 'tpa.manager.error.teleportWarmupTargetInvalid';
+                    const reasonLog = `A player (${invalidPlayerName}) involved in TPA request ${req.requestId} went offline during warmup.`;
+                    dependencies.tpaManager.cancelTeleport(req.requestId, reasonMsgKey, reasonLog, dependencies);
+                    continue; // Skip to the next request
+                }
 
-            if (!requester?.isValid() || !target?.isValid()) {
-                const invalidPlayerName = !requester?.isValid() ? req.requesterName : req.targetName;
-                const reasonMsgKey = 'tpa.manager.error.teleportWarmupTargetInvalid';
-                const reasonLog = `A player (${invalidPlayerName}) involved in TPA request ${req.requestId} went offline during warmup.`;
-                dependencies.tpaManager.cancelTeleport(req.requestId, reasonMsgKey, reasonLog, dependencies);
-                continue; // Skip to the next request
-            }
-
-            // If the request was cancelled for any reason (e.g., movement), its status will have changed.
-            // This check ensures we don't proceed with a cancelled or already processed request.
-            if (req.status !== 'pendingTeleportWarmup') {
-                continue;
-            }
-
-            if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
-                dependencies.tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
-                // Re-check status, as the above function may have cancelled it.
+                // If the request was cancelled for any reason (e.g., movement), its status will have changed.
+                // This check ensures we don't proceed with a cancelled or already processed request.
                 if (req.status !== 'pendingTeleportWarmup') {
                     continue;
                 }
-            }
 
-            if (Date.now() >= (req.warmupExpiryTimestamp || 0)) {
-                dependencies.tpaManager.executeTeleport(req.requestId, dependencies);
+                if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
+                    dependencies.tpaManager.checkPlayerMovementDuringWarmup(req, dependencies);
+                    // Re-check status, as the above function may have cancelled it.
+                    if (req.status !== 'pendingTeleportWarmup') {
+                        continue;
+                    }
+                }
+
+                if (Date.now() >= (req.warmupExpiryTimestamp || 0)) {
+                    dependencies.tpaManager.executeTeleport(req.requestId, dependencies);
+                }
             }
         }
     } catch (e) {

@@ -9,6 +9,11 @@ const itemUseStateExpiryMs = 5000;
  */
 const activePlayerData = new Map();
 
+/**
+ * @type {Map<string, Promise<import('../types.js').PlayerAntiCheatData>>}
+ */
+const initializingPlayerData = new Map();
+
 const scheduledFlagPurgesKey = 'anticheat:scheduled_flag_purges';
 
 /**
@@ -244,94 +249,98 @@ export function getPlayerData(playerId) {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  * @returns {Promise<import('../types.js').PlayerAntiCheatData>} A promise resolving with the player's data.
  */
-export async function ensurePlayerDataInitialized(player, currentTick, dependencies) {
-    const { playerUtils, logManager } = dependencies;
-
+export function ensurePlayerDataInitialized(player, currentTick, dependencies) {
     if (activePlayerData.has(player.id)) {
-        return activePlayerData.get(player.id);
+        return Promise.resolve(activePlayerData.get(player.id));
     }
 
-    // Check offline ban list first
-    const offlineBanEntry = offlineBanList.find(entry =>
-        (entry.playerName && entry.playerName.toLowerCase() === player.name.toLowerCase()) ||
-        (entry.xuid && entry.xuid === player.id),
-    );
-
-    if (offlineBanEntry) {
-        let pData = initializeDefaultPlayerData(player, currentTick);
-        pData.banInfo = {
-            reason: offlineBanEntry.reason || 'Banned by offline list.',
-            bannedBy: offlineBanEntry.bannedBy || 'System',
-            isAutoMod: false,
-            triggeringCheckType: 'offlineBan',
-            expiryTimestamp: Infinity,
-            startTimestamp: Date.now(),
-        };
-        pData.isDirtyForSave = true;
-        activePlayerData.set(player.id, pData);
-        return pData;
+    if (initializingPlayerData.has(player.id)) {
+        return initializingPlayerData.get(player.id);
     }
 
-    try {
-        let pData = await _loadPlayerDataFromDynamicProperties(player, dependencies);
+    const initializationWork = async () => {
+        const { playerUtils, logManager } = dependencies;
+        try {
+            // Check offline ban list first
+            const offlineBanEntry = offlineBanList.find(entry =>
+                (entry.playerName && entry.playerName.toLowerCase() === player.name.toLowerCase()) ||
+                (entry.xuid && entry.xuid === player.id),
+            );
 
-        if (!pData) {
-            pData = initializeDefaultPlayerData(player, currentTick);
-            playerUtils.debugLog(`[PlayerDataManager] No existing data found for ${player.nameTag}. Initialized new default data.`, player.nameTag, dependencies);
-            logManager.addLog({ actionType: 'playerInitialJoin', targetName: player.nameTag, targetId: player.id }, dependencies);
-        } else {
-            playerUtils.debugLog(`[PlayerDataManager] Successfully loaded data for ${player.nameTag} from dynamic properties.`, player.nameTag, dependencies);
+            if (offlineBanEntry) {
+                let pData = initializeDefaultPlayerData(player, currentTick);
+                pData.banInfo = {
+                    reason: offlineBanEntry.reason || 'Banned by offline list.',
+                    bannedBy: offlineBanEntry.bannedBy || 'System',
+                    isAutoMod: false,
+                    triggeringCheckType: 'offlineBan',
+                    expiryTimestamp: Infinity,
+                    startTimestamp: Date.now(),
+                };
+                pData.isDirtyForSave = true;
+                activePlayerData.set(player.id, pData);
+                return pData;
+            }
+
+            let pData = await _loadPlayerDataFromDynamicProperties(player, dependencies);
+
+            if (!pData) {
+                pData = initializeDefaultPlayerData(player, currentTick);
+                playerUtils.debugLog(`[PlayerDataManager] No existing data found for ${player.nameTag}. Initialized new default data.`, player.nameTag, dependencies);
+                logManager.addLog({ actionType: 'playerInitialJoin', targetName: player.nameTag, targetId: player.id }, dependencies);
+            } else {
+                playerUtils.debugLog(`[PlayerDataManager] Successfully loaded data for ${player.nameTag} from dynamic properties.`, player.nameTag, dependencies);
+            }
+
+            const scheduledFlagPurges = _getScheduledFlagPurgesFromCache();
+            if (scheduledFlagPurges.has(player.nameTag)) {
+                const { flags, lastFlagType, lastViolationDetailsMap, automodState } = getDefaultFlagsAndViolations();
+                pData.flags = flags;
+                pData.lastFlagType = lastFlagType;
+                pData.lastViolationDetailsMap = lastViolationDetailsMap;
+                pData.automodState = automodState;
+                pData.isDirtyForSave = true;
+                scheduledFlagPurges.delete(player.nameTag);
+                await _saveScheduledFlagPurges(dependencies);
+                await saveDirtyPlayerData(player, dependencies);
+                playerUtils.debugLog(`[PlayerDataManager] Executed scheduled flag purge for ${player.nameTag} upon join.`, player.nameTag, dependencies);
+                logManager.addLog({ actionType: 'flagsPurgedOnJoin', targetName: player.nameTag, targetId: player.id, context: 'PlayerDataManager.ensurePlayerDataInitialized' }, dependencies);
+            }
+
+            pData.isOnline = true;
+            pData.joinTick = currentTick;
+            pData.sessionStartTime = Date.now();
+            updateTransientPlayerData(player, pData, dependencies);
+            activePlayerData.set(player.id, pData);
+            return pData;
+
+        } catch (error) {
+            logManager.addLog({
+                actionType: 'error.pdm.init.generic',
+                context: 'playerDataManager.ensurePlayerDataInitialized',
+                targetName: player.nameTag,
+                details: {
+                    errorCode: 'PDM_INIT_FAILURE',
+                    message: error.message,
+                    rawErrorStack: error.stack,
+                },
+            }, dependencies);
+            logError(`[PlayerDataManager CRITICAL] Failed to initialize player data for ${player.nameTag}: ${error.stack}`, error);
+            if (!player.isValid()) {
+                playerUtils.debugLog(`[PlayerDataManager] Player ${player.nameTag} became invalid during data initialization after an error. Aborting.`, player.nameTag, dependencies);
+                return null;
+            }
+            const fallbackData = initializeDefaultPlayerData(player, currentTick);
+            activePlayerData.set(player.id, fallbackData);
+            return fallbackData;
+        } finally {
+            initializingPlayerData.delete(player.id);
         }
+    };
 
-        // Handle scheduled flag purges
-        const scheduledFlagPurges = _getScheduledFlagPurgesFromCache();
-        if (scheduledFlagPurges.has(player.nameTag)) {
-            const { flags, lastFlagType, lastViolationDetailsMap, automodState } = getDefaultFlagsAndViolations();
-            pData.flags = flags;
-            pData.lastFlagType = lastFlagType;
-            pData.lastViolationDetailsMap = lastViolationDetailsMap;
-            pData.automodState = automodState;
-            pData.isDirtyForSave = true;
-            scheduledFlagPurges.delete(player.nameTag);
-            await _saveScheduledFlagPurges(dependencies);
-
-            // Immediately save the player's data to ensure the flag purge is persisted atomically.
-            await saveDirtyPlayerData(player, dependencies);
-
-            playerUtils.debugLog(`[PlayerDataManager] Executed scheduled flag purge for ${player.nameTag} upon join.`, player.nameTag, dependencies);
-            logManager.addLog({ actionType: 'flagsPurgedOnJoin', targetName: player.nameTag, targetId: player.id, context: 'PlayerDataManager.ensurePlayerDataInitialized' }, dependencies);
-        }
-
-        pData.isOnline = true;
-        pData.joinTick = currentTick;
-        pData.sessionStartTime = Date.now();
-
-        updateTransientPlayerData(player, pData, dependencies);
-
-        activePlayerData.set(player.id, pData);
-        return pData;
-
-    } catch (error) {
-        logManager.addLog({
-            actionType: 'error.pdm.init.generic',
-            context: 'playerDataManager.ensurePlayerDataInitialized',
-            targetName: player.nameTag,
-            details: {
-                errorCode: 'PDM_INIT_FAILURE',
-                message: error.message,
-                rawErrorStack: error.stack,
-            },
-        }, dependencies);
-        logError(`[PlayerDataManager CRITICAL] Failed to initialize player data for ${player.nameTag}: ${error.stack}`, error);
-        // Fallback to default data to prevent system failure for this player
-        if (!player.isValid()) {
-            playerUtils.debugLog(`[PlayerDataManager] Player ${player.nameTag} became invalid during data initialization after an error. Aborting.`, player.nameTag, dependencies);
-            return null;
-        }
-        const fallbackData = initializeDefaultPlayerData(player, currentTick);
-        activePlayerData.set(player.id, fallbackData);
-        return fallbackData;
-    }
+    const promise = initializationWork();
+    initializingPlayerData.set(player.id, promise);
+    return promise;
 }
 
 /**

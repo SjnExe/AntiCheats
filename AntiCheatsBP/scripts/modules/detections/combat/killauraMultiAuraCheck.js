@@ -1,3 +1,5 @@
+import { EntityDamageCause } from '@minecraft/server';
+
 /**
  * @typedef {import('../../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../../types.js').Dependencies} Dependencies
@@ -26,7 +28,10 @@ export async function checkKillauraMultiAura(player, pData, dependencies) {
     const calculationWindowMs = config.checks.killauraMultiAura.windowMs ?? 1000;
     const windowStartTime = now - calculationWindowMs;
 
-    const recentAttacks = pData.attackEvents.filter(event => event.timestamp >= windowStartTime);
+    const recentAttacks = pData.attackEvents.filter(event =>
+        event.timestamp >= windowStartTime &&
+        event.damageSource.cause === EntityDamageCause.entityAttack
+    );
     const uniqueTargets = new Set(recentAttacks.map(event => event.targetId));
 
     if (pData.isWatched && uniqueTargets.size > 0) {
