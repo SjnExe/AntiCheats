@@ -86,6 +86,12 @@ function _resetCheckFlags(pData, checkType, flagData, dependencies) {
  */
 function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies, violationDetails) {
     const { playerUtils, logManager, config: globalConfig, playerDataManager } = dependencies;
+
+    if (!player.isValid()) {
+        playerUtils?.debugLog(`[AutoModManager] Aborted action '${actionType}' for ${pData.playerNameTag} because player became invalid.`, 'SystemWarn', dependencies);
+        return false;
+    }
+
     const flagThresholdForRule = parameters.flagThresholdInternal || 0;
     playerUtils?.debugLog(`[AutoModManager] Dispatching action '${actionType}' for ${player?.nameTag} due to ${checkType}. Rule Params: ${JSON.stringify(parameters)}`, player?.nameTag, dependencies);
     let actionProcessed = false;
@@ -364,6 +370,11 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
 export async function processAutoModActions(player, pData, checkType, dependencies, violationDetails) {
     const { config: globalConfig, playerUtils, automodConfig: moduleAutomodConfig } = dependencies;
     if (!globalConfig?.automod?.enabled) {
+        return;
+    }
+
+    if (!player.isValid()) {
+        playerUtils?.debugLog(`[AutoModManager] Aborted processAutoModActions for ${pData.playerNameTag} because player became invalid.`, 'SystemWarn', dependencies);
         return;
     }
 

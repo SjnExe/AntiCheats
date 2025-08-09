@@ -413,7 +413,7 @@ export const commandAliases = new Map([
 ]);
 
 // --- Editable Configuration Values ---
-export const editableConfigValues = { ...defaultConfigSettings };
+export const editableConfigValues = JSON.parse(JSON.stringify(defaultConfigSettings));
 
 /**
  * Updates a configuration value at runtime, supporting nested keys (e.g., "tpa.enabled").

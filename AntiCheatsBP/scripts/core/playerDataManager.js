@@ -364,8 +364,21 @@ function trimPlayerData(dataToSave) {
     return dataToSave;
 }
 
+/**
+ * Creates a serializable version of the player data, excluding transient properties.
+ * @param {import('../types.js').PlayerAntiCheatData} pData The full player data.
+ * @returns {object} A serializable copy of the player data.
+ */
+function _getSerializableData(pData) {
+    const dataToSave = { ...pData };
+    delete dataToSave.transient;
+    return dataToSave;
+}
+
+
 function recoverAndSerializePlayerData(dataToSave, playerLike, dependencies) {
     const { logManager } = dependencies;
+    const originalSize = JSON.stringify(dataToSave).length;
 
     logManager.addLog({
         actionType: 'warning.pdm.dpWrite.sizeLimit',
@@ -374,17 +387,59 @@ function recoverAndSerializePlayerData(dataToSave, playerLike, dependencies) {
         details: {
             errorCode: 'PDM_DP_SIZE_EXCEEDED_RECOVERY_ATTEMPT',
             message: `Serialized player data for ${playerLike.name} exceeds size limit. Attempting recovery.`,
-            meta: { originalSize: JSON.stringify(dataToSave).length },
+            meta: { originalSize: originalSize },
         },
     }, dependencies);
 
+    // Stage 1: Trim historical arrays by 50%
+    if (dataToSave.blockBreakTimestamps.length > 25) {
+        dataToSave.blockBreakTimestamps = dataToSave.blockBreakTimestamps.slice(-25);
+    }
+    if (dataToSave.chatMessageTimestamps.length > 25) {
+        dataToSave.chatMessageTimestamps = dataToSave.chatMessageTimestamps.slice(-25);
+    }
+    if (dataToSave.lastViolationDetailsMap) {
+        // Keep only the most recent 10 violation details
+        const recentKeys = Object.keys(dataToSave.lastViolationDetailsMap).slice(-10);
+        const trimmedDetails = {};
+        for (const key of recentKeys) {
+            trimmedDetails[key] = dataToSave.lastViolationDetailsMap[key];
+        }
+        dataToSave.lastViolationDetailsMap = trimmedDetails;
+    }
+
+    let serializedData = JSON.stringify(dataToSave);
+    if (serializedData.length <= maxSerializedDataLength) {
+        logManager.addLog({
+            actionType: 'info.pdm.dpWrite.recoverySuccess',
+            context: 'playerDataManager.saveDirtyPlayerData.recovery',
+            targetName: playerLike.name,
+            details: { message: 'Data trimming stage 1 was successful.', originalSize, finalSize: serializedData.length },
+        }, dependencies);
+        return serializedData;
+    }
+
+    // Stage 2: Clear historical arrays completely
     dataToSave.blockBreakTimestamps = [];
     dataToSave.chatMessageTimestamps = [];
     if (dataToSave.recentBlockPlacements) {
         dataToSave.recentBlockPlacements = [];
     }
+    dataToSave.lastViolationDetailsMap = {}; // Clear all violation details as a last resort before reset
 
-    return JSON.stringify(dataToSave);
+    serializedData = JSON.stringify(dataToSave);
+    if (serializedData.length <= maxSerializedDataLength) {
+        logManager.addLog({
+            actionType: 'warning.pdm.dpWrite.recoverySuccessStage2',
+            context: 'playerDataManager.saveDirtyPlayerData.recovery',
+            targetName: playerLike.name,
+            details: { message: 'Data trimming stage 2 (clearing arrays) was successful.', originalSize, finalSize: serializedData.length },
+        }, dependencies);
+        return serializedData;
+    }
+
+    // If it's still too large, return null to indicate failure
+    return null;
 }
 
 export async function saveDirtyPlayerData(playerLike, dependencies) {
@@ -393,37 +448,35 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
 
     if (!pData || !pData.isDirtyForSave) return false;
 
-    if (typeof playerLike.setDynamicProperty !== 'function') {
-        logError(`[PlayerDataManager CRITICAL] Attempted to save data for ${playerLike.name ?? playerLike.id} without a valid player object. Data save aborted.`);
+    if (typeof playerLike?.setDynamicProperty !== 'function') {
+        logError(`[PlayerDataManager CRITICAL] Attempted to save data for an invalid player-like object (ID: ${playerLike?.id}). Data save aborted.`);
         return false;
     }
 
     try {
-        let dataToSave = { ...pData };
-        delete dataToSave.transient;
-
-        dataToSave = trimPlayerData(dataToSave);
+        let dataToSave = _getSerializableData(pData);
+        dataToSave = trimPlayerData(dataToSave); // Initial standard trim
         let serializedData = JSON.stringify(dataToSave);
 
         if (serializedData.length > maxSerializedDataLength) {
             serializedData = recoverAndSerializePlayerData(dataToSave, playerLike, dependencies);
 
-            if (serializedData.length > maxSerializedDataLength) {
+            if (serializedData === null) {
+                // Recovery failed, data is still too large.
+                // Log a critical error but DO NOT reset the data. We prevent the save instead.
                 logManager.addLog({
-                    actionType: 'error.pdm.dpWrite.recoveryFail',
+                    actionType: 'error.pdm.dpWrite.recoveryFail.saveAborted',
                     context: 'playerDataManager.saveDirtyPlayerData.recovery',
                     targetName: playerLike.name,
                     details: {
-                        errorCode: 'PDM_DP_RECOVERY_FAILED_DATA_RESET',
-                        message: `Data recovery failed for ${playerLike.name}. Size after trimming is still too large. Resetting player data to prevent corruption.`,
-                        meta: { trimmedSize: serializedData.length },
+                        errorCode: 'PDM_DP_RECOVERY_FAILED_SAVE_ABORTED',
+                        message: `Data recovery failed for ${playerLike.name}. Size after all trimming is still too large. The current data state will NOT be saved to prevent corruption, but remains active in memory.`,
+                        meta: { finalSize: JSON.stringify(dataToSave).length },
                     },
                 }, dependencies);
-
-                const freshData = initializeDefaultPlayerData(playerLike, dependencies.currentTick);
-                await playerLike.setDynamicProperty(config.playerDataDynamicPropertyKey, JSON.stringify(freshData));
-                activePlayerData.set(playerLike.id, freshData);
-                return true;
+                // We intentionally don't save, so the oversized data remains in memory for this session
+                // but doesn't corrupt the stored dynamic property.
+                return false;
             }
         }
 

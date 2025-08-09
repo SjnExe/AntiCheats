@@ -690,6 +690,10 @@ async function confirmLagClearImpl(player, dependencies) {
         } else {
             player.sendMessage('§eNo \'lagclear\' command configured. Performing basic item clear as fallback.');
             try {
+                if (!player.isValid()) {
+                    playerUtils.debugLog('[UiManager.confirmLagClearImpl] Player became invalid before command execution.', 'SystemWarn', dependencies);
+                    return;
+                }
                 await player.runCommandAsync('kill @e[type=item]');
                 player.sendMessage('§aSuccess: Ground items cleared.');
             } catch (e) {

@@ -14,11 +14,18 @@ export const definition = {
 export function execute(player, args, { playerUtils }) {
     const { getString } = playerUtils;
 
+    if (!player.isValid()) {
+        console.warn('[reload] Attempted to execute for an invalid player.');
+        return;
+    }
+
     try {
         player.runCommandAsync('reload');
         player.sendMessage(getString('command.reload.success'));
     } catch (error) {
         console.error(`[reload] Error executing reload command: ${error}`);
-        player.sendMessage(getString('command.reload.error'));
+        if (player.isValid()) {
+            player.sendMessage(getString('command.reload.error'));
+        }
     }
 }
