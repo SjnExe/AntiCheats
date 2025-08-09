@@ -874,8 +874,8 @@ async function handleItemUse(eventData, dependencies) {
     }
 
 
-    const _currentTick = dependencies.currentTick;
-    pData.lastItemUseTick = _currentTick;
+    const currentTick = dependencies.currentTick;
+    pData.lastItemUseTick = currentTick;
     pData.isDirtyForSave = true;
 
     if (checks?.checkSwitchAndUseInSameTick && config?.enableInventoryModCheck) {
