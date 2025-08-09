@@ -499,3 +499,5 @@ export function updateConfigValue(key, value) {
         newValue: coercedValue,
     };
 }
+
+export { editableConfigValues as config };
