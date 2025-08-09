@@ -51,6 +51,7 @@ export default [
         },
         rules: {
             ...eslint.configs.recommended.rules,
+            'camelcase': ['error', { 'properties': 'always', 'ignoreDestructuring': true, 'allow': ['^UNSAFE_'] }],
             'indent': ['error', 4, { 'SwitchCase': 1 }],
             'quotes': ['error', 'single', { 'avoidEscape': true }],
             'semi': ['error', 'always'],

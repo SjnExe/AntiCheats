@@ -40,7 +40,14 @@ import {
     setEndLocked,
 } from './worldStateUtils.js';
 
+import {
+    executePlayerModerationCommand,
+} from './commandUtils.js';
+
 export {
+    // from commandUtils
+    executePlayerModerationCommand,
+
     // from itemUtils
     calculateRelativeBlockBreakingPower,
     getOptimalToolForBlock,
