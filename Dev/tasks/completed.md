@@ -12,3 +12,10 @@ This document is an archive of completed tasks.
     - Verified that the grace period logic in detection scripts is sound and correct.
     - Enforced consistent `player.isValid()` checks in `uiManager.js`, `reload.js`, `restart.js`, `eventHandlers.js`, and `automodManager.js` to prevent crashes from disconnected players.
   - **Submission:** `refactor/stability-fixes` branch.
+
+- **(Medium) Performance & Optimization Batch** - Completed by Jules on 2025-08-08
+  - **Summary:** Implemented performance optimizations to reduce server load, especially during mass-join events.
+  - **Changes:**
+    - Optimized scheduled flag purge loading in `playerDataManager.js` by implementing an in-memory cache, avoiding expensive dynamic property reads on every player join.
+    - Removed the unused `getActivePlayers` function from `playerDataManager.js` to improve code hygiene.
+  - **Submission:** `perf/optimization-pass` branch.
