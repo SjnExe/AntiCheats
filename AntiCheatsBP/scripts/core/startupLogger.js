@@ -5,14 +5,14 @@
  *              without relying on the main dependency container, which may not be initialized yet.
  */
 
-const LOG_PREFIX = '[AntiCheats:Startup]';
+const logPrefix = '[AntiCheats:Startup]';
 
 /**
  * Logs a standard message to the console.
  * @param {string} message The message to log.
  */
 export function log(message) {
-    console.log(`${LOG_PREFIX} ${message}`);
+    console.log(`${logPrefix} ${message}`);
 }
 
 /**
@@ -21,7 +21,7 @@ export function log(message) {
  * @param {Error} [errorObject] Optional error object to include its stack trace.
  */
 export function logError(message, errorObject) {
-    console.error(`${LOG_PREFIX} [ERROR] ${message}`);
+    console.error(`${logPrefix} [ERROR] ${message}`);
     if (errorObject && errorObject.stack) {
         console.error(errorObject.stack);
     }
