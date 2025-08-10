@@ -151,7 +151,6 @@ export async function checkFly(player, pData, dependencies) {
     const hoverVSpeedThreshold = config?.flyHoverVerticalSpeedThreshold ?? 0.08;
     let hoverOffGroundTicks = config?.flyHoverOffGroundTicksThreshold ?? 20;
     let hoverMaxFallDist = config?.flyHoverMaxFallDistanceThreshold ?? 1.0;
-    const hoverMinHeight = config?.flyHoverNearGroundThreshold ?? 2.5;
 
     if (pData.hasSlowFalling) {
         hoverMaxFallDist *= 1.5;

@@ -567,7 +567,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     const distanceMoved = Math.sqrt(
         ((currentLocation.x - previousLocation.x) ** 2) +
         ((currentLocation.y - previousLocation.y) ** 2) +
-        ((currentLocation.z - previousLocation.z) ** 2)
+        ((currentLocation.z - previousLocation.z) ** 2),
     );
 
     const teleportThreshold = config?.development?.teleportDistanceThreshold ?? 10;
@@ -590,7 +590,6 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         transient.fallDistance = 0;
     }
 
-    const currentLocation = player.location;
     pData.lastKnownLocation.x = currentLocation.x;
     pData.lastKnownLocation.y = currentLocation.y;
     pData.lastKnownLocation.z = currentLocation.z;

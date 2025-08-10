@@ -476,13 +476,19 @@ export function updateConfigValue(key, value) {
             if (!Array.isArray(coercedValue)) {
                 throw new Error(`expected an array or its JSON string representation, but got type ${typeof value}`);
             }
-        } else if (typeof currentDefault[finalKey] === 'object' && currentDefault[finalKey] !== null) {
-            // If the input is a string, assume it's JSON. Otherwise, it must already be an object.
+        } else if (typeof currentDefault[finalKey] === 'object') { // This condition now correctly includes null defaults
+            // If the input is a string, assume it's JSON. Otherwise, it must already be an object or null.
             if (typeof value === 'string') {
-                coercedValue = JSON.parse(value);
+                // Allow empty string or 'null' to represent the null value
+                if (value.trim() === '' || value.toLowerCase() === 'null') {
+                    coercedValue = null;
+                } else {
+                    coercedValue = JSON.parse(value);
+                }
             }
-            if (typeof coercedValue !== 'object' || coercedValue === null || Array.isArray(coercedValue)) {
-                throw new Error(`expected an object or its JSON string representation, but got type ${typeof value}`);
+            // A valid value can be null or a non-array object.
+            if (coercedValue !== null && (typeof coercedValue !== 'object' || Array.isArray(coercedValue))) {
+                throw new Error(`expected an object, its JSON string representation, or null, but got type ${typeof coercedValue}`);
             }
         }
     } catch (e) {
