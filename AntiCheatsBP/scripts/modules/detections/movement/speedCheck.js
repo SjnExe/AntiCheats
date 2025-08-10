@@ -49,6 +49,16 @@ export async function checkSpeed(player, pData, dependencies) {
     const blockBelow = player.dimension.getBlock(player.location.offset(0, -1, 0));
     const onIce = blockBelow && (blockBelow.typeId.includes('ice'));
 
+    const ticksSinceLastLaunch = dependencies.currentTick - (pData.transient?.lastLaunchTick ?? -Infinity);
+    const launchGraceTicks = 20; // 1 second grace for high speed after a launch
+
+    if (ticksSinceLastLaunch <= launchGraceTicks) {
+        pData.lastSpeedExemptTick = dependencies.currentTick;
+        pData.isDirtyForSave = true;
+        playerUtils?.debugLog(`[SpeedCheck] ${playerName} in exempt state due to recent launch item usage.`, watchedPlayerName, dependencies);
+        return;
+    }
+
     if (player.isFlying || player.isGliding || player.isClimbing || player.isInWater || player.isRiding || onIce) {
         if (pData.consecutiveOnGroundSpeedingTicks > 0) {
             pData.consecutiveOnGroundSpeedingTicks = 0;

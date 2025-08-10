@@ -556,13 +556,37 @@ async function _loadPlayerDataFromDynamicProperties(player, dependencies) {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export function updateTransientPlayerData(player, pData, dependencies) {
-    const { currentTick } = dependencies;
+    const { currentTick, config, playerUtils } = dependencies;
     const transient = pData.transient;
+
+    const currentLocation = player.location;
+    const previousLocation = pData.lastKnownLocation;
+
+    // --- Teleport Detection ---
+    // Calculate distance moved since the last tick to detect teleports.
+    const distanceMoved = Math.sqrt(
+        ((currentLocation.x - previousLocation.x) ** 2) +
+        ((currentLocation.y - previousLocation.y) ** 2) +
+        ((currentLocation.z - previousLocation.z) ** 2)
+    );
+
+    const teleportThreshold = config?.development?.teleportDistanceThreshold ?? 10;
+    if (distanceMoved > teleportThreshold) {
+        // Player moved a large distance in a single tick, likely a teleport.
+        // Reset fall-related data to prevent false NoFall flags.
+        if (pData.isWatched) {
+            playerUtils?.debugLog(`[PlayerDataManager] Teleport detected for ${player.name}. Dist: ${distanceMoved.toFixed(2)}. Resetting fall distance.`, player.name, dependencies);
+        }
+        transient.fallDistance = 0;
+        transient.ticksSinceLastOnGround = 0;
+        pData.lastTeleportTimestamp = Date.now();
+    }
+
 
     // Reset fall distance at the start of the tick if the player is on the ground.
     // This preserves the value for the duration of the landing tick for other checks,
     // then resets it on the next tick, making the logic self-contained.
-    if (transient.ticksSinceLastOnGround === 0) {
+    if (transient.ticksSinceLastOnGround === 0 && transient.fallDistance > 0) {
         transient.fallDistance = 0;
     }
 
