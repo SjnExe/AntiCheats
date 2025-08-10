@@ -112,7 +112,8 @@
  * @property {number} [joinCount=0] Total number of times the player has joined.
  * @property {number} [joinTime] Timestamp of the current session start.
  * @property {number} [lastCombatInteractionTime] Timestamp of last combat event.
- * @property {number[]} [attackEvents] Timestamps of recent attack actions.
+ * @property {AttackEvent[]} [attackEvents] Detailed records of recent attack actions.
+ * @property {number[]} [attackTimestamps] Timestamps of recent attack actions for CPS checks.
  * @property {Array<{x: number, y: number, z: number, blockTypeId: string, tick: number}>} [recentBlockPlacements] History of recent block placements.
  * @property {number} [lastItemUseTick=0] Game tick of the last item use.
  * @property {number} [lastTookDamageTick=0] Game tick when player last took damage.
@@ -352,6 +353,13 @@
  * @property {string} message A message describing the result.
  * @property {unknown} [oldValue] The old value.
  * @property {unknown} [newValue] The new value.
+ */
+
+/**
+ * @typedef {object} AttackEvent
+ * @property {number} timestamp Timestamp of the attack.
+ * @property {string} targetId The ID of the entity that was attacked.
+ * @property {import('@minecraft/server').EntityDamageSource} damageSource The source of the damage.
  */
 
 /**

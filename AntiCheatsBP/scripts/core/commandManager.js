@@ -15,6 +15,7 @@ import * as commandFiles from '../modules/commands/index.js';
 function discoverCommands() {
     commandFilePaths.clear();
     for (const moduleKey in commandFiles) {
+        /** @type {import('../types.js').CommandModule} */
         const cmdModule = commandFiles[moduleKey];
         if (cmdModule?.definition?.name) {
             const commandName = cmdModule.definition.name.toLowerCase();
@@ -41,6 +42,11 @@ export function initializeCommands(dependencies) {
     debugLog(`[CommandManager.initializeCommands] Command system initialized. ${commandFilePaths.size} commands available, ${dependencies.aliasToCommandMap.size} aliases registered.`, null, dependencies);
 }
 
+/**
+ * @param {string} commandName
+ * @param {import('../types.js').Dependencies} dependencies
+ * @returns {Promise<{commandDef: import('../types.js').CommandDefinition | undefined, commandExecute: import('../types.js').CommandExecuteFunction | undefined}>}
+ */
 async function getCommand(commandName, dependencies) {
     let commandDef = commandDefinitionMap.get(commandName);
     let commandExecute = commandExecutionMap.get(commandName);
@@ -58,6 +64,13 @@ async function getCommand(commandName, dependencies) {
     return { commandDef, commandExecute };
 }
 
+/**
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDefinition} commandDef
+ * @param {import('../types.js').CommandExecuteFunction} commandExecute
+ * @param {string[]} args
+ * @param {import('../types.js').Dependencies} dependencies
+ */
 async function executeCommand(player, commandDef, commandExecute, args, dependencies) {
     const { playerUtils, logManager } = dependencies;
     const { debugLog, getString, playSoundForEvent } = playerUtils;
@@ -75,8 +88,8 @@ async function executeCommand(player, commandDef, commandExecute, args, dependen
             player?.sendMessage(getString('command.error.executionFailed', { commandName: commandDef.name }));
         }
 
-        const errorMessage = error?.message || String(error);
-        const errorStack = error?.stack || 'N/A';
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : 'N/A';
         addLog({
             actionType: 'error.cmd.exec',
             targetName: playerName,
@@ -137,6 +150,11 @@ export async function handleChatCommand(eventData, dependencies) {
     await executeCommand(player, commandDef, commandExecute, args, dependencies);
 }
 
+/**
+ * @param {string} commandName
+ * @param {import('../types.js').Config} config
+ * @returns {boolean}
+ */
 function isCommandEnabled(commandName, config) {
     const commandConfig = config?.commandSettings?.[commandName];
     // The single source of truth is now the config. Default to false if not specified.

@@ -9,7 +9,7 @@
  * @param {PlayerAntiCheatData} pData The player's data.
  * @param {Dependencies} dependencies The command dependencies.
  */
-export async function checkKillauraNoSwing(player, pData, dependencies) {
+export function checkKillauraNoSwing(player, pData, dependencies) {
     const { config } = dependencies;
 
     if (!config.checks.killauraNoSwing.enabled) {

@@ -33,7 +33,7 @@ let scheduledFlagPurgesCache = new Map();
 export async function initializeScheduledFlagPurges(dependencies) {
     const { world, playerUtils, logManager } = dependencies;
     try {
-        const data = world.getDynamicProperty(scheduledFlagPurgesKey);
+        const data = await world.getDynamicProperty(scheduledFlagPurgesKey);
         if (typeof data === 'string') {
             const parsed = JSON.parse(data);
             if (Array.isArray(parsed)) {
@@ -58,7 +58,8 @@ export async function initializeScheduledFlagPurges(dependencies) {
             }
         }
     } catch (e) {
-        logError(`[PlayerDataManager] Failed to load scheduled flag purges: ${e.message}`, e);
+        const message = e instanceof Error ? e.message : String(e);
+        logError(`[PlayerDataManager] Failed to load scheduled flag purges: ${message}`, e);
     }
 }
 
@@ -73,9 +74,10 @@ async function _saveScheduledFlagPurges(dependencies) {
     const { world } = dependencies;
     try {
         const arrayToSave = Array.from(scheduledFlagPurgesCache.values());
-        world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(arrayToSave));
+        await world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(arrayToSave));
     } catch (e) {
-        logError(`[PlayerDataManager] Failed to save scheduled flag purges: ${e}`, e);
+        const message = e instanceof Error ? e.message : String(e);
+        logError(`[PlayerDataManager] Failed to save scheduled flag purges: ${message}`, e);
     }
 }
 
@@ -262,9 +264,12 @@ export function ensurePlayerDataInitialized(player, currentTick, dependencies) {
         const { playerUtils, logManager } = dependencies;
         try {
             // Check offline ban list first
-            const offlineBanEntry = offlineBanList.find(entry =>
-                (entry.playerName && entry.playerName.toLowerCase() === player.name.toLowerCase()) ||
-                (entry.xuid && entry.xuid === player.id),
+            /** @type {import('./offlineBanList.js').OfflineBanEntry[]} */
+            const typedOfflineBanList = offlineBanList;
+            const offlineBanEntry = typedOfflineBanList.find(
+                (entry) =>
+                    (entry.playerName && entry.playerName.toLowerCase() === player.name.toLowerCase()) ||
+                    (entry.xuid && entry.xuid === player.id),
             );
 
             if (offlineBanEntry) {
@@ -493,7 +498,7 @@ export async function saveDirtyPlayerData(playerLike, dependencies) {
 async function _loadPlayerDataFromDynamicProperties(player, dependencies) {
     const { logManager, config } = dependencies;
     try {
-        const serializedData = player.getDynamicProperty(config.playerDataDynamicPropertyKey);
+        const serializedData = await player.getDynamicProperty(config.playerDataDynamicPropertyKey);
 
         if (typeof serializedData !== 'string') {
             return null;
@@ -758,7 +763,7 @@ export function removePlayerStateRestriction(pData, stateType, dependencies) {
  * @param {number} [amount=1] The number of flags of this type to add.
  * @returns {Promise<void>}
  */
-export async function addFlag(player, flagType, dependencies, violationDetails, amount = 1) {
+export function addFlag(player, flagType, dependencies, violationDetails, amount = 1) {
     if (amount <= 0) return;
 
     const { playerDataManager, automodManager, playerUtils } = dependencies;
@@ -788,5 +793,5 @@ export async function addFlag(player, flagType, dependencies, violationDetails, 
     playerUtils.debugLog(logMessage, pData.isWatched ? player.nameTag : null, dependencies);
 
     // Trigger AutoMod check once after adding all flags.
-    await automodManager.processAutoModActions(player, pData, flagType, dependencies, violationDetails);
+    automodManager.processAutoModActions(player, pData, flagType, dependencies, violationDetails);
 }

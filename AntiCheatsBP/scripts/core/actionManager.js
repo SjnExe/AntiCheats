@@ -38,6 +38,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
         ...violationDetails,
     };
 
+    /** @param {any} text */
     const performReplacement = (text) => {
         if (typeof text !== 'string') return text;
         return text.replace(/{(\w+)}/g, (placeholder, placeholderKey) => {
@@ -52,6 +53,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
         });
     };
 
+    /** @param {any} data */
     const deepFormat = (data) => {
         if (typeof data === 'string') {
             return performReplacement(data);
@@ -68,7 +70,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
             }
             return newObj;
         }
-        return data; // Return numbers, booleans, null, etc. as is
+        return data;
     };
 
     return deepFormat(template);
@@ -96,14 +98,22 @@ async function _handleFlagging(player, profile, flagReasonMessage, checkType, de
 
     await dependencies.playerDataManager?.addFlag(player, flagType, dependencies, violationDetails, increment);
 
-    dependencies.playerUtils?.debugLog(`[ActionManager] Dispatched flag action for ${player.nameTag} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.nameTag, dependencies);
+    dependencies.playerUtils?.debugLog(`[ActionManager] Dispatched flag action for ${player.name} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.name, dependencies);
 }
 
+/**
+ * @param {import('@minecraft/server').Player | null} player
+ * @param {import('../types.js').ActionProfileEntry} profile
+ * @param {string} flagReasonMessage
+ * @param {string} checkType
+ * @param {import('../types.js').ViolationDetails | undefined} violationDetails
+ * @param {import('../types.js').Dependencies} dependencies
+ */
 function _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies) {
     if (!profile.log) return;
 
     const { logManager } = dependencies;
-    const playerNameForLog = player?.nameTag ?? 'System';
+    const playerNameForLog = player?.name ?? 'System';
     const logActionType = profile.log.actionType || `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
     let logDetailsString = profile.log.detailsPrefix || '';
     if (profile.log.includeViolationDetails !== false) {
@@ -123,6 +133,13 @@ function _handleLogging(player, profile, flagReasonMessage, checkType, violation
     }, dependencies);
 }
 
+/**
+ * @param {import('@minecraft/server').Player | null} player
+ * @param {import('../types.js').ActionProfileEntry} profile
+ * @param {string} checkType
+ * @param {import('../types.js').ViolationDetails | undefined} violationDetails
+ * @param {import('../types.js').Dependencies} dependencies
+ */
 function _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies) {
     if (!player || !profile.notifyAdmins?.message) {
         return;
@@ -132,12 +149,18 @@ function _handleAdminNotifications(player, profile, checkType, violationDetails,
     }
 
     const { playerUtils, playerDataManager } = dependencies;
-    const notifyMsg = formatActionMessage(profile.notifyAdmins.message, player.nameTag, checkType, violationDetails);
+    const notifyMsg = formatActionMessage(profile.notifyAdmins.message, player.name, checkType, violationDetails);
     const pData = playerDataManager?.getPlayerData(player.id);
 
     playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
 }
 
+/**
+ * @param {import('@minecraft/server').Player | null} player
+ * @param {string} checkType
+ * @param {import('../types.js').ViolationDetails | undefined} violationDetails
+ * @param {import('../types.js').Dependencies} dependencies
+ */
 function _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies) {
     if (!player || !violationDetails || Object.keys(violationDetails).length === 0) {
         if (!player && violationDetails && Object.keys(violationDetails).length > 0) {
@@ -169,10 +192,17 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
     }
 }
 
+/**
+ * @param {import('@minecraft/server').Player | null} player
+ * @param {string} checkType
+ * @param {import('../types.js').ViolationDetails | undefined} violationDetails
+ * @param {import('../types.js').Dependencies} dependencies
+ */
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
     const { playerUtils, checkActionProfiles } = dependencies;
     const playerNameForLog = player?.name ?? 'System';
 
+    /** @type {import('../types.js').ActionProfileEntry | undefined} */
     const profile = checkActionProfiles[checkType];
     if (!profile) {
         playerUtils?.debugLog(`[ActionManager] No action profile for checkType: '${checkType}'.`, null, dependencies);

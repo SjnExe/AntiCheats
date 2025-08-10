@@ -614,16 +614,22 @@ async function handleEntityHurt(eventData, dependencies) {
                     attackerPData.lastCombatInteractionTime = Date.now();
                     attackerPData.isDirtyForSave = true;
 
-                    attackerPData.attackEvents ??= [];
                     const now = Date.now();
                     const calculationWindowMs = config.checks.killauraMultiAura.windowMs ?? 1000;
                     const windowStartTime = now - calculationWindowMs;
+
+                    attackerPData.attackEvents ??= [];
                     attackerPData.attackEvents = attackerPData.attackEvents.filter(event => event.timestamp >= windowStartTime);
                     attackerPData.attackEvents.push({
                         targetId: victimPlayer.id,
                         timestamp: now,
                         damageSource: damageSource,
                     });
+
+                    attackerPData.attackTimestamps ??= [];
+                    attackerPData.attackTimestamps = attackerPData.attackTimestamps.filter(timestamp => timestamp >= windowStartTime);
+                    attackerPData.attackTimestamps.push(now);
+
                     attackerPData.lastAttackTick = currentTick;
                     attackerPData.lastPitch = attackerPlayer.getRotation().pitch;
                     attackerPData.lastYaw = attackerPlayer.getRotation().yaw;

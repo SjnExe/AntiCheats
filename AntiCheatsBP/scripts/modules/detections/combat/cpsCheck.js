@@ -16,8 +16,8 @@ export async function checkCps(player, pData, dependencies) {
         return;
     }
 
-    if (!pData || !Array.isArray(pData.attackEvents)) {
-        playerUtils.debugLog(`[CpsCheck] Skipping for ${player.name}: pData or pData.attackEvents is invalid.`, player.name, dependencies);
+    if (!pData || !Array.isArray(pData.attackTimestamps)) {
+        playerUtils.debugLog(`[CpsCheck] Skipping for ${player.name}: pData or pData.attackTimestamps is invalid.`, player.name, dependencies);
         return;
     }
 
@@ -26,14 +26,14 @@ export async function checkCps(player, pData, dependencies) {
     const calculationWindowMs = config.cpsCalculationWindowMs ?? 1000;
     const windowStartTime = now - calculationWindowMs;
 
-    const originalEventCount = pData.attackEvents.length;
-    pData.attackEvents = pData.attackEvents.filter(timestamp => timestamp >= windowStartTime);
+    const originalEventCount = pData.attackTimestamps.length;
+    pData.attackTimestamps = pData.attackTimestamps.filter(timestamp => timestamp >= windowStartTime);
 
-    if (pData.attackEvents.length !== originalEventCount) {
+    if (pData.attackTimestamps.length !== originalEventCount) {
         pData.isDirtyForSave = true;
     }
 
-    const eventsInWindow = pData.attackEvents.length;
+    const eventsInWindow = pData.attackTimestamps.length;
 
     if (pData.isWatched && eventsInWindow > 0) {
         playerUtils.debugLog(`[CpsCheck] Processing for ${player.name}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix, dependencies);

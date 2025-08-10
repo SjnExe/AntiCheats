@@ -21,11 +21,17 @@ const configUiTruncateKeepLength = 27;
  */
 const playerNavigationStacks = new Map();
 
+/**
+ * @param {string} playerId
+ * @param {string} panelId
+ * @param {object} context
+ */
 function pushToPlayerNavStack(playerId, panelId, context) {
     if (!playerNavigationStacks.has(playerId)) {
         playerNavigationStacks.set(playerId, []);
     }
     const stack = playerNavigationStacks.get(playerId);
+    if (!stack) return; // Should not happen
     const currentTop = stack.length > 0 ? stack[stack.length - 1] : null;
     if (!currentTop || currentTop.panelId !== panelId || JSON.stringify(currentTop.context) !== JSON.stringify(context)) {
         stack.push({ panelId, context: { ...context } });
@@ -37,10 +43,10 @@ function pushToPlayerNavStack(playerId, panelId, context) {
  * @returns {{panelId: string, context: object}|null}
  */
 function popFromPlayerNavStack(playerId) {
-    if (!playerNavigationStacks.has(playerId)) {
+    const stack = playerNavigationStacks.get(playerId);
+    if (!stack) {
         return null;
     }
-    const stack = playerNavigationStacks.get(playerId);
     return stack.pop() || null;
 }
 
@@ -56,10 +62,11 @@ function clearPlayerNavStack(playerId) {
  * @returns {boolean}
  */
 function isNavStackAtRoot(playerId) {
-    if (!playerNavigationStacks.has(playerId)) {
+    const stack = playerNavigationStacks.get(playerId);
+    if (!stack) {
         return true;
     }
-    return playerNavigationStacks.get(playerId).length <= 1;
+    return stack.length <= 1;
 }
 
 /**
@@ -67,11 +74,8 @@ function isNavStackAtRoot(playerId) {
  * @returns {{panelId: string, context: object}|null}
  */
 function getCurrentTopOfNavStack(playerId) {
-    if (!playerNavigationStacks.has(playerId)) {
-        return null;
-    }
     const stack = playerNavigationStacks.get(playerId);
-    if (stack.length === 0) {
+    if (!stack || stack.length === 0) {
         return null;
     }
     return stack[stack.length - 1];
@@ -102,9 +106,6 @@ const uiDynamicItemGenerators = {
         const items = [];
 
         if (helpfulLinks.length === 0) {
-            // If no links, we could return a single item saying "No links configured"
-            // or let showPanel handle empty items list with its generic message.
-            // For now, let showPanel handle it.
             return [];
         }
 
@@ -121,11 +122,10 @@ const uiDynamicItemGenerators = {
                     initialContext: {
                         linkUrl: link.url,
                         linkTitle: link.title,
-                        // Pass the original panel context so `displayLinkInChat` can return properly
                         originalPanelIdForDisplayLink: 'helpfulLinksPanel',
                         originalContextForDisplayLink: { ...context },
                     },
-                    actionContextVars: [], // No need to pass current panel context vars further in this specific item
+                    actionContextVars: [],
                 });
             }
         });
@@ -139,12 +139,10 @@ const uiDynamicItemGenerators = {
      */
     generateServerRuleItems: (player, dependencies, context) => {
         const { config } = dependencies;
-        // Assuming config.serverRules is an array of strings.
         const serverRules = config?.serverRules ?? [];
         const items = [];
 
         if (serverRules.length === 0) {
-            // Let showPanel handle the empty list message.
             return [];
         }
 
@@ -153,14 +151,14 @@ const uiDynamicItemGenerators = {
                 items.push({
                     id: `serverRule_${index}`,
                     sortId: 10 + index * 10,
-                    text: rule, // Display the rule text directly on the button
-                    icon: 'textures/ui/scroll_filled', // Optional: use a consistent icon
+                    text: rule,
+                    icon: 'textures/ui/scroll_filled',
                     requiredPermLevel: 1024,
                     actionType: 'functionCall',
-                    actionValue: 'returnToCallingPanel', // Action to re-display this panel
+                    actionValue: 'returnToCallingPanel',
                     initialContext: {
-                        originalPanelId: 'serverRulesPanel', // Panel to return to
-                        originalContext: { ...context },      // Context of this panel
+                        originalPanelId: 'serverRulesPanel',
+                        originalContext: { ...context },
                     },
                     actionContextVars: [],
                 });
@@ -176,12 +174,11 @@ const uiDynamicItemGenerators = {
      */
     generateGeneralTipItems: (player, dependencies, context) => {
         const { config } = dependencies;
-        // Assuming config.generalTips is an array of strings.
         const generalTips = config?.generalTips ?? [];
         const items = [];
 
         if (generalTips.length === 0) {
-            return []; // Let showPanel handle empty list message.
+            return [];
         }
 
         generalTips.forEach((tip, index) => {
@@ -189,14 +186,14 @@ const uiDynamicItemGenerators = {
                 items.push({
                     id: `generalTip_${index}`,
                     sortId: 10 + index * 10,
-                    text: tip, // Display the tip text directly on the button
-                    icon: 'textures/ui/light_bulb_momented', // Optional: use a consistent icon
+                    text: tip,
+                    icon: 'textures/ui/light_bulb_momented',
                     requiredPermLevel: 1024,
                     actionType: 'functionCall',
-                    actionValue: 'returnToCallingPanel', // Action to re-display this panel
+                    actionValue: 'returnToCallingPanel',
                     initialContext: {
-                        originalPanelId: 'generalTipsPanel', // Panel to return to
-                        originalContext: { ...context },       // Context of this panel
+                        originalPanelId: 'generalTipsPanel',
+                        originalContext: { ...context },
                     },
                     actionContextVars: [],
                 });
@@ -214,12 +211,6 @@ const uiDynamicItemGenerators = {
         const items = [];
         const onlinePlayers = world.getAllPlayers();
 
-        if (onlinePlayers.length === 0) {
-            // Handled by showPanel's generic "no items" message if this is the only generator
-            // or if static items are also empty.
-            // Alternatively, could return a single disabled button saying "No players online".
-        }
-
         onlinePlayers.forEach((p, index) => {
             const playerData = playerDataManager?.getPlayerData(p.id);
             const isPlayerFrozen = playerData?.isFrozen ?? false;
@@ -234,21 +225,17 @@ const uiDynamicItemGenerators = {
 
             items.push({
                 id: `onlinePlayer_${p.id}`,
-                sortId: 10 + index, // Ensure refresh button (sortId 1) is above
+                sortId: 10 + index,
                 text: buttonText,
-                icon: 'textures/ui/icon_multiplayer', // Default player icon
-                requiredPermLevel: 1, // Changed perm from 2 to 1
+                icon: 'textures/ui/icon_multiplayer',
+                requiredPermLevel: 1,
                 actionType: 'openPanel',
                 actionValue: 'playerActionsPanel',
                 initialContext: {
                     targetPlayerId: p.id,
                     targetPlayerName: p.name,
                     isTargetFrozen: isPlayerFrozen,
-                    // Any other context from onlinePlayersPanel itself (via 'context' param)
-                    // will be passed if actionContextVars is omitted or if it's explicitly included.
-                    // For opening playerActionsPanel, we mainly need to set the target.
                 },
-                // actionContextVars: [] // No specific vars from onlinePlayersPanel context needed for playerActionsPanel
             });
         });
         return items;
@@ -278,10 +265,10 @@ const uiDynamicItemGenerators = {
 
                 items.push({
                     id: `watchedPlayer_${p.id}`,
-                    sortId: 10 + index, // Ensure refresh button (sortId 1) is above
+                    sortId: 10 + index,
                     text: buttonText,
-                    icon: 'textures/ui/spyglass_flat_color', // Watched player icon
-                    requiredPermLevel: 1, // Matches old command perm
+                    icon: 'textures/ui/spyglass_flat_color',
+                    requiredPermLevel: 1,
                     actionType: 'openPanel',
                     actionValue: 'playerActionsPanel',
                     initialContext: {
@@ -312,10 +299,9 @@ async function showResetFlagsFormImpl(player, dependencies, context) {
         const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'playerManagementPanel', context: {} };
         if (response.canceled) {
             player.sendMessage('§7Flag reset action cancelled.');
-        } else {
-            const targetPlayerName = response.formValues[0];
-            const confirmedReset = response.formValues[1]; // Renamed for clarity from 'confirmed'
-            if (!targetPlayerName || targetPlayerName.trim() === '') {
+        } else if (response.formValues) {
+            const [targetPlayerName, confirmedReset] = response.formValues;
+            if (typeof targetPlayerName !== 'string' || !targetPlayerName.trim()) {
                 player.sendMessage(playerUtils.getString('common.error.nameEmpty'));
                 await showResetFlagsFormImpl(player, dependencies, context); return;
             }
@@ -337,8 +323,8 @@ async function showResetFlagsFormImpl(player, dependencies, context) {
         }
     } catch (error) {
         logError(`[UiManager.showResetFlagsFormImpl] Error for ${adminPlayerName}: ${error.stack || error}`, error);
-        playerUtils?.debugLog(`[UiManager.showResetFlagsFormImpl] Error: ${error.message}`, adminPlayerName, dependencies);
-        logManager?.addLog({ actionType: 'errorUiResetFlagsForm', context: 'uiManager.showResetFlagsFormImpl', adminName: adminPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
+        playerUtils?.debugLog(`[UiManager.showResetFlagsFormImpl] Error: ${String(error)}`, adminPlayerName, dependencies);
+        logManager?.addLog({ actionType: 'errorUiResetFlagsForm', context: 'uiManager.showResetFlagsFormImpl', adminName: adminPlayerName, details: { errorMessage: String(error), stack: error.stack } }, dependencies);
         player.sendMessage(playerUtils.getString('common.error.genericForm'));
         const callingPanelStateOnError = getCurrentTopOfNavStack(player.id) || { panelId: 'playerManagementPanel', context: {} };
         if (callingPanelStateOnError.panelId) {
@@ -358,58 +344,46 @@ async function showConfigCategoriesListImpl(player, dependencies) {
     playerUtils.debugLog(`[UiManager.showConfigCategoriesListImpl] Called by ${player.name}`, player.name, dependencies);
     const form = new ActionFormData().title('Edit Configuration Key');
 
-    // Dynamically discovers editable configuration keys from dependencies.config.
-    // Editable types: boolean, number, string, and simple arrays of primitives (string, number, boolean).
-    // Complex objects and arrays of objects are currently excluded from UI editing.
     const dynamicallyEditableKeys = [];
 
     for (const key in config) {
         if (Object.prototype.hasOwnProperty.call(config, key)) {
             const value = config[key];
-            let type = typeof value;
+            const type = typeof value;
             let displayValue = String(value);
             let isEditable = false;
+            let resolvedType = type;
 
             if (type === 'boolean' || type === 'number' || type === 'string') {
                 isEditable = true;
-                // Truncate long strings for display
                 if (type === 'string' && displayValue.length > configUiMaxStringDisplayLength) {
                     displayValue = `${displayValue.substring(0, configUiTruncateKeepLength) }...`;
                 }
             } else if (Array.isArray(value)) {
-                // Check if it's a simple array (all elements are primitives)
                 const isSimpleArray = value.every(el => typeof el === 'string' || typeof el === 'number' || typeof el === 'boolean');
                 if (isSimpleArray) {
                     isEditable = true;
-                    type = 'arrayString'; // Special type for our form handler
+                    resolvedType = 'arrayString';
                     displayValue = JSON.stringify(value);
                     if (displayValue.length > configUiMaxStringDisplayLength) {
                         displayValue = `${displayValue.substring(0, configUiTruncateKeepLength) }...`;
                     }
                 } else {
-                    type = 'arrayComplex'; // Not editable via simple form
                     displayValue = '[Complex Array]';
                 }
             } else if (type === 'object' && value !== null) {
-                type = 'objectComplex'; // Not editable
                 displayValue = '[Complex Object]';
             } else if (value === null) {
-                type = 'nullValue'; // Not editable
                 displayValue = '[Null]';
             }
 
             if (isEditable) {
                 dynamicallyEditableKeys.push({
                     keyName: key,
-                    description: key, // Use keyName as description for now
-                    type, // 'boolean', 'number', 'string', 'arrayString'
-                    currentValue: value, // Pass the original value for editing
+                    type: resolvedType,
+                    currentValue: value,
                 });
-                form.button(`${key} (${type})\n§7Current: §f${displayValue}`);
-            } else {
-                // Optionally, list non-editable keys as disabled or just omit them
-                // Omitting for cleaner UI for now.
-                // playerUtils.debugLog(`Config key "${key}" of type "${typeString}" is not UI-editable.`, player.nameTag, dependencies);
+                form.button(`${key} (${resolvedType})\n§7Current: §f${displayValue}`);
             }
         }
     }
@@ -420,37 +394,31 @@ async function showConfigCategoriesListImpl(player, dependencies) {
 
     const callingPanelState = getCurrentTopOfNavStack(player.id);
     form.button(playerUtils.getString('common.button.back'), 'textures/ui/undo');
-    const backButtonIndex = dynamicallyEditableKeys.length; // Index of the back button
+    const backButtonIndex = dynamicallyEditableKeys.length;
 
     try {
         const response = await form.show(player);
         if (response.canceled || response.selection === undefined) {
             if (callingPanelState && callingPanelState.panelId) {
                 await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-            } else {
-                await showPanel(player, 'configEditingRootPanel', dependencies, {});
-            } // Fallback
+            }
             return;
         }
         if (response.selection === backButtonIndex) {
             if (callingPanelState && callingPanelState.panelId) {
                 await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-            } else {
-                await showPanel(player, 'configEditingRootPanel', dependencies, {});
-            } // Fallback
+            }
             return;
         }
 
         const selectedKeyConfig = dynamicallyEditableKeys[response.selection];
         if (selectedKeyConfig) {
-            // Note: selectedKeyConfig.currentValue holds the actual value (e.g. boolean, number, actual array)
-            // showEditSingleConfigValueFormImpl will handle stringifying arrays for its text field if type is 'arrayString'
             const editFormContext = {
                 keyName: selectedKeyConfig.keyName,
                 keyType: selectedKeyConfig.type,
-                currentValue: selectedKeyConfig.currentValue, // Pass the original value
-                parentPanelForEdit: callingPanelState ? callingPanelState.panelId : 'configEditingRootPanel',
-                parentContextForEdit: callingPanelState ? callingPanelState.context : {},
+                currentValue: selectedKeyConfig.currentValue,
+                parentPanelForEdit: callingPanelState?.panelId ?? 'configEditingRootPanel',
+                parentContextForEdit: callingPanelState?.context ?? {},
             };
             await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, editFormContext);
         }
@@ -459,8 +427,6 @@ async function showConfigCategoriesListImpl(player, dependencies) {
         player.sendMessage(playerUtils.getString('common.error.genericForm'));
         if (callingPanelState && callingPanelState.panelId) {
             await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-        } else {
-            await showPanel(player, 'configEditingRootPanel', dependencies, {});
         }
     }
 }
@@ -472,33 +438,31 @@ async function showConfigCategoriesListImpl(player, dependencies) {
  */
 async function showEditSingleConfigValueFormImpl(player, dependencies, context) {
     const { playerUtils, config, logManager } = dependencies;
-    const { keyName, keyType, parentPanelForEdit, parentContextForEdit } = context; // currentValue is the actual value from config
+    const { keyName, keyType, parentPanelForEdit, parentContextForEdit, currentValue } = context;
     playerUtils.debugLog(`[UiManager.showEditSingleConfigValueFormImpl] Editing ${keyName} (type: ${keyType}) for ${player.name}`, player.name, dependencies);
 
-    // keyType can be 'boolean', 'number', 'string', or 'arrayString'.
-    // For 'arrayString', currentValue is the actual array, and it's edited as a JSON string.
-    if (!keyName || typeof keyType === 'undefined') {
+    if (typeof keyName !== 'string' || typeof keyType !== 'string') {
         player.sendMessage('§cConfiguration key details missing for edit form.');
         if (parentPanelForEdit) {
-            await showPanel(player, parentPanelForEdit, dependencies, parentContextForEdit);
+            await showPanel(player, String(parentPanelForEdit), dependencies, parentContextForEdit);
         }
         return;
     }
     const modal = new ModalFormData().title(`Edit: ${keyName} (${keyType})`);
-    const originalValue = config[keyName]; // This is the live value from config, which is what we want to compare against.
-    // context.currentValue is what was displayed on the list, which is also the original value.
+    const originalValue = config[keyName];
+
     switch (keyType) {
         case 'boolean':
-            modal.toggle(`New value for ${keyName}:`, typeof context.currentValue === 'boolean' ? context.currentValue : false);
+            modal.toggle(`New value for ${keyName}:`, typeof currentValue === 'boolean' ? currentValue : false);
             break;
         case 'number':
-            modal.textField(`New value for ${keyName} (number):`, String(context.currentValue ?? '0'));
+            modal.textField(`New value for ${keyName} (number):`, String(currentValue ?? '0'));
             break;
         case 'string':
-            modal.textField(`New value for ${keyName} (string):`, String(context.currentValue ?? ''));
+            modal.textField(`New value for ${keyName} (string):`, String(currentValue ?? ''));
             break;
-        case 'arrayString': // Represents a simple array to be edited as a JSON string
-            modal.textField(`New value for ${keyName} (JSON array string, e.g., ["a","b",1]):`, JSON.stringify(context.currentValue ?? []));
+        case 'arrayString':
+            modal.textField(`New value for ${keyName} (JSON array string, e.g., ["a","b",1]):`, JSON.stringify(currentValue ?? []));
             break;
         default:
             player.sendMessage(`§cError: Unsupported config type "${keyType}" for UI editing of key "${keyName}".`);
@@ -509,76 +473,74 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
     }
     try {
         const response = await modal.show(player);
-        if (response.canceled) {
+        if (response.canceled || !response.formValues) {
             await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit); return;
         }
         const newValue = response.formValues[0];
         let updateSuccess = false;
         switch (keyType) {
-            case 'boolean': config[keyName] = !!newValue; updateSuccess = true; break;
+            case 'boolean':
+                config[keyName] = !!newValue;
+                updateSuccess = true;
+                break;
             case 'number': {
-                const numVal = parseFloat(newValue);
+                const numVal = parseFloat(String(newValue));
                 if (!isNaN(numVal)) {
                     config[keyName] = numVal;
-                    updateSuccess = true;
                     player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
                     logManager?.addLog({ adminName: player.name, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
-                    await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
+                    await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit);
                 } else {
                     player.sendMessage('§cError: Invalid number entered. Please try again.');
-                    updateSuccess = false; // Explicitly set to false on failure
-                    // Re-show the same edit form instead of going back to the list.
-                    // The current context already contains keyName, keyType, parentPanelForEdit, etc.
-                    // We need to ensure 'currentValue' in context reflects the *original* value for placeholder, not the bad input.
-                    // The 'context' object was passed in and shouldn't have been mutated by the bad input.
                     await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, context);
-                    return; // Important to prevent falling through to showConfigCategoriesList
                 }
-                break;
+                return;
             }
             case 'string':
                 config[keyName] = String(newValue);
                 updateSuccess = true;
-                // For strings, success message and navigation handled below to keep it DRY
                 break;
             case 'arrayString':
                 try {
-                    const parsedArray = JSON.parse(newValue);
+                    const parsedArray = JSON.parse(String(newValue));
                     if (Array.isArray(parsedArray) && parsedArray.every(el => typeof el === 'string' || typeof el === 'number' || typeof el === 'boolean')) {
                         config[keyName] = parsedArray;
                         updateSuccess = true;
                     } else {
-                        player.sendMessage('§cError: Invalid input. Value must be a valid JSON array of strings, numbers, or booleans (e.g., ["a", "b", 123, true]). Please try again.');
-                        await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
+                        player.sendMessage('§cError: Invalid input. Must be a JSON array of primitives. Please try again.');
+                        await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, context);
                         return;
                     }
                 } catch (parseError) {
-                    player.sendMessage(`§cError: Invalid JSON format for array: ${parseError.message}. Please try again.`);
-                    await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
+                    player.sendMessage(`§cError: Invalid JSON format: ${parseError.message}. Please try again.`);
+                    await uiActionFunctions.showEditSingleConfigValueForm(player, dependencies, context);
                     return;
                 }
                 break;
         }
 
-        if (updateSuccess) { // Common success handling for boolean, string, arrayString
+        if (updateSuccess) {
             player.sendMessage(`§aSuccess: Config "${keyName}" updated to: ${JSON.stringify(config[keyName])}`);
             logManager?.addLog({ adminName: player.name, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
-            await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
+            await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit);
         }
-        // Note: 'number' type handles its own success message and navigation due to the re-prompt logic on failure.
-        // if (updateSuccess) { ... } // This block is now conditional per type
     } catch (e) {
         logError(`[UiManager.showEditSingleConfigValueFormImpl] Error: ${e.stack || e}`, e);
         player.sendMessage(playerUtils.getString('common.error.genericForm'));
-        // On error, attempt to return to the list view, as re-showing the edit form might repeat the error.
         await uiActionFunctions.showConfigCategoriesList(player, dependencies, parentContextForEdit);
     }
 }
 
+/**
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {{ configKey: string }} context
+ */
 async function showEditConfigForm(player, dependencies, context) {
     const { config, updateConfigValue } = dependencies;
     const { configKey } = context;
-    const checkConfig = config.checks[configKey.split('.')[1]];
+    const checkKey = configKey.split('.')[1];
+    const checkConfig = config.checks[checkKey];
 
     if (!checkConfig) {
         player.sendMessage(`§cConfiguration for "${configKey}" not found.`);
@@ -586,14 +548,11 @@ async function showEditConfigForm(player, dependencies, context) {
     }
 
     const form = new ModalFormData().title(`Edit ${configKey}`);
-
     form.toggle('Enabled', checkConfig.enabled);
-    // The punishment fields have been deprecated and removed.
-    // All punishment logic is now handled by automodConfig.js
 
     const response = await form.show(player);
 
-    if (response.canceled) {
+    if (response.canceled || !response.formValues) {
         return;
     }
 
@@ -601,10 +560,10 @@ async function showEditConfigForm(player, dependencies, context) {
 
     const newConfig = {
         ...checkConfig,
-        enabled,
+        enabled: !!enabled,
     };
 
-    updateConfigValue(`checks.${configKey.split('.')[1]}`, newConfig);
+    updateConfigValue(`checks.${checkKey}`, newConfig);
 
     player.sendMessage(`§aConfiguration for "${configKey}" updated.`);
     await showPanel(player, 'configEditingCombatPanel', dependencies, {});
@@ -615,9 +574,9 @@ async function showEditConfigForm(player, dependencies, context) {
  * @param {string} titleString
  * @param {string} bodyString
  * @param {string} confirmToggleLabelString
- * @param {Function} onConfirmCallback
+ * @param {() => Promise<void> | void} onConfirmCallback
  * @param {import('../types.js').Dependencies} dependencies
- * @param {object} [bodyParams]
+ * @param {Record<string, string | number | boolean>} [bodyParams]
  * @returns {Promise<boolean>}
  */
 async function _showConfirmationModal(adminPlayer, titleString, bodyString, confirmToggleLabelString, onConfirmCallback, dependencies, bodyParams = {}) {
@@ -634,18 +593,17 @@ async function _showConfirmationModal(adminPlayer, titleString, bodyString, conf
     const modalForm = new ModalFormData().title(titleString).body(processedBody).toggle(confirmToggleLabelString, false);
     try {
         const response = await modalForm.show(adminPlayer);
-        if (response.canceled || !response.formValues?.[0]) { // response.formValues[0] is the 'confirmed' toggle
+        if (response.canceled || !response.formValues?.[0]) {
             adminPlayer?.sendMessage(playerUtils.getString('ui.common.actionCancelled'));
-            playerUtils?.debugLog(`[UiManager._showConfirmationModal] Modal '${titleString}' cancelled by ${playerName}.`, playerName, dependencies);
             return false;
         }
         await onConfirmCallback();
-        playerUtils?.debugLog(`[UiManager._showConfirmationModal] Modal '${titleString}' confirmed by ${playerName}. Action executed.`, playerName, dependencies);
         return true;
     } catch (error) {
-        logError(`[UiManager._showConfirmationModal] Error for ${playerName} (Title: ${titleString}): ${error.stack || error}`, error);
-        playerUtils?.debugLog(`[UiManager._showConfirmationModal] Error for ${playerName} (Title: ${titleString}): ${error.message}`, playerName, dependencies);
-        logManager?.addLog({ actionType: 'errorUiConfirmationModal', context: 'uiManager._showConfirmationModal', adminName: playerName, details: { titleString, errorMessage: error.message, stack: error.stack } }, dependencies);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        logError(`[UiManager._showConfirmationModal] Error for ${playerName} (Title: ${titleString}): ${errorStack || errorMessage}`, error);
+        logManager?.addLog({ actionType: 'errorUiConfirmationModal', context: 'uiManager._showConfirmationModal', adminName: playerName, details: { titleString, errorMessage, stack: errorStack } }, dependencies);
         adminPlayer?.sendMessage(playerUtils.getString('common.error.genericForm'));
         return false;
     }
@@ -657,8 +615,6 @@ async function _showConfirmationModal(adminPlayer, titleString, bodyString, conf
  */
 async function confirmClearChatImpl(player, dependencies) {
     const { playerUtils, commandExecutionMap } = dependencies;
-    const adminPlayerName = player.name;
-    playerUtils?.debugLog(`[UiManager.confirmClearChatImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
     await _showConfirmationModal(player, '§l§cConfirm Clear Chat§r', 'Are you sure you want to clear the global chat for all players?', '§cConfirm Clear Chat', async () => {
         const clearChatCommand = commandExecutionMap?.get('clearchat');
         if (clearChatCommand) {
@@ -668,11 +624,7 @@ async function confirmClearChatImpl(player, dependencies) {
         }
     }, dependencies);
     const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'serverManagementPanel', context: {} };
-    if (callingPanelState.panelId) {
-        await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-    } else {
-        await showPanel(player, 'serverManagementPanel', dependencies, {});
-    }
+    await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
 }
 
 /**
@@ -681,21 +633,17 @@ async function confirmClearChatImpl(player, dependencies) {
  */
 async function confirmLagClearImpl(player, dependencies) {
     const { playerUtils, commandExecutionMap } = dependencies;
-    const adminPlayerName = player.name;
-    playerUtils?.debugLog(`[UiManager.confirmLagClearImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
-    await _showConfirmationModal(player, '§l§cConfirm Lag Clear§r', 'Are you sure you want to clear all ground items and non-player/non-persistent entities? This may cause lag temporarily.', '§cConfirm Lag Clear', async () => {
+    await _showConfirmationModal(player, '§l§cConfirm Lag Clear§r', 'Are you sure you want to clear all ground items and non-player/non-persistent entities?', '§cConfirm Lag Clear', async () => {
         const lagClearCommand = commandExecutionMap?.get('lagclear');
         if (lagClearCommand) {
             await lagClearCommand(player, [], dependencies);
         } else {
             player.sendMessage('§eNo \'lagclear\' command configured. Performing basic item clear as fallback.');
             try {
-                if (!player.isValid()) {
-                    playerUtils.debugLog('[UiManager.confirmLagClearImpl] Player became invalid before command execution.', 'SystemWarn', dependencies);
-                    return;
+                if (player.isValid()) {
+                    await player.runCommandAsync('kill @e[type=item]');
+                    player.sendMessage('§aSuccess: Ground items cleared.');
                 }
-                await player.runCommandAsync('kill @e[type=item]');
-                player.sendMessage('§aSuccess: Ground items cleared.');
             } catch (e) {
                 player.sendMessage('§cError: Basic item clear command failed. See console for details.');
                 logError(`[UiManager.confirmLagClearImpl] Basic item clear failed: ${ e.stack || e}`, e);
@@ -703,11 +651,7 @@ async function confirmLagClearImpl(player, dependencies) {
         }
     }, dependencies);
     const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'serverManagementPanel', context: {} };
-    if (callingPanelState.panelId) {
-        await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-    } else {
-        await showPanel(player, 'serverManagementPanel', dependencies, {});
-    }
+    await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
 }
 
 /**
@@ -717,9 +661,8 @@ async function confirmLagClearImpl(player, dependencies) {
 async function displayActionLogsModalImpl(player, dependencies) {
     const { playerUtils, logManager } = dependencies;
     const adminPlayerName = player.name;
-    playerUtils?.debugLog(`[UiManager.displayActionLogsModalImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
     let logText = '§g--- All Action Logs ---\n§r';
-    const allLogs = logManager.getLogs ? logManager.getLogs() : [];
+    const allLogs = logManager?.getLogs?.() ?? [];
     const maxLogsToShow = 50;
     const logsToShow = allLogs.slice(0, maxLogsToShow);
 
@@ -728,7 +671,7 @@ async function displayActionLogsModalImpl(player, dependencies) {
     } else {
         for (const log of logsToShow) {
             if (!log) continue;
-            const timestamp = new Date(log.timestamp || Date.now()).toLocaleString();
+            const timestamp = new Date(log.timestamp ?? Date.now()).toLocaleString();
             let entry = `§7[${timestamp}] §e${log.actor || 'System'} §f${log.actionType || 'unknownAction'}`;
             if (log.targetName) {
                 entry += ` §b-> ${log.targetName}`;
@@ -737,13 +680,14 @@ async function displayActionLogsModalImpl(player, dependencies) {
             if (log.details) {
                 if (typeof log.details === 'string') {
                     detailsString = log.details;
-                } else if (typeof log.details === 'object') {
+                } else if (typeof log.details === 'object' && log.details !== null) {
                     const detailParts = [];
-                    if (log.details.reason) detailParts.push(`Reason: ${log.details.reason}`);
-                    if (log.details.durationDisplay) detailParts.push(`Duration: ${log.details.durationDisplay}`);
-                    for (const key in log.details) {
-                        if (key !== 'reason' && key !== 'durationDisplay' && !['rawErrorStack', 'stack', 'errorCode', 'message'].includes(key) && Object.prototype.hasOwnProperty.call(log.details, key)) {
-                            detailParts.push(`${key}: ${log.details[key]}`);
+                    const detailsObj = log.details;
+                    if ('reason' in detailsObj) detailParts.push(`Reason: ${detailsObj.reason}`);
+                    if ('durationDisplay' in detailsObj) detailParts.push(`Duration: ${detailsObj.durationDisplay}`);
+                    for (const key in detailsObj) {
+                        if (key !== 'reason' && key !== 'durationDisplay' && !['rawErrorStack', 'stack', 'errorCode', 'message'].includes(key) && Object.prototype.hasOwnProperty.call(detailsObj, key)) {
+                            detailParts.push(`${key}: ${detailsObj[key]}`);
                         }
                     }
                     detailsString = detailParts.join(', ');
@@ -755,25 +699,18 @@ async function displayActionLogsModalImpl(player, dependencies) {
             logText += `${entry}\n`;
         }
         if (allLogs.length > maxLogsToShow) {
-            logText += `\n§o(Showing latest ${maxLogsToShow} of ${allLogs.length} entries. More may exist.)§r`;
+            logText += `\n§o(Showing latest ${maxLogsToShow} of ${allLogs.length} entries.)§r`;
         }
     }
-    const modal = new ModalFormData().title('§l§3Action Logs (All)§r').content(logText.trim());
-    modal.button1(playerUtils.getString('common.button.ok'));
+    const modal = new ModalFormData().title('§l§3Action Logs (All)§r').body(logText.trim()).button1(playerUtils.getString('common.button.ok'));
     try {
         await modal.show(player);
     } catch (error) {
-        logError(`[UiManager.displayActionLogsModalImpl] Error for ${adminPlayerName}: ${error.stack || error}`, error);
-        playerUtils?.debugLog(`[UiManager.displayActionLogsModalImpl] Error: ${error.message}`, adminPlayerName, dependencies);
-        logManager?.addLog({ actionType: 'errorUiActionLogsModal', context: 'uiManager.displayActionLogsModalImpl', adminName: adminPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
+        logError(`[UiManager.displayActionLogsModalImpl] Error: ${error.stack || error}`, error);
         player.sendMessage(playerUtils.getString('common.error.genericForm'));
     } finally {
         const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'serverManagementPanel', context: {} };
-        if (callingPanelState.panelId) {
-            await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-        } else {
-            await showPanel(player, 'serverManagementPanel', dependencies, {});
-        }
+        await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
     }
 }
 
@@ -785,52 +722,36 @@ async function displayActionLogsModalImpl(player, dependencies) {
 async function showModLogFilterModalImpl(player, dependencies, context) {
     const { playerUtils, logManager, config } = dependencies;
     const adminPlayerName = player.name;
-    playerUtils?.debugLog(`[UiManager.showModLogFilterModalImpl] Requested by ${adminPlayerName}, current context: ${JSON.stringify(context)}`, adminPlayerName, dependencies);
-    const modal = new ModalFormData().title(playerUtils.getString('ui.modLogSelect.filterModal.title')).textField(playerUtils.getString('ui.modLogSelect.filterModal.textField.label'), playerUtils.getString('ui.modLogSelect.filterModal.textField.placeholder'), context.playerNameFilter || '');
+    const modal = new ModalFormData().title(playerUtils.getString('ui.modLogSelect.filterModal.title')).textField(playerUtils.getString('ui.modLogSelect.filterModal.textField.label'), playerUtils.getString('ui.modLogSelect.filterModal.textField.placeholder'), String(context.playerNameFilter || ''));
     try {
         const response = await modal.show(player);
-        if (response.canceled) {
+        if (response.canceled || !response.formValues) {
             const callingPanelState = getCurrentTopOfNavStack(player.id);
-            if (callingPanelState && callingPanelState.panelId) {
-                await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-            } else {
-                await showPanel(player, 'modLogSelectionPanel', dependencies, {});
-            }
+            await showPanel(player, callingPanelState?.panelId ?? 'modLogSelectionPanel', dependencies, callingPanelState?.context ?? {});
             return;
         }
         const [playerNameInput] = response.formValues;
-        const newPlayerNameFilter = playerNameInput?.trim() || null;
+        const newPlayerNameFilter = typeof playerNameInput === 'string' ? playerNameInput.trim() : null;
 
         if (newPlayerNameFilter) {
             player.sendMessage(playerUtils.getString('ui.modLogSelect.filterModal.filterSet', { filterName: newPlayerNameFilter }));
-        } else if (playerNameInput && !newPlayerNameFilter) { // Input was whitespace
-            player.sendMessage(playerUtils.getString('ui.modLogSelect.filterModal.filterBlank'));
         } else {
             player.sendMessage(playerUtils.getString('ui.modLogSelect.filterModal.filterCleared'));
         }
 
-
         const logsPerPage = config?.ui?.logsPerPage ?? 5;
-        const allLogs = logManager.getLogs ? logManager.getLogs(context.logTypeFilter || [], newPlayerNameFilter) : [];
+        const allLogs = logManager?.getLogs?.(context.logTypeFilter || [], newPlayerNameFilter) ?? [];
         const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
 
         const nextContext = { ...context, playerNameFilter: newPlayerNameFilter, currentPage: 1, totalPages };
-        // When navigating from filter modal, always push the current state (modLogSelectionPanel)
         pushToPlayerNavStack(player.id, 'modLogSelectionPanel', context);
         await showPanel(player, 'logViewerPanel', dependencies, nextContext);
 
     } catch (error) {
         logError(`[UiManager.showModLogFilterModalImpl] Error for ${adminPlayerName}: ${error.stack || error}`, error);
-        playerUtils?.debugLog(`[UiManager.showModLogFilterModalImpl] Error: ${error.message}`, adminPlayerName, dependencies);
-        logManager?.addLog({ actionType: 'errorUiModLogFilterModal', context: 'uiManager.showModLogFilterModalImpl', adminName: adminPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
         player.sendMessage(playerUtils.getString('common.error.genericForm'));
-
         const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'modLogSelectionPanel', context: {} };
-        if (callingPanelState.panelId) {
-            await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-        } else {
-            await showPanel(player, 'modLogSelectionPanel', dependencies, {});
-        }
+        await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
     }
 }
 
@@ -842,22 +763,18 @@ async function showModLogFilterModalImpl(player, dependencies, context) {
 async function displaySpecificLogsPageImpl(player, dependencies, context) {
     const { playerUtils, logManager, config } = dependencies;
     const adminPlayerName = player.name;
-    playerUtils.debugLog(`[UiManager.displaySpecificLogsPageImpl] For ${adminPlayerName}, Context: ${JSON.stringify(context)}`, adminPlayerName, dependencies);
 
     const {
         logTypeFilter = [],
-        logTypeName = playerUtils.getString('ui.logViewer.title.default', { ประเภท: 'Selected' }), // Default title part
+        logTypeName = 'Selected Logs',
         playerNameFilter = null,
         currentPage = 1,
-        // totalPages is expected to be in context, calculated by showPanel or prepareXLogViewer
     } = context;
 
-
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
-    const filteredLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, playerNameFilter) : [];
+    const filteredLogs = logManager?.getLogs?.(logTypeFilter, playerNameFilter) ?? [];
     const totalLogs = filteredLogs.length;
-    // totalPages should ideally be passed in context, but recalculate if missing for robustness
-    const effectiveTotalPages = (context.totalPages ?? Math.ceil(totalLogs / logsPerPage)) || 1;
+    const effectiveTotalPages = context.totalPages ?? Math.ceil(totalLogs / logsPerPage) || 1;
 
     let title = '';
     if (playerNameFilter) {
@@ -867,57 +784,39 @@ async function displaySpecificLogsPageImpl(player, dependencies, context) {
     }
 
     let messageBody = '';
-
     if (totalLogs === 0) {
         messageBody = playerUtils.getString('ui.logViewer.noLogs');
     } else {
         const startIndex = (currentPage - 1) * logsPerPage;
         const endIndex = Math.min(startIndex + logsPerPage, totalLogs);
 
-        if (currentPage < 1 || currentPage > effectiveTotalPages && effectiveTotalPages > 0) { // Check against effectiveTotalPages
-            messageBody = playerUtils.getString('ui.logViewer.invalidPage', { maxPages: effectiveTotalPages });
-        } else {
-            for (let i = startIndex; i < endIndex; i++) {
-                if (i >= totalLogs) {
-                    break;
-                }
-                const log = filteredLogs[i]; if (!log) {
-                    continue;
-                }
+        for (let i = startIndex; i < endIndex; i++) {
+            const log = filteredLogs[i];
+            if (!log) continue;
 
-                const timestamp = new Date(log.timestamp || Date.now()).toLocaleString();
-                const entry = playerUtils.getString('ui.actionLogs.logEntry', {
-                    timestamp,
-                    actor: log.actor || playerUtils.getString('common.value.unknown'),
-                    actionType: log.actionType || playerUtils.getString('common.value.unknown'),
-                    target: log.targetName ? ` -> ${log.targetName}` : '',
-                    duration: log.details?.durationDisplay ? playerUtils.getString('ui.actionLogs.logEntry.duration', { duration: log.details.durationDisplay }) : '',
-                    reason: log.details?.reason ? playerUtils.getString('ui.actionLogs.logEntry.reason', { reason: log.details.reason }) : '',
-                    details: '', // Simplified for this view, main details are actor/action/target/reason/duration
-                });
-                messageBody += `${entry }\n`;
-            }
-            messageBody += `\n${playerUtils.getString('ui.logViewer.footer.pageInfo', { currentPage, totalPages: effectiveTotalPages, totalEntries: totalLogs })}`;
+            const timestamp = new Date(log.timestamp ?? Date.now()).toLocaleString();
+            const entry = playerUtils.getString('ui.actionLogs.logEntry', {
+                timestamp,
+                actor: log.actor || 'Unknown',
+                actionType: log.actionType || 'unknown',
+                target: log.targetName ? ` -> ${log.targetName}` : '',
+                duration: log.details?.durationDisplay ? playerUtils.getString('ui.actionLogs.logEntry.duration', { duration: log.details.durationDisplay }) : '',
+                reason: log.details?.reason ? playerUtils.getString('ui.actionLogs.logEntry.reason', { reason: log.details.reason }) : '',
+                details: '',
+            });
+            messageBody += `${entry}\n`;
         }
+        messageBody += `\n${playerUtils.getString('ui.logViewer.footer.pageInfo', { currentPage, totalPages: effectiveTotalPages, totalEntries: totalLogs })}`;
     }
 
-    const modal = new ModalFormData().title(title).content(messageBody.trim());
-    modal.button1(playerUtils.getString('common.button.ok'));
+    const modal = new ModalFormData().title(title).body(messageBody.trim()).button1(playerUtils.getString('common.button.ok'));
 
     try {
         await modal.show(player);
     } catch (error) {
         player.sendMessage(playerUtils.getString('common.error.genericForm'));
-        logError(`[UiManager.displaySpecificLogsPageImpl] Error showing modal: ${error.stack || error}`, error);
-        logManager?.addLog({
-            actionType: 'errorUiDisplaySpecificLogs',
-            context: 'uiManager.displaySpecificLogsPageImpl',
-            adminName: adminPlayerName,
-            details: { errorMessage: error.message, stack: error.stack, currentContext: context },
-        }, dependencies);
+        logError(`[UiManager.displaySpecificLogsPageImpl] Error: ${error.stack || error}`, error);
     } finally {
-        // Always return to the logViewerPanel, passing the most up-to-date context
-        // which includes currentPage and the externally calculated totalPages.
         await showPanel(player, 'logViewerPanel', dependencies, { ...context, totalPages: effectiveTotalPages });
     }
 }
@@ -932,42 +831,25 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
     const { playerUtils, logManager, rankManager, config } = dependencies;
     const viewingPlayerName = player.name;
 
-    playerUtils?.debugLog(`[UiManager.showPanel] Player: ${viewingPlayerName}, PanelID: ${panelId}, Context: ${JSON.stringify(currentContext)}`, viewingPlayerName, dependencies);
-
     const effectiveContext = { ...currentContext };
 
-    // Special context handling for logViewerPanel (pagination)
     if (panelId === 'logViewerPanel') {
-
         const logsPerPage = config?.ui?.logsPerPage ?? 5;
-        const { logTypeFilter = [], playerNameFilter = null } = effectiveContext; // Filters from context
-        const allLogs = logManager?.getLogs ? logManager.getLogs(logTypeFilter, playerNameFilter) : [];
-
+        const { logTypeFilter = [], playerNameFilter = null } = effectiveContext;
+        const allLogs = logManager?.getLogs?.(logTypeFilter, playerNameFilter) ?? [];
         effectiveContext.totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
-
-        let currentPage = effectiveContext.currentPage ?? 1; // Use current page from context or default to 1
-        currentPage = Math.max(1, currentPage); // Ensure currentPage is at least 1
-        currentPage = Math.min(currentPage, effectiveContext.totalPages); // Ensure currentPage does not exceed totalPages
-        effectiveContext.currentPage = currentPage;
+        effectiveContext.currentPage = Math.max(1, Math.min(effectiveContext.currentPage ?? 1, effectiveContext.totalPages));
     }
 
     const panelDefinition = panelDefinitions[panelId];
 
     if (!panelDefinition) {
         logError(`[UiManager.showPanel] Error: Panel definition for panelId "${panelId}" not found.`);
-        logManager?.addLog({
-            actionType: 'errorUiMissingPanelDef',
-            context: 'uiManager.showPanel',
-            adminName: viewingPlayerName,
-            details: { panelId, context: effectiveContext, errorMessage: `Panel definition for "${panelId}" not found.` },
-        }, dependencies);
-
         if (panelId !== 'errorDisplayPanel' && panelDefinitions.errorDisplayPanel) {
             await showPanel(player, 'errorDisplayPanel', dependencies, {
-                errorMessage: `Panel definition for "${panelId}" is missing. Please report this.`,
+                errorMessage: `Panel "${panelId}" is missing.`,
                 originalPanelId: panelId,
                 originalContext: effectiveContext,
-                previousPanelIdOnError: null,
             });
         } else {
             player.sendMessage(playerUtils.getString('common.error.criticalUiError'));
@@ -977,82 +859,32 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
     }
 
     let panelTitle = panelDefinition.title;
-    if (panelId === 'logViewerPanel') {
-        panelTitle = panelTitle.replace(/{currentPage}/g, String(effectiveContext.currentPage ?? 1));
-        panelTitle = panelTitle.replace(/{totalPages}/g, String(effectiveContext.totalPages ?? 1));
-    }
     for (const key in effectiveContext) {
-        if (Object.prototype.hasOwnProperty.call(effectiveContext, key) && !['currentPage', 'totalPages'].includes(key)) {
-            const replacementValue = String(effectiveContext[key]);
-            panelTitle = panelTitle.replace(new RegExp(`{${key}}`, 'g'), replacementValue);
+        if (Object.prototype.hasOwnProperty.call(effectiveContext, key)) {
+            panelTitle = panelTitle.replace(new RegExp(`{${key}}`, 'g'), String(effectiveContext[key]));
         }
     }
 
     const form = new ActionFormData().title(panelTitle);
     const userPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
 
-    let allPanelItems = [...(panelDefinition.items || [])]; // Start with static items
+    let allPanelItems = [...(panelDefinition.items || [])];
 
-    // Check for and execute dynamic item generator
     if (panelDefinition.dynamicItemGeneratorKey) {
         const generatorFunction = uiDynamicItemGenerators[panelDefinition.dynamicItemGeneratorKey];
-        if (generatorFunction && typeof generatorFunction === 'function') {
+        if (generatorFunction) {
             try {
                 const dynamicItems = generatorFunction(player, dependencies, effectiveContext);
-                if (Array.isArray(dynamicItems)) {
-                    allPanelItems = allPanelItems.concat(dynamicItems);
-                } else {
-                    console.warn(`[UiManager.showPanel] Dynamic item generator "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}" did not return an array.`);
-                    logManager?.addLog({
-                        actionType: 'warningUiDynamicGeneratorInvalidReturn',
-                        context: 'uiManager.showPanel',
-                        adminName: viewingPlayerName,
-                        details: { panelId, generatorKey: panelDefinition.dynamicItemGeneratorKey, panelTitle },
-                    }, dependencies);
-                    // Treat as a critical error for this panel's display
-                    if (panelId !== 'errorDisplayPanel' && panelDefinitions.errorDisplayPanel) {
-                        await showPanel(player, 'errorDisplayPanel', dependencies, {
-                            errorMessage: `Panel "${panelTitle}" (${panelId}) failed to generate content: generator did not return an array.`,
-                            originalPanelId: panelId, originalContext: effectiveContext,
-                            previousPanelIdOnError: getCurrentTopOfNavStack(player.id)?.panelId,
-                            previousContextOnError: getCurrentTopOfNavStack(player.id)?.context,
-                        });
-                        return; // Stop further processing of this broken panel
-                    }
-                }
+                allPanelItems.push(...dynamicItems);
             } catch (genError) {
-                logError(`[UiManager.showPanel] Error in dynamic item generator "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}": ${genError.stack || genError}`, genError);
-                logManager?.addLog({
-                    actionType: 'errorUiDynamicGenerator',
-                    context: 'uiManager.showPanel',
-                    adminName: viewingPlayerName,
-                    details: { panelId, generatorKey: panelDefinition.dynamicItemGeneratorKey, errorMessage: genError.message, stack: genError.stack },
-                }, dependencies);
-                if (panelId !== 'errorDisplayPanel' && panelDefinitions.errorDisplayPanel) {
+                logError(`[UiManager.showPanel] Error in generator "${panelDefinition.dynamicItemGeneratorKey}": ${genError.stack || genError}`, genError);
+                if (panelId !== 'errorDisplayPanel') {
                     await showPanel(player, 'errorDisplayPanel', dependencies, {
-                        errorMessage: `Panel "${panelTitle}" (${panelId}) failed to generate content due to an internal error in its generator: ${genError.message}.`,
-                        originalPanelId: panelId, originalContext: effectiveContext,
-                        previousPanelIdOnError: getCurrentTopOfNavStack(player.id)?.panelId,
-                        previousContextOnError: getCurrentTopOfNavStack(player.id)?.context,
+                        errorMessage: `Panel "${panelTitle}" failed to generate content.`,
+                        originalPanelId: panelId,
+                        originalContext: effectiveContext,
                     });
-                    return;
                 }
-            }
-        } else { // Generator function itself not found
-            console.warn(`[UiManager.showPanel] Dynamic item generator key "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}" not found in uiDynamicItemGenerators.`);
-            logManager?.addLog({
-                actionType: 'warningUiDynamicGeneratorNotFound', // Could be upgraded to error type
-                context: 'uiManager.showPanel',
-                adminName: viewingPlayerName,
-                details: { panelId, generatorKey: panelDefinition.dynamicItemGeneratorKey, panelTitle },
-            }, dependencies);
-            if (panelId !== 'errorDisplayPanel' && panelDefinitions.errorDisplayPanel) {
-                await showPanel(player, 'errorDisplayPanel', dependencies, {
-                    errorMessage: `Panel "${panelTitle}" (${panelId}) is misconfigured: content generator "${panelDefinition.dynamicItemGeneratorKey}" not found.`,
-                    originalPanelId: panelId, originalContext: effectiveContext,
-                    previousPanelIdOnError: getCurrentTopOfNavStack(player.id)?.panelId,
-                    previousContextOnError: getCurrentTopOfNavStack(player.id)?.context,
-                });
                 return;
             }
         }
@@ -1060,86 +892,51 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
 
     const permittedItems = allPanelItems
         .filter(item => {
-            if (!item) {
-                return false;
-            } // Handle potential undefined items if generator had issues
+            if (!item) return false;
             if (panelId === 'logViewerPanel') {
-                if (item.id === 'prevLogPage' && effectiveContext.currentPage <= 1) {
-                    return false;
-                }
-                if (item.id === 'nextLogPage' && effectiveContext.currentPage >= effectiveContext.totalPages) {
-                    return false;
-                }
+                if (item.id === 'prevLogPage' && effectiveContext.currentPage <= 1) return false;
+                if (item.id === 'nextLogPage' && effectiveContext.currentPage >= effectiveContext.totalPages) return false;
             }
             return userPermLevel <= item.requiredPermLevel;
         })
-        .sort((a, b) => a.sortId - b.sortId);
+        .sort((a, b) => (a.sortId ?? 999) - (b.sortId ?? 999));
 
     permittedItems.forEach(item => {
         let effectiveText = item.text;
         let effectiveIcon = item.icon;
 
-        // Process textVariants
-        if (item.textVariants && Array.isArray(item.textVariants)) {
-            for (const variant of item.textVariants) {
-                if (variant && effectiveContext[variant.contextKey] === variant.contextValue) {
-                    effectiveText = variant.text;
-                    break; // First match wins
-                }
-            }
+        if (item.textVariants) {
+            const variant = item.textVariants.find(v => effectiveContext[v.contextKey] === v.contextValue);
+            if (variant) effectiveText = variant.text;
         }
 
-        // Process iconVariants
-        if (item.iconVariants && Array.isArray(item.iconVariants)) {
-            for (const variant of item.iconVariants) {
-                if (variant && effectiveContext[variant.contextKey] === variant.contextValue) {
-                    effectiveIcon = variant.icon;
-                    break; // First match wins
-                }
-            }
+        if (item.iconVariants) {
+            const variant = item.iconVariants.find(v => effectiveContext[v.contextKey] === v.contextValue);
+            if (variant) effectiveIcon = variant.icon;
         }
 
-        // Interpolate placeholders in the chosen text
-        if (panelId === 'logViewerPanel') {
-            effectiveText = effectiveText.replace(/{currentPage}/g, String(effectiveContext.currentPage ?? 1));
-            effectiveText = effectiveText.replace(/{totalPages}/g, String(effectiveContext.totalPages ?? 1));
-        }
         for (const key in effectiveContext) {
-            if (Object.prototype.hasOwnProperty.call(effectiveContext, key) && !['currentPage', 'totalPages'].includes(key)) {
-                const replacementValue = String(effectiveContext[key]);
-                if (typeof effectiveText === 'string') { // Ensure effectiveText is a string before replacing
-                    effectiveText = effectiveText.replace(new RegExp(`{${key}}`, 'g'), replacementValue);
-                }
+            if (Object.prototype.hasOwnProperty.call(effectiveContext, key)) {
+                effectiveText = effectiveText.replace(new RegExp(`{${key}}`, 'g'), String(effectiveContext[key]));
             }
         }
         form.button(effectiveText, effectiveIcon);
     });
 
-    let atRootLevel = isNavStackAtRoot(player.id) || !panelDefinition.parentPanelId;
-    if (panelId === 'errorDisplayPanel') {
-        const stack = playerNavigationStacks.get(player.id) || [];
-        atRootLevel = stack.length <= 1;
-    }
+    const atRootLevel = isNavStackAtRoot(player.id) || !panelDefinition.parentPanelId;
     const backExitButtonText = atRootLevel ? playerUtils.getString('common.button.close') : playerUtils.getString('common.button.back');
     const backExitButtonIcon = atRootLevel ? 'textures/ui/cancel' : 'textures/ui/undo';
-    // Condition for adding a back/exit button.
-    // It's added if it's an error panel, or if there are items to show, or if the panel is defined to have no static items (implying it's dynamic or just a message panel).
-    const shouldAddBackExitButton = (panelId === 'errorDisplayPanel' || permittedItems.length > 0 || panelDefinition.items.length === 0);
-    if (shouldAddBackExitButton) {
+
+    if (panelId === 'errorDisplayPanel' || permittedItems.length > 0 || !panelDefinition.items?.length) {
         form.button(backExitButtonText, backExitButtonIcon);
     }
     const backExitButtonIndex = permittedItems.length;
 
     if (panelId === 'errorDisplayPanel' && effectiveContext.errorMessage) {
         form.body(String(effectiveContext.errorMessage));
-    } else if (permittedItems.length === 0 && panelDefinition.items.length > 0) {
+    } else if (permittedItems.length === 0 && panelDefinition.items?.length > 0) {
         form.body(playerUtils.getString('ui.common.noPermissionForPanelItems'));
-    } else if (panelId !== 'logViewerPanel' && permittedItems.length === 0) {
-        // If there are no permitted items (other than potential back/exit)
-        // and it's not a log viewer panel (which has its own empty state handling),
-        // then display "No options available".
-        // This assumes that if permittedItems is empty, no meaningful actions can be taken from this panel
-        // beyond using the "Back" or "Close" button (which is added separately).
+    } else if (permittedItems.length === 0) {
         form.body(playerUtils.getString('ui.common.noOptionsAvailable'));
     }
 
@@ -1148,96 +945,59 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
         const response = await form.show(player);
 
         if (response.canceled) {
-            playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId} cancelled by ${viewingPlayerName}. Reason: ${response.cancelationReason}`, viewingPlayerName, dependencies);
-            if (atRootLevel) {
-                clearPlayerNavStack(player.id);
-            }
+            if (atRootLevel) clearPlayerNavStack(player.id);
             return;
         }
-        const selection = response.selection;
-        if (typeof selection === 'undefined') {
-            return;
-        }
+        const { selection } = response;
+        if (selection === undefined) return;
 
         if (selection < permittedItems.length) {
-            const selectedItemConfig = permittedItems[selection];
-            playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId}, Player ${viewingPlayerName} selected item: ${selectedItemConfig.id}`, viewingPlayerName, dependencies);
-            if (selectedItemConfig.actionType === 'openPanel') {
-                let baseForNextPanel = {};
-                if (selectedItemConfig.actionContextVars && selectedItemConfig.actionContextVars.length > 0) {
-                    // If actionContextVars are specified, only pass those specific variables from effectiveContext.
-                    selectedItemConfig.actionContextVars.forEach(varName => {
-                        if (Object.prototype.hasOwnProperty.call(effectiveContext, varName)) {
-                            baseForNextPanel[varName] = effectiveContext[varName];
-                        }
+            const selectedItem = permittedItems[selection];
+            if (selectedItem.actionType === 'openPanel' && selectedItem.actionValue) {
+                let baseContext = {};
+                if (selectedItem.actionContextVars?.length) {
+                    selectedItem.actionContextVars.forEach(varName => {
+                        if (varName in effectiveContext) baseContext[varName] = effectiveContext[varName];
                     });
                 } else {
-                    // If no actionContextVars, pass all of effectiveContext as the base.
-                    baseForNextPanel = { ...effectiveContext };
+                    baseContext = { ...effectiveContext };
                 }
-
-                const nextContext = { ...baseForNextPanel, ...(selectedItemConfig.initialContext || {}) };
-                // initialContext properties will override any same-named properties from baseForNextPanel.
-                // For example, if baseForNextPanel has { A:1, B:2 } and initialContext has { B:3, C:4 },
-                // nextContext will be { A:1, B:3, C:4 }.
-
+                const nextContext = { ...baseContext, ...selectedItem.initialContext };
                 pushToPlayerNavStack(player.id, panelId, effectiveContext);
-                await showPanel(player, selectedItemConfig.actionValue, dependencies, nextContext);
-            } else if (selectedItemConfig.actionType === 'functionCall') {
-                const funcToCall = uiActionFunctions[selectedItemConfig.actionValue];
-                if (funcToCall && typeof funcToCall === 'function') {
-                    const functionContext = { ...effectiveContext, ...(selectedItemConfig.initialContext || {}) };
+                await showPanel(player, selectedItem.actionValue, dependencies, nextContext);
+            } else if (selectedItem.actionType === 'functionCall' && selectedItem.actionValue) {
+                const funcToCall = uiActionFunctions[selectedItem.actionValue];
+                if (funcToCall) {
+                    const functionContext = { ...effectiveContext, ...selectedItem.initialContext };
                     await funcToCall(player, dependencies, functionContext);
                 } else {
-                    playerUtils?.debugLog(`[UiManager.showPanel] Misconfigured functionCall for item ${selectedItemConfig.id} in panel ${panelId}. Function "${selectedItemConfig.actionValue}" not found.`, viewingPlayerName, dependencies);
                     player.sendMessage(playerUtils.getString('common.error.genericForm'));
                     await showPanel(player, panelId, dependencies, effectiveContext);
                 }
-            } else {
-                playerUtils?.debugLog(`[UiManager.showPanel] Unknown actionType "${selectedItemConfig.actionType}" for item ${selectedItemConfig.id}.`, viewingPlayerName, dependencies);
-                await showPanel(player, panelId, dependencies, effectiveContext);
             }
         } else if (selection === backExitButtonIndex) {
             if (atRootLevel) {
-                playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId} (top-level/error) exited by ${viewingPlayerName}.`, viewingPlayerName, dependencies);
                 clearPlayerNavStack(player.id);
             } else {
-                if (panelId === 'errorDisplayPanel' && effectiveContext.previousPanelIdOnError) {
-                    playerUtils?.debugLog(`[UiManager.showPanel] ErrorPanel Back to: ${effectiveContext.previousPanelIdOnError}.`, viewingPlayerName, dependencies);
-                    await showPanel(player, effectiveContext.previousPanelIdOnError, dependencies, effectiveContext.previousContextOnError || {});
+                const previousPanelState = popFromPlayerNavStack(player.id);
+                if (previousPanelState) {
+                    await showPanel(player, previousPanelState.panelId, dependencies, previousPanelState.context);
                 } else {
-                    const previousPanelState = popFromPlayerNavStack(player.id);
-                    if (previousPanelState) {
-                        playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId}, Back to ${previousPanelState.panelId}.`, viewingPlayerName, dependencies);
-                        await showPanel(player, previousPanelState.panelId, dependencies, previousPanelState.context);
-                    } else {
-                        playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId}, Back, but nav stack empty. Clearing.`, viewingPlayerName, dependencies);
-                        clearPlayerNavStack(player.id);
-                    }
+                    clearPlayerNavStack(player.id);
                 }
             }
-        } else {
-            playerUtils?.debugLog(`[UiManager.showPanel] Invalid selection ${selection} in panel ${panelId}.`, viewingPlayerName, dependencies);
         }
     } catch (error) {
-        logError(`[UiManager.showPanel] Error processing panel ${panelId} for ${viewingPlayerName}: ${error.stack || error}`, error);
-        playerUtils?.debugLog(`[UiManager.showPanel] Error for ${viewingPlayerName}, Panel ${panelId}: ${error.message}`, viewingPlayerName, dependencies);
-        logManager?.addLog({ actionType: 'errorUiGenericPanelShow', context: `uiManager.showPanel.${panelId}`, adminName: viewingPlayerName, details: { panelId, context: effectiveContext, errorMessage: error.message, stack: error.stack } }, dependencies);
-        const navStack = playerNavigationStacks.get(player.id) || [];
-        let previousValidPanelState = null;
-        if (navStack.length > 0) {
-            const topOfStack = navStack[navStack.length - 1];
-            if (topOfStack.panelId === panelId) {
-                popFromPlayerNavStack(player.id);
-                if (navStack.length > 0) {
-                    previousValidPanelState = navStack[navStack.length - 1];
-                }
-            } else {
-                previousValidPanelState = topOfStack;
-            }
-        }
-        if (panelId !== 'errorDisplayPanel' && panelDefinitions.errorDisplayPanel) {
-            await showPanel(player, 'errorDisplayPanel', dependencies, { errorMessage: `An error occurred while processing panel "${panelId}".\nDetails: ${error.message}`, originalPanelId: panelId, originalContext: effectiveContext, previousPanelIdOnError: previousValidPanelState ? previousValidPanelState.panelId : null, previousContextOnError: previousValidPanelState ? previousValidPanelState.context : {} });
+        logError(`[UiManager.showPanel] Error processing panel ${panelId}: ${error.stack || error}`, error);
+        if (panelId !== 'errorDisplayPanel') {
+            const previousState = getCurrentTopOfNavStack(player.id);
+            await showPanel(player, 'errorDisplayPanel', dependencies, {
+                errorMessage: `Error in panel "${panelId}": ${error.message}`,
+                originalPanelId: panelId,
+                originalContext: effectiveContext,
+                previousPanelIdOnError: previousState?.panelId,
+                previousContextOnError: previousState?.context,
+            });
         } else {
             player.sendMessage(playerUtils.getString('common.error.criticalUiError'));
             clearPlayerNavStack(player.id);
@@ -1254,13 +1014,13 @@ async function prepareBanUnbanLogsViewer(player, dependencies, context) {
     const { logManager, config, playerUtils } = dependencies;
 
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
-    const logTypeFilter = ['playerBanned', 'playerUnbanned']; // Corrected actionTypes
+    const logTypeFilter = ['playerBanned', 'playerUnbanned'];
     const logTypeName = playerUtils.getString('ui.logViewer.title.banUnban');
-    const allLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, null) : []; // No player name filter initially
+    const allLogs = logManager?.getLogs?.(logTypeFilter, null) ?? [];
     const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
 
     const newContext = {
-        ...context, // Preserve any incoming context if needed, though usually not for fresh log views
+        ...context,
         logTypeFilter,
         logTypeName,
         playerNameFilter: null,
@@ -1280,9 +1040,9 @@ async function prepareMuteUnmuteLogsViewer(player, dependencies, context) {
     const { logManager, config, playerUtils } = dependencies;
 
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
-    const logTypeFilter = ['playerMuted', 'playerUnmuted']; // Corrected actionTypes
+    const logTypeFilter = ['playerMuted', 'playerUnmuted'];
     const logTypeName = playerUtils.getString('ui.logViewer.title.muteUnmute');
-    const allLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, null) : []; // No player name filter initially
+    const allLogs = logManager?.getLogs?.(logTypeFilter, null) ?? [];
     const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
 
     const newContext = {
@@ -1300,170 +1060,118 @@ async function prepareMuteUnmuteLogsViewer(player, dependencies, context) {
 
 const uiActionFunctions = {
     /**
- * Displays a modal with the player's stats.
-     * @param {import('@minecraft/server').Player} player The player viewing their stats.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The context from the calling panel.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showMyStatsPageContent: async (player, dependencies, context) => {
         const { playerUtils, playerDataManager } = dependencies;
-        playerUtils.debugLog(`Action: showMyStatsPageContent for ${player.name}`, player.name, dependencies);
         const pData = playerDataManager.getPlayerData(player.id);
         const totalFlags = pData?.flags?.totalFlags ?? 0;
-        let bodyText = totalFlags === 0 ? 'You currently have no flags!' : `You have ${totalFlags} flags.`;
         const location = player.location;
         const dimensionName = playerUtils.formatDimensionName(player.dimension.id);
-        bodyText += `\nLocation: X: ${Math.floor(location.x)}, Y: ${Math.floor(location.y)}, Z: ${Math.floor(location.z)} in ${dimensionName}`;
-        const modal = new ModalFormData().title('§l§bYour Stats§r').content(bodyText);
-        modal.button1(playerUtils.getString('common.button.ok'));
+        const bodyText = `You have ${totalFlags} flags.\nLocation: X:${Math.floor(location.x)}, Y:${Math.floor(location.y)}, Z:${Math.floor(location.z)} in ${dimensionName}`;
+        const modal = new ModalFormData().title('§l§bYour Stats§r').body(bodyText).button1(playerUtils.getString('common.button.ok'));
         try {
             await modal.show(player);
         } catch (e) {
-            playerUtils.debugLog(`Error showing MyStats modal: ${e}`, player.nameTag, dependencies);
-            player.sendMessage(playerUtils.getString('common.error.genericForm') || '§cError: Could not display stats.');
+            player.sendMessage(playerUtils.getString('common.error.genericForm'));
         } finally {
             await showPanel(player, 'myStatsPanel', dependencies, context);
         }
     },
     /**
-     * Displays a modal with the server rules.
- * @param {import('@minecraft/server').Player} player The player viewing the rules.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The context from the calling panel.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showServerRulesPageContent: async (player, dependencies, context) => {
         const { playerUtils, config } = dependencies;
-        playerUtils.debugLog(`Action: showServerRulesPageContent for ${player.name}`, player.name, dependencies);
         const serverRules = config?.serverRules ?? [];
-        const bodyText = serverRules.length === 0 ? 'No server rules have been defined by the admin yet.' : serverRules.join('\n');
-        const modal = new ModalFormData().title('§l§eServer Rules§r').content(bodyText);
-        modal.button1(playerUtils.getString('common.button.ok'));
+        const bodyText = serverRules.length > 0 ? serverRules.join('\n') : 'No server rules defined.';
+        const modal = new ModalFormData().title('§l§eServer Rules§r').body(bodyText).button1(playerUtils.getString('common.button.ok'));
         try {
             await modal.show(player);
         } catch (e) {
-            playerUtils.debugLog(`Error showing ServerRules modal: ${e}`, player.nameTag, dependencies);
-            player.sendMessage(playerUtils.getString('common.error.genericForm') || '§cError: Could not display server rules.');
+            player.sendMessage(playerUtils.getString('common.error.genericForm'));
         } finally {
-            // Return to the panel that called this function.
             await showPanel(player, 'serverRulesPanel', dependencies, context);
         }
     },
+    /**
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     */
     showHelpfulLinksPageContent: async (player, dependencies) => {
         const { playerUtils } = dependencies;
-        playerUtils.debugLog(`Action: showHelpfulLinksPageContent for ${player.name}`, player.name, dependencies);
-        playerUtils.debugLog(`DEPRECATED Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
-        player.sendMessage('This way of showing links is outdated.');
+        player.sendMessage('This UI element is deprecated.');
         const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'mainUserPanel', context: {} };
-        if (callingPanelState.panelId) {
-            await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-        } else {
-            await showPanel(player, 'mainUserPanel', dependencies, {});
-        }
+        await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
     },
     /**
-     * Displays a clickable link in the player's chat.
-     * @param {import('@minecraft/server').Player} player The player to send the link to.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with link details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     displayLinkInChat: async (player, dependencies, context) => {
         const { playerUtils } = dependencies;
         const { linkUrl, linkTitle, originalPanelIdForDisplayLink, originalContextForDisplayLink } = context;
-
-        playerUtils.debugLog(`Action: displayLinkInChat for ${player.name}: ${linkTitle} - ${linkUrl}`, player.name, dependencies);
-
-        if (linkUrl && linkTitle) {
-            // Minecraft typically makes full URLs clickable in chat.
-            // Using §9 (blue) and §n (underline) for link-like appearance.
+        if (typeof linkUrl === 'string' && typeof linkTitle === 'string') {
             player.sendMessage(`§e${linkTitle}: §9§n${linkUrl}§r`);
-            player.sendMessage(playerUtils.getString('ui.helpfulLinks.clickHint') || '§7(You may need to click the link in chat to open it)');
+            player.sendMessage(playerUtils.getString('ui.helpfulLinks.clickHint'));
         } else {
-            player.sendMessage(playerUtils.getString('common.error.generic') || '§cCould not display link: Information missing.');
+            player.sendMessage(playerUtils.getString('common.error.generic'));
         }
-
-        // Return the user to the helpfulLinksPanel
-        // Ensure originalPanelIdForDisplayLink and originalContextForDisplayLink were passed in initialContext
-        if (originalPanelIdForDisplayLink) {
-            // We need to push the current state (which is the helpfulLinksPanel itself, about to be re-shown)
-            // onto the stack BEFORE showing it, so 'Back' from it works correctly.
-            // However, showPanel itself handles pushing to stack when navigating TO a new panel.
-            // When a functionCall completes, it typically returns to the panel it was called FROM.
-            // If the functionCall itself calls showPanel, it becomes the new "current" panel.
-
-            // The context for helpfulLinksPanel might need to be the one it had when it was first opened.
-            // This is why we passed originalContextForDisplayLink.
+        if (typeof originalPanelIdForDisplayLink === 'string') {
             await showPanel(player, originalPanelIdForDisplayLink, dependencies, originalContextForDisplayLink || {});
-        } else {
-            // Fallback if context wasn't passed correctly, though it should be.
-            await showPanel(player, 'helpfulLinksPanel', dependencies, {});
         }
     },
     /**
- * Returns to the calling panel.
-     * @param {import('@minecraft/server').Player} player The player interacting with the UI.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with navigation details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     returnToCallingPanel: async (player, dependencies, context) => {
         const { playerUtils } = dependencies;
         const { originalPanelId, originalContext } = context;
-
-        playerUtils.debugLog(`Action: returnToCallingPanel for ${player.name}. Returning to Panel ID: ${originalPanelId}`, player.name, dependencies);
-
-        if (originalPanelId) {
-            // The originalContext should be the context of the panel we are returning to.
+        if (typeof originalPanelId === 'string') {
             await showPanel(player, originalPanelId, dependencies, originalContext || {});
         } else {
-            playerUtils.debugLog('Cannot return to original panel: originalPanelId missing from context.', player.nameTag, dependencies);
             player.sendMessage('§cError: Could not determine panel to return to.');
-            // Fallback to a default panel if necessary, though this indicates a setup error.
-            // For user panels, mainUserPanel is a safe bet.
             await showPanel(player, 'mainUserPanel', dependencies, {});
         }
     },
     /**
- * Refreshes the `onlinePlayersPanel`.
- * @param {import('@minecraft/server').Player} player The player who clicked refresh.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The current panel context.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     refreshOnlinePlayersPanelAction: async (player, dependencies, context) => {
-        const { playerUtils } = dependencies;
-        playerUtils.debugLog(`Action: refreshOnlinePlayersPanelAction for ${player.name}`, player.name, dependencies);
-        // context here is the context of the onlinePlayersPanel itself.
-        // Re-showing the panel will trigger its dynamicItemGeneratorKey again.
         await showPanel(player, 'onlinePlayersPanel', dependencies, context);
     },
     /**
- * Refreshes the `watchedPlayersPanel`.
- * @param {import('@minecraft/server').Player} player The player who clicked refresh.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The current panel context.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     refreshWatchedPlayersPanelAction: async (player, dependencies, context) => {
-        const { playerUtils } = dependencies;
-        playerUtils.debugLog(`Action: refreshWatchedPlayersPanelAction for ${player.name}`, player.name, dependencies);
         await showPanel(player, 'watchedPlayersPanel', dependencies, context);
     },
     /**
- * Displays a modal with general tips.
- * @param {import('@minecraft/server').Player} player The player viewing the tips.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context The context from the calling panel.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showGeneralTipsPageContent: async (player, dependencies, context) => {
         const { playerUtils, config } = dependencies;
-        playerUtils.debugLog(`Action: showGeneralTipsPageContent for ${player.name}`, player.name, dependencies);
         const generalTips = config?.generalTips ?? [];
-        const bodyText = generalTips.length === 0 ? 'No general tips available at the moment.' : generalTips.join('\n\n---\n\n');
-        const modal = new ModalFormData().title('General Tips').content(bodyText);
-        modal.button1(playerUtils.getString('common.button.ok'));
+        const bodyText = generalTips.length > 0 ? generalTips.join('\n\n---\n\n') : 'No tips available.';
+        const modal = new ModalFormData().title('General Tips').content(bodyText).button1(playerUtils.getString('common.button.ok'));
         try {
             await modal.show(player);
         } catch (e) {
-            playerUtils.debugLog(`Error showing GeneralTips modal: ${e}`, player.nameTag, dependencies);
+            // empty
         } finally {
-            // Return to the panel that called this function.
             await showPanel(player, 'generalTipsPanel', dependencies, context);
         }
     },
@@ -1471,60 +1179,32 @@ const uiActionFunctions = {
     showResetFlagsForm: showResetFlagsFormImpl,
     showEditConfigForm,
     /**
- * Displays a modal with system information.
- * @param {import('@minecraft/server').Player} player The player viewing the info.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
      */
     displaySystemInfoModal: async (player, dependencies) => {
-        const { playerUtils, config, logManager, playerDataManager, reportManager, system } = dependencies;
-        const viewingPlayerName = player.name;
-        playerUtils?.debugLog(`[UiManager.displaySystemInfoModal] Requested by ${viewingPlayerName}`, viewingPlayerName, dependencies);
-        let infoText = '§g--- System Information ---\n§r';
-        infoText += `AntiCheat Version: §e${config.addonVersion}\n`;
-        infoText += `Server Time: §e${new Date().toLocaleTimeString()}\n`;
-        infoText += `Current Game Tick: §e${system.currentTick}\n`;
-        const onlinePlayersInstance = world.getAllPlayers();
-        infoText += `Online Players: §e${onlinePlayersInstance.length}\n`;
-        if (playerDataManager?.getAllPlayerDataCount) {
-            infoText += `Cached PlayerData Entries: §e${playerDataManager.getAllPlayerDataCount()}\n`;
-        }
-        let watchedCount = 0;
-        onlinePlayersInstance.forEach(p => {
-            const pData = playerDataManager?.getPlayerData(p.id); if (pData?.isWatched) {
-                watchedCount++;
-            }
-        });
-        infoText += `Watched Players (Online): §e${watchedCount}\n`;
-        if (playerDataManager?.getPersistentMuteCount) {
-            infoText += `Active Mutes (Persistent): §e${playerDataManager.getPersistentMuteCount()}\n`;
-        }
-        if (playerDataManager?.getPersistentBanCount) {
-            infoText += `Active Bans (Persistent): §e${playerDataManager.getPersistentBanCount()}\n`;
-        }
-        if (dependencies.worldBorderManager?.getActiveBorderCount) {
-            infoText += `Active World Borders: §e${dependencies.worldBorderManager.getActiveBorderCount()}\n`;
-        }
-        if (logManager?.getInMemoryLogCount) {
-            infoText += `LogManager Entries (In-Memory): §e${logManager.getInMemoryLogCount()}\n`;
-        }
-        if (reportManager?.getInMemoryReportCount) {
-            infoText += `ReportManager Entries (In-Memory): §e${reportManager.getInMemoryReportCount()}\n`;
-        }
-        const modal = new ModalFormData().title('§l§bSystem Information§r').content(infoText);
-        modal.button1(playerUtils.getString('common.button.ok'));
+        const { playerUtils, config, logManager, playerDataManager, reportManager, system, worldBorderManager } = dependencies;
+        let infoText = `§g--- System Information ---\n§r` +
+            `Version: §e${config.addonVersion}\n` +
+            `Server Time: §e${new Date().toLocaleTimeString()}\n` +
+            `Tick: §e${system.currentTick}\n` +
+            `Online: §e${world.getAllPlayers().length}\n` +
+            `Cached Players: §e${playerDataManager?.getAllPlayerDataCount?.() ?? 'N/A'}\n` +
+            `Watched: §e${world.getAllPlayers().filter(p => playerDataManager?.getPlayerData(p.id)?.isWatched).length}\n` +
+            `Mutes: §e${playerDataManager?.getPersistentMuteCount?.() ?? 'N/A'}\n` +
+            `Bans: §e${playerDataManager?.getPersistentBanCount?.() ?? 'N/A'}\n` +
+            `World Borders: §e${worldBorderManager?.getActiveBorderCount?.() ?? 'N/A'}\n` +
+            `Logs (Memory): §e${logManager?.getInMemoryLogCount?.() ?? 'N/A'}\n` +
+            `Reports (Memory): §e${reportManager?.getInMemoryReportCount?.() ?? 'N/A'}`;
+
+        const modal = new ModalFormData().title('§l§bSystem Information§r').body(infoText).button1(playerUtils.getString('common.button.ok'));
         try {
             await modal.show(player);
         } catch (error) {
-            logError(`[UiManager.displaySystemInfoModal] Error for ${viewingPlayerName}: ${error.stack || error}`, error);
-            logManager?.addLog({ actionType: 'errorUiSystemInfoModal', context: 'uiManager.displaySystemInfoModal', adminName: viewingPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
             player.sendMessage(playerUtils.getString('common.error.genericForm'));
         }
         const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'serverManagementPanel', context: {} };
-        if (callingPanelState.panelId) {
-            await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-        } else {
-            await showPanel(player, 'serverManagementPanel', dependencies, {});
-        }
+        await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
     },
     confirmClearChat: confirmClearChatImpl,
     confirmLagClear: confirmLagClearImpl,
@@ -1538,543 +1218,370 @@ const uiActionFunctions = {
     prepareBanUnbanLogsViewer,
     prepareMuteUnmuteLogsViewer,
     /**
-     * Displays a modal with detailed flag information for a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     displayDetailedFlagsModal: async (player, dependencies, context) => {
-        const { playerUtils, logManager, playerDataManager } = dependencies;
-        const adminPlayerName = player.name;
+        const { playerUtils, playerDataManager } = dependencies;
         const { targetPlayerId, targetPlayerName } = context;
-        if (!targetPlayerName) {
-            player.sendMessage('§cTarget player not specified for viewing flags.'); await showPanel(player, 'playerActionsPanel', dependencies, context); return;
+        if (typeof targetPlayerName !== 'string') {
+            player.sendMessage('§cTarget not specified.'); await showPanel(player, 'playerActionsPanel', dependencies, context); return;
         }
-        playerUtils?.debugLog(`[UiManager.displayDetailedFlagsModal] Admin: ${adminPlayerName} viewing flags for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-        const targetPData = playerDataManager.getPlayerData(targetPlayerId || targetPlayerName);
-        let bodyText = `§g--- Flags for ${targetPlayerName} ---\n§rTotal Flags: ${targetPData?.flags?.totalFlags ?? 0}\n\n`;
-        if (!targetPData || !targetPData.flags || targetPData.flags.totalFlags === 0) {
-            bodyText += 'No flags recorded for this player.';
+        const targetPData = playerDataManager.getPlayerData(String(targetPlayerId || targetPlayerName));
+        let bodyText = `§g--- Flags for ${targetPlayerName} ---\n§rTotal: ${targetPData?.flags?.totalFlags ?? 0}\n\n`;
+        if (!targetPData?.flags || Object.keys(targetPData.flags).length <= 2) {
+            bodyText += 'No flags recorded.';
         } else {
-            let specificFlagsFound = false;
             for (const flagKey in targetPData.flags) {
-                if (flagKey === 'totalFlags' || flagKey === 'lastFlagTime' || flagKey === 'lastFlagType') {
-                    continue;
+                if (flagKey !== 'totalFlags' && flagKey !== 'lastFlagTime' && flagKey !== 'lastFlagType') {
+                    const flagInfo = targetPData.flags[flagKey];
+                    if (flagInfo && flagInfo.count > 0) {
+                        bodyText += `§e${flagKey}: §f${flagInfo.count} §7(Last: ${new Date(flagInfo.lastDetectionTime).toLocaleString()})§r\n`;
+                    }
                 }
-                const flagInfo = targetPData.flags[flagKey];
-                if (flagInfo && typeof flagInfo.count === 'number' && flagInfo.count > 0) {
-                    const lastTime = flagInfo.lastDetectionTime ? new Date(flagInfo.lastDetectionTime).toLocaleString() : 'N/A';
-                    bodyText += `§e${flagKey}: §f${flagInfo.count} §7(Last: ${lastTime})§r\n`;
-                    specificFlagsFound = true;
-                }
-            }
-            if (!specificFlagsFound) {
-                bodyText += 'No specific active flags with counts > 0.';
             }
         }
-        const modal = new ModalFormData().title(`§l§3Flags: ${targetPlayerName}§r`).content(bodyText.trim());
-        modal.button1(playerUtils.getString('common.button.ok'));
+        const modal = new ModalFormData().title(`§l§3Flags: ${targetPlayerName}§r`).body(bodyText.trim()).button1(playerUtils.getString('common.button.ok'));
         try {
             await modal.show(player);
         } catch (error) {
-            logError(`[UiManager.displayDetailedFlagsModal] Error for ${adminPlayerName} viewing flags of ${targetPlayerName}: ${error.stack || error}`, error); playerUtils?.debugLog(`[UiManager.displayDetailedFlagsModal] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiDetailedFlagsModal', context: 'uiManager.displayDetailedFlagsModal', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(playerUtils.getString('common.error.genericForm'));
+            player.sendMessage(playerUtils.getString('common.error.genericForm'));
         } finally {
             await showPanel(player, 'playerActionsPanel', dependencies, context);
         }
     },
     /**
- * Displays a form to ban a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showBanFormForPlayer: async (player, dependencies, context) => {
-        const { playerUtils, logManager, config, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.name;
-        const { targetPlayerName } = context; // Removed targetPlayerId
-        if (!targetPlayerName) {
-            player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'ban' })); // Assumes new string
+        const { playerUtils, config, commandExecutionMap } = dependencies;
+        const { targetPlayerName } = context;
+        if (typeof targetPlayerName !== 'string') {
+            player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'ban' }));
             await showPanel(player, 'playerActionsPanel', dependencies, context);
             return;
         }
-        playerUtils?.debugLog(`[UiManager.showBanFormForPlayer] Admin: ${adminPlayerName} opening ban form for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-
-        const modalForm = new ModalFormData()
+        const modal = new ModalFormData()
             .title(playerUtils.getString('ui.playerActions.ban.title', { targetPlayerName }))
-            .textField(
-                playerUtils.getString('ui.playerActions.ban.durationPrompt'),
-                config?.banCommand?.defaultDurationPlaceholder ?? playerUtils.getString('ui.playerActions.ban.durationPlaceholder'),
-                config?.banCommand?.defaultDuration ?? 'perm',
-            )
-            .textField(
-                playerUtils.getString('ui.playerActions.ban.reasonPrompt'),
-                config?.banCommand?.defaultReasonPlaceholder ?? playerUtils.getString('ui.playerActions.ban.reasonPlaceholder'),
-                config?.banCommand?.defaultReason ?? '',
-            );
-
+            .textField('Duration:', 'e.g., 30m, 1d, perm', config?.banCommand?.defaultDuration ?? 'perm')
+            .textField('Reason:', 'Reason for ban', config?.banCommand?.defaultReason ?? '');
         try {
-            const response = await modalForm.show(player);
-            if (response.canceled) {
-                player.sendMessage(playerUtils.getString('ui.playerActions.ban.cancelled'));
+            const response = await modal.show(player);
+            if (response.canceled || !response.formValues) return;
+            const [duration, reason] = response.formValues;
+            if (typeof reason !== 'string' || !reason.trim()) {
+                player.sendMessage(playerUtils.getString('common.error.reasonEmpty'));
+                await uiActionFunctions.showBanFormForPlayer(player, dependencies, context);
+                return;
+            }
+            const banCommand = commandExecutionMap?.get('ban');
+            if (banCommand) {
+                await banCommand(player, [targetPlayerName, String(duration), reason], dependencies);
             } else {
-                const [duration, reason] = response.formValues;
-                if (!reason || reason.trim() === '') {
-                    player.sendMessage(playerUtils.getString('common.error.reasonEmpty')); await uiActionFunctions.showBanFormForPlayer(player, dependencies, context); return;
-                }
-                const banCommand = commandExecutionMap?.get('ban');
-                if (banCommand) {
-                    await banCommand(player, [targetPlayerName, duration || (config?.banCommand?.defaultDuration ?? 'perm'), ...reason.split(' ')], dependencies);
-                } else {
-                    player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'ban' }));
-                }
+                player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'ban' }));
             }
         } catch (error) {
-            logError(`[UiManager.showBanFormForPlayer] Error for ${adminPlayerName} banning ${targetPlayerName}: ${error.stack || error}`, error); playerUtils?.debugLog(`[UiManager.showBanFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiBanForm', context: 'uiManager.showBanFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(playerUtils.getString('common.error.genericForm'));
+            player.sendMessage(playerUtils.getString('common.error.genericForm'));
         } finally {
             await showPanel(player, 'playerActionsPanel', dependencies, context);
         }
     },
     /**
- * Displays a form to kick a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showKickFormForPlayer: async (player, dependencies, context) => {
-        const { playerUtils, logManager, config, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.name;
-        const { targetPlayerName } = context; // Removed targetPlayerId
-        if (!targetPlayerName) {
+        const { playerUtils, config, commandExecutionMap } = dependencies;
+        const { targetPlayerName } = context;
+        if (typeof targetPlayerName !== 'string') {
             player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'kick' }));
             await showPanel(player, 'playerActionsPanel', dependencies, context);
             return;
         }
-        playerUtils?.debugLog(`[UiManager.showKickFormForPlayer] Admin: ${adminPlayerName} opening kick form for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-
-        const modalForm = new ModalFormData()
+        const modal = new ModalFormData()
             .title(playerUtils.getString('ui.playerActions.kick.title', { targetPlayerName }))
-            .textField(
-                playerUtils.getString('ui.playerActions.kick.reasonPrompt'),
-                config?.kickCommand?.defaultReasonPlaceholder ?? playerUtils.getString('ui.playerActions.kick.reasonPlaceholder'),
-                config?.kickCommand?.defaultReason ?? '',
-            );
-
+            .textField('Reason:', 'Reason for kick', config?.kickCommand?.defaultReason ?? '');
         try {
-            const response = await modalForm.show(player);
-            if (response.canceled) {
-                player.sendMessage(playerUtils.getString('ui.playerActions.kick.cancelled'));
+            const response = await modal.show(player);
+            if (response.canceled || !response.formValues) return;
+            const [reason] = response.formValues;
+            const kickCommand = commandExecutionMap?.get('kick');
+            if (kickCommand) {
+                await kickCommand(player, [targetPlayerName, String(reason || '')], dependencies);
             } else {
-                const [reason] = response.formValues;
-                const kickCommand = commandExecutionMap?.get('kick');
-                if (kickCommand) {
-                    await kickCommand(player, [targetPlayerName, ...(reason ? reason.split(' ') : [])], dependencies);
-                } else {
-                    player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'kick' }));
-                }
+                player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'kick' }));
             }
         } catch (error) {
-            logError(`[UiManager.showKickFormForPlayer] Error for ${adminPlayerName} kicking ${targetPlayerName}: ${error.stack || error}`, error); playerUtils?.debugLog(`[UiManager.showKickFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiKickForm', context: 'uiManager.showKickFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(playerUtils.getString('common.error.genericForm'));
+            player.sendMessage(playerUtils.getString('common.error.genericForm'));
         } finally {
             await showPanel(player, 'playerActionsPanel', dependencies, context);
         }
     },
     /**
- * Displays a form to mute a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showMuteFormForPlayer: async (player, dependencies, context) => {
-        const { playerUtils, logManager, config, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.name;
-        const { targetPlayerName } = context; // Removed targetPlayerId
-        if (!targetPlayerName) {
+        const { playerUtils, config, commandExecutionMap } = dependencies;
+        const { targetPlayerName } = context;
+        if (typeof targetPlayerName !== 'string') {
             player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'mute' }));
             await showPanel(player, 'playerActionsPanel', dependencies, context);
             return;
         }
-        playerUtils?.debugLog(`[UiManager.showMuteFormForPlayer] Admin: ${adminPlayerName} opening mute form for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-
-        const modalForm = new ModalFormData()
+        const modal = new ModalFormData()
             .title(playerUtils.getString('ui.playerActions.mute.title', { targetPlayerName }))
-            .textField(
-                playerUtils.getString('ui.playerActions.mute.durationPrompt'),
-                config?.muteCommand?.defaultDurationPlaceholder ?? playerUtils.getString('ui.playerActions.mute.durationPlaceholder'),
-                config?.muteCommand?.defaultDuration ?? '30m',
-            )
-            .textField(
-                playerUtils.getString('ui.playerActions.mute.reasonPrompt'),
-                config?.muteCommand?.defaultReasonPlaceholder ?? playerUtils.getString('ui.playerActions.mute.reasonPlaceholder'),
-                config?.muteCommand?.defaultReason ?? '',
-            );
-
+            .textField('Duration:', 'e.g., 30m, 1h, 1d', config?.muteCommand?.defaultDuration ?? '30m')
+            .textField('Reason:', 'Reason for mute', config?.muteCommand?.defaultReason ?? '');
         try {
-            const response = await modalForm.show(player);
-            if (response.canceled) {
-                player.sendMessage(playerUtils.getString('ui.playerActions.mute.cancelled'));
+            const response = await modal.show(player);
+            if (response.canceled || !response.formValues) return;
+            const [duration, reason] = response.formValues;
+            const muteCommand = commandExecutionMap?.get('mute');
+            if (muteCommand) {
+                await muteCommand(player, [targetPlayerName, String(duration), String(reason || '')], dependencies);
             } else {
-                const [duration, reason] = response.formValues;
-                const muteCommand = commandExecutionMap?.get('mute');
-                if (muteCommand) {
-                    await muteCommand(player, [targetPlayerName, duration || (config?.muteCommand?.defaultDuration ?? '30m'), ...(reason ? reason.split(' ') : [])], dependencies);
-                } else {
-                    player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'mute' }));
-                }
+                player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'mute' }));
             }
         } catch (error) {
-            logError(`[UiManager.showMuteFormForPlayer] Error for ${adminPlayerName} muting ${targetPlayerName}: ${error.stack || error}`, error); playerUtils?.debugLog(`[UiManager.showMuteFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies); logManager?.addLog({ actionType: 'errorUiMuteForm', context: 'uiManager.showMuteFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies); player.sendMessage(playerUtils.getString('common.error.genericForm'));
+            player.sendMessage(playerUtils.getString('common.error.genericForm'));
         } finally {
             await showPanel(player, 'playerActionsPanel', dependencies, context);
         }
     },
     /**
-     * Toggles the frozen state of a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     toggleFreezePlayer: async (player, dependencies, context) => {
-        const { playerUtils, commandExecutionMap, logManager } = dependencies;
-        const adminPlayerName = player.name;
+        const { playerUtils, commandExecutionMap } = dependencies;
         const { targetPlayerName } = context;
-        if (!targetPlayerName) {
-            player.sendMessage('§cTarget player not specified for freeze toggle.'); await showPanel(player, 'playerActionsPanel', dependencies, context); return;
-        }
-        playerUtils?.debugLog(`[UiManager.toggleFreezePlayer] Admin: ${adminPlayerName} toggling freeze for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-        const freezeCommand = commandExecutionMap?.get('freeze');
-        if (freezeCommand) {
-            try {
-                await freezeCommand(player, [targetPlayerName, 'toggle'], dependencies);
-            } catch (error) {
-                logError(`[UiManager.toggleFreezePlayer] Error executing freeze command for ${targetPlayerName}: ${error.stack || error}`, error); player.sendMessage(playerUtils.getString('common.error.genericCommandError', { commandName: 'freeze', errorMessage: error.message })); logManager?.addLog({ actionType: 'errorUiFreezeToggle', context: 'uiManager.toggleFreezePlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
-            }
+        if (typeof targetPlayerName !== 'string') {
+            player.sendMessage('§cTarget not specified.');
         } else {
-            player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'freeze' }));
+            const freezeCommand = commandExecutionMap?.get('freeze');
+            if (freezeCommand) {
+                await freezeCommand(player, [targetPlayerName, 'toggle'], dependencies);
+            } else {
+                player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'freeze' }));
+            }
         }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
     /**
- * Teleports the admin to a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     teleportAdminToPlayer: async (player, dependencies, context) => {
         const { playerUtils, logManager } = dependencies;
-        const adminPlayerName = player.name;
         const { targetPlayerName } = context;
-        if (!targetPlayerName) {
-            player.sendMessage('§cTarget player not specified for teleport.'); await showPanel(player, 'playerActionsPanel', dependencies, context); return;
-        }
-        const targetPlayer = playerUtils.findPlayer(targetPlayerName);
-        if (targetPlayer?.isValid() && targetPlayer.location && targetPlayer.dimension) {
-            try {
-                await player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
-                player.sendMessage(`§aSuccess: Teleported to ${targetPlayerName}.`);
-                logManager?.addLog({ adminName: adminPlayerName, actionType: 'teleportSelfToPlayer', targetName: targetPlayerName, details: `Admin TP to ${targetPlayerName}` });
-            } catch (e) {
-                player.sendMessage(playerUtils.getString('ui.playerActions.teleport.errorGeneric') || '§cError: Teleport failed. The player might be in an invalid location or dimension.');
-                logError(`[UiManager.teleportAdminToPlayer] Teleport failed for ${adminPlayerName} to ${targetPlayerName}: ${e.stack || e}`, e);
-                logManager?.addLog({ actionType: 'errorUiTeleportToPlayer', context: 'uiManager.teleportAdminToPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack } });
-            }
+        if (typeof targetPlayerName !== 'string') {
+            player.sendMessage('§cTarget not specified.');
         } else {
-            player.sendMessage(playerUtils.getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
+            const targetPlayer = playerUtils.findPlayer(targetPlayerName);
+            if (targetPlayer?.isValid()) {
+                try {
+                    await player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
+                    player.sendMessage(`§aTeleported to ${targetPlayerName}.`);
+                    logManager?.addLog({ adminName: player.name, actionType: 'teleportSelfToPlayer', targetName: targetPlayerName });
+                } catch (e) {
+                    player.sendMessage('§cTeleport failed.');
+                }
+            } else {
+                player.sendMessage(playerUtils.getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
+            }
         }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
     /**
- * Teleports a target player to the admin.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     teleportPlayerToAdmin: async (player, dependencies, context) => {
         const { playerUtils, logManager } = dependencies;
-        const adminPlayerName = player.name;
         const { targetPlayerName } = context;
-        if (!targetPlayerName) {
-            player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'teleport here' }));
-            await showPanel(player, 'playerActionsPanel', dependencies, context);
-            return;
-        }
-        const targetPlayer = playerUtils.findPlayer(targetPlayerName);
-        if (targetPlayer?.isValid() && player.location && player.dimension) {
-            try {
-                await targetPlayer.teleport(player.location, { dimension: player.dimension });
-                player.sendMessage(playerUtils.getString('ui.playerActions.teleport.successPlayerToAdmin', { targetPlayerName, adminName: adminPlayerName })); // Assuming new string
-                targetPlayer.sendMessage(playerUtils.getString('ui.playerActions.teleport.targetNotification', { adminName: adminPlayerName })); // Assuming new string
-                logManager?.addLog({ adminName: adminPlayerName, actionType: 'teleportPlayerToAdmin', targetName: targetPlayerName, details: `Admin TP'd ${targetPlayerName} to self` }, dependencies);
-            } catch (e) {
-                player.sendMessage(playerUtils.getString('ui.playerActions.teleport.errorGeneric') || '§cError: Teleport failed. The player might be in an invalid location or dimension, or you lack permission.');
-                logError(`[UiManager.teleportPlayerToAdmin] Teleport failed for ${targetPlayerName} to ${adminPlayerName}: ${e.stack || e}`, e);
-                logManager?.addLog({ actionType: 'errorUiTeleportPlayerToAdmin', context: 'uiManager.teleportPlayerToAdmin', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack } }, dependencies);
-            }
+        if (typeof targetPlayerName !== 'string') {
+            player.sendMessage('§cTarget not specified.');
         } else {
-            player.sendMessage(playerUtils.getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
+            const targetPlayer = playerUtils.findPlayer(targetPlayerName);
+            if (targetPlayer?.isValid()) {
+                try {
+                    await targetPlayer.teleport(player.location, { dimension: player.dimension });
+                    player.sendMessage(`§aBrought ${targetPlayerName} to you.`);
+                    targetPlayer.sendMessage(`§7You were teleported by ${player.name}.`);
+                    logManager?.addLog({ adminName: player.name, actionType: 'teleportPlayerToAdmin', targetName: targetPlayerName });
+                } catch (e) {
+                    player.sendMessage('§cTeleport failed.');
+                }
+            } else {
+                player.sendMessage(playerUtils.getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
+            }
         }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
     /**
- * Confirms and unmutes a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showUnmuteFormForPlayer: async (player, dependencies, context) => {
         const { playerUtils, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.name;
-        const { targetPlayerName } = context; // Removed targetPlayerId
-
-        if (!targetPlayerName) {
+        const { targetPlayerName } = context;
+        if (typeof targetPlayerName !== 'string') {
             player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'unmute' }));
-            await showPanel(player, 'playerActionsPanel', dependencies, context);
-            return;
-        }
-        playerUtils?.debugLog(`[UiManager.showUnmuteFormForPlayer] Admin: ${adminPlayerName} initiating unmute for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-
-        await _showConfirmationModal(
-            player,
-            playerUtils.getString('ui.playerActions.unmute.confirmTitle'),
-            playerUtils.getString('ui.playerActions.unmute.confirmBody', { targetPlayerName }),
-            playerUtils.getString('ui.playerActions.unmute.confirmToggle'),
-            async () => { // This callback is only executed if confirmed
+        } else {
+            await _showConfirmationModal(player, `Unmute ${targetPlayerName}`, `Confirm unmuting ${targetPlayerName}?`, '§aConfirm Unmute', async () => {
                 const unmuteCommand = commandExecutionMap?.get('unmute');
                 if (unmuteCommand) {
                     await unmuteCommand(player, [targetPlayerName], dependencies);
                 } else {
                     player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'unmute' }));
                 }
-            },
-            dependencies,
-        );
-        // _showConfirmationModal returns true if confirmed and callback ran, false otherwise (cancelled or error in modal)
-        // It also handles sending 'ui.common.actionCancelled' if not confirmed.
-
-        // Always navigate back to the playerActionsPanel.
-        // The command itself (unmute) should provide success/failure feedback to the admin.
+            }, dependencies);
+        }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
     /**
- * Confirms and clears a target player's inventory.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     confirmClearPlayerInventory: async (player, dependencies, context) => {
         const { playerUtils, commandExecutionMap, logManager } = dependencies;
-        const adminPlayerName = player.name;
-        const { targetPlayerName } = context; // Removed targetPlayerId
-
-        if (!targetPlayerName) {
+        const { targetPlayerName } = context;
+        if (typeof targetPlayerName !== 'string') {
             player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'clear inventory' }));
-            await showPanel(player, 'playerActionsPanel', dependencies, context);
-            return;
-        }
-        playerUtils?.debugLog(`[UiManager.confirmClearPlayerInventory] Admin: ${adminPlayerName} initiating clear inventory for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-
-        await _showConfirmationModal(
-            player,
-            playerUtils.getString('ui.playerActions.clearInventory.confirmTitle'),
-            playerUtils.getString('ui.playerActions.clearInventory.confirmBody', { targetPlayerName }),
-            playerUtils.getString('ui.playerActions.clearInventory.confirmToggle'),
-            async () => {
-                const clearInvCommand = commandExecutionMap?.get('clearinv') ?? commandExecutionMap?.get('clearinventory');
+        } else {
+            await _showConfirmationModal(player, `Clear ${targetPlayerName}'s Inv`, `Confirm clearing inventory for ${targetPlayerName}?`, '§cConfirm Clear Inventory', async () => {
+                const clearInvCommand = commandExecutionMap?.get('clearinv');
                 if (clearInvCommand) {
                     await clearInvCommand(player, [targetPlayerName], dependencies);
                 } else {
-                    playerUtils.debugLog(`[UiManager.confirmClearPlayerInventory] No 'clearinv' command in map, using vanilla /clear for ${targetPlayerName}`, adminPlayerName, dependencies);
                     try {
-                        const targetPlayerObject = world.getAllPlayers().find(p => p.name === targetPlayerName);
-                        if (targetPlayerObject) {
-                            await targetPlayerObject.runCommandAsync('clear @s');
-                            player.sendMessage(playerUtils.getString('ui.playerActions.clearInventory.success', { targetPlayerName }));
-                            logManager?.addLog({ adminName: adminPlayerName, actionType: 'playerInventoryCleared', targetName: targetPlayerName, details: `Inventory cleared for ${targetPlayerName} via UI.` }, dependencies);
+                        const target = world.getAllPlayers().find(p => p.name === targetPlayerName);
+                        if (target) {
+                            await target.runCommandAsync('clear @s');
+                            player.sendMessage(`§aCleared inventory for ${targetPlayerName}.`);
+                            logManager?.addLog({ adminName: player.name, actionType: 'playerInventoryCleared', targetName: targetPlayerName });
                         } else {
                             player.sendMessage(playerUtils.getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
-                            logManager?.addLog({ adminName: adminPlayerName, actionType: 'errorPlayerInventoryClear', targetName: targetPlayerName, details: `Failed to clear inventory: ${targetPlayerName} not found online.` }, dependencies);
                         }
                     } catch (e) {
-                        player.sendMessage(playerUtils.getString('ui.playerActions.clearInventory.fail', { targetPlayerName }));
-                        logError(`[UiManager.confirmClearPlayerInventory] Vanilla /clear command failed for ${targetPlayerName}: ${e}`, e);
-                        logManager?.addLog({ adminName: adminPlayerName, actionType: 'errorPlayerInventoryClear', targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack } }, dependencies);
+                        player.sendMessage(`§cFailed to clear inventory for ${targetPlayerName}.`);
                     }
                 }
-            },
-            dependencies,
-        );
+            }, dependencies);
+        }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
 
     /**
- * Confirms and unbans a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showUnbanFormForPlayer: async (player, dependencies, context) => {
         const { playerUtils, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.name;
         const { targetPlayerName } = context;
-
-        if (!targetPlayerName) {
+        if (typeof targetPlayerName !== 'string') {
             player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'unban' }));
-            await showPanel(player, 'playerActionsPanel', dependencies, context);
-            return;
-        }
-        playerUtils?.debugLog(`[UiManager.showUnbanFormForPlayer] Admin: ${adminPlayerName} initiating unban for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-
-        await _showConfirmationModal(
-            player,
-            playerUtils.getString('ui.playerActions.unban.confirmTitle', { targetPlayerName }), // Assuming similar string key structure
-            playerUtils.getString('ui.playerActions.unban.confirmBody', { targetPlayerName }),
-            playerUtils.getString('ui.playerActions.unban.confirmToggle'),
-            async () => {
+        } else {
+            await _showConfirmationModal(player, `Unban ${targetPlayerName}`, `Confirm unbanning ${targetPlayerName}?`, '§aConfirm Unban', async () => {
                 const unbanCommand = commandExecutionMap?.get('unban');
                 if (unbanCommand) {
                     await unbanCommand(player, [targetPlayerName], dependencies);
                 } else {
                     player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'unban' }));
                 }
-            },
-            dependencies,
-        );
+            }, dependencies);
+        }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
 
     /**
- * Confirms and resets all flags for a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     confirmResetPlayerFlagsForPlayer: async (player, dependencies, context) => {
         const { playerUtils, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.name;
-        const { targetPlayerName } = context; // Removed targetPlayerId
-
-        if (!targetPlayerName) {
+        const { targetPlayerName } = context;
+        if (typeof targetPlayerName !== 'string') {
             player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'reset flags' }));
-            await showPanel(player, 'playerActionsPanel', dependencies, context);
-            return;
-        }
-        playerUtils?.debugLog(`[UiManager.confirmResetPlayerFlagsForPlayer] Admin: ${adminPlayerName} initiating flag reset for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-
-        await _showConfirmationModal(
-            player,
-            playerUtils.getString('ui.playerActions.resetFlags.confirmTitle', { targetPlayerName }), // Assuming string key
-            playerUtils.getString('ui.playerActions.resetFlags.confirmBody', { targetPlayerName }),
-            playerUtils.getString('ui.playerActions.resetFlags.confirmToggle'),
-            async () => {
+        } else {
+            await _showConfirmationModal(player, `Reset ${targetPlayerName}'s Flags`, `Confirm resetting all flags for ${targetPlayerName}?`, '§cConfirm Reset Flags', async () => {
                 const resetFlagsCommand = commandExecutionMap?.get('resetflags');
                 if (resetFlagsCommand) {
                     await resetFlagsCommand(player, [targetPlayerName], dependencies);
                 } else {
                     player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'resetflags' }));
                 }
-            },
-            dependencies,
-        );
+            }, dependencies);
+        }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
 
     /**
- * Displays the inventory of a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showPlayerInventoryFromPanel: async (player, dependencies, context) => {
-        const { playerUtils, logManager, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.name;
-        const { targetPlayerName } = context; // Removed targetPlayerId
-
-        if (!targetPlayerName) {
+        const { playerUtils, commandExecutionMap } = dependencies;
+        const { targetPlayerName } = context;
+        if (typeof targetPlayerName !== 'string') {
             player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'view inventory' }));
-            await showPanel(player, 'playerActionsPanel', dependencies, context);
-            return;
-        }
-        playerUtils?.debugLog(`[UiManager.showPlayerInventoryFromPanel] Admin: ${adminPlayerName} viewing inventory for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-
-        const invseeCommand = commandExecutionMap?.get('invsee');
-        if (invseeCommand) {
-            try {
-                await invseeCommand(player, [targetPlayerName], dependencies);
-            } catch (error) {
-                logError(`[UiManager.showPlayerInventoryFromPanel] Error executing invsee command for ${targetPlayerName}: ${error.stack || error}`, error);
-                player.sendMessage(playerUtils.getString('common.error.genericCommandError', { commandName: 'invsee', errorMessage: error.message }));
-                logManager?.addLog({ actionType: 'errorUiInvsee', context: 'uiManager.showPlayerInventoryFromPanel', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
-                // Still show panel again in finally
-            }
         } else {
-            player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'invsee' }));
+            const invseeCommand = commandExecutionMap?.get('invsee');
+            if (invseeCommand) {
+                await invseeCommand(player, [targetPlayerName], dependencies);
+            } else {
+                player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'invsee' }));
+            }
         }
-        // The invsee command shows its own form. We should return to playerActionsPanel *after* that form is closed.
-        // However, invsee command itself doesn't have a callback to uiManager.
-        // For now, we'll navigate back immediately. This might be slightly awkward if invsee takes time or is cancelled.
-        // A more robust solution would involve invsee command being aware of UI flow or uiManager having a way to await modal closure.
-        // Given the current structure, this is the most straightforward approach.
-        // The `invsee` command itself doesn't return to any panel, it just shows a MessageFormData.
-        // So, after it's called, we need to manually bring the user back to the playerActionsPanel.
-        // The `invsee` command's `execute` function is async and shows a form.
-        // We don't want to show the playerActionsPanel *before* the invsee form is shown.
-        // This means this function should ensure the invsee form is handled, then return.
-        // The `invsee` command doesn't take a `context` to return to a panel.
-        // This is a slight architectural limitation. We will proceed by calling it, and the user will manually close the invsee form.
-        // Then, they'd still be on the playerActionsPanel because we're calling showPanel here.
-        // This might be okay. Let's test this assumption.
-        // Actually, the invsee command shows a MessageFormData, which is modal.
-        // After it's dismissed, control returns. So calling showPanel afterwards is correct.
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
 
     /**
- * Toggles the 'watched' status for a target player.
- * @param {import('@minecraft/server').Player} player The admin player.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
- * @param {object} context Context object with target player details.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     toggleWatchPlayerFromPanel: async (player, dependencies, context) => {
-        const { playerUtils, logManager, commandExecutionMap } = dependencies;
-        const adminPlayerName = player.name;
-        const { targetPlayerName } = context; // Removed targetPlayerId
-
-        if (!targetPlayerName) {
+        const { playerUtils, commandExecutionMap } = dependencies;
+        const { targetPlayerName } = context;
+        if (typeof targetPlayerName !== 'string') {
             player.sendMessage(playerUtils.getString('ui.playerActions.error.targetNotSpecified', { action: 'toggle watch' }));
-            await showPanel(player, 'playerActionsPanel', dependencies, context);
-            return;
-        }
-        playerUtils?.debugLog(`[UiManager.toggleWatchPlayerFromPanel] Admin: ${adminPlayerName} toggling watch for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-
-        const watchCommand = commandExecutionMap?.get('watch');
-        if (watchCommand) {
-            try {
-                await watchCommand(player, [targetPlayerName, 'toggle'], dependencies);
-            } catch (error) {
-                logError(`[UiManager.toggleWatchPlayerFromPanel] Error executing watch command for ${targetPlayerName}: ${error.stack || error}`, error);
-                player.sendMessage(playerUtils.getString('common.error.genericCommandError', { commandName: 'watch', errorMessage: error.message }));
-                logManager?.addLog({ actionType: 'errorUiWatchToggle', context: 'uiManager.toggleWatchPlayerFromPanel', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack } }, dependencies);
-            }
         } else {
-            player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'watch' }));
+            const watchCommand = commandExecutionMap?.get('watch');
+            if (watchCommand) {
+                await watchCommand(player, [targetPlayerName, 'toggle'], dependencies);
+            } else {
+                player.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'watch' }));
+            }
         }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
     /**
-     * Refreshes the report list panel.
-     * @param {import('@minecraft/server').Player} player The player who clicked refresh.
-     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
-     * @param {object} context The current panel context.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     refreshReportListPanelAction: async (player, dependencies, context) => {
-        const { playerUtils } = dependencies;
-        playerUtils.debugLog(`Action: refreshReportListPanelAction for ${player.name}`, player.name, dependencies);
         await showPanel(player, 'reportManagementPanel', dependencies, context);
     },
     /**
-     * Shows a modal with the details of a specific report.
-     * @param {import('@minecraft/server').Player} player The admin player.
-     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
-     * @param {object} context Context object with the reportId.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showReportDetailsModal: async (player, dependencies, context) => {
         const { reportManager, playerUtils } = dependencies;
@@ -2087,75 +1594,57 @@ const uiActionFunctions = {
             return;
         }
 
-        let bodyText = `§eID: §f${report.id}\n`;
-        bodyText += `§eTimestamp: §f${new Date(report.timestamp).toLocaleString()}\n`;
-        bodyText += `§eReporter: §f${report.reporterName}\n`;
-        bodyText += `§eReported: §f${report.reportedName}\n`;
-        bodyText += `§eReason: §f${report.reason}\n`;
-        bodyText += `§eStatus: §f${report.status}\n`;
-        if (report.assignedAdmin) {
-            bodyText += `§eAssigned to: §f${report.assignedAdmin}\n`;
-        }
-        if (report.resolutionDetails) {
-            bodyText += `§eResolution: §f${report.resolutionDetails}\n`;
-        }
+        const bodyText = `ID: ${report.id}\n` +
+            `Timestamp: ${new Date(report.timestamp).toLocaleString()}\n` +
+            `Reporter: ${report.reporterName}\n` +
+            `Reported: ${report.reportedName}\n` +
+            `Reason: ${report.reason}\n` +
+            `Status: ${report.status}\n` +
+            (report.assignedAdmin ? `Assigned to: ${report.assignedAdmin}\n` : '') +
+            (report.resolutionDetails ? `Resolution: ${report.resolutionDetails}\n` : '');
 
-        const modal = new ModalFormData()
-            .title('Report Details')
-            .content(bodyText)
-            .button1(playerUtils.getString('common.button.ok'));
-
+        const modal = new ModalFormData().title('Report Details').body(bodyText).button1('OK');
         await modal.show(player);
         await showPanel(player, 'reportActionsPanel', dependencies, context);
     },
 
     /**
-     * Assigns a report to the current admin.
-     * @param {import('@minecraft/server').Player} player The admin player.
-     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
-     * @param {object} context Context object with the reportId.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
-    assignReportToSelf: async (player, dependencies, context) => {
+    assignReportToSelf: (player, dependencies, context) => {
         const { reportManager } = dependencies;
         const { reportId } = context;
-        const success = reportManager.assignReport(reportId, player.name);
-
-        if (success) {
+        if (reportManager.assignReport(reportId, player.name)) {
             player.sendMessage(`§aReport ${reportId} assigned to you.`);
         } else {
             player.sendMessage(`§cFailed to assign report ${reportId}.`);
         }
-        await showPanel(player, 'reportManagementPanel', dependencies, {});
+        showPanel(player, 'reportManagementPanel', dependencies, {});
     },
 
     /**
-     * Shows a form to resolve a report.
-     * @param {import('@minecraft/server').Player} player The admin player.
-     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
-     * @param {object} context Context object with the reportId.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     showResolveReportForm: async (player, dependencies, context) => {
         const { reportManager } = dependencies;
         const { reportId } = context;
 
-        const modal = new ModalFormData()
-            .title(`Resolve Report: ${reportId}`)
-            .textField('Resolution Notes:', 'Enter resolution details')
-            .toggle('Mark as resolved', true);
-
+        const modal = new ModalFormData().title(`Resolve Report: ${reportId}`).textField('Resolution Notes:', 'Details').toggle('Mark as resolved', true);
         const response = await modal.show(player);
 
-        if (response.canceled) {
+        if (response.canceled || !response.formValues) {
             await showPanel(player, 'reportActionsPanel', dependencies, context);
             return;
         }
 
         const [resolutionNotes, isResolved] = response.formValues;
-
         if (isResolved) {
-            const success = reportManager.resolveReport(reportId, player.name, resolutionNotes);
-            if (success) {
-                player.sendMessage(`§aReport ${reportId} has been resolved.`);
+            if (reportManager.resolveReport(reportId, player.name, String(resolutionNotes))) {
+                player.sendMessage(`§aReport ${reportId} resolved.`);
             } else {
                 player.sendMessage(`§cFailed to resolve report ${reportId}.`);
             }
@@ -2164,59 +1653,43 @@ const uiActionFunctions = {
     },
 
     /**
-     * Confirms and clears a report.
-     * @param {import('@minecraft/server').Player} player The admin player.
-     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
-     * @param {object} context Context object with the reportId.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @param {object} context
      */
     confirmClearReport: async (player, dependencies, context) => {
         const { reportManager } = dependencies;
         const { reportId } = context;
 
-        await _showConfirmationModal(
-            player,
-            'Confirm Clear Report',
-            `Are you sure you want to clear report ${reportId}? This cannot be undone.`,
-            'Confirm Clear',
-            async () => {
-                const success = reportManager.clearReportById(reportId, dependencies);
-                if (success) {
-                    player.sendMessage(`§aReport ${reportId} has been cleared.`);
-                } else {
-                    player.sendMessage(`§cFailed to clear report ${reportId}.`);
-                }
-            },
-            dependencies,
-        );
+        await _showConfirmationModal(player, 'Confirm Clear Report', `Clear report ${reportId}?`, 'Confirm', async () => {
+            if (reportManager.clearReportById(reportId, dependencies)) {
+                player.sendMessage(`§aReport ${reportId} cleared.`);
+            } else {
+                player.sendMessage(`§cFailed to clear report ${reportId}.`);
+            }
+        }, dependencies);
         await showPanel(player, 'reportManagementPanel', dependencies, {});
     },
 };
 Object.assign(uiDynamicItemGenerators, {
     /**
-     * Generates panel items for each open report.
-     * @param {import('@minecraft/server').Player} player The admin player.
-     * @param {import('../types.js').Dependencies} dependencies Standard dependencies.
-     * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects.
+     * @param {import('@minecraft/server').Player} player
+     * @param {import('../types.js').Dependencies} dependencies
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]}
      */
     generateReportListItems: (player, dependencies) => {
         const { reportManager } = dependencies;
-        const items = [];
-        const openReports = reportManager.getOpenReports();
-
-        openReports.forEach((report, index) => {
-            items.push({
-                id: `report_${report.id}`,
-                sortId: 10 + index,
-                text: `§eReport ID: §f${report.id}\n§cReported: §f${report.reportedName}`,
-                icon: 'textures/ui/feedback',
-                requiredPermLevel: 1,
-                actionType: 'openPanel',
-                actionValue: 'reportActionsPanel',
-                initialContext: { reportId: report.id },
-            });
-        });
-
-        return items;
+        const openReports = reportManager?.getOpenReports?.() ?? [];
+        return openReports.map((report, index) => ({
+            id: `report_${report.id}`,
+            sortId: 10 + index,
+            text: `§eID: §f${report.id}\n§cReported: §f${report.reportedName}`,
+            icon: 'textures/ui/feedback',
+            requiredPermLevel: 1,
+            actionType: 'openPanel',
+            actionValue: 'reportActionsPanel',
+            initialContext: { reportId: report.id },
+        }));
     },
 });
 
@@ -2227,16 +1700,10 @@ Object.assign(uiDynamicItemGenerators, {
  * @param {object} context
  */
 async function goToNextLogPage(player, dependencies, context) {
-    let { currentPage = 1 } = context; // currentPage can be incremented
-    const totalPages = context.totalPages ?? 1; // Get totalPages from context or default to 1
-
-    dependencies.playerUtils.debugLog(`[UiManager.goToNextLogPage] Current: ${currentPage}, Total: ${totalPages}`, player.name, dependencies);
-    if (currentPage < totalPages) {
-        currentPage++;
-    }
-    // No need to push to nav stack here, showPanel for logViewerPanel handles its state.
-    // Pass the original context, which might include filters, and the updated currentPage.
-    await showPanel(player, 'logViewerPanel', dependencies, { ...context, currentPage });
+    const currentPage = (context.currentPage ?? 1);
+    const totalPages = (context.totalPages ?? 1);
+    const nextPage = Math.min(currentPage + 1, totalPages);
+    await showPanel(player, 'logViewerPanel', dependencies, { ...context, currentPage: nextPage });
 }
 
 /**
@@ -2245,19 +1712,10 @@ async function goToNextLogPage(player, dependencies, context) {
  * @param {object} context
  */
 async function goToPrevLogPage(player, dependencies, context) {
-    let { currentPage = 1 } = context;
-    dependencies.playerUtils.debugLog(`[UiManager.goToPrevLogPage] Current: ${currentPage}`, player.name, dependencies);
-    if (currentPage > 1) {
-        currentPage--;
-    }
-    // No need to push to nav stack here, showPanel for logViewerPanel handles its state.
-    await showPanel(player, 'logViewerPanel', dependencies, { ...context, currentPage });
+    const currentPage = (context.currentPage ?? 1);
+    const prevPage = Math.max(currentPage - 1, 1);
+    await showPanel(player, 'logViewerPanel', dependencies, { ...context, currentPage: prevPage });
 }
-
-// Removed duplicate function prepareBanUnbanLogsViewer
-
-// Removed duplicate function prepareMuteUnmuteLogsViewer
-
 
 /**
  * @param {import('@minecraft/server').Player} adminPlayer
@@ -2267,24 +1725,18 @@ async function goToPrevLogPage(player, dependencies, context) {
 async function showInspectPlayerForm(adminPlayer, dependencies, context) {
     const { playerUtils, logManager, commandExecutionMap } = dependencies;
     const adminName = adminPlayer?.name ?? 'UnknownAdmin';
-    playerUtils.debugLog(`[UiManager.showInspectPlayerForm] Requested by ${adminName}`, adminName, dependencies);
 
-    const modalForm = new ModalFormData()
-        .title(inspectPlayerTitle)
-        .textField(inspectPlayerTextFieldLabel, inspectPlayerTextFieldPlaceholder);
+    const modalForm = new ModalFormData().title(inspectPlayerTitle).textField(inspectPlayerTextFieldLabel, inspectPlayerTextFieldPlaceholder);
 
     try {
         const response = await modalForm.show(adminPlayer);
         const callingPanelState = getCurrentTopOfNavStack(adminPlayer.id) || { panelId: 'playerManagementPanel', context: {} };
 
-        if (response.canceled) {
-            playerUtils.debugLog(`[UiManager.showInspectPlayerForm] Cancelled by ${adminName}. Reason: ${response.cancelationReason}`, adminName, dependencies);
-            if (callingPanelState.panelId) {
-                await showPanel(adminPlayer, callingPanelState.panelId, dependencies, callingPanelState.context);
-            }
+        if (response.canceled || !response.formValues) {
+            await showPanel(adminPlayer, callingPanelState.panelId, dependencies, callingPanelState.context);
             return;
         }
-        const targetPlayerName = response.formValues?.[0]?.trim();
+        const targetPlayerName = String(response.formValues[0] ?? '').trim();
         if (!targetPlayerName) {
             adminPlayer?.sendMessage(playerUtils.getString('common.error.nameEmpty'));
             await uiActionFunctions.showInspectPlayerForm(adminPlayer, dependencies, context);
@@ -2297,24 +1749,13 @@ async function showInspectPlayerForm(adminPlayer, dependencies, context) {
         } else {
             adminPlayer?.sendMessage(playerUtils.getString('common.error.commandModuleNotFound', { moduleName: 'inspect' }));
         }
-        if (callingPanelState.panelId) {
-            await showPanel(adminPlayer, callingPanelState.panelId, dependencies, callingPanelState.context);
-        }
+        await showPanel(adminPlayer, callingPanelState.panelId, dependencies, callingPanelState.context);
 
     } catch (error) {
         logError(`[UiManager.showInspectPlayerForm] Error for ${adminName}: ${error.stack || error}`, error);
-        playerUtils.debugLog(`[UiManager.showInspectPlayerForm] Error for ${adminName}: ${error.message}`, adminName, dependencies);
-        logManager?.addLog({
-            actionType: 'errorUiInspectPlayerForm',
-            context: 'uiManager.showInspectPlayerForm',
-            adminName,
-            details: { errorMessage: error.message, stack: error.stack },
-        }, dependencies);
         adminPlayer?.sendMessage(playerUtils.getString('common.error.genericForm'));
         const callingPanelStateOnError = getCurrentTopOfNavStack(adminPlayer.id) || { panelId: 'playerManagementPanel', context: {} };
-        if (callingPanelStateOnError.panelId) {
-            await showPanel(adminPlayer, callingPanelStateOnError.panelId, dependencies, callingPanelStateOnError.context);
-        }
+        await showPanel(adminPlayer, callingPanelStateOnError.panelId, dependencies, callingPanelStateOnError.context);
     }
 }
 

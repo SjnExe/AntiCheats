@@ -15,18 +15,21 @@ export async function mainTick(dependencies) {
     try {
         await processTick(dependencies);
     } catch (e) {
-        logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        const errorStack = e instanceof Error ? e.stack : undefined;
+        logError(`Critical unhandled error in mainTick: ${errorMessage}`, e);
         try {
             logManager.addLog({
                 actionType: 'error.main.tick.unhandled.rejection',
                 context: 'Main.TickLoop.TopLevel',
                 details: {
-                    errorMessage: e?.message,
-                    stack: e?.stack,
+                    errorMessage: errorMessage,
+                    stack: errorStack,
                 },
             }, dependencies);
         } catch (loggingError) {
-            logError(`CRITICAL: Failed to write to structured log during top-level tick error: ${loggingError.message}`, loggingError);
+            const loggingErrorMessage = loggingError instanceof Error ? loggingError.message : String(loggingError);
+            logError(`CRITICAL: Failed to write to structured log during top-level tick error: ${loggingErrorMessage}`, loggingError);
         }
     }
 }
@@ -42,13 +45,15 @@ async function processTick(dependencies) {
         try {
             worldBorderManager.processWorldBorderResizing(dependencies);
         } catch (e) {
-            playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', dependencies);
+            const errorMessage = e instanceof Error ? e.message : String(e);
+            const errorStack = e instanceof Error ? e.stack : undefined;
+            playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${errorMessage}`, 'System', dependencies);
             logManager.addLog({
                 actionType: 'error.main.worldBorderResize',
                 context: 'Main.TickLoop.worldBorderResizing',
                 details: {
-                    errorMessage: e.message,
-                    stack: e.stack,
+                    errorMessage: errorMessage,
+                    stack: errorStack,
                 },
             }, dependencies);
         }
@@ -83,7 +88,8 @@ async function processPlayer(player, dependencies, currentTick) {
     try {
         pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, dependencies);
     } catch (e) {
-        playerUtils.debugLog(`[TickLoop] Error in ensurePlayerDataInitialized for ${player?.name}: ${e.message}`, player?.name, dependencies);
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        playerUtils.debugLog(`[TickLoop] Error in ensurePlayerDataInitialized for ${player?.name}: ${errorMessage}`, player?.name, dependencies);
         return;
     }
 
@@ -127,16 +133,18 @@ async function processPlayer(player, dependencies, currentTick) {
                 try {
                     await checkFunction(player, pData, dependencies);
                 } catch (checkError) {
-                    const errorMessage = `[TickLoop] Error during ${checkName} for ${player?.name}: ${checkError?.message ?? 'Unknown error'}`;
-                    playerUtils.debugLog(errorMessage, player?.name, dependencies);
+                    const errorMessage = checkError instanceof Error ? checkError.message : String(checkError);
+                    const errorStack = checkError instanceof Error ? checkError.stack : undefined;
+                    const logMessage = `[TickLoop] Error during ${checkName} for ${player?.name}: ${errorMessage}`;
+                    playerUtils.debugLog(logMessage, player?.name, dependencies);
                     logManager.addLog({
                         actionType: 'error.main.playerTick.checkFail',
                         context: 'Main.TickLoop.playerChecks',
                         targetName: player?.name || 'UnknownPlayer',
                         details: {
                             check: checkName,
-                            message: checkError?.message ?? 'N/A',
-                            rawErrorStack: checkError?.stack ?? 'N/A',
+                            message: errorMessage,
+                            rawErrorStack: errorStack,
                         },
                     }, dependencies);
                 }
@@ -216,13 +224,15 @@ export function tpaTick(dependencies) {
             }
         }
     } catch (e) {
-        logError(`Unhandled error in tpaTick: ${e?.message}`, e);
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        const errorStack = e instanceof Error ? e.stack : undefined;
+        logError(`Unhandled error in tpaTick: ${errorMessage}`, e);
         logManager.addLog({
             actionType: 'error.main.tpaTick.unhandled',
             context: 'Main.tpaTick',
             details: {
-                errorMessage: e?.message,
-                stack: e?.stack,
+                errorMessage: errorMessage,
+                stack: errorStack,
             },
         }, dependencies);
     }

@@ -50,6 +50,7 @@ export async function execute(player, args, dependencies) {
         pData.fallDistance = 0;
         pData.consecutiveOnGroundSpeedingTicks = 0;
         pData.attackEvents = [];
+        pData.attackTimestamps = [];
         pData.blockBreakEvents = [];
         pData.recentHits = [];
         pData.recentPlaceTimestamps = [];
@@ -72,7 +73,7 @@ export async function execute(player, args, dependencies) {
         pData.lastDownwardScaffoldBlockLocation = null;
 
         pData.isDirtyForSave = true;
-        await playerDataManager.prepareAndSavePlayerData(targetPlayer, dependencies);
+        await playerDataManager.saveDirtyPlayerData(targetPlayer, dependencies);
 
         player.sendMessage(getString('command.resetflags.success', { playerName: targetPlayer.nameTag }));
         if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
