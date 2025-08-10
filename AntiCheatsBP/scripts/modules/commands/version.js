@@ -25,6 +25,7 @@ export function execute(player, _args, dependencies) {
         return;
     }
 
+    /** @type {string} */
     const versionString = acVersion || getString('common.value.notAvailable');
 
     player.sendMessage(getString('command.version.message', { version: versionString }));

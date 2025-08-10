@@ -63,6 +63,7 @@ export function execute(
                 : getString('ban.duration.expires', { expiryDate: new Date(unbanTime).toLocaleString() });
 
             // Kick the player with a detailed message
+            /** @type {string[]} */
             const kickMessageParts = [
                 getString('command.ban.kickMessage.header'),
                 getString('command.ban.kickMessage.reason', { reason }),
@@ -75,6 +76,7 @@ export function execute(
             targetPlayer.kick(kickMessageParts.join('\n'));
 
             // Notify issuer and admins
+            /** @type {string} */
             const successMessage = getString('command.ban.success', { playerName: targetPlayer.nameTag, durationString: durationDisplay, reason });
             if (player) {
                 player.sendMessage(successMessage);

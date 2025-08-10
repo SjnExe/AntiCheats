@@ -42,7 +42,7 @@ import * as checks from '../modules/detections/index.js';
 
 /**
  * A container for all initialized modules and services.
- * @type {import('../types.js').CommandDependencies}
+ * @type {import('../types.js').Dependencies}
  */
 export const dependencies = {
     // Minecraft APIs

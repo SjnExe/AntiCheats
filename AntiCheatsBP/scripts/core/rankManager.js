@@ -8,7 +8,7 @@ export let permissionLevels = {};
 let sortedRankDefinitions = [];
 
 /**
- * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  */
 function initializeRankSystem(dependencies) {
     const { playerUtils } = dependencies; // Removed config
@@ -51,7 +51,7 @@ function initializeRankSystem(dependencies) {
 
 /**
  * @param {import('@minecraft/server').Player} player
- * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {{rankDefinition: import('./ranksConfig.js').RankDefinition|null, permissionLevel: number, rankId: string|null}}
  */
 function getPlayerRankAndPermissions(player, dependencies) {
@@ -116,7 +116,7 @@ function getPlayerRankAndPermissions(player, dependencies) {
 
 /**
  * @param {import('@minecraft/server').Player} player
- * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {number}
  */
 export function getPlayerPermissionLevel(player, dependencies) {
@@ -126,7 +126,7 @@ export function getPlayerPermissionLevel(player, dependencies) {
 
 /**
  * @param {import('@minecraft/server').Player} player
- * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  * @returns {{fullPrefix: string, nameColor: string, messageColor: string}}
  */
 export function getPlayerRankFormattedChatElements(player, dependencies) {
@@ -145,7 +145,7 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
 
 /**
  * @param {import('@minecraft/server').Player} player
- * @param {import('../types.js').CommandDependencies} dependencies
+ * @param {import('../types.js').Dependencies} dependencies
  */
 export function updatePlayerNametag(player, dependencies) {
     const { config, playerUtils } = dependencies;
@@ -187,7 +187,7 @@ export function updatePlayerNametag(player, dependencies) {
     }
 }
 
-/** @param {import('../types.js').CommandDependencies} dependencies */
+/** @param {import('../types.js').Dependencies} dependencies */
 export function initializeRanks(dependencies) {
     initializeRankSystem(dependencies);
 }

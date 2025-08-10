@@ -143,6 +143,10 @@ function handlePlayerDataDebug(player, args, playerDataManager) {
     }
 }
 
+/**
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../../core/rankManager.js')} rankManager
+ */
 function handleRanksDebug(player, rankManager) {
     const { rankDefinitions } = rankManager;
     player.sendMessage('§2--- Registered Ranks ---');
@@ -160,7 +164,13 @@ function handleRanksDebug(player, rankManager) {
     });
 }
 
-function handleCommandsDebug(player, { config }, commandManager) {
+/**
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../../types.js').Dependencies} dependencies
+ * @param {import('../../core/commandManager.js')} commandManager
+ */
+function handleCommandsDebug(player, dependencies, commandManager) {
+    const { config } = dependencies;
     const allCommands = commandManager.getAllRegisteredCommandNames();
     player.sendMessage('§2--- Registered Commands ---');
     player.sendMessage(allCommands.join(', '));

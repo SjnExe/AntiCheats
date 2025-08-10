@@ -12,7 +12,7 @@ export const definition = {
  * @param {string[]} args
  * @param {import('../../types.js').Dependencies} dependencies
  */
-export async function execute(player, args, dependencies) {
+export function execute(player, args, dependencies) {
     const { config, getString } = dependencies;
 
     if (!config.economy?.enabled) {
@@ -28,6 +28,7 @@ export async function execute(player, args, dependencies) {
     }
 
     try {
+        /** @type {{playerName: string, balance: number}[]} */
         const leaderboard = JSON.parse(leaderboardJSON);
         if (!Array.isArray(leaderboard) || leaderboard.length === 0) {
             player.sendMessage(getString('command.baltop.noData'));
@@ -36,6 +37,7 @@ export async function execute(player, args, dependencies) {
 
         const topPlayers = leaderboard.slice(0, config.economy.leaderboardSize ?? 10);
 
+        /** @type {string} */
         let message = getString('command.baltop.header') + '\n';
         topPlayers.forEach((entry, index) => {
             message += getString('command.baltop.row', {
