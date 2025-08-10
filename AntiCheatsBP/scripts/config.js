@@ -35,6 +35,8 @@ const defaultConfigSettings = {
         checkStaggerTicks: 5,
         /** @type {number} The maximum number of historical timings to keep for each event handler. */
         maxProfilingHistory: 100,
+        /** @type {number} The distance in blocks a player can move in a single tick before being considered to have teleported. Used to prevent NoFall false positives. */
+        teleportDistanceThreshold: 10,
     },
 
     /** @type {object} Settings related to player status effects and tags. */

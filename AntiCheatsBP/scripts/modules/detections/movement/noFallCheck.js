@@ -64,11 +64,33 @@ export async function checkNoFall(player, pData, dependencies) {
 
     if (player.isOnGround) {
         const slimeBlockGraceTicks = config?.slimeBlockNoFallGraceTicks ?? 20;
+        const launchGraceTicks = 20; // 1 second
+        const ticksSinceLastLaunch = currentTick - (pData.transient?.lastLaunchTick ?? -Infinity);
+
         if ((currentTick - (pData.lastOnSlimeBlockTick ?? -Infinity)) < slimeBlockGraceTicks) {
             if (pData.isWatched) {
-                playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} recently on slime block (LastSlimeTick: ${pData.lastOnSlimeBlockTick}, CurrentTick: ${currentTick}). Fall damage check modified/bypassed.`, watchedPlayerName, dependencies);
+                playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} recently on slime block. Check bypassed.`, watchedPlayerName, dependencies);
             }
             return;
+        }
+
+        if (ticksSinceLastLaunch <= launchGraceTicks) {
+            if (pData.isWatched) {
+                playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} recently used a launch item. Check bypassed.`, watchedPlayerName, dependencies);
+            }
+            return;
+        }
+
+        try {
+            const nearbyBoats = player.dimension.getEntities({ location: player.location, maxDistance: 2, type: 'minecraft:boat' });
+            if (nearbyBoats.length > 0) {
+                if (pData.isWatched) {
+                    playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} landed in or near a boat. Check bypassed.`, watchedPlayerName, dependencies);
+                }
+                return;
+            }
+        } catch (e) {
+            playerUtils?.debugLog(`[NoFallCheck] Error checking for nearby boats for ${playerName}: ${e.message}`, watchedPlayerName, dependencies);
         }
 
         try {

@@ -901,6 +901,30 @@ async function handleItemUse(eventData, dependencies) {
     }
 
     const itemFoodComponent = itemStack.type?.getComponent('minecraft:food');
+    // Handle high-velocity item uses for grace periods (e.g., Wind Charge, Riptide)
+    let isLaunchItem = false;
+    if (itemStack.typeId === 'minecraft:wind_charge') {
+        isLaunchItem = true;
+    } else if (itemStack.typeId === 'minecraft:trident') {
+        try {
+            const enchantments = itemStack.getComponent('minecraft:enchantable')?.getEnchantments();
+            const hasRiptide = enchantments?.some(e => e.type.id === 'riptide' && e.level > 0);
+            if (hasRiptide && (player.isInWater || player.dimension.id === 'minecraft:overworld' && world.getWeather().rainLevel > 0)) {
+                isLaunchItem = true;
+            }
+        } catch (e) {
+            // It's possible getComponent or getEnchantments fails on some custom items.
+            playerUtils?.debugLog(`[EvtHdlr.ItemUse] Error checking trident enchantments for ${player.name}: ${e.message}`, player.name, dependencies);
+        }
+    }
+
+    if (isLaunchItem) {
+        pData.transient ??= {};
+        pData.transient.lastLaunchTick = currentTick;
+        playerUtils?.debugLog(`[EvtHdlr.ItemUse] Player ${player.name} used a launch item (${itemStack.typeId}). Setting lastLaunchTick to ${currentTick}.`, player.name, dependencies);
+    }
+
+
     if (itemFoodComponent && config?.enableStateConflictCheck) {
         pData.isUsingConsumable = true;
         pData.isDirtyForSave = true;

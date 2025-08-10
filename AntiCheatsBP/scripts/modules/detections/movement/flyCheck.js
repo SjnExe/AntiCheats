@@ -56,12 +56,14 @@ export async function checkFly(player, pData, dependencies) {
         const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity);
         const ticksSinceLastElytra = currentTick - (pData.lastUsedElytraTick ?? -Infinity);
         const ticksSinceLastOnSlime = currentTick - (pData.lastOnSlimeBlockTick ?? -Infinity);
+        const ticksSinceLastLaunch = currentTick - (pData.transient?.lastLaunchTick ?? -Infinity);
         const graceTicks = config?.yVelocityGraceTicks ?? 10;
 
         const underGraceCondition = (
             ticksSinceLastDamage <= graceTicks ||
             ticksSinceLastElytra <= graceTicks ||
             ticksSinceLastOnSlime <= graceTicks ||
+            ticksSinceLastLaunch <= graceTicks ||
             player.isClimbing ||
             (pData.hasSlowFalling && currentYVelocity < 0)
         );
@@ -76,6 +78,9 @@ export async function checkFly(player, pData, dependencies) {
             }
             if (ticksSinceLastOnSlime <= graceTicks) {
                 graceReasons.push(`recent slime block (${ticksSinceLastOnSlime}t)`);
+            }
+            if (ticksSinceLastLaunch <= graceTicks) {
+                graceReasons.push(`recent launch item (${ticksSinceLastLaunch}t)`);
             }
             if (player.isClimbing) {
                 graceReasons.push('climbing');
@@ -165,33 +170,21 @@ export async function checkFly(player, pData, dependencies) {
         !(pData.hasSlowFalling && verticalSpeed < (config.flyHoverSlowFallingMinVSpeed ?? -0.01));
 
     if (isHoverCandidate) {
-        const playerLocY = player.location.y;
-        const lastGroundY = pData.lastOnGroundPosition?.y;
-
-        // Only proceed if we have a valid last ground position in the same dimension.
-        if (typeof lastGroundY === 'number' && pData.lastDimensionId === player.dimension.id) {
-            const heightAboveLastGround = playerLocY - lastGroundY;
-
-            if (heightAboveLastGround > hoverMinHeight) {
-                const violationDetails = {
-                    type: 'flyHover',
-                    verticalSpeed: verticalSpeed.toFixed(3),
-                    offGroundTicks: (pData.transient.ticksSinceLastOnGround ?? 0).toString(),
-                    fallDistance: (pData.fallDistance ?? 0).toFixed(2),
-                    heightAboveLastGround: heightAboveLastGround.toFixed(2),
-                    isClimbing: player.isClimbing.toString(),
-                    isInWater: player.isInWater.toString(),
-                    hasLevitation: (pData.hasLevitation ?? false).toString(),
-                    hasSlowFalling: (pData.hasSlowFalling ?? false).toString(),
-                };
-                const hoverFlyActionProfileKey = config?.hoverFlyActionProfileName ?? 'movementFlyHover';
-                await actionManager?.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
-                playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.transient.ticksSinceLastOnGround}t, FallDist: ${pData.fallDistance?.toFixed(2)}, Height: ${heightAboveLastGround.toFixed(2)}`, watchedPlayerName, dependencies);
-            } else if (pData.isWatched) {
-                playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover criteria but height (${heightAboveLastGround.toFixed(2)}) was not > min (${hoverMinHeight}).`, watchedPlayerName, dependencies);
-            }
-        } else if (pData.isWatched) {
-            playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover criteria but could not determine height above ground. LastGroundY=${lastGroundY}, LastDim=${pData.lastDimensionId}, CurrDim=${player.dimension.id}`, watchedPlayerName, dependencies);
-        }
+        // The original height check was flawed as it didn't account for players walking off ledges.
+        // The isHoverCandidate conditions (especially ticksSinceLastOnGround) are robust enough to
+        // prevent false positives from normal jumping, making the height check redundant and buggy.
+        const violationDetails = {
+            type: 'flyHover',
+            verticalSpeed: verticalSpeed.toFixed(3),
+            offGroundTicks: (pData.transient.ticksSinceLastOnGround ?? 0).toString(),
+            fallDistance: (pData.fallDistance ?? 0).toFixed(2),
+            isClimbing: player.isClimbing.toString(),
+            isInWater: player.isInWater.toString(),
+            hasLevitation: (pData.hasLevitation ?? false).toString(),
+            hasSlowFalling: (pData.hasSlowFalling ?? false).toString(),
+        };
+        const hoverFlyActionProfileKey = config?.hoverFlyActionProfileName ?? 'movementFlyHover';
+        await actionManager?.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.transient.ticksSinceLastOnGround}t, FallDist: ${pData.fallDistance?.toFixed(2)}`, watchedPlayerName, dependencies);
     }
 }
