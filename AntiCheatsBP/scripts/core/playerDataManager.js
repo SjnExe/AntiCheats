@@ -416,9 +416,6 @@ function recoverAndSerializePlayerData(dataToSave, playerLike, dependencies) {
     // Stage 2: Clear historical arrays completely
     dataToSave.blockBreakTimestamps = [];
     dataToSave.chatMessageTimestamps = [];
-    if (dataToSave.recentBlockPlacements) {
-        dataToSave.recentBlockPlacements = [];
-    }
     dataToSave.lastViolationDetailsMap = {}; // Clear all violation details as a last resort before reset
 
     serializedData = JSON.stringify(dataToSave);
