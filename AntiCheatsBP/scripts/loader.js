@@ -21,8 +21,8 @@ try {
 // The order is important: main.js contains functions that initializationManager.js will call.
 try {
     log('Loading core modules...');
-    import('./main.js');
-    import('./core/initializationManager.js');
+    void import('./main.js');
+    void import('./core/initializationManager.js');
     log('Core modules loaded into execution context.');
 } catch (e) {
     logError('CRITICAL: Failed to load core modules. The addon will not start.', e);

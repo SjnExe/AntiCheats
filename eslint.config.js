@@ -3,6 +3,8 @@
 import eslint from '@eslint/js';
 import globals from 'globals';
 import jsonc from 'eslint-plugin-jsonc';
+import ts from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
 import { FlatCompat } from '@eslint/eslintrc';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,9 +24,11 @@ export default [
             'package-lock.json',
             '.git/',
             'AntiCheatsRP/font/',
+            'tsconfig.json',
+            'eslint.config.js', // Also ignore the eslint config itself
         ],
     },
-    // Base JS configuration
+    // Base JS configuration with TypeScript support
     {
         files: ['**/*.js'],
         languageOptions: {
@@ -34,29 +38,31 @@ export default [
                 ...globals.browser,
                 ...globals.node,
                 ...globals.es2021,
-                // Minecraft Bedrock Scripting API globals
-                'system': 'readonly',
-                'world': 'readonly',
-                'mc': 'readonly',
-                'Minecraft': 'readonly',
-                'mojang-minecraft': 'readonly',
-                'mojang-gametest': 'readonly',
-                'mojang-minecraft-ui': 'readonly',
-                'mojang-server-admin': 'readonly',
-                'mojang-net': 'readonly',
+            },
+            parser: tsParser,
+            parserOptions: {
+                project: './tsconfig.json',
+                ecmaVersion: 'latest',
+                sourceType: 'module',
             },
         },
         linterOptions: {
             reportUnusedDisableDirectives: 'error',
         },
+        plugins: {
+            '@typescript-eslint': ts,
+        },
         rules: {
             ...eslint.configs.recommended.rules,
+            ...ts.configs['eslint-recommended'].rules,
+            ...ts.configs['recommended-type-checked'].rules,
             'camelcase': ['error', { 'properties': 'always', 'ignoreDestructuring': true, 'allow': ['^UNSAFE_'] }],
             'indent': ['error', 4, { 'SwitchCase': 1 }],
             'quotes': ['error', 'single', { 'avoidEscape': true }],
             'semi': ['error', 'always'],
             'no-trailing-spaces': 'error',
-            'no-unused-vars': ['warn', { 'args': 'none' }],
+            'no-unused-vars': 'off', // Covered by @typescript-eslint/no-unused-vars
+            '@typescript-eslint/no-unused-vars': ['warn', { 'args': 'none' }],
             'no-undef': 'error',
             'object-curly-spacing': ['error', 'always'],
             'comma-dangle': ['error', 'always-multiline'],
@@ -69,6 +75,12 @@ export default [
                 'asyncArrow': 'always',
             }],
             'arrow-spacing': ['error', { 'before': true, 'after': true }],
+            // Disable rules that are not helpful in this project
+            '@typescript-eslint/no-unsafe-assignment': 'off',
+            '@typescript-eslint/no-unsafe-call': 'off',
+            '@typescript-eslint/no-unsafe-member-access': 'off',
+            '@typescript-eslint/no-unsafe-return': 'off',
+            '@typescript-eslint/no-explicit-any': 'warn',
         },
     },
     // JSONC configuration

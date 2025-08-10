@@ -7,6 +7,9 @@ export const tpaSystemTickInterval = 20;
 
 let currentTick = 0;
 
+/**
+ * @param {import('./types.js').Dependencies} dependencies
+ */
 export async function mainTick(dependencies) {
     const { logManager } = dependencies;
     try {
@@ -28,6 +31,9 @@ export async function mainTick(dependencies) {
     }
 }
 
+/**
+ * @param {import('./types.js').Dependencies} dependencies
+ */
 async function processTick(dependencies) {
     const { config, worldBorderManager, playerDataManager, playerUtils, logManager } = dependencies;
     currentTick++;
@@ -61,6 +67,11 @@ async function processTick(dependencies) {
     }
 }
 
+/**
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('./types.js').Dependencies} dependencies
+ * @param {number} currentTick
+ */
 async function processPlayer(player, dependencies, currentTick) {
     const { config, checks, playerDataManager, playerUtils, logManager, worldBorderManager } = dependencies;
 
@@ -138,6 +149,10 @@ async function processPlayer(player, dependencies, currentTick) {
     }
 }
 
+/**
+ * @param {import('@minecraft/server').Player[]} allPlayers
+ * @param {import('./types.js').Dependencies} dependencies
+ */
 async function handlePeriodicDataPersistence(allPlayers, dependencies) {
     const { playerUtils, playerDataManager, logManager, reportManager, tpaManager } = dependencies;
     playerUtils.debugLog('Performing periodic data persistence.', 'System', dependencies);
@@ -155,6 +170,9 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
     tpaManager.persistTpaState(dependencies);
 }
 
+/**
+ * @param {import('./types.js').Dependencies} dependencies
+ */
 export function tpaTick(dependencies) {
     const { config, tpaManager, logManager } = dependencies;
     try {

@@ -7,6 +7,9 @@ export let permissionLevels = {};
 /** @type {Array<import('./ranksConfig.js').RankDefinition>} */
 let sortedRankDefinitions = [];
 
+/**
+ * @param {import('../types.js').CommandDependencies} dependencies
+ */
 function initializeRankSystem(dependencies) {
     const { playerUtils } = dependencies; // Removed config
 

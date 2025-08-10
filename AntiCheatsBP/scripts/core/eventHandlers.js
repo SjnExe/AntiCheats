@@ -1,5 +1,6 @@
 import {
     world,
+    system,
 } from '@minecraft/server';
 import * as mc from '@minecraft/server';
 import {

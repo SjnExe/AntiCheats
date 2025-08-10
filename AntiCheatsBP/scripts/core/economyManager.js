@@ -48,7 +48,7 @@ export function updateLeaderboard(player, dependencies) {
             leaderboard = JSON.parse(rawLeaderboard);
         }
     } catch (error) {
-        console.error(`[EconomyManager] Failed to load leaderboard: ${error}`);
+        console.error(`[EconomyManager] Failed to load leaderboard: ${String(error)}`);
     }
 
     const playerEntry = {
@@ -71,7 +71,7 @@ export function updateLeaderboard(player, dependencies) {
     try {
         world.setDynamicProperty(leaderboardPropertyKey, JSON.stringify(leaderboard));
     } catch (error) {
-        console.error(`[EconomyManager] Failed to save leaderboard: ${error}`);
+        console.error(`[EconomyManager] Failed to save leaderboard: ${String(error)}`);
     }
 }
 
