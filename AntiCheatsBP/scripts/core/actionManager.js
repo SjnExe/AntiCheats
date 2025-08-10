@@ -154,10 +154,6 @@ function _handleViolationDetailsStorage(player, checkType, violationDetails, dep
     const { playerDataManager, playerUtils } = dependencies;
     const currentPData = playerDataManager?.getPlayerData(player.id);
     if (currentPData) {
-        if (!player.isValid()) {
-            playerUtils?.debugLog(`[ActionManager] Player ${currentPData.name} became invalid after getting pData. Skipping details map update.`, null, dependencies);
-            return;
-        }
         currentPData.lastViolationDetailsMap ??= {};
         const detailsToStore = {
             timestamp: Date.now(),
