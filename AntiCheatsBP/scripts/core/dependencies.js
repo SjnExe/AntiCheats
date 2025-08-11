@@ -9,7 +9,6 @@
 
 import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui';
-import { system } from '@minecraft/server';
 
 // Configuration
 import { config, updateConfigValue, acVersion, editableConfigValues } from '../config.js';
@@ -48,7 +47,7 @@ export const dependencies = {
     // Minecraft APIs
     mc,
     mcui,
-    system,
+    system: mc.system,
 
     // Configuration
     config,
