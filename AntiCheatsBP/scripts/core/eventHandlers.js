@@ -1,5 +1,6 @@
 import {
     world,
+    system
 } from '@minecraft/server';
 import * as mc from '@minecraft/server';
 import {
@@ -10,6 +11,7 @@ import {
     log,
     logError,
 } from '../modules/utils/index.js';
+
 const defaultCombatLogThresholdSeconds = 15;
 const deathCoordsMessageDelayTicks = 5;
 const defaultFoodUseDurationSeconds = 1.6;
@@ -20,6 +22,7 @@ const blockOffsetTwoBelow = -2;
 const golemConstructionCheckTickWindow = 10;
 const renderDistanceCheckDelayTicks = 100;
 const minTimeoutDelayTicks = 1;
+
 /**
  * @param {string} handlerName
  * @param {Function} handlerFunction
@@ -27,7 +30,7 @@ const minTimeoutDelayTicks = 1;
 function profileEventHandler(handlerName, handlerFunction) {
     return async function (...args) {
         const dependencies = args[args.length - 1];
-        if (dependencies && dependencies.config && dependencies.config.enablePerformanceProfiling && dependencies.profilingData) {
+        if (dependencies && dependencies.config && dependencies.config.development.enablePerformanceProfiling && dependencies.profilingData) {
             const startTime = Date.now();
             try {
                 await handlerFunction.apply(null, args);
@@ -66,11 +69,12 @@ function profileEventHandler(handlerName, handlerFunction) {
         }
     };
 }
+
 /**
  * @param {import('@minecraft/server').PlayerLeaveBeforeEvent} eventData
  * @param {import('../types.js').Dependencies} dependencies
  */
-function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
+export const handlePlayerLeaveBeforeEvent = profileEventHandler('handlePlayerLeaveBeforeEvent', (eventData, dependencies) => {
     const { playerDataManager, playerUtils, config, logManager, actionManager, economyManager } = dependencies;
     const { player } = eventData;
     const { name: playerName, id: playerId } = player;
@@ -80,12 +84,10 @@ function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
     const pData = playerDataManager.getPlayerData(playerId);
 
     if (pData) {
-        // Update economy leaderboard
         if (config.economy?.enabled) {
             economyManager.updateLeaderboard(player, dependencies);
         }
 
-        // Handle combat logging first
         if (config?.combatLog?.enabled && pData.lastCombatInteractionTime > 0) {
             const currentTime = Date.now();
             const timeSinceLastCombatMs = currentTime - pData.lastCombatInteractionTime;
@@ -94,26 +96,16 @@ function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
             if (timeSinceLastCombatMs < combatLogThresholdMs) {
                 const timeSinceLastCombatSeconds = (timeSinceLastCombatMs / 1000).toFixed(1);
                 const incrementAmount = 1;
-
-                playerUtils.debugLog(
-                    `[EvtHdlr.Leave] CombatLog: ${playerName} left ${timeSinceLastCombatSeconds}s after combat. ` +
-                    `Thresh: ${config.combatLog.thresholdSeconds}s. Flag +${incrementAmount}.`,
-                    playerName, dependencies,
-                );
-
+                playerUtils.debugLog(`[EvtHdlr.Leave] CombatLog: ${playerName} left ${timeSinceLastCombatSeconds}s after combat. Thresh: ${config.combatLog.thresholdSeconds}s. Flag +${incrementAmount}.`, playerName, dependencies);
                 const violationDetails = { timeSinceLastCombat: timeSinceLastCombatSeconds, incrementAmount };
-                // Note: executeCheckAction can be async. In a sync event handler, we can't wait for it.
-                // This is acceptable for combat logging, as the action (e.g., adding a flag) doesn't
-                // need to block the leave event. The consequences will be applied regardless.
                 actionManager.executeCheckAction(player, 'combatLog', violationDetails, dependencies);
             }
         }
 
-        // Update session info and log the leave event.
         pData.lastLogoutTime = Date.now();
         pData.isOnline = false;
 
-        const lastLocation = player.location; // Get location from the valid player object
+        const lastLocation = player.location;
         const lastDimensionId = player.dimension.id.replace('minecraft:', '');
         const lastGameModeString = pData.lastGameMode ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
         let sessionDurationString = playerUtils.getString('common.value.notApplicable', dependencies) ?? 'N/A';
@@ -124,16 +116,13 @@ function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
             actionType: 'playerLeave',
             targetName: playerName,
             targetId: playerId,
-            details: `Last Loc: ${Math.floor(lastLocation?.x ?? 0)},${Math.floor(lastLocation?.y ?? 0)},` +
-                         `${Math.floor(lastLocation?.z ?? 0)} in ${lastDimensionId}. GM: ${lastGameModeString}. Session: ${sessionDurationString}.`,
+            details: `Last Loc: ${Math.floor(lastLocation?.x ?? 0)},${Math.floor(lastLocation?.y ?? 0)},${Math.floor(lastLocation?.z ?? 0)} in ${lastDimensionId}. GM: ${lastGameModeString}. Session: ${sessionDurationString}.`,
             location: lastLocation ? { x: Math.floor(lastLocation.x), y: Math.floor(lastLocation.y), z: Math.floor(lastLocation.z), dimensionId: lastDimensionId } : undefined,
             gameMode: lastGameModeString,
             sessionDuration: sessionDurationString,
         }, dependencies);
 
-        // This is the most critical part: save the data using the valid player object
         try {
-            // The handlePlayerLeaveBeforeEvent in playerDataManager will mark dirty and save
             playerDataManager.handlePlayerLeaveBeforeEvent(player, dependencies);
             playerUtils.debugLog(`[EventHandler.handlePlayerLeave] Data save processed for ${playerName} on leave.`, playerName, dependencies);
         } catch (error) {
@@ -152,14 +141,13 @@ function handlePlayerLeaveBeforeEvent(eventData, dependencies) {
         log(`[LeaveLog] Player: ${playerName} (ID: ${playerId}) left the game.`);
     }
     playerUtils.debugLog(`[EventHandler.handlePlayerLeave] Finished processing for ${playerName}.`, playerName, dependencies);
-}
-profileEventHandler('handlePlayerLeaveBeforeEvent', handlePlayerLeaveBeforeEvent);
+});
 
 /**
- * @param {import('@minecraft/server').PlayerSpawnAfterEvent} eventData The player spawn event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerSpawnAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePlayerSpawn(eventData, dependencies) {
+export const handlePlayerSpawn = profileEventHandler('handlePlayerSpawn', async (eventData, dependencies) => {
     const { player, initialSpawn } = eventData;
     const { playerDataManager, playerUtils, config, logManager, checks, rankManager, system } = dependencies;
     const playerName = player?.name ?? 'UnknownPlayer';
@@ -169,22 +157,12 @@ async function handlePlayerSpawn(eventData, dependencies) {
         return;
     }
 
-    playerUtils?.debugLog(
-        `[EvtHdlr.Spawn] Processing for ${playerName} (Initial: ${initialSpawn}). Tick: ${system.currentTick}`,
-        playerName, dependencies,
-    );
+    playerUtils?.debugLog(`[EvtHdlr.Spawn] Processing for ${playerName} (Initial: ${initialSpawn}). Tick: ${system.currentTick}`, playerName, dependencies);
 
     const banInfo = playerDataManager.getBanInfo(player, dependencies);
     if (banInfo) {
-        playerUtils.debugLog(
-            `[EvtHdlr.Spawn] Player ${playerName} is banned. Kicking. Reason: ${banInfo.reason}, ` +
-    `Expires: ${new Date(banInfo.unbanTime).toISOString()}`,
-            playerName, dependencies,
-        );
-        const durationStringKick = playerUtils.getString(
-            banInfo.unbanTime === Infinity ? 'ban.duration.permanent' : 'ban.duration.expires', dependencies,
-            { expiryDate: new Date(banInfo.unbanTime).toLocaleString() },
-        );
+        playerUtils.debugLog(`[EvtHdlr.Spawn] Player ${playerName} is banned. Kicking. Reason: ${banInfo.reason}, Expires: ${new Date(banInfo.unbanTime).toISOString()}`, playerName, dependencies);
+        const durationStringKick = playerUtils.getString(banInfo.unbanTime === Infinity ? 'ban.duration.permanent' : 'ban.duration.expires', dependencies, { expiryDate: new Date(banInfo.unbanTime).toLocaleString() });
         let kickReason = playerUtils.getString('ban.kickMessage', dependencies, {
             reason: banInfo.reason ?? playerUtils.getString('common.value.noReasonProvided', dependencies),
             durationMessage: durationStringKick,
@@ -195,6 +173,7 @@ async function handlePlayerSpawn(eventData, dependencies) {
         player.kick(kickReason, { reason: kickReason });
         return;
     }
+
     try {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, dependencies);
         if (!pData) {
@@ -226,32 +205,25 @@ async function handlePlayerSpawn(eventData, dependencies) {
 
             if (config.playerInfo.enableWelcomer) {
                 const message = { translate: 'welcome.joinMessage', with: { playerName: player.name } };
-                if (player.isValid()) {
-                    player.sendMessage(message);
-                }
+                if (player.isValid()) player.sendMessage(message);
             }
 
             logManager?.addLog({
                 actionType: 'playerInitialJoin',
                 targetName: playerName, targetId: player.id,
-                details: `Joined. Loc: ${Math.floor(spawnLocation.x)},${Math.floor(spawnLocation.y)},` +
-          `${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GM: ${spawnGameMode}. Join Count: ${pData.joinCount}.`,
+                details: `Joined. Loc: ${Math.floor(spawnLocation.x)},${Math.floor(spawnLocation.y)},${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GM: ${spawnGameMode}. Join Count: ${pData.joinCount}.`,
                 location: { x: Math.floor(spawnLocation.x), y: Math.floor(spawnLocation.y), z: Math.floor(spawnLocation.z), dimensionId: spawnDimensionId },
                 gameMode: spawnGameMode,
             }, dependencies);
 
             if (config.playerInfo.notifyAdminOnNewPlayer) {
-                playerUtils.notifyAdmins(
-                    playerUtils.getString('admin.notify.newPlayerJoined', dependencies, { playerName: player.name }),
-                    dependencies, player, pData,
-                );
+                playerUtils.notifyAdmins(playerUtils.getString('admin.notify.newPlayerJoined', dependencies, { playerName: player.name }), dependencies, player, pData);
             }
         } else {
             logManager?.addLog({
                 actionType: 'playerRespawn',
                 targetName: playerName, targetId: player.id,
-                details: `Respawned. Loc: ${Math.floor(spawnLocation.x)},${Math.floor(spawnLocation.y)},` +
-          `${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GM: ${spawnGameMode}.`,
+                details: `Respawned. Loc: ${Math.floor(spawnLocation.x)},${Math.floor(spawnLocation.y)},${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GM: ${spawnGameMode}.`,
                 location: { x: Math.floor(spawnLocation.x), y: Math.floor(spawnLocation.y), z: Math.floor(spawnLocation.z), dimensionId: spawnDimensionId },
                 gameMode: spawnGameMode,
             }, dependencies);
@@ -260,13 +232,10 @@ async function handlePlayerSpawn(eventData, dependencies) {
         if (pData.deathMessageToShowOnSpawn && config.playerInfo.enableDeathCoords) {
             system.runTimeout(() => {
                 try {
-                    // Re-fetch pData inside the timeout to ensure we're acting on the most current data state.
                     const currentPData = playerDataManager.getPlayerData(player.id);
                     if (player.isValid() && currentPData && currentPData.deathMessageToShowOnSpawn) {
                         player.sendMessage(currentPData.deathMessageToShowOnSpawn);
                         playerUtils.debugLog(`[EventHandler.handlePlayerSpawn] DeathCoords: Sent to ${playerName}: '${JSON.stringify(currentPData.deathMessageToShowOnSpawn)}'`, currentPData.isWatched ? playerName : null, dependencies);
-
-                        // Only clear the data and mark for saving *after* successfully sending the message.
                         currentPData.deathMessageToShowOnSpawn = null;
                         currentPData.isDirtyForSave = true;
                     }
@@ -278,9 +247,7 @@ async function handlePlayerSpawn(eventData, dependencies) {
 
         if (checks?.checkInvalidRenderDistance && config.checks.invalidRenderDistance.enabled) {
             system.runTimeout(async () => {
-                if (!player.isValid()) {
-                    return;
-                }
+                if (!player.isValid()) return;
                 const currentPData = playerDataManager.getPlayerData(player.id);
                 if (!currentPData) {
                     playerUtils?.debugLog(`[EvtHdlr.Spawn.Timeout.checkInvalidRenderDistance] pData not found for ${playerName}.`, playerName, dependencies);
@@ -293,17 +260,12 @@ async function handlePlayerSpawn(eventData, dependencies) {
         if (config.playerInfo.enableDetailedJoinLeaveLogging) {
             const deviceType = playerUtils.getDeviceType(player) ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
             const locStr = `${Math.floor(spawnLocation.x)}, ${Math.floor(spawnLocation.y)}, ${Math.floor(spawnLocation.z)} in ${spawnDimensionId}`;
-            log(
-                `[JoinLog] Player: ${playerName} (ID: ${player.id}, Device: ${deviceType}, Mode: ${spawnGameMode}) ` +
-        `${initialSpawn ? 'joined' : 'spawned'} at ${locStr}.`,
-            );
+            log(`[JoinLog] Player: ${playerName} (ID: ${player.id}, Device: ${deviceType}, Mode: ${spawnGameMode}) ${initialSpawn ? 'joined' : 'spawned'} at ${locStr}.`);
         }
 
         if (player.hasTag(config.playerTags.vanished)) {
             const invisibilityEffect = mc.EffectTypes.get('invisibility');
-            if (invisibilityEffect) {
-                player.addEffect(invisibilityEffect, 2000000, { amplifier: 1, showParticles: false });
-            }
+            if (invisibilityEffect) player.addEffect(invisibilityEffect, 2000000, { amplifier: 1, showParticles: false });
             player.setGameMode(mc.GameMode.spectator);
         }
 
@@ -315,29 +277,19 @@ async function handlePlayerSpawn(eventData, dependencies) {
             context: 'eventHandlers.handlePlayerSpawn',
             targetName: playerName,
             targetId: player?.id,
-            details: {
-                errorCode: 'EVT_PLAYER_SPAWN_GENERAL_ERROR',
-                message: error.message,
-                rawErrorStack: error.stack,
-                meta: {
-                    initialSpawn,
-                },
-            },
+            details: { errorCode: 'EVT_PLAYER_SPAWN_GENERAL_ERROR', message: error.message, rawErrorStack: error.stack, meta: { initialSpawn } },
         }, dependencies);
         throw error;
     }
-}
-profileEventHandler('handlePlayerSpawn', handlePlayerSpawn);
+});
 
 /**
- * @param {import('@minecraft/server').PistonActivateAfterEvent} eventData The piston activation event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').PistonActivateAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePistonActivateAntiGrief(eventData, dependencies) {
+export const handlePistonActivateAntiGrief = profileEventHandler('handlePistonActivateAntiGrief', async (eventData, dependencies) => {
     const { config, playerUtils, checks } = dependencies;
-    if (!config?.checks?.pistonLag?.enabled) {
-        return;
-    }
+    if (!config?.checks?.pistonLag?.enabled) return;
 
     const { block, dimension, isExpanding } = eventData;
     if (!block?.isValid() || !dimension) {
@@ -350,14 +302,13 @@ async function handlePistonActivateAntiGrief(eventData, dependencies) {
     } else {
         playerUtils?.debugLog('[EvtHdlr.Piston CRITICAL] checkPistonLag function unavailable.', null, dependencies);
     }
-}
-profileEventHandler('handlePistonActivateAntiGrief', handlePistonActivateAntiGrief);
+});
 
 /**
- * @param {import('@minecraft/server').EntitySpawnAfterEvent} eventData The entity spawn event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').EntitySpawnAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handleEntitySpawnEventAntiGrief(eventData, dependencies) {
+export const handleEntitySpawnEventAntiGrief = profileEventHandler('handleEntitySpawnEventAntiGrief', async (eventData, dependencies) => {
     const { config, playerUtils, actionManager, playerDataManager, checks, logManager, system } = dependencies;
     const { entity, cause } = eventData;
 
@@ -368,14 +319,8 @@ async function handleEntitySpawnEventAntiGrief(eventData, dependencies) {
     const entityName = entity.typeId;
 
     if (entity.typeId === 'minecraft:wither' && config?.antiGrief?.wither?.enabled) {
-        playerUtils?.debugLog(
-            `[EvtHdlr.EntSpawn] Wither spawned (ID: ${entity.id}). Action: ${config.antiGrief.wither.action}. Cause: ${cause}`,
-            null, dependencies,
-        );
-        const violationDetails = {
-            entityId: entity.id, entityType: entity.typeId, actionTaken: config.antiGrief.wither.action,
-            playerNameOrContext: 'System/Environment', cause,
-        };
+        playerUtils?.debugLog(`[EvtHdlr.EntSpawn] Wither spawned (ID: ${entity.id}). Action: ${config.antiGrief.wither.action}. Cause: ${cause}`, null, dependencies);
+        const violationDetails = { entityId: entity.id, entityType: entity.typeId, actionTaken: config.antiGrief.wither.action, playerNameOrContext: 'System/Environment', cause };
         await actionManager?.executeCheckAction(null, 'worldAntiGriefWitherSpawn', violationDetails, dependencies);
         if (config.antiGrief.wither.action === 'kill') {
             try {
@@ -391,48 +336,30 @@ async function handleEntitySpawnEventAntiGrief(eventData, dependencies) {
             }
         }
     } else if (config?.checks?.entitySpam?.enabled && (entity.typeId === 'minecraft:snow_golem' || entity.typeId === 'minecraft:iron_golem')) {
-        playerUtils?.debugLog(
-            `[EvtHdlr.EntSpawn] ${entityName} spawned. Checking attribution. Tick: ${system?.currentTick}`,
-            null, dependencies,
-        );
+        playerUtils?.debugLog(`[EvtHdlr.EntSpawn] ${entityName} spawned. Checking attribution. Tick: ${system?.currentTick}`, null, dependencies);
         const players = world.getAllPlayers();
         for (const player of players) {
-            if (!player.isValid()) {
-                continue;
-            }
+            if (!player.isValid()) continue;
             const pData = playerDataManager?.getPlayerData(player.id);
             const expectedTick = pData?.expectingConstructedEntity?.tick ?? 0;
             const currentSystemTick = system?.currentTick ?? 0;
-            if (pData?.expectingConstructedEntity?.type === entity.typeId &&
-        Math.abs(expectedTick - currentSystemTick) < golemConstructionCheckTickWindow) {
+            if (pData?.expectingConstructedEntity?.type === entity.typeId && Math.abs(expectedTick - currentSystemTick) < golemConstructionCheckTickWindow) {
                 const playerName = player.name;
-                playerUtils?.debugLog(
-                    `[EvtHdlr.EntSpawn] Attributed ${entityName} to ${playerName}. ` +
-          `Expectation: ${JSON.stringify(pData.expectingConstructedEntity)}`,
-                    playerName, dependencies,
-                );
+                playerUtils?.debugLog(`[EvtHdlr.EntSpawn] Attributed ${entityName} to ${playerName}. Expectation: ${JSON.stringify(pData.expectingConstructedEntity)}`, playerName, dependencies);
                 if (checks?.checkEntitySpam) {
                     const isSpam = await checks.checkEntitySpam(player, entity.typeId, pData, dependencies);
-                    if (!player.isValid()) {
-                        break;
-                    }
+                    if (!player.isValid()) break;
                     const currentPDataForLoop = playerDataManager?.getPlayerData(player.id);
-                    if (!currentPDataForLoop) {
-                        break;
-                    }
+                    if (!currentPDataForLoop) break;
 
                     if (isSpam && config.checks.entitySpam.action === 'kill') {
                         try {
                             entity.kill();
-                            playerUtils?.debugLog(
-                                `[EvtHdlr.EntSpawn] ${entityName} (ID: ${entity.id}) killed (spam by ${playerName}).`,
-                                playerName, dependencies,
-                            );
+                            playerUtils?.debugLog(`[EvtHdlr.EntSpawn] ${entityName} (ID: ${entity.id}) killed (spam by ${playerName}).`, playerName, dependencies);
                         } catch (e) {
                             log(`[EvtHdlr.EntSpawn CRITICAL] Failed to kill ${entityName}: ${e.message}`);
                             logManager?.addLog({
-                                actionType: 'errorEventHandlersKillRestrictedEntity',
-                                context: 'eventHandlers.handleEntitySpawnEvent_AntiGrief.spamKill',
+                                actionType: 'errorEventHandlersKillRestrictedEntity', context: 'eventHandlers.handleEntitySpawnEvent_AntiGrief.spamKill',
                                 details: { entityId: entity.id, entityType: entityName, attributedPlayer: playerName, errorMessage: e.message },
                                 errorStack: e.stack,
                             }, dependencies);
@@ -448,22 +375,18 @@ async function handleEntitySpawnEventAntiGrief(eventData, dependencies) {
             }
         }
     }
-}
-profileEventHandler('handleEntitySpawnEventAntiGrief', handleEntitySpawnEventAntiGrief);
-
+});
 
 /**
- * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData The player place block event data.
- * @param {import('../types.js').Dependencies} dependencies The standard dependencies object.
+ * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencies) {
+export const handlePlayerPlaceBlockBeforeEventAntiGrief = profileEventHandler('handlePlayerPlaceBlockBeforeEventAntiGrief', async (eventData, dependencies) => {
     const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;
     const { player, itemStack, block } = eventData;
     const playerName = player?.name ?? 'UnknownPlayer';
 
-    if (!player?.isValid() || !itemStack?.typeId || !block) {
-        return;
-    }
+    if (!player?.isValid() || !itemStack?.typeId || !block) return;
 
     let checkType = null;
     let actionConfigKey = null;
@@ -489,25 +412,13 @@ async function handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencie
         const griefConfig = config.antiGrief[actionConfigKey];
         const isAdminAllowed = griefConfig.allowAdmins;
 
-        if (isAdminAllowed &&
-    ((permissionLevels?.owner !== undefined && playerPermission <= permissionLevels.owner) ||
-     (permissionLevels?.admin !== undefined && playerPermission <= permissionLevels.admin))
-        ) {
-            playerUtils?.debugLog(
-                `[EvtHdlr.AntiGriefPlace] Privileged user ${playerName} placed ${itemStack.typeId}. Allowed.`,
-                playerName, dependencies,
-            );
+        if (isAdminAllowed && ((permissionLevels?.owner !== undefined && playerPermission <= permissionLevels.owner) || (permissionLevels?.admin !== undefined && playerPermission <= permissionLevels.admin))) {
+            playerUtils?.debugLog(`[EvtHdlr.AntiGriefPlace] Privileged user ${playerName} placed ${itemStack.typeId}. Allowed.`, playerName, dependencies);
             return;
         }
 
         const actionTaken = griefConfig.action || 'prevent';
-        const violationDetails = {
-            itemTypeId: itemStack.typeId,
-            location: { x: block.location.x, y: block.location.y, z: block.location.z },
-            actionTaken,
-            playerName,
-            x: block.location.x, y: block.location.y, z: block.location.z,
-        };
+        const violationDetails = { itemTypeId: itemStack.typeId, location: { x: block.location.x, y: block.location.y, z: block.location.z }, actionTaken, playerName, x: block.location.x, y: block.location.y, z: block.location.z };
 
         const profile = dependencies.checkActionProfiles?.[checkType];
         let shouldCancelEvent = cancelByDefault;
@@ -520,33 +431,23 @@ async function handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencie
         }
         const messageToWarn = playerUtils.getString(profile?.messageKey || defaultMessageKey, dependencies);
 
-        if (shouldCancelEvent) {
-            eventData.cancel = true;
-        }
+        if (shouldCancelEvent) eventData.cancel = true;
 
         await actionManager?.executeCheckAction(player, checkType, violationDetails, dependencies);
 
-        if (eventData.cancel) {
-            playerUtils?.warnPlayer(player, messageToWarn);
-        }
+        if (eventData.cancel) playerUtils?.warnPlayer(player, messageToWarn);
     }
-}
-profileEventHandler('handlePlayerPlaceBlockBeforeEventAntiGrief', handlePlayerPlaceBlockBeforeEventAntiGrief);
-
+});
 
 /**
- * @param {import('@minecraft/server').EntityDieAfterEvent} eventData The entity death event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').EntityDieAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-function handleEntityDieForDeathEffects(eventData, dependencies) {
+export const handleEntityDieForDeathEffects = profileEventHandler('handleEntityDieForDeathEffects', (eventData, dependencies) => {
     const { config, playerUtils, logManager } = dependencies;
-    if (!config?.enableDeathEffects) {
-        return;
-    }
+    if (!config?.enableDeathEffects) return;
     const { deadEntity } = eventData;
-    if (!deadEntity?.isValid()) {
-        return;
-    }
+    if (!deadEntity?.isValid()) return;
 
     const entityName = deadEntity.name ?? deadEntity.typeId ?? 'UnknownEntity';
 
@@ -555,13 +456,8 @@ function handleEntityDieForDeathEffects(eventData, dependencies) {
         try {
             const location = deadEntity.location;
             const dimension = deadEntity.dimension;
-
-            if (config.deathEffectParticleName) {
-                dimension.spawnParticle(config.deathEffectParticleName, location);
-            }
-            if (config.deathEffectSoundId) {
-                dimension.playSound(config.deathEffectSoundId, location);
-            }
+            if (config.deathEffectParticleName) dimension.spawnParticle(config.deathEffectParticleName, location);
+            if (config.deathEffectSoundId) dimension.playSound(config.deathEffectSoundId, location);
         } catch (e) {
             console.warn(`[EvtHdlr.DeathFx CRITICAL] Error applying death effect for ${entityName}: ${e.message}`);
             logManager?.addLog({
@@ -572,20 +468,17 @@ function handleEntityDieForDeathEffects(eventData, dependencies) {
             }, dependencies);
         }
     }
-}
-profileEventHandler('handleEntityDieForDeathEffects', handleEntityDieForDeathEffects);
+});
 
 /**
- * @param {import('@minecraft/server').EntityHurtAfterEvent} eventData The entity hurt event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').EntityHurtAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handleEntityHurt(eventData, dependencies) {
+export const handleEntityHurt = profileEventHandler('handleEntityHurt', async (eventData, dependencies) => {
     const { playerDataManager, checks, config, currentTick } = dependencies;
     const { hurtEntity, damageSource, damagingEntity: directDamagingEntity } = eventData;
 
-    if (!hurtEntity?.isValid()) {
-        return;
-    }
+    if (!hurtEntity?.isValid()) return;
 
     if (hurtEntity.typeId === 'minecraft:player') {
         const victimPlayer = /** @type {import('@minecraft/server').Player} */ (hurtEntity);
@@ -598,13 +491,9 @@ async function handleEntityHurt(eventData, dependencies) {
             victimPData.isTakingFallDamage = damageSource.cause === mc.EntityDamageCause.fall;
             victimPData.isDirtyForSave = true;
 
-            if (directDamagingEntity?.typeId === 'minecraft:player' &&
-                directDamagingEntity.id !== victimPlayer.id
-            ) {
+            if (directDamagingEntity?.typeId === 'minecraft:player' && directDamagingEntity.id !== victimPlayer.id) {
                 const attackerPlayer = /** @type {import('@minecraft/server').Player} */ (directDamagingEntity);
-                if (!attackerPlayer.isValid()) {
-                    return;
-                }
+                if (!attackerPlayer.isValid()) return;
 
                 victimPData.lastCombatInteractionTime = Date.now();
 
@@ -618,59 +507,34 @@ async function handleEntityHurt(eventData, dependencies) {
                     const calculationWindowMs = config.checks.killauraMultiAura.windowMs ?? 1000;
                     const windowStartTime = now - calculationWindowMs;
                     attackerPData.attackEvents = attackerPData.attackEvents.filter(event => event.timestamp >= windowStartTime);
-                    attackerPData.attackEvents.push({
-                        targetId: victimPlayer.id,
-                        timestamp: now,
-                        damageSource: damageSource,
-                    });
+                    attackerPData.attackEvents.push({ targetId: victimPlayer.id, timestamp: now, damageSource: damageSource });
                     attackerPData.lastAttackTick = currentTick;
                     attackerPData.lastPitch = attackerPlayer.getRotation().pitch;
                     attackerPData.lastYaw = attackerPlayer.getRotation().yaw;
 
-
-                    const eventSpecificData = {
-                        targetEntity: victimPlayer, damagingEntity: attackerPlayer,
-                        damageCause: damageSource.cause, gameMode: attackerPlayer.gameMode,
-                    };
-                    if (checks?.checkReach && config?.enableReachCheck) {
-                        await checks.checkReach(attackerPlayer, attackerPData, dependencies, eventSpecificData);
-                    }
-                    if (checks?.checkMultiTarget && config?.enableMultiTargetCheck) {
-                        await checks.checkMultiTarget(attackerPlayer, attackerPData, dependencies, eventSpecificData);
-                    }
-                    if (checks?.checkAttackWhileSleeping && config?.enableStateConflictCheck) {
-                        await checks.checkAttackWhileSleeping(attackerPlayer, attackerPData, dependencies, eventSpecificData);
-                    }
-                    if (checks?.checkAttackWhileUsingItem && config?.enableStateConflictCheck) {
-                        await checks.checkAttackWhileUsingItem(attackerPlayer, attackerPData, dependencies, eventSpecificData);
-                    }
-                    if (checks?.checkViewSnap && config?.enableViewSnapCheck) {
-                        await checks.checkViewSnap(attackerPlayer, attackerPData, dependencies, eventSpecificData);
-                    }
-                    if (checks?.checkCps && config?.enableCpsCheck) {
-                        await checks.checkCps(attackerPlayer, attackerPData, dependencies);
-                    }
+                    const eventSpecificData = { targetEntity: victimPlayer, damagingEntity: attackerPlayer, damageCause: damageSource.cause, gameMode: attackerPlayer.gameMode };
+                    if (checks?.checkReach && config?.enableReachCheck) await checks.checkReach(attackerPlayer, attackerPData, dependencies, eventSpecificData);
+                    if (checks?.checkMultiTarget && config?.enableMultiTargetCheck) await checks.checkMultiTarget(attackerPlayer, attackerPData, dependencies, eventSpecificData);
+                    if (checks?.checkAttackWhileSleeping && config?.enableStateConflictCheck) await checks.checkAttackWhileSleeping(attackerPlayer, attackerPData, dependencies, eventSpecificData);
+                    if (checks?.checkAttackWhileUsingItem && config?.enableStateConflictCheck) await checks.checkAttackWhileUsingItem(attackerPlayer, attackerPData, dependencies, eventSpecificData);
+                    if (checks?.checkViewSnap && config?.enableViewSnapCheck) await checks.checkViewSnap(attackerPlayer, attackerPData, dependencies, eventSpecificData);
+                    if (checks?.checkCps && config?.enableCpsCheck) await checks.checkCps(attackerPlayer, attackerPData, dependencies);
                 }
             }
             if (checks?.checkSelfHurt && config?.enableSelfHurtCheck) {
-                await checks.checkSelfHurt(
-                    victimPlayer, victimPData, dependencies,
-                    { damagingEntity: directDamagingEntity, damageCause: damageSource.cause },
-                );
+                await checks.checkSelfHurt(victimPlayer, victimPData, dependencies, { damagingEntity: directDamagingEntity, damageCause: damageSource.cause });
             }
         }
     }
-}
-profileEventHandler('handleEntityHurt', handleEntityHurt);
-
+});
 
 /**
- * @param {import('@minecraft/server').PlayerDeathAfterEvent} eventData The player death event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerDeathAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-function handlePlayerDeath(eventData, dependencies) {
+export const handlePlayerDeath = profileEventHandler('handlePlayerDeath', (eventData, dependencies) => {
     const { player } = eventData;
-    const { playerDataManager, config, logManager, playerUtils } = dependencies; // Added playerUtils
+    const { playerDataManager, config, logManager, playerUtils } = dependencies;
     const playerName = player?.name ?? 'UnknownPlayer';
 
     if (!player?.isValid()) {
@@ -691,36 +555,28 @@ function handlePlayerDeath(eventData, dependencies) {
         const y = Math.floor(location.y);
         const z = Math.floor(location.z);
         const deathCoordsMsgKey = config.deathCoordsMessageKey || 'message.deathCoords';
-        pData.deathMessageToShowOnSpawn = {
-            translate: deathCoordsMsgKey,
-            with: { x: x.toString(), y: y.toString(), z: z.toString(), dimensionId },
-        };
+        pData.deathMessageToShowOnSpawn = { translate: deathCoordsMsgKey, with: { x: x.toString(), y: y.toString(), z: z.toString(), dimensionId } };
         pData.isDirtyForSave = true;
     }
 
     const killerEntity = eventData.damagingEntity;
-    const killerName = killerEntity?.name ?? killerEntity?.typeId?.replace('minecraft:', '') ??
-                       playerUtils.getString('common.value.notApplicable', dependencies) ?? 'N/A';
+    const killerName = killerEntity?.name ?? killerEntity?.typeId?.replace('minecraft:', '') ?? playerUtils.getString('common.value.notApplicable', dependencies) ?? 'N/A';
 
     logManager?.addLog({
         actionType: 'playerDeath',
         targetName: playerName, targetId: player.id,
-        details: `Player died. Cause: ${eventData.cause ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown'}. ` +
-                 `Killer: ${killerName}.`,
+        details: `Player died. Cause: ${eventData.cause ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown'}. Killer: ${killerName}.`,
         location: { x: Math.floor(player.location.x), y: Math.floor(player.location.y), z: Math.floor(player.location.z) },
         dimensionId: player.dimension.id,
     }, dependencies);
-}
-profileEventHandler('handlePlayerDeath', handlePlayerDeath);
+});
 
 /**
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('../types.js').Dependencies} dependencies
  */
-function subscribeToCombatLogEvents(dependencies) {
+export const subscribeToCombatLogEvents = profileEventHandler('subscribeToCombatLogEvents', (dependencies) => {
     const { config, playerDataManager } = dependencies;
-    if (!config?.enableCombatLogDetection) {
-        return;
-    }
+    if (!config?.enableCombatLogDetection) return;
 
     if (!world?.afterEvents?.entityHurt) {
         log('[EvtHdlr.CombatLogSub] mc.world.afterEvents.entityHurt is not available. CombatLog detection disabled.');
@@ -732,9 +588,7 @@ function subscribeToCombatLogEvents(dependencies) {
         const damagingEntity = damageSource?.damagingEntity;
 
         if (hurtEntity?.typeId === 'minecraft:player' && damagingEntity?.typeId === 'minecraft:player') {
-            if (hurtEntity.id === damagingEntity.id) {
-                return;
-            }
+            if (hurtEntity.id === damagingEntity.id) return;
 
             const victimPData = playerDataManager?.getPlayerData(hurtEntity.id);
             const attackerPData = playerDataManager?.getPlayerData(damagingEntity.id);
@@ -751,37 +605,28 @@ function subscribeToCombatLogEvents(dependencies) {
         }
     });
     dependencies.playerUtils?.debugLog('[EvtHdlr.CombatLogSub] Subscribed to entityHurt for CombatLog detection.', null, dependencies);
-}
-
+});
 
 /**
- * @param {import('@minecraft/server').PlayerBreakBlockBeforeEvent} eventData The player break block event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerBreakBlockBeforeEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
+export const handlePlayerBreakBlockBeforeEvent = profileEventHandler('handlePlayerBreakBlockBeforeEvent', async (eventData, dependencies) => {
     const { checks, config, playerDataManager, currentTick } = dependencies;
     const { player, block, itemStack } = eventData;
 
-    if (!player?.isValid() || !block?.isValid()) {
-        return;
-    }
+    if (!player?.isValid() || !block?.isValid()) return;
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) {
-        return;
-    }
+    if (!pData) return;
 
     if (checks?.checkBreakUnbreakable && config?.enableInstaBreakUnbreakableCheck) {
         await checks.checkBreakUnbreakable(player, pData, eventData, dependencies);
-        if (eventData.cancel) {
-            return;
-        }
+        if (eventData.cancel) return;
     }
 
     if (!eventData.cancel) {
-        if (!player.isValid()) {
-            return;
-        }
+        if (!player.isValid()) return;
         const currentPData = playerDataManager?.getPlayerData(player.id);
         if (!currentPData) {
             dependencies.playerUtils?.debugLog(`[EvtHdlr.BreakBlockBefore] pData not found for ${player.name} after unbreakable check.`, player.name, dependencies);
@@ -800,25 +645,20 @@ async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
             currentPData.isDirtyForSave = true;
         }
     }
-}
-profileEventHandler('handlePlayerBreakBlockBeforeEvent', handlePlayerBreakBlockBeforeEvent);
+});
 
 /**
- * @param {import('@minecraft/server').PlayerBreakBlockAfterEvent} eventData The player break block event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerBreakBlockAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
+export const handlePlayerBreakBlockAfterEvent = profileEventHandler('handlePlayerBreakBlockAfterEvent', async (eventData, dependencies) => {
     const { config, playerDataManager, checks } = dependencies;
     const { player, block, brokenBlockPermutation } = eventData;
 
-    if (!player?.isValid() || !brokenBlockPermutation?.type) {
-        return;
-    }
+    if (!player?.isValid() || !brokenBlockPermutation?.type) return;
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) {
-        return;
-    }
+    if (!pData) return;
 
     if (config?.enableNukerCheck) {
         pData.blockBreakEvents = pData.blockBreakEvents || [];
@@ -826,29 +666,18 @@ async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
         pData.isDirtyForSave = true;
     }
 
-    if (checks?.checkXray && config?.xrayDetectionNotifyOnOreMineEnabled) {
-        await checks.checkXray(player, block, brokenBlockPermutation.type, pData, dependencies);
-    }
-
-    if (checks?.checkBreakSpeed && config?.enableInstaBreakSpeedCheck) {
-        await checks.checkBreakSpeed(player, pData, eventData, dependencies);
-    }
+    if (checks?.checkXray && config?.xrayDetectionNotifyOnOreMineEnabled) await checks.checkXray(player, block, brokenBlockPermutation.type, pData, dependencies);
+    if (checks?.checkBreakSpeed && config?.enableInstaBreakSpeedCheck) await checks.checkBreakSpeed(player, pData, eventData, dependencies);
 
     if (checks?.checkAutoTool && config?.enableAutoToolCheck) {
-        const autoToolEventData = {
-            brokenBlockOriginalType: brokenBlockPermutation.type,
-            brokenBlockLocation: block.location,
-            player,
-        };
+        const autoToolEventData = { brokenBlockOriginalType: brokenBlockPermutation.type, brokenBlockLocation: block.location, player };
         pData.lastBreakCompleteTick = dependencies.currentTick;
         pData.blockBrokenWithOptimalTypeId = brokenBlockPermutation.type.id;
         pData.isAttemptingBlockBreak = false;
         await checks.checkAutoTool(player, pData, dependencies, autoToolEventData);
     }
 
-    if (!player.isValid()) {
-        return;
-    }
+    if (!player.isValid()) return;
     const finalPData = playerDataManager?.getPlayerData(player.id);
     if (!finalPData) {
         dependencies.playerUtils?.debugLog(`[EvtHdlr.BreakBlockAfter] pData not found for ${player.name} at end of handler.`, player.name, dependencies);
@@ -860,27 +689,20 @@ async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
     finalPData.toolUsedForBreakAttempt = null;
     finalPData.expectedBreakDurationTicks = 0;
     finalPData.isDirtyForSave = true;
-}
-profileEventHandler('handlePlayerBreakBlockAfterEvent', handlePlayerBreakBlockAfterEvent);
-
+});
 
 /**
- * @param {import('@minecraft/server').ItemUseBeforeEvent} eventData The item use event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').ItemUseBeforeEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handleItemUse(eventData, dependencies) {
+export const handleItemUse = profileEventHandler('handleItemUse', async (eventData, dependencies) => {
     const { checks, config, playerUtils, playerDataManager, actionManager } = dependencies;
     const { source: player, itemStack } = eventData;
 
-    if (!player?.isValid() || !itemStack?.typeId) {
-        return;
-    }
+    if (!player?.isValid() || !itemStack?.typeId) return;
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) {
-        return;
-    }
-
+    if (!pData) return;
 
     const currentTick = dependencies.currentTick;
     pData.lastItemUseTick = currentTick;
@@ -888,20 +710,14 @@ async function handleItemUse(eventData, dependencies) {
 
     if (checks?.checkSwitchAndUseInSameTick && config?.enableInventoryModCheck) {
         await checks.checkSwitchAndUseInSameTick(player, pData, dependencies, { itemStack });
-        if (eventData.cancel) {
-            return;
-        }
+        if (eventData.cancel) return;
     }
-
     if (checks?.checkFastUse && config?.enableFastUseCheck) {
         await checks.checkFastUse(player, pData, dependencies, { itemStack });
-        if (eventData.cancel) {
-            return;
-        }
+        if (eventData.cancel) return;
     }
 
     const itemFoodComponent = itemStack.type?.getComponent('minecraft:food');
-    // Handle high-velocity item uses for grace periods (e.g., Wind Charge, Riptide)
     let isLaunchItem = false;
     if (itemStack.typeId === 'minecraft:wind_charge') {
         isLaunchItem = true;
@@ -913,7 +729,6 @@ async function handleItemUse(eventData, dependencies) {
                 isLaunchItem = true;
             }
         } catch (e) {
-            // It's possible getComponent or getEnchantments fails on some custom items.
             playerUtils?.debugLog(`[EvtHdlr.ItemUse] Error checking trident enchantments for ${player.name}: ${e.message}`, player.name, dependencies);
         }
     }
@@ -924,13 +739,10 @@ async function handleItemUse(eventData, dependencies) {
         playerUtils?.debugLog(`[EvtHdlr.ItemUse] Player ${player.name} used a launch item (${itemStack.typeId}). Setting lastLaunchTick to ${currentTick}.`, player.name, dependencies);
     }
 
-
     if (itemFoodComponent && config?.enableStateConflictCheck) {
         pData.isUsingConsumable = true;
         pData.isDirtyForSave = true;
-        const foodUseDurationTicks = (itemFoodComponent.usingConvertsTo === undefined)
-            ? (itemFoodComponent.useDuration ?? defaultFoodUseDurationSeconds) * ticksPerSecond
-            : minTimeoutDelayTicks;
+        const foodUseDurationTicks = (itemFoodComponent.usingConvertsTo === undefined) ? (itemFoodComponent.useDuration ?? defaultFoodUseDurationSeconds) * ticksPerSecond : minTimeoutDelayTicks;
         system?.runTimeout(() => {
             if (player.isValid()) {
                 const currentPData = playerDataManager?.getPlayerData(player.id);
@@ -945,7 +757,6 @@ async function handleItemUse(eventData, dependencies) {
     if ((itemStack.typeId === 'minecraft:bow' || itemStack.typeId === 'minecraft:crossbow') && config?.enableStateConflictCheck) {
         pData.isChargingBow = true;
         pData.isDirtyForSave = true;
-        // Reset after a reasonable time if the player stops using the item without firing
         system?.runTimeout(() => {
             if (player.isValid()) {
                 const currentPData = playerDataManager?.getPlayerData(player.id);
@@ -954,13 +765,12 @@ async function handleItemUse(eventData, dependencies) {
                     currentPData.isDirtyForSave = true;
                 }
             }
-        }, 3 * ticksPerSecond); // 3 seconds
+        }, 3 * ticksPerSecond);
     }
 
     if (itemStack.typeId === 'minecraft:shield' && config?.enableStateConflictCheck) {
         pData.isUsingShield = true;
         pData.isDirtyForSave = true;
-        // Reset after a reasonable time if the player stops using the item
         system?.runTimeout(() => {
             if (player.isValid()) {
                 const currentPData = playerDataManager?.getPlayerData(player.id);
@@ -969,69 +779,55 @@ async function handleItemUse(eventData, dependencies) {
                     currentPData.isDirtyForSave = true;
                 }
             }
-        }, 3 * ticksPerSecond); // 3 seconds
+        }, 3 * ticksPerSecond);
     }
-
 
     if (config?.bannedItemsUse?.includes(itemStack.typeId)) {
         playerUtils?.warnPlayer(player, playerUtils.getString('antigrief.itemUseDenied', dependencies, { item: itemStack.typeId }));
         eventData.cancel = true;
-        await actionManager?.executeCheckAction(
-            player, 'worldIllegalItemUse',
-            { itemTypeId: itemStack.typeId, action: 'use' }, dependencies,
-        );
-
+        await actionManager?.executeCheckAction(player, 'worldIllegalItemUse', { itemTypeId: itemStack.typeId, action: 'use' }, dependencies);
     }
-}
-profileEventHandler('handleItemUse', handleItemUse);
+});
 
 /**
  * @param {import('@minecraft/server').ItemUseOnBeforeEvent} eventData
  * @param {import('../types.js').Dependencies} dependencies
  */
-function handleItemUseOn(eventData, dependencies) {
+export const handleItemUseOn = profileEventHandler('handleItemUseOn', (eventData, dependencies) => {
     const { playerUtils } = dependencies;
     playerUtils?.debugLog('[EvtHdlr.ItemUseOn] ItemUseOn event triggered. This event might be unstable.', eventData.source?.name, dependencies);
-}
-profileEventHandler('handleItemUseOn', handleItemUseOn);
+});
 
 /**
- * @param {import('@minecraft/server').Player} player The player whose inventory changed.
- * @param {import('@minecraft/server').ItemStack|undefined} newItemStack The new item stack.
- * @param {import('@minecraft/server').ItemStack|undefined} oldItemStack The old item stack.
- * @param {string|number} slot The slot that changed.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('@minecraft/server').ItemStack|undefined} newItemStack
+ * @param {import('@minecraft/server').ItemStack|undefined} oldItemStack
+ * @param {string|number} slot
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handleInventoryItemChange(eventData, dependencies) {
+export const handleInventoryItemChange = profileEventHandler('handleInventoryItemChange', async (eventData, dependencies) => {
     const { checks, config, playerDataManager } = dependencies;
     const { player, itemStack: newItemStack, previousItemStack: oldItemStack, slot } = eventData;
-    if (!player?.isValid()) {
-        return;
-    }
+    if (!player?.isValid()) return;
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) {
-        return;
-    }
+    if (!pData) return;
 
     if (checks?.checkInventoryMoveWhileActionLocked && config?.enableInventoryModCheck) {
         const inventoryChangeData = { newItemStack, oldItemStack, inventorySlot: slot.toString() };
         await checks.checkInventoryMoveWhileActionLocked(player, pData, dependencies, inventoryChangeData);
     }
-}
-profileEventHandler('handleInventoryItemChange', handleInventoryItemChange);
+});
 
 /**
- * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData The player place block event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
-    const { checks, config, playerDataManager, playerUtils } = dependencies; // Added playerUtils
+export const handlePlayerPlaceBlockBefore = profileEventHandler('handlePlayerPlaceBlockBefore', async (eventData, dependencies) => {
+    const { checks, config, playerDataManager, playerUtils } = dependencies;
     const { player, block, itemStack } = eventData;
 
-    if (!player?.isValid() || !block || !itemStack?.typeId) {
-        return;
-    }
+    if (!player?.isValid() || !block || !itemStack?.typeId) return;
 
     const pData = playerDataManager?.getPlayerData(player.id);
     if (!pData) {
@@ -1042,39 +838,22 @@ async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
 
     if (checks?.checkAirPlace && config?.enableAirPlaceCheck) {
         await checks.checkAirPlace(player, pData, dependencies, eventData);
-        if (eventData.cancel) {
-            return;
-        }
+        if (eventData.cancel) return;
     }
 
     await handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencies);
-}
-profileEventHandler('handlePlayerPlaceBlockBefore', handlePlayerPlaceBlockBefore);
+});
 
-/**
- * @param {import('@minecraft/server').Player} player The player who placed the block.
- * @param {import('../types.js').PlayerAntiCheatData} pData The player's data.
- * @param {import('@minecraft/server').Block} block The block that was placed.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
- */
 async function processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies) {
     const { config, playerUtils, checks, currentTick, playerDataManager } = dependencies;
     const eventSpecificBlockData = { block };
     let pDataInternal = pData;
     let anAwaitOccurred = false;
 
-    if (!player?.isValid() || !pDataInternal || !block?.isValid()) {
-        return;
-    }
+    if (!player?.isValid() || !pDataInternal || !block?.isValid()) return;
 
     pDataInternal.recentBlockPlacements ??= [];
-    pDataInternal.recentBlockPlacements.push({
-        x: block.location.x, y: block.location.y, z: block.location.z,
-        blockTypeId: block.typeId,
-        pitch: player.getRotation().pitch, yaw: player.getRotation().yaw,
-        tick: currentTick,
-        dimensionId: player.dimension.id,
-    });
+    pDataInternal.recentBlockPlacements.push({ x: block.location.x, y: block.location.y, z: block.location.z, blockTypeId: block.typeId, pitch: player.getRotation().pitch, yaw: player.getRotation().yaw, tick: currentTick, dimensionId: player.dimension.id });
     if (pDataInternal.recentBlockPlacements.length > (config?.towerPlacementHistoryLength ?? defaultTowerPlacementHistoryLength)) {
         pDataInternal.recentBlockPlacements.shift();
     }
@@ -1099,10 +878,7 @@ async function processPlayerPlaceBlockAfterEffects(player, pData, block, depende
     if (anAwaitOccurred) {
         pDataInternal = playerDataManager.getPlayerData(player.id);
         if (!pDataInternal) {
-            playerUtils.debugLog(
-                `[EvtHdlr._ppbaEffects] pData became null for ${player.name} after awaits. Skipping Golem check.`,
-                player.name, dependencies,
-            );
+            playerUtils.debugLog(`[EvtHdlr._ppbaEffects] pData became null for ${player.name} after awaits. Skipping Golem check.`, player.name, dependencies);
             return;
         }
     }
@@ -1113,57 +889,41 @@ async function processPlayerPlaceBlockAfterEffects(player, pData, block, depende
         const blockTwoBelow = dimension.getBlock(block.location.offset(0, blockOffsetTwoBelow, 0));
         let potentialGolemType = null;
 
-        if (blockBelow?.typeId === 'minecraft:iron_block' &&
-            blockTwoBelow?.typeId === 'minecraft:iron_block'
-        ) {
+        if (blockBelow?.typeId === 'minecraft:iron_block' && blockTwoBelow?.typeId === 'minecraft:iron_block') {
             potentialGolemType = 'minecraft:iron_golem';
-        } else if (blockBelow?.typeId === 'minecraft:snow_block' &&
-                 blockTwoBelow?.typeId === 'minecraft:snow_block'
-        ) {
+        } else if (blockBelow?.typeId === 'minecraft:snow_block' && blockTwoBelow?.typeId === 'minecraft:snow_block') {
             potentialGolemType = 'minecraft:snow_golem';
         }
 
         if (potentialGolemType) {
-            pDataInternal.expectingConstructedEntity = {
-                type: potentialGolemType,
-                location: { x: block.location.x, y: block.location.y, z: block.location.z },
-                tick: currentTick,
-            };
+            pDataInternal.expectingConstructedEntity = { type: potentialGolemType, location: { x: block.location.x, y: block.location.y, z: block.location.z }, tick: currentTick };
             pDataInternal.isDirtyForSave = true;
-            playerUtils?.debugLog(
-                `[EvtHdlr._ppbaEffects] Player ${player?.name} placed pumpkin for ${potentialGolemType}. Expecting entity.`,
-                player?.name, dependencies,
-            );
+            playerUtils?.debugLog(`[EvtHdlr._ppbaEffects] Player ${player?.name} placed pumpkin for ${potentialGolemType}. Expecting entity.`, player?.name, dependencies);
         }
     }
 }
 
 /**
- * @param {import('@minecraft/server').PlayerPlaceBlockAfterEvent} eventData The player place block event data.
- * @param {import('../types.js').Dependencies} dependencies Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerPlaceBlockAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) {
+export const handlePlayerPlaceBlockAfterEvent = profileEventHandler('handlePlayerPlaceBlockAfterEvent', async (eventData, dependencies) => {
     const { playerDataManager } = dependencies;
     const { player, block } = eventData;
 
-    if (!player?.isValid() || !block?.isValid()) {
-        return;
-    }
+    if (!player?.isValid() || !block?.isValid()) return;
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) {
-        return;
-    }
+    if (!pData) return;
 
     await processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies);
-}
-profileEventHandler('handlePlayerPlaceBlockAfterEvent', handlePlayerPlaceBlockAfterEvent);
+});
 
 /**
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handleBeforeChatSend(eventData, dependencies) {
+export const handleBeforeChatSend = profileEventHandler('handleBeforeChatSend', async (eventData, dependencies) => {
     const { playerUtils, chatProcessor, config, commandManager } = dependencies;
     const { sender: player, message } = eventData;
 
@@ -1184,14 +944,13 @@ async function handleBeforeChatSend(eventData, dependencies) {
         }
         await chatProcessor.processChatMessage(player, pData, message, eventData, dependencies);
     }
-}
-profileEventHandler('handleBeforeChatSend', handleBeforeChatSend);
+});
 
 /**
- * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData The event data.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
+export const handlePlayerDimensionChangeAfterEvent = profileEventHandler('handlePlayerDimensionChangeAfterEvent', async (eventData, dependencies) => {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
     const { playerUtils, rankManager, permissionLevels, logManager, config, playerDataManager: pdm } = dependencies;
     const playerName = player?.name ?? 'UnknownPlayer';
@@ -1211,10 +970,7 @@ async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
 
     const playerPermission = rankManager?.getPlayerPermissionLevel(player, dependencies);
     if (typeof playerPermission === 'number' && permissionLevels?.admin !== undefined && playerPermission <= permissionLevels.admin) {
-        playerUtils?.debugLog(
-            `[EvtHdlr.DimChange] Player ${player.name} (Admin) bypassing dimension locks.`,
-            player.name, dependencies,
-        );
+        playerUtils?.debugLog(`[EvtHdlr.DimChange] Player ${player.name} (Admin) bypassing dimension locks.`, player.name, dependencies);
         return;
     }
 
@@ -1235,16 +991,11 @@ async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
             await player.teleport(fromLocation, { dimension: fromDimension });
             playerUtils?.warnPlayer(player, playerUtils.getString('dimensionLock.teleportMessage', dependencies, { lockedDimensionName }));
 
-            if (!player.isValid()) {
-                return;
-            }
+            if (!player.isValid()) return;
             const currentPData = pdm?.getPlayerData(player.id);
 
             if (config.notifyOnDimensionLockAttempt !== false) {
-                playerUtils?.notifyAdmins(
-                    playerUtils.getString('admin.notify.dimensionLockAttempt', dependencies, { playerName: player.name, dimensionName: lockedDimensionName }),
-                    dependencies, player, currentPData,
-                );
+                playerUtils?.notifyAdmins(playerUtils.getString('admin.notify.dimensionLockAttempt', dependencies, { playerName: player.name, dimensionName: lockedDimensionName }), dependencies, player, currentPData);
             }
             logManager?.addLog({
                 actionType: 'dimensionLockEnforced',
@@ -1258,46 +1009,35 @@ async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
             logManager?.addLog({
                 actionType: 'errorEventHandlersDimensionLockTeleport', context: 'eventHandlers.handlePlayerDimensionChangeAfterEvent',
                 targetName: player.name, targetId: player.id,
-                details: {
-                    fromDimensionId: fromDimension.id, toDimensionId: toDimension.id,
-                    lockedDimensionName, errorMessage: e.message,
-                },
+                details: { fromDimensionId: fromDimension.id, toDimensionId: toDimension.id, lockedDimensionName, errorMessage: e.message },
                 errorStack: e.stack,
             }, dependencies);
         }
     }
-}
-profileEventHandler('handlePlayerDimensionChangeAfterEvent', handlePlayerDimensionChangeAfterEvent);
+});
 
 /**
- * @param {import('@minecraft/server').EntityHitEntityAfterEvent} eventData The event data.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('@minecraft/server').EntityHitEntityAfterEvent} eventData
+ * @param {import('../types.js').Dependencies} dependencies
  */
-async function handlePlayerHitEntityEvent(eventData, dependencies) {
+export const handlePlayerHitEntityEvent = profileEventHandler('handlePlayerHitEntityEvent', async (eventData, dependencies) => {
     const { checks, config, playerDataManager, mc } = dependencies;
     const { damagingEntity, hitEntity } = eventData;
 
-    if (!damagingEntity?.isValid() || !hitEntity?.isValid()) {
-        return;
-    }
+    if (!damagingEntity?.isValid() || !hitEntity?.isValid()) return;
 
     if (damagingEntity instanceof mc.Player && config.enableNoSwingCheck && checks?.checkNoSwing) {
         const pData = playerDataManager.getPlayerData(damagingEntity.id);
-        if (pData) {
-            await checks.checkNoSwing(damagingEntity, pData, dependencies, eventData);
-        }
+        if (pData) await checks.checkNoSwing(damagingEntity, pData, dependencies, eventData);
     }
     dependencies.playerUtils.debugLog(`[EvtHdlr.HitEnt] _handlePlayerHitEntityEvent called for ${damagingEntity?.name} hitting ${hitEntity?.name}. Add actual implementation if missing.`, damagingEntity?.name, dependencies);
-}
-
-profileEventHandler('handlePlayerHitEntityEvent', handlePlayerHitEntityEvent);
+});
 
 /**
- * Handles the event when an effect is added to a player.
  * @param {import('@minecraft/server').PlayerEffectAddedAfterEvent} eventData
  * @param {import('../types.js').Dependencies} dependencies
  */
-function handlePlayerEffectAdded(eventData, dependencies) {
+export const handlePlayerEffectAdded = profileEventHandler('handlePlayerEffectAdded', (eventData, dependencies) => {
     const { playerDataManager } = dependencies;
     const { player, effect } = eventData;
     if (!player.isValid()) return;
@@ -1305,36 +1045,21 @@ function handlePlayerEffectAdded(eventData, dependencies) {
     if (!pData) return;
 
     switch (effect.typeId) {
-        case 'speed':
-            pData.speedAmplifier = effect.amplifier;
-            break;
-        case 'haste':
-            pData.hasteAmplifier = effect.amplifier;
-            break;
-        case 'jump_boost':
-            pData.jumpBoostAmplifier = effect.amplifier;
-            break;
-        case 'slow_falling':
-            pData.hasSlowFalling = true;
-            break;
-        case 'levitation':
-            pData.hasLevitation = true;
-            break;
-        case 'blindness':
-            pData.blindnessTicks = effect.duration;
-            break;
+        case 'speed': pData.speedAmplifier = effect.amplifier; break;
+        case 'haste': pData.hasteAmplifier = effect.amplifier; break;
+        case 'jump_boost': pData.jumpBoostAmplifier = effect.amplifier; break;
+        case 'slow_falling': pData.hasSlowFalling = true; break;
+        case 'levitation': pData.hasLevitation = true; break;
+        case 'blindness': pData.blindnessTicks = effect.duration; break;
     }
     pData.isDirtyForSave = true;
-}
-profileEventHandler('handlePlayerEffectAdded', handlePlayerEffectAdded);
-
+});
 
 /**
- * Handles the event when an effect is removed from a player.
  * @param {import('@minecraft/server').PlayerEffectRemovedAfterEvent} eventData
  * @param {import('../types.js').Dependencies} dependencies
  */
-function handlePlayerEffectRemoved(eventData, dependencies) {
+export const handlePlayerEffectRemoved = profileEventHandler('handlePlayerEffectRemoved', (eventData, dependencies) => {
     const { playerDataManager } = dependencies;
     const { player, effectTypeId } = eventData;
     if (!player.isValid()) return;
@@ -1342,49 +1067,12 @@ function handlePlayerEffectRemoved(eventData, dependencies) {
     if (!pData) return;
 
     switch (effectTypeId) {
-        case 'speed':
-            pData.speedAmplifier = -1;
-            break;
-        case 'haste':
-            pData.hasteAmplifier = -1;
-            break;
-        case 'jump_boost':
-            pData.jumpBoostAmplifier = -1;
-            break;
-        case 'slow_falling':
-            pData.hasSlowFalling = false;
-            break;
-        case 'levitation':
-            pData.hasLevitation = false;
-            break;
-        case 'blindness':
-            pData.blindnessTicks = 0;
-            break;
+        case 'speed': pData.speedAmplifier = -1; break;
+        case 'haste': pData.hasteAmplifier = -1; break;
+        case 'jump_boost': pData.jumpBoostAmplifier = -1; break;
+        case 'slow_falling': pData.hasSlowFalling = false; break;
+        case 'levitation': pData.hasLevitation = false; break;
+        case 'blindness': pData.blindnessTicks = 0; break;
     }
     pData.isDirtyForSave = true;
-}
-profileEventHandler('handlePlayerEffectRemoved', handlePlayerEffectRemoved);
-
-export {
-    handlePlayerLeaveBeforeEvent,
-    handlePlayerSpawn,
-    handlePistonActivateAntiGrief,
-    handleEntitySpawnEventAntiGrief,
-    handlePlayerPlaceBlockBeforeEventAntiGrief,
-    handleEntityDieForDeathEffects,
-    handleEntityHurt,
-    handlePlayerDeath,
-    subscribeToCombatLogEvents,
-    handlePlayerBreakBlockBeforeEvent,
-    handlePlayerBreakBlockAfterEvent,
-    handleItemUse,
-    handleItemUseOn,
-    handleInventoryItemChange,
-    handlePlayerPlaceBlockBefore,
-    handlePlayerPlaceBlockAfterEvent,
-    handleBeforeChatSend,
-    handlePlayerDimensionChangeAfterEvent,
-    handlePlayerHitEntityEvent,
-    handlePlayerEffectAdded,
-    handlePlayerEffectRemoved,
-};
+});

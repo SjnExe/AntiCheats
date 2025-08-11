@@ -170,8 +170,10 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     if (event.id === 'ac:init') {
         const { sourceEntity: player } = event;
 
-        if (!player || (!player.hasTag(config.adminTag) && player.name !== config.ownerPlayerName)) {
-            playerUtils.logError('ac:init script event received from a non-admin or non-player source.');
+        // User requested to remove the admin check for initialization.
+        // We still check if the source is a player to prevent command block execution without context.
+        if (!player) {
+            playerUtils.logError('ac:init script event received from a non-player source.');
             return;
         }
 
