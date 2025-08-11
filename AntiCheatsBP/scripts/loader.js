@@ -4,12 +4,12 @@
  *              It waits for the server to be ready and then kicks off the main initialization process.
  */
 
-import { system } from '@minecraft/server';
+import * as mc from '@minecraft/server';
 import { log, logError } from './core/startupLogger.js';
 
 // Use system.run to ensure that the server is fully initialized before we start loading our modules.
 // This helps prevent race conditions and ensures all APIs are available.
-system.run(() => {
+mc.system.run(() => {
     try {
         log('Server initialized, loading AntiCheat modules...');
         // The initializationManager is responsible for setting up all dependencies,
