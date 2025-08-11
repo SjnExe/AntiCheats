@@ -31,9 +31,9 @@ let scheduledFlagPurgesCache = new Map();
  * @param {import('../types.js').Dependencies} dependencies
  */
 export async function initializeScheduledFlagPurges(dependencies) {
-    const { world, playerUtils, logManager } = dependencies;
+    const { mc, playerUtils, logManager } = dependencies;
     try {
-        const data = world.getDynamicProperty(scheduledFlagPurgesKey);
+        const data = mc.world.getDynamicProperty(scheduledFlagPurgesKey);
         if (typeof data === 'string') {
             const parsed = JSON.parse(data);
             if (Array.isArray(parsed)) {

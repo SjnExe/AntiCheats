@@ -161,12 +161,8 @@ function performInitializations() {
 
     world.setDynamicProperty('ac:initialized', true);
 
-    world.sendMessage({
-        'translate': 'system.core.initialized',
-        'with': {
-            'version': dependencies.acVersion,
-        },
-    });
+    const initMessage = playerUtils.getString('system.core.initialized', { version: dependencies.acVersion });
+    world.sendMessage(initMessage);
     playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Starting tick loops.', 'System', dependencies);
     system.runInterval(() => mainTick(dependencies), 1);
     if (config.enableTpaSystem) {
