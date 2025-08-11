@@ -1385,4 +1385,6 @@ export {
     handleBeforeChatSend,
     handlePlayerDimensionChangeAfterEvent,
     handlePlayerHitEntityEvent,
+    handlePlayerEffectAdded,
+    handlePlayerEffectRemoved,
 };
