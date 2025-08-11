@@ -38,23 +38,31 @@ function subscribeToEvents() {
     };
 
     for (const eventName in beforeEventSubscriptions) {
-        system.beforeEvents[eventName].subscribe((eventData) => {
-            try {
-                beforeEventSubscriptions[eventName](eventData, dependencies);
-            } catch (e) {
-                playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
-            }
-        });
+        if (system.beforeEvents[eventName]) {
+            system.beforeEvents[eventName].subscribe((eventData) => {
+                try {
+                    beforeEventSubscriptions[eventName](eventData, dependencies);
+                } catch (e) {
+                    playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
+                }
+            });
+        } else {
+            playerUtils.logError(`[CoreSystem] Could not subscribe to beforeEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
+        }
     }
 
     for (const eventName in afterEventSubscriptions) {
-        system.afterEvents[eventName].subscribe((eventData) => {
-            try {
-                afterEventSubscriptions[eventName](eventData, dependencies);
-            } catch (e) {
-                playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
-            }
-        });
+        if (system.afterEvents[eventName]) {
+            system.afterEvents[eventName].subscribe((eventData) => {
+                try {
+                    afterEventSubscriptions[eventName](eventData, dependencies);
+                } catch (e) {
+                    playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
+                }
+            });
+        } else {
+            playerUtils.logError(`[CoreSystem] Could not subscribe to afterEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
+        }
     }
 }
 
