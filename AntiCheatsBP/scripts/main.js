@@ -4,12 +4,12 @@ const periodicDataPersistenceIntervalTicks = 600;
 const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
 export const tpaSystemTickInterval = 20;
 
-let currentTick = 0;
+export async function mainTick(dependencies, tickEvent) {
+    const { logManager, system } = dependencies;
+    const currentTick = tickEvent?.currentTick ?? system.currentTick;
 
-export async function mainTick(dependencies) {
-    const { logManager } = dependencies;
     try {
-        await processTick(dependencies);
+        await processTick(dependencies, currentTick);
     } catch (e) {
         logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
         try {
@@ -27,9 +27,8 @@ export async function mainTick(dependencies) {
     }
 }
 
-async function processTick(dependencies) {
+async function processTick(dependencies, currentTick) {
     const { config, worldBorderManager, playerDataManager, playerUtils, logManager, mc } = dependencies;
-    currentTick++;
 
     if (config.enableWorldBorderSystem) {
         try {
