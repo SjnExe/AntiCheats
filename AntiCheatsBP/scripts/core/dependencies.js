@@ -107,7 +107,7 @@ export function initializeCoreDependencies() {
     tpaManager.initializeTpa(dependencies);
     offlineBanList.initializeOfflineBans(dependencies);
     playerDataManager.initializePlayerDataManager(dependencies);
-    configValidator.initializeConfigValidator(dependencies);
+    // configValidator does not have an initializer, it contains only pure functions.
 
     playerUtils.log('Core dependencies initialized successfully.');
     isInitialized = true;
