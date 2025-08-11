@@ -37,24 +37,43 @@ function subscribeToEvents() {
         playerEffectRemoved: eventHandlers.handlePlayerEffectRemoved,
     };
 
+    // --- DEBUGGING ---
+    console.warn(`[AC DEBUG] initializationManager.js: Subscribing to events.`);
+    console.warn(`[AC DEBUG] typeof system.beforeEvents: ${typeof system.beforeEvents}`);
+    if (system.beforeEvents) console.warn(`[AC DEBUG] system.beforeEvents keys: ${Object.keys(system.beforeEvents).join(', ')}`);
+    // --- END DEBUGGING ---
+
     for (const eventName in beforeEventSubscriptions) {
-        system.beforeEvents[eventName].subscribe((eventData) => {
-            try {
-                beforeEventSubscriptions[eventName](eventData, dependencies);
-            } catch (e) {
-                playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
-            }
-        });
+        if (system.beforeEvents && system.beforeEvents[eventName]) {
+            system.beforeEvents[eventName].subscribe((eventData) => {
+                try {
+                    beforeEventSubscriptions[eventName](eventData, dependencies);
+                } catch (e) {
+                    playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
+                }
+            });
+        } else {
+            playerUtils.logError(`[CoreSystem] Could not subscribe to beforeEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
+        }
     }
 
+    // --- DEBUGGING ---
+    console.warn(`[AC DEBUG] typeof system.afterEvents: ${typeof system.afterEvents}`);
+    if (system.afterEvents) console.warn(`[AC DEBUG] system.afterEvents keys: ${Object.keys(system.afterEvents).join(', ')}`);
+    // --- END DEBUGGING ---
+
     for (const eventName in afterEventSubscriptions) {
-        system.afterEvents[eventName].subscribe((eventData) => {
-            try {
-                afterEventSubscriptions[eventName](eventData, dependencies);
-            } catch (e) {
-                playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
-            }
-        });
+        if (system.afterEvents && system.afterEvents[eventName]) {
+            system.afterEvents[eventName].subscribe((eventData) => {
+                try {
+                    afterEventSubscriptions[eventName](eventData, dependencies);
+                } catch (e) {
+                    playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
+                }
+            });
+        } else {
+            playerUtils.logError(`[CoreSystem] Could not subscribe to afterEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
+        }
     }
 }
 
@@ -153,12 +172,8 @@ function performInitializations() {
 
     world.setDynamicProperty('ac:initialized', true);
 
-    world.sendMessage({
-        'translate': 'system.core.initialized',
-        'with': {
-            'version': dependencies.acVersion,
-        },
-    });
+    const initMessage = playerUtils.getString('system.core.initialized', { version: dependencies.acVersion });
+    world.sendMessage(initMessage);
     playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Starting tick loops.', 'System', dependencies);
     system.runInterval(() => mainTick(dependencies), 1);
     if (config.enableTpaSystem) {
@@ -170,8 +185,10 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     if (event.id === 'ac:init') {
         const { sourceEntity: player } = event;
 
-        if (!player || !player.hasTag(config.adminTag)) {
-            playerUtils.logError('ac:init script event received from a non-admin or non-player source.');
+        // User requested to remove the admin check for initialization.
+        // We still check if the source is a player to prevent command block execution without context.
+        if (!player) {
+            playerUtils.logError('ac:init script event received from a non-player source.');
             return;
         }
 

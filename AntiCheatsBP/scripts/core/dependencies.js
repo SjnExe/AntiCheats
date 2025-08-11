@@ -11,6 +11,16 @@ import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui';
 import { system } from '@minecraft/server';
 
+// --- DEBUGGING ---
+console.warn(`[AC DEBUG] dependencies.js: Top-level import check.`);
+console.warn(`[AC DEBUG] typeof mc: ${typeof mc}`);
+console.warn(`[AC DEBUG] typeof mc.world: ${typeof mc.world}`);
+console.warn(`[AC DEBUG] typeof system: ${typeof system}`);
+if (mc) console.warn(`[AC DEBUG] mc keys: ${Object.keys(mc).join(', ')}`);
+if (mc?.world) console.warn(`[AC DEBUG] mc.world keys: ${Object.keys(mc.world).join(', ')}`);
+if (system) console.warn(`[AC DEBUG] system keys: ${Object.keys(system).join(', ')}`);
+// --- END DEBUGGING ---
+
 // Configuration
 import { config, updateConfigValue, acVersion, editableConfigValues } from '../config.js';
 import { checkActionProfiles } from './actionProfiles.js';
@@ -105,9 +115,9 @@ export function initializeCoreDependencies() {
     logManager.initializeLogs(dependencies);
     reportManager.initializeReports(dependencies);
     tpaManager.initializeTpa(dependencies);
-    offlineBanList.initializeOfflineBans(dependencies);
+    // offlineBanList does not have an initializer, it's a static array.
     playerDataManager.initializePlayerDataManager(dependencies);
-    configValidator.initializeConfigValidator(dependencies);
+    // configValidator does not have an initializer, it contains only pure functions.
 
     playerUtils.log('Core dependencies initialized successfully.');
     isInitialized = true;
