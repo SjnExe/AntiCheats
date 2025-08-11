@@ -15,7 +15,7 @@ import { system } from '@minecraft/server';
 import { config, updateConfigValue, acVersion, editableConfigValues } from '../config.js';
 import { checkActionProfiles } from './actionProfiles.js';
 import { automodConfig } from './automodConfig.js';
-import { ranks } from './ranksConfig.js';
+import { rankDefinitions as ranks } from './ranksConfig.js';
 import { kits } from './kits.js';
 
 // Core Managers
