@@ -14,56 +14,56 @@ const { playerUtils, config, logManager } = dependencies;
 function subscribeToEvents() {
     playerUtils.debugLog('[CoreSystem] Subscribing to events...', 'System', dependencies);
 
-    const beforeEventSubscriptions = {
-        chatSend: eventHandlers.handleBeforeChatSend,
-        playerBreakBlock: eventHandlers.handlePlayerBreakBlockBeforeEvent,
-        itemUse: eventHandlers.handleItemUse,
-        playerPlaceBlock: eventHandlers.handlePlayerPlaceBlockBefore,
-        playerLeave: eventHandlers.handlePlayerLeaveBeforeEvent,
-    };
+    // const beforeEventSubscriptions = {
+    //     chatSend: eventHandlers.handleBeforeChatSend,
+    //     playerBreakBlock: eventHandlers.handlePlayerBreakBlockBeforeEvent,
+    //     itemUse: eventHandlers.handleItemUse,
+    //     playerPlaceBlock: eventHandlers.handlePlayerPlaceBlockBefore,
+    //     playerLeave: eventHandlers.handlePlayerLeaveBeforeEvent,
+    // };
 
-    const afterEventSubscriptions = {
-        playerSpawn: eventHandlers.handlePlayerSpawn,
-        entityHurt: eventHandlers.handleEntityHurt,
-        playerBreakBlock: eventHandlers.handlePlayerBreakBlockAfterEvent,
-        playerPlaceBlock: eventHandlers.handlePlayerPlaceBlockAfterEvent,
-        playerDimensionChange: eventHandlers.handlePlayerDimensionChangeAfterEvent,
-        entityDie: eventHandlers.handleEntityDieForDeathEffects,
-        entitySpawn: eventHandlers.handleEntitySpawnEventAntiGrief,
-        pistonActivate: eventHandlers.handlePistonActivateAntiGrief,
-        inventoryItemChanged: eventHandlers.handleInventoryItemChange,
-        playerDeath: eventHandlers.handlePlayerDeath,
-        playerEffectAdded: eventHandlers.handlePlayerEffectAdded,
-        playerEffectRemoved: eventHandlers.handlePlayerEffectRemoved,
-    };
+    // const afterEventSubscriptions = {
+    //     playerSpawn: eventHandlers.handlePlayerSpawn,
+    //     entityHurt: eventHandlers.handleEntityHurt,
+    //     playerBreakBlock: eventHandlers.handlePlayerBreakBlockAfterEvent,
+    //     playerPlaceBlock: eventHandlers.handlePlayerPlaceBlockAfterEvent,
+    //     playerDimensionChange: eventHandlers.handlePlayerDimensionChangeAfterEvent,
+    //     entityDie: eventHandlers.handleEntityDieForDeathEffects,
+    //     entitySpawn: eventHandlers.handleEntitySpawnEventAntiGrief,
+    //     pistonActivate: eventHandlers.handlePistonActivateAntiGrief,
+    //     inventoryItemChanged: eventHandlers.handleInventoryItemChange,
+    //     playerDeath: eventHandlers.handlePlayerDeath,
+    //     playerEffectAdded: eventHandlers.handlePlayerEffectAdded,
+    //     playerEffectRemoved: eventHandlers.handlePlayerEffectRemoved,
+    // };
 
-    for (const eventName in beforeEventSubscriptions) {
-        if (mc.system.beforeEvents[eventName]) {
-            mc.system.beforeEvents[eventName].subscribe((eventData) => {
-                try {
-                    beforeEventSubscriptions[eventName](eventData, dependencies);
-                } catch (e) {
-                    playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
-                }
-            });
-        } else {
-            playerUtils.logError(`[CoreSystem] Could not subscribe to beforeEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
-        }
-    }
+    // for (const eventName in beforeEventSubscriptions) {
+    //     if (mc.system.beforeEvents[eventName]) {
+    //         mc.system.beforeEvents[eventName].subscribe((eventData) => {
+    //             try {
+    //                 beforeEventSubscriptions[eventName](eventData, dependencies);
+    //             } catch (e) {
+    //                 playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
+    //             }
+    //         });
+    //     } else {
+    //         playerUtils.logError(`[CoreSystem] Could not subscribe to beforeEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
+    //     }
+    // }
 
-    for (const eventName in afterEventSubscriptions) {
-        if (mc.system.afterEvents[eventName]) {
-            mc.system.afterEvents[eventName].subscribe((eventData) => {
-                try {
-                    afterEventSubscriptions[eventName](eventData, dependencies);
-                } catch (e) {
-                    playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
-                }
-            });
-        } else {
-            playerUtils.logError(`[CoreSystem] Could not subscribe to afterEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
-        }
-    }
+    // for (const eventName in afterEventSubscriptions) {
+    //     if (mc.system.afterEvents[eventName]) {
+    //         mc.system.afterEvents[eventName].subscribe((eventData) => {
+    //             try {
+    //                 afterEventSubscriptions[eventName](eventData, dependencies);
+    //             } catch (e) {
+    //                 playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
+    //             }
+    //         });
+    //     } else {
+    //         playerUtils.logError(`[CoreSystem] Could not subscribe to afterEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
+    //     }
+    // }
 }
 
 function validateConfigurations() {

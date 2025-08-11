@@ -1,4 +1,5 @@
 import { logError } from './modules/utils/playerUtils.js';
+import { Player } from '@minecraft/server';
 
 const periodicDataPersistenceIntervalTicks = 600;
 const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
@@ -28,7 +29,7 @@ export async function mainTick(dependencies, tickEvent) {
 }
 
 async function processTick(dependencies, currentTick) {
-    const { config, worldBorderManager, playerDataManager, playerUtils, logManager, mc } = dependencies;
+    const { config, worldBorderManager, playerDataManager, playerUtils, logManager } = dependencies;
 
     if (config.enableWorldBorderSystem) {
         try {
@@ -63,7 +64,7 @@ async function processPlayer(player, dependencies, currentTick) {
     const { config, checks, playerDataManager, playerUtils, logManager, worldBorderManager } = dependencies;
 
     // Defensive check to ensure the player object is valid before use.
-    if (typeof player?.isValid !== 'function') {
+    if (!(player instanceof Player)) {
         logError(`[TickLoop] processPlayer received an invalid player-like object. Type: ${typeof player}. Keys: ${player ? Object.keys(player).join(', ') : 'null'}`);
         return;
     }
@@ -160,7 +161,7 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
 }
 
 export function tpaTick(dependencies) {
-    const { config, tpaManager, logManager, mc } = dependencies;
+    const { config, tpaManager, logManager } = dependencies;
     try {
         if (!config.enableTpaSystem) {
             return;
