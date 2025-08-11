@@ -750,6 +750,14 @@ export function removePlayerStateRestriction(pData, stateType, dependencies) {
 }
 
 /**
+ * Main initializer for the PlayerDataManager.
+ * @param {import('../types.js').Dependencies} dependencies
+ */
+export function initializePlayerDataManager(dependencies) {
+    initializeScheduledFlagPurges(dependencies);
+}
+
+/**
  * Adds a flag or multiple flags to a player's data and triggers the automod check.
  * @param {import('@minecraft/server').Player} player The player object.
  * @param {string} flagType The type of flag to add (e.g., 'movementFlyHover').

@@ -105,7 +105,7 @@ export function initializeCoreDependencies() {
     logManager.initializeLogs(dependencies);
     reportManager.initializeReports(dependencies);
     tpaManager.initializeTpa(dependencies);
-    offlineBanList.initializeOfflineBans(dependencies);
+    // offlineBanList does not have an initializer, it's a static array.
     playerDataManager.initializePlayerDataManager(dependencies);
     // configValidator does not have an initializer, it contains only pure functions.
 

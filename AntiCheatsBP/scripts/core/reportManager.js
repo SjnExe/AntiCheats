@@ -28,7 +28,7 @@ function generateReportId() {
 /**
  * @param {CommandDependencies} dependencies Standard dependencies object.
  */
-export function initializeReportCache(dependencies) {
+export function initializeReports(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
     try {
         const rawReports = minecraftSystem?.world?.getDynamicProperty(reportsPropertyKey);
@@ -36,14 +36,14 @@ export function initializeReportCache(dependencies) {
             const parsedReports = JSON.parse(rawReports);
             if (Array.isArray(parsedReports)) {
                 reportsInMemory = parsedReports; // Assume stored order is acceptable (e.g., oldest first)
-                playerUtils?.debugLog(`[ReportManager.initializeReportCache] Loaded ${reportsInMemory.length} reports.`, 'System', dependencies);
+                playerUtils?.debugLog(`[ReportManager.initializeReports] Loaded ${reportsInMemory.length} reports.`, 'System', dependencies);
                 return;
             }
         }
-        playerUtils?.debugLog(`[ReportManager.initializeReportCache] No valid reports at '${reportsPropertyKey}'. Initializing empty cache.`, 'System', dependencies);
+        playerUtils?.debugLog(`[ReportManager.initializeReports] No valid reports at '${reportsPropertyKey}'. Initializing empty cache.`, 'System', dependencies);
     } catch (error) {
-        logError(`[ReportManager.initializeReportCache] Error loading reports: ${error.stack || error}`, error);
-        playerUtils?.debugLog(`[ReportManager.initializeReportCache] Exception: ${error.message}`, 'System', dependencies);
+        logError(`[ReportManager.initializeReports] Error loading reports: ${error.stack || error}`, error);
+        playerUtils?.debugLog(`[ReportManager.initializeReports] Exception: ${error.message}`, 'System', dependencies);
     }
     reportsInMemory = []; // Ensure it's an array on failure or no data
 }
