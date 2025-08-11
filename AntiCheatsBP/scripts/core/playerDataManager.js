@@ -70,10 +70,10 @@ function _getScheduledFlagPurgesFromCache() {
  * @param {import('../types.js').Dependencies} dependencies
  */
 async function _saveScheduledFlagPurges(dependencies) {
-    const { world } = dependencies;
+    const { mc } = dependencies;
     try {
         const arrayToSave = Array.from(scheduledFlagPurgesCache.values());
-        world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(arrayToSave));
+        mc.world.setDynamicProperty(scheduledFlagPurgesKey, JSON.stringify(arrayToSave));
     } catch (e) {
         logError(`[PlayerDataManager] Failed to save scheduled flag purges: ${e}`, e);
     }

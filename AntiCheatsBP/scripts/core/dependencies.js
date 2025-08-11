@@ -9,17 +9,6 @@
 
 import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui';
-import { system } from '@minecraft/server';
-
-// --- DEBUGGING ---
-console.warn(`[AC DEBUG] dependencies.js: Top-level import check.`);
-console.warn(`[AC DEBUG] typeof mc: ${typeof mc}`);
-console.warn(`[AC DEBUG] typeof mc.world: ${typeof mc.world}`);
-console.warn(`[AC DEBUG] typeof system: ${typeof system}`);
-if (mc) console.warn(`[AC DEBUG] mc keys: ${Object.keys(mc).join(', ')}`);
-if (mc?.world) console.warn(`[AC DEBUG] mc.world keys: ${Object.keys(mc.world).join(', ')}`);
-if (system) console.warn(`[AC DEBUG] system keys: ${Object.keys(system).join(', ')}`);
-// --- END DEBUGGING ---
 
 // Configuration
 import { config, updateConfigValue, acVersion, editableConfigValues } from '../config.js';
@@ -58,7 +47,7 @@ export const dependencies = {
     // Minecraft APIs
     mc,
     mcui,
-    system,
+    system: mc.system,
 
     // Configuration
     config,

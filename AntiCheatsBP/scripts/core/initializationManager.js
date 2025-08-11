@@ -3,7 +3,7 @@
  *       module setup, configuration validation, and the startup command.
  */
 
-import { system, world } from '@minecraft/server';
+import * as mc from '@minecraft/server';
 import * as eventHandlers from './eventHandlers.js';
 import { dependencies, initializeCoreDependencies } from './dependencies.js';
 import { migrateConfig } from './configMigration.js';
@@ -37,15 +37,9 @@ function subscribeToEvents() {
         playerEffectRemoved: eventHandlers.handlePlayerEffectRemoved,
     };
 
-    // --- DEBUGGING ---
-    console.warn(`[AC DEBUG] initializationManager.js: Subscribing to events.`);
-    console.warn(`[AC DEBUG] typeof system.beforeEvents: ${typeof system.beforeEvents}`);
-    if (system.beforeEvents) console.warn(`[AC DEBUG] system.beforeEvents keys: ${Object.keys(system.beforeEvents).join(', ')}`);
-    // --- END DEBUGGING ---
-
     for (const eventName in beforeEventSubscriptions) {
-        if (system.beforeEvents && system.beforeEvents[eventName]) {
-            system.beforeEvents[eventName].subscribe((eventData) => {
+        if (mc.system.beforeEvents[eventName]) {
+            mc.system.beforeEvents[eventName].subscribe((eventData) => {
                 try {
                     beforeEventSubscriptions[eventName](eventData, dependencies);
                 } catch (e) {
@@ -57,14 +51,9 @@ function subscribeToEvents() {
         }
     }
 
-    // --- DEBUGGING ---
-    console.warn(`[AC DEBUG] typeof system.afterEvents: ${typeof system.afterEvents}`);
-    if (system.afterEvents) console.warn(`[AC DEBUG] system.afterEvents keys: ${Object.keys(system.afterEvents).join(', ')}`);
-    // --- END DEBUGGING ---
-
     for (const eventName in afterEventSubscriptions) {
-        if (system.afterEvents && system.afterEvents[eventName]) {
-            system.afterEvents[eventName].subscribe((eventData) => {
+        if (mc.system.afterEvents[eventName]) {
+            mc.system.afterEvents[eventName].subscribe((eventData) => {
                 try {
                     afterEventSubscriptions[eventName](eventData, dependencies);
                 } catch (e) {
@@ -126,17 +115,17 @@ function performInitializations() {
         // Initialize all modules through the new dependency container
         initializeCoreDependencies();
 
-        const storedConfigVersion = world.getDynamicProperty('configVersion');
+        const storedConfigVersion = mc.world.getDynamicProperty('configVersion');
         const codeConfigVersion = config.configVersion;
 
         if (storedConfigVersion === undefined) {
-            world.setDynamicProperty('configVersion', codeConfigVersion);
-            world.setDynamicProperty('config', JSON.stringify(config));
+            mc.world.setDynamicProperty('configVersion', codeConfigVersion);
+            mc.world.setDynamicProperty('config', JSON.stringify(config));
         } else if (storedConfigVersion < codeConfigVersion) {
-            const storedConfig = JSON.parse(world.getDynamicProperty('config'));
+            const storedConfig = JSON.parse(mc.world.getDynamicProperty('config'));
             const migratedConfig = migrateConfig(storedConfig, storedConfigVersion, codeConfigVersion);
-            world.setDynamicProperty('config', JSON.stringify(migratedConfig));
-            world.setDynamicProperty('configVersion', codeConfigVersion);
+            mc.world.setDynamicProperty('config', JSON.stringify(migratedConfig));
+            mc.world.setDynamicProperty('configVersion', codeConfigVersion);
             playerUtils.notifyAdmins(`§aAntiCheat config migrated from v${storedConfigVersion} to v${codeConfigVersion}.`, dependencies);
         }
 
@@ -170,18 +159,18 @@ function performInitializations() {
         playerUtils.notifyAdmins('A critical, unexpected error occurred during config validation. Check server logs.', dependencies);
     }
 
-    world.setDynamicProperty('ac:initialized', true);
+    mc.world.setDynamicProperty('ac:initialized', true);
 
     const initMessage = playerUtils.getString('system.core.initialized', { version: dependencies.acVersion });
-    world.sendMessage(initMessage);
+    mc.world.sendMessage(initMessage);
     playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Starting tick loops.', 'System', dependencies);
-    system.runInterval(() => mainTick(dependencies), 1);
+    mc.system.runInterval(() => mainTick(dependencies), 1);
     if (config.enableTpaSystem) {
-        system.runInterval(() => tpaTick(dependencies), tpaSystemTickInterval);
+        mc.system.runInterval(() => tpaTick(dependencies), tpaSystemTickInterval);
     }
 }
 
-system.afterEvents.scriptEventReceive.subscribe((event) => {
+mc.system.afterEvents.scriptEventReceive.subscribe((event) => {
     if (event.id === 'ac:init') {
         const { sourceEntity: player } = event;
 
@@ -192,7 +181,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             return;
         }
 
-        if (world.getDynamicProperty('ac:initialized')) {
+        if (mc.world.getDynamicProperty('ac:initialized')) {
             player.sendMessage(playerUtils.getString('system.core.alreadyInitialized', { dependencies }));
             return;
         }
