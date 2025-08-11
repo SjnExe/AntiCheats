@@ -49,7 +49,6 @@
         "url": "https://github.com/SjnExe/AntiCheats"
     },
     "capabilities": [
-        "script_eval",
-        "beta"
+        "script_eval"
     ]
 }
