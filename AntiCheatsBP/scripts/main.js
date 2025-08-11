@@ -64,7 +64,13 @@ async function processTick(dependencies) {
 async function processPlayer(player, dependencies, currentTick) {
     const { config, checks, playerDataManager, playerUtils, logManager, worldBorderManager } = dependencies;
 
-    if (!player?.isValid()) {
+    // Defensive check to ensure the player object is valid before use.
+    if (typeof player?.isValid !== 'function') {
+        logError(`[TickLoop] processPlayer received an invalid player-like object. Type: ${typeof player}. Keys: ${player ? Object.keys(player).join(', ') : 'null'}`);
+        return;
+    }
+
+    if (!player.isValid()) {
         return;
     }
 
