@@ -107,7 +107,7 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
         fullMessage += ` §7(Player: §e${player.name}§7)§r`;
     }
 
-    const allPlayers = mc.world.getAllPlayers();
+    const allPlayers = mc.world.getPlayers();
     const notificationsOffTag = 'notificationsOff';
     const notificationsOnTag = 'notificationsOn';
 
@@ -164,7 +164,7 @@ export function findPlayer(playerName) {
         return null;
     }
     const nameToFind = playerName.toLowerCase();
-    return mc.world.getAllPlayers().find(p => p.name.toLowerCase() === nameToFind) || null;
+    return mc.world.getPlayers().find(p => p.name.toLowerCase() === nameToFind) || null;
 }
 
 /**
@@ -331,7 +331,7 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
             }
             break;
         case 'admin':
-            mc.world.getAllPlayers().forEach(p => {
+            mc.world.getPlayers().forEach(p => {
                 if (playerUtils.isAdmin(p, dependencies)) {
                     playToPlayer(p);
                 }
@@ -345,7 +345,7 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
             }
             break;
         case 'global':
-            mc.world.getAllPlayers().forEach(p => playToPlayer(p));
+            mc.world.getPlayers().forEach(p => playToPlayer(p));
             break;
         default:
             if (primaryPlayer) {

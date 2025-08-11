@@ -46,7 +46,7 @@ async function processTick(dependencies, currentTick) {
         }
     }
 
-    const onlinePlayers = mc.world.getAllPlayers();
+    const onlinePlayers = mc.world.getPlayers();
     const playerProcessingPromises = onlinePlayers.map(player => processPlayer(player, dependencies, currentTick));
     await Promise.all(playerProcessingPromises);
 
@@ -170,7 +170,7 @@ export function tpaTick(dependencies) {
 
         const requestsInWarmup = tpaManager.getRequestsInWarmup();
         if (requestsInWarmup.length > 0) {
-            const onlinePlayers = mc.world.getAllPlayers();
+            const onlinePlayers = mc.world.getPlayers();
             const playerMap = new Map(onlinePlayers.map(p => [p.name, p]));
 
             for (const req of requestsInWarmup) {

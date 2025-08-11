@@ -115,7 +115,7 @@ function handlePlayerDataDebug(player, args, playerDataManager) {
         return;
     }
 
-    const targetPlayer = world.getAllPlayers().find(p => p.name === targetName);
+    const targetPlayer = world.getPlayers().find(p => p.name === targetName);
     if (!targetPlayer) {
         player.sendMessage(`§cPlayer "${targetName}" not found or is offline.`);
         return;
