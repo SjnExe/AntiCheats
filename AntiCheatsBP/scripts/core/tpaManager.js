@@ -427,7 +427,7 @@ export function setPlayerTpaStatus(player, accepts, dependencies) {
  * Loads the active TPA requests from world dynamic properties.
  * @param {import('../types.js').CommandDependencies} dependencies
  */
-export function loadTpaState(dependencies) {
+export function initializeTpa(dependencies) {
     const { mc, playerUtils } = dependencies;
     try {
         const serializedState = mc.world.getDynamicProperty(tpaStatePropertyKey);

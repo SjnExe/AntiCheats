@@ -18,7 +18,7 @@ function toCamelCase(str) {
 }
 
 /** @param {import('../types.js').CommandDependencies} dependencies */
-export function initializeLogCache(dependencies) {
+export function initializeLogs(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
     try {
         const rawLogs = minecraftSystem?.world?.getDynamicProperty(logPropertyKey);
@@ -26,14 +26,14 @@ export function initializeLogCache(dependencies) {
             const parsedLogs = JSON.parse(rawLogs);
             if (Array.isArray(parsedLogs)) {
                 logsInMemory = parsedLogs;
-                playerUtils?.debugLog(`[LogManager.initializeLogCache] Loaded ${logsInMemory.length} logs.`, null, dependencies);
+                playerUtils?.debugLog(`[LogManager.initializeLogs] Loaded ${logsInMemory.length} logs.`, null, dependencies);
                 return;
             }
         }
-        playerUtils?.debugLog('[LogManager.initializeLogCache] No valid logs found or property not set. Initializing empty cache.', null, dependencies);
+        playerUtils?.debugLog('[LogManager.initializeLogs] No valid logs found or property not set. Initializing empty cache.', null, dependencies);
     } catch (error) {
-        console.error(`[LogManager.initializeLogCache] Error reading/parsing logs: ${error.stack || error}`);
-        playerUtils?.debugLog(`[LogManager.initializeLogCache] Exception: ${error.message}`, null, dependencies);
+        console.error(`[LogManager.initializeLogs] Error reading/parsing logs: ${error.stack || error}`);
+        playerUtils?.debugLog(`[LogManager.initializeLogs] Exception: ${error.message}`, null, dependencies);
     }
     logsInMemory = [];
 }
