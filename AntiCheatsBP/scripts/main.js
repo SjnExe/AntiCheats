@@ -1,4 +1,3 @@
-import { world } from '@minecraft/server';
 import { logError } from './modules/utils/playerUtils.js';
 
 const periodicDataPersistenceIntervalTicks = 600;
@@ -29,7 +28,7 @@ export async function mainTick(dependencies) {
 }
 
 async function processTick(dependencies) {
-    const { config, worldBorderManager, playerDataManager, playerUtils, logManager } = dependencies;
+    const { config, worldBorderManager, playerDataManager, playerUtils, logManager, mc } = dependencies;
     currentTick++;
 
     if (config.enableWorldBorderSystem) {
@@ -48,7 +47,7 @@ async function processTick(dependencies) {
         }
     }
 
-    const onlinePlayers = world.getAllPlayers();
+    const onlinePlayers = mc.world.getAllPlayers();
     const playerProcessingPromises = onlinePlayers.map(player => processPlayer(player, dependencies, currentTick));
     await Promise.all(playerProcessingPromises);
 
@@ -162,7 +161,7 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
 }
 
 export function tpaTick(dependencies) {
-    const { config, tpaManager, logManager } = dependencies;
+    const { config, tpaManager, logManager, mc } = dependencies;
     try {
         if (!config.enableTpaSystem) {
             return;
@@ -172,7 +171,7 @@ export function tpaTick(dependencies) {
 
         const requestsInWarmup = tpaManager.getRequestsInWarmup();
         if (requestsInWarmup.length > 0) {
-            const onlinePlayers = world.getAllPlayers();
+            const onlinePlayers = mc.world.getAllPlayers();
             const playerMap = new Map(onlinePlayers.map(p => [p.name, p]));
 
             for (const req of requestsInWarmup) {
