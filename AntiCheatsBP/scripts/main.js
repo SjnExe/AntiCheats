@@ -29,7 +29,7 @@ export async function mainTick(dependencies, tickEvent) {
 }
 
 async function processTick(dependencies, currentTick) {
-    const { config, worldBorderManager, playerDataManager, playerUtils, logManager } = dependencies;
+    const { config, worldBorderManager, playerDataManager, playerUtils, logManager, mc } = dependencies;
 
     if (config.enableWorldBorderSystem) {
         try {
@@ -161,7 +161,7 @@ async function handlePeriodicDataPersistence(allPlayers, dependencies) {
 }
 
 export function tpaTick(dependencies) {
-    const { config, tpaManager, logManager } = dependencies;
+    const { config, tpaManager, logManager, mc } = dependencies;
     try {
         if (!config.enableTpaSystem) {
             return;
