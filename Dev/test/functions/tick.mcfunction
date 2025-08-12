@@ -1,1 +1,0 @@
-scriptevent test:tick
