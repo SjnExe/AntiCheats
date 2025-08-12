@@ -38,29 +38,39 @@ function subscribeToEvents() {
     };
 
     for (const eventName in beforeEventSubscriptions) {
-        if (mc.system.beforeEvents[eventName]) {
-            mc.system.beforeEvents[eventName].subscribe((eventData) => {
-                try {
-                    beforeEventSubscriptions[eventName](eventData, dependencies);
-                } catch (e) {
-                    playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
-                }
-            });
-        } else {
+        try {
+            if (mc.world.beforeEvents[eventName]) {
+                mc.world.beforeEvents[eventName].subscribe((eventData) => {
+                    try {
+                        beforeEventSubscriptions[eventName](eventData, dependencies);
+                    } catch (e) {
+                        playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
+                    }
+                });
+            } else {
+                // This case is for when the event literally doesn't exist on the object, which is rare.
+                // The more common case is that it exists but isn't available, which is caught below.
+                playerUtils.debugLog(`[CoreSystem] Subscription skipped for beforeEvent '${eventName}' as it does not exist.`, 'System', dependencies);
+            }
+        } catch (e) {
             playerUtils.logError(`[CoreSystem] Could not subscribe to beforeEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
         }
     }
 
     for (const eventName in afterEventSubscriptions) {
-        if (mc.system.afterEvents[eventName]) {
-            mc.system.afterEvents[eventName].subscribe((eventData) => {
-                try {
-                    afterEventSubscriptions[eventName](eventData, dependencies);
-                } catch (e) {
-                    playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
-                }
-            });
-        } else {
+        try {
+            if (mc.world.afterEvents[eventName]) {
+                mc.world.afterEvents[eventName].subscribe((eventData) => {
+                    try {
+                        afterEventSubscriptions[eventName](eventData, dependencies);
+                    } catch (e) {
+                        playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
+                    }
+                });
+            } else {
+                playerUtils.debugLog(`[CoreSystem] Subscription skipped for afterEvent '${eventName}' as it does not exist.`, 'System', dependencies);
+            }
+        } catch (e) {
             playerUtils.logError(`[CoreSystem] Could not subscribe to afterEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
         }
     }
