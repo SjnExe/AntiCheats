@@ -19,7 +19,15 @@
     "dependencies": [
         {
             "module_name": "@minecraft/server",
-            "version": "1.9.0"
+            "version": "2.2.0-beta"
+        },
+        {
+            "module_name": "@minecraft/server-ui",
+            "version": "2.1.0-beta"
+        },
+        {
+            "module_name": "@minecraft/server-gametest",
+            "version": "1.0.0-beta"
         }
     ],
     "capabilities": [
