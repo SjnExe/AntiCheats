@@ -212,7 +212,7 @@ const uiDynamicItemGenerators = {
     generateOnlinePlayerItems: (player, dependencies) => {
         const { playerDataManager } = dependencies;
         const items = [];
-        const onlinePlayers = world.getPlayers();
+        const onlinePlayers = world.getAllPlayers();
 
         if (onlinePlayers.length === 0) {
             // Handled by showPanel's generic "no items" message if this is the only generator
@@ -261,7 +261,7 @@ const uiDynamicItemGenerators = {
     generateWatchedPlayerItems: (player, dependencies) => {
         const { playerDataManager } = dependencies;
         const items = [];
-        const onlinePlayers = world.getPlayers();
+        const onlinePlayers = world.getAllPlayers();
 
         onlinePlayers.forEach((p, index) => {
             const playerData = playerDataManager?.getPlayerData(p.id);
@@ -1483,7 +1483,7 @@ const uiActionFunctions = {
         infoText += `AntiCheat Version: §e${config.addonVersion}\n`;
         infoText += `Server Time: §e${new Date().toLocaleTimeString()}\n`;
         infoText += `Current Game Tick: §e${system.currentTick}\n`;
-        const onlinePlayersInstance = world.getPlayers();
+        const onlinePlayersInstance = world.getAllPlayers();
         infoText += `Online Players: §e${onlinePlayersInstance.length}\n`;
         if (playerDataManager?.getAllPlayerDataCount) {
             infoText += `Cached PlayerData Entries: §e${playerDataManager.getAllPlayerDataCount()}\n`;
@@ -1884,7 +1884,7 @@ const uiActionFunctions = {
                 } else {
                     playerUtils.debugLog(`[UiManager.confirmClearPlayerInventory] No 'clearinv' command in map, using vanilla /clear for ${targetPlayerName}`, adminPlayerName, dependencies);
                     try {
-                        const targetPlayerObject = world.getPlayers().find(p => p.name === targetPlayerName);
+                        const targetPlayerObject = world.getAllPlayers().find(p => p.name === targetPlayerName);
                         if (targetPlayerObject) {
                             await targetPlayerObject.runCommandAsync('clear @s');
                             player.sendMessage(playerUtils.getString('ui.playerActions.clearInventory.success', { targetPlayerName }));

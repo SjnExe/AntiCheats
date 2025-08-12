@@ -18,13 +18,13 @@ export function execute(player, _args, dependencies) {
     const { playerDataManager, playerUtils, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
-    if (!mc?.world?.getPlayers) {
-        console.error('[ListWatchedCommand CRITICAL] mc.world.getPlayers is not available.');
+    if (!mc?.world?.getAllPlayers) {
+        console.error('[ListWatchedCommand CRITICAL] mc.world.getAllPlayers is not available.');
         player.sendMessage(getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: 'System error' }));
         return;
     }
 
-    const onlinePlayers = mc.world.getPlayers();
+    const onlinePlayers = mc.world.getAllPlayers();
     const watchedPlayersNames = [];
 
     for (const p of onlinePlayers) {

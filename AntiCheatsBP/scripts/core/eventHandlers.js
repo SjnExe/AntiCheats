@@ -1,6 +1,6 @@
 import {
     world,
-    system,
+    system
 } from '@minecraft/server';
 import * as mc from '@minecraft/server';
 import {
@@ -337,7 +337,7 @@ export const handleEntitySpawnEventAntiGrief = profileEventHandler('handleEntity
         }
     } else if (config?.checks?.entitySpam?.enabled && (entity.typeId === 'minecraft:snow_golem' || entity.typeId === 'minecraft:iron_golem')) {
         playerUtils?.debugLog(`[EvtHdlr.EntSpawn] ${entityName} spawned. Checking attribution. Tick: ${system?.currentTick}`, null, dependencies);
-        const players = world.getPlayers();
+        const players = world.getAllPlayers();
         for (const player of players) {
             if (!player.isValid()) continue;
             const pData = playerDataManager?.getPlayerData(player.id);

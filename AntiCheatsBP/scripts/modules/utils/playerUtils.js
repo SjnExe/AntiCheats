@@ -10,6 +10,10 @@ const daysPerWeek = 7;
 const avgDaysPerMonth = 30.4375;
 const avgDaysPerYear = 365.25;
 
+// Error Log Throttling
+const errorLogHistory = new Map();
+const LOG_COOLDOWN_MS = 5000; // 5 seconds
+
 
 /**
  * @param {string} key
@@ -107,7 +111,7 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
         fullMessage += ` §7(Player: §e${player.name}§7)§r`;
     }
 
-    const allPlayers = mc.world.getPlayers();
+    const allPlayers = mc.world.getAllPlayers();
     const notificationsOffTag = 'notificationsOff';
     const notificationsOnTag = 'notificationsOn';
 
@@ -141,10 +145,25 @@ export function log(message) {
  * @param {Error} [error]
  */
 export function logError(message, error) {
+    const now = Date.now();
+    const lastLogTime = errorLogHistory.get(message);
+
+    if (lastLogTime && (now - lastLogTime < LOG_COOLDOWN_MS)) {
+        return; // Suppress the error log
+    }
+
+    errorLogHistory.set(message, now);
+
     const errorMessage = `[AC ERROR] ${message}`;
     console.error(errorMessage);
     if (error && error.stack) {
         console.error(`Stack Trace: ${error.stack}`);
+    }
+
+    // Clean up old entries from the history to prevent memory leaks
+    if (errorLogHistory.size > 50) {
+        const oldestKey = errorLogHistory.keys().next().value;
+        errorLogHistory.delete(oldestKey);
     }
 }
 
@@ -164,7 +183,7 @@ export function findPlayer(playerName) {
         return null;
     }
     const nameToFind = playerName.toLowerCase();
-    return mc.world.getPlayers().find(p => p.name.toLowerCase() === nameToFind) || null;
+    return mc.world.getAllPlayers().find(p => p.name.toLowerCase() === nameToFind) || null;
 }
 
 /**
@@ -331,7 +350,7 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
             }
             break;
         case 'admin':
-            mc.world.getPlayers().forEach(p => {
+            mc.world.getAllPlayers().forEach(p => {
                 if (playerUtils.isAdmin(p, dependencies)) {
                     playToPlayer(p);
                 }
@@ -345,7 +364,7 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
             }
             break;
         case 'global':
-            mc.world.getPlayers().forEach(p => playToPlayer(p));
+            mc.world.getAllPlayers().forEach(p => playToPlayer(p));
             break;
         default:
             if (primaryPlayer) {

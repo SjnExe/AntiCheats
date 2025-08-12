@@ -38,39 +38,29 @@ function subscribeToEvents() {
     };
 
     for (const eventName in beforeEventSubscriptions) {
-        try {
-            if (mc.world.beforeEvents[eventName]) {
-                mc.world.beforeEvents[eventName].subscribe((eventData) => {
-                    try {
-                        beforeEventSubscriptions[eventName](eventData, dependencies);
-                    } catch (e) {
-                        playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
-                    }
-                });
-            } else {
-                // This case is for when the event literally doesn't exist on the object, which is rare.
-                // The more common case is that it exists but isn't available, which is caught below.
-                playerUtils.debugLog(`[CoreSystem] Subscription skipped for beforeEvent '${eventName}' as it does not exist.`, 'System', dependencies);
-            }
-        } catch (e) {
+        if (mc.system.beforeEvents[eventName]) {
+            mc.system.beforeEvents[eventName].subscribe((eventData) => {
+                try {
+                    beforeEventSubscriptions[eventName](eventData, dependencies);
+                } catch (e) {
+                    playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
+                }
+            });
+        } else {
             playerUtils.logError(`[CoreSystem] Could not subscribe to beforeEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
         }
     }
 
     for (const eventName in afterEventSubscriptions) {
-        try {
-            if (mc.world.afterEvents[eventName]) {
-                mc.world.afterEvents[eventName].subscribe((eventData) => {
-                    try {
-                        afterEventSubscriptions[eventName](eventData, dependencies);
-                    } catch (e) {
-                        playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
-                    }
-                });
-            } else {
-                playerUtils.debugLog(`[CoreSystem] Subscription skipped for afterEvent '${eventName}' as it does not exist.`, 'System', dependencies);
-            }
-        } catch (e) {
+        if (mc.system.afterEvents[eventName]) {
+            mc.system.afterEvents[eventName].subscribe((eventData) => {
+                try {
+                    afterEventSubscriptions[eventName](eventData, dependencies);
+                } catch (e) {
+                    playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
+                }
+            });
+        } else {
             playerUtils.logError(`[CoreSystem] Could not subscribe to afterEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
         }
     }
@@ -174,24 +164,15 @@ function performInitializations() {
     const initMessage = playerUtils.getString('system.core.initialized', { version: dependencies.acVersion });
     mc.world.sendMessage(initMessage);
     playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Starting tick loops.', 'System', dependencies);
-    // The main tick loop is now driven by functions/tick.json, which calls the scriptevent below.
-    // mc.system.runInterval(() => mainTick(dependencies), 1);
+    mc.system.runInterval(() => mainTick(dependencies), 1);
     if (config.enableTpaSystem) {
         mc.system.runInterval(() => tpaTick(dependencies), tpaSystemTickInterval);
     }
 }
 
 mc.system.afterEvents.scriptEventReceive.subscribe((event) => {
-    const { id, sourceEntity } = event;
-
-    if (id === 'ac:main_tick') {
-        // This is our main tick loop, triggered by the scriptevent in functions/main.mcfunction
-        mainTick(dependencies, { currentTick: mc.system.currentTick });
-        return;
-    }
-
-    if (id === 'ac:init') {
-        const player = sourceEntity;
+    if (event.id === 'ac:init') {
+        const { sourceEntity: player } = event;
 
         // User requested to remove the admin check for initialization.
         // We still check if the source is a player to prevent command block execution without context.

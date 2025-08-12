@@ -4,12 +4,12 @@ const periodicDataPersistenceIntervalTicks = 600;
 const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
 export const tpaSystemTickInterval = 20;
 
-export async function mainTick(dependencies, tickEvent) {
-    const { logManager, system } = dependencies;
-    const currentTick = tickEvent?.currentTick ?? system.currentTick;
+let currentTick = 0;
 
+export async function mainTick(dependencies) {
+    const { logManager } = dependencies;
     try {
-        await processTick(dependencies, currentTick);
+        await processTick(dependencies);
     } catch (e) {
         logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
         try {
@@ -27,8 +27,9 @@ export async function mainTick(dependencies, tickEvent) {
     }
 }
 
-async function processTick(dependencies, currentTick) {
+async function processTick(dependencies) {
     const { config, worldBorderManager, playerDataManager, playerUtils, logManager, mc } = dependencies;
+    currentTick++;
 
     if (config.enableWorldBorderSystem) {
         try {
@@ -46,7 +47,7 @@ async function processTick(dependencies, currentTick) {
         }
     }
 
-    const onlinePlayers = mc.world.getPlayers();
+    const onlinePlayers = mc.world.getAllPlayers();
     const playerProcessingPromises = onlinePlayers.map(player => processPlayer(player, dependencies, currentTick));
     await Promise.all(playerProcessingPromises);
 
@@ -170,7 +171,7 @@ export function tpaTick(dependencies) {
 
         const requestsInWarmup = tpaManager.getRequestsInWarmup();
         if (requestsInWarmup.length > 0) {
-            const onlinePlayers = mc.world.getPlayers();
+            const onlinePlayers = mc.world.getAllPlayers();
             const playerMap = new Map(onlinePlayers.map(p => [p.name, p]));
 
             for (const req of requestsInWarmup) {
