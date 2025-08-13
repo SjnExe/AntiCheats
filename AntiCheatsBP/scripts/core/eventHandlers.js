@@ -4,6 +4,15 @@ import {
 } from '@minecraft/server';
 import * as mc from '@minecraft/server';
 import { dependencies as liveDependencies } from './dependencies.js';
+import * as actionManager from './actionManager.js';
+import * as automodManager from './automodManager.js';
+import * as chatProcessor from './chatProcessor.js';
+import * as commandManager from './commandManager.js';
+import * as economyManager from './economyManager.js';
+import * as logManager from './logManager.js';
+import * as playerDataManager from './playerDataManager.js';
+import * as rankManager from './rankManager.js';
+import * as checks from '../modules/detections/index.js';
 import {
     getExpectedBreakTicks,
     isNetherLocked,
@@ -83,7 +92,7 @@ function profileEventHandler(handlerName, handlerFunction) {
  * @param {import('../types.js').Dependencies} dependencies
  */
 export const handlePlayerLeaveBeforeEvent = profileEventHandler('handlePlayerLeaveBeforeEvent', (eventData, dependencies) => {
-    const { playerDataManager, playerUtils, config, logManager, actionManager, economyManager } = dependencies;
+    const { playerUtils, config } = dependencies;
     const { player } = eventData;
     const { name: playerName, id: playerId } = player;
 
@@ -317,7 +326,7 @@ export const handlePistonActivateAntiGrief = profileEventHandler('handlePistonAc
  * @param {import('../types.js').Dependencies} dependencies
  */
 export const handleEntitySpawnEventAntiGrief = profileEventHandler('handleEntitySpawnEventAntiGrief', async (eventData, dependencies) => {
-    const { config, playerUtils, actionManager, playerDataManager, checks, logManager, system } = dependencies;
+    const { config, playerUtils, system } = dependencies;
     const { entity, cause } = eventData;
 
     if (!entity?.isValid()) {
@@ -932,13 +941,13 @@ export const handlePlayerPlaceBlockAfterEvent = profileEventHandler('handlePlaye
  * @param {import('../types.js').Dependencies} dependencies
  */
 export const handleBeforeChatSend = profileEventHandler('handleBeforeChatSend', async (eventData, dependencies) => {
-    const { playerUtils, chatProcessor, config, commandManager } = dependencies;
+    const { playerUtils, config } = dependencies;
     const { sender: player, message } = eventData;
 
     if (message.startsWith(config.prefix)) {
         await commandManager.handleChatCommand(eventData, dependencies);
     } else {
-        const pData = dependencies.playerDataManager.getPlayerData(player.id);
+        const pData = playerDataManager.getPlayerData(player.id);
         if (!pData) {
             playerUtils.warnPlayer(player, playerUtils.getString('error.playerDataNotFound', dependencies));
             eventData.cancel = true;
