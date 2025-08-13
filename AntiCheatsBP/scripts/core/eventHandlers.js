@@ -3,6 +3,7 @@ import {
     system
 } from '@minecraft/server';
 import * as mc from '@minecraft/server';
+import { dependencies as liveDependencies } from './dependencies.js';
 import {
     getExpectedBreakTicks,
     isNetherLocked,
@@ -29,38 +30,39 @@ const minTimeoutDelayTicks = 1;
  */
 function profileEventHandler(handlerName, handlerFunction) {
     return async function (...args) {
-        const dependencies = args[args.length - 1];
-
-        // Guard clause to prevent any event handler from running before the addon is fully initialized.
-        if (!dependencies || !dependencies.isInitialized) {
+        // Guard clause using the LIVE imported dependencies object to prevent race conditions.
+        if (!liveDependencies.isInitialized) {
             return;
         }
 
-        if (dependencies.config && dependencies.config.development.enablePerformanceProfiling && dependencies.profilingData) {
+        // Replace the potentially stale dependencies object from the closure with the live one.
+        const newArgs = [...args.slice(0, -1), liveDependencies];
+
+        if (liveDependencies.config && liveDependencies.config.development.enablePerformanceProfiling && liveDependencies.profilingData) {
             const startTime = Date.now();
             try {
-                await handlerFunction.apply(null, args);
+                await handlerFunction.apply(null, newArgs);
             } finally {
                 const endTime = Date.now();
                 const duration = endTime - startTime;
-                const stats = dependencies.profilingData.eventHandlers[handlerName] = dependencies.profilingData.eventHandlers[handlerName] || { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] };
+                const stats = liveDependencies.profilingData.eventHandlers[handlerName] = liveDependencies.profilingData.eventHandlers[handlerName] || { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] };
                 stats.totalTime += duration;
                 stats.count++;
                 stats.maxTime = Math.max(stats.maxTime, duration);
                 stats.minTime = Math.min(stats.minTime, duration);
                 stats.history.push(duration);
-                if (stats.history.length > dependencies.config.development.maxProfilingHistory) {
+                if (stats.history.length > liveDependencies.config.development.maxProfilingHistory) {
                     stats.history.shift();
                 }
             }
         } else {
             try {
-                await handlerFunction.apply(null, args);
+                await handlerFunction.apply(null, newArgs);
             } catch (e) {
                 logError(`[EventHandler.${handlerName}] Unhandled error (profiling disabled): ${e?.message}\n${e?.stack}`, e);
                 const player = args[0]?.player ?? args[0]?.source ?? args[0]?.damagingEntity ?? args[0]?.hurtEntity;
-                if (dependencies?.logManager) {
-                    dependencies.logManager.addLog({
+                if (liveDependencies?.logManager) {
+                    liveDependencies.logManager.addLog({
                         actionType: `error.event.${handlerName}`,
                         context: `eventHandlers.${handlerName}`,
                         targetName: player?.name,
@@ -69,7 +71,7 @@ function profileEventHandler(handlerName, handlerFunction) {
                             message: e?.message ?? 'N/A',
                             rawErrorStack: e?.stack ?? 'N/A',
                         },
-                    }, dependencies);
+                    }, liveDependencies);
                 }
             }
         }
