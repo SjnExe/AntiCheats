@@ -6,10 +6,10 @@ const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
 export const tpaSystemTickInterval = 20;
 
 export async function mainTick(dependencies, tickEvent) {
-    const { logManager, system, mc } = dependencies;
+    const { logManager, system } = dependencies;
 
     // Guard clause to prevent the tick loop from running before the addon is initialized.
-    if (!mc.world.getDynamicProperty('ac:initialized')) {
+    if (!dependencies.isInitialized) {
         return;
     }
 
