@@ -30,7 +30,13 @@ const minTimeoutDelayTicks = 1;
 function profileEventHandler(handlerName, handlerFunction) {
     return async function (...args) {
         const dependencies = args[args.length - 1];
-        if (dependencies && dependencies.config && dependencies.config.development.enablePerformanceProfiling && dependencies.profilingData) {
+
+        // Guard clause to prevent any event handler from running before the addon is fully initialized.
+        if (!dependencies || !dependencies.isInitialized) {
+            return;
+        }
+
+        if (dependencies.config && dependencies.config.development.enablePerformanceProfiling && dependencies.profilingData) {
             const startTime = Date.now();
             try {
                 await handlerFunction.apply(null, args);
