@@ -1,15 +1,21 @@
 import { logError } from './modules/utils/playerUtils.js';
+import { Player } from '@minecraft/server';
 
 const periodicDataPersistenceIntervalTicks = 600;
 const stalePurgeCleanupIntervalTicks = 72000; // Once per hour
 export const tpaSystemTickInterval = 20;
 
-let currentTick = 0;
+export async function mainTick(dependencies, tickEvent) {
+    const { logManager, system } = dependencies;
 
-export async function mainTick(dependencies) {
-    const { logManager } = dependencies;
+    // Guard clause to prevent the tick loop from running before the addon is initialized.
+    if (!dependencies.isInitialized) {
+        return;
+    }
+
+    const currentTick = tickEvent?.currentTick ?? system.currentTick;
     try {
-        await processTick(dependencies);
+        await processTick(dependencies, currentTick);
     } catch (e) {
         logError(`Critical unhandled error in mainTick: ${e?.message}`, e);
         try {
@@ -27,9 +33,8 @@ export async function mainTick(dependencies) {
     }
 }
 
-async function processTick(dependencies) {
+async function processTick(dependencies, currentTick) {
     const { config, worldBorderManager, playerDataManager, playerUtils, logManager, mc } = dependencies;
-    currentTick++;
 
     if (config.enableWorldBorderSystem) {
         try {
@@ -47,11 +52,20 @@ async function processTick(dependencies) {
         }
     }
 
-    const onlinePlayers = mc.world.getAllPlayers();
-    const playerProcessingPromises = onlinePlayers.map(player => processPlayer(player, dependencies, currentTick));
+    const allEntities = mc.world.getPlayers();
+    const playerProcessingPromises = [];
+
+    for (const entity of allEntities) {
+        if (entity instanceof Player) {
+            playerProcessingPromises.push(processPlayer(entity, dependencies, currentTick));
+        }
+    }
+
     await Promise.all(playerProcessingPromises);
 
     if (currentTick % periodicDataPersistenceIntervalTicks === 0) {
+        // We need to filter again here to pass only players to the persistence function
+        const onlinePlayers = allEntities.filter(e => e instanceof Player);
         await handlePeriodicDataPersistence(onlinePlayers, dependencies);
     }
 
@@ -63,12 +77,7 @@ async function processTick(dependencies) {
 async function processPlayer(player, dependencies, currentTick) {
     const { config, checks, playerDataManager, playerUtils, logManager, worldBorderManager } = dependencies;
 
-    // Defensive check to ensure the player object is valid before use.
-    if (typeof player?.isValid !== 'function') {
-        logError(`[TickLoop] processPlayer received an invalid player-like object. Type: ${typeof player}. Keys: ${player ? Object.keys(player).join(', ') : 'null'}`);
-        return;
-    }
-
+    // The check for player validity is now handled in processTick before this function is called.
     if (!player.isValid()) {
         return;
     }

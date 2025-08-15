@@ -1,0 +1,36 @@
+{
+    "format_version": 2,
+    "header": {
+        "name": "AC Test - Baseline",
+        "description": "A stable baseline test addon with just a tick loop.",
+        "uuid": "a1b2c3d4-0002-0002-0002-567890abcdef",
+        "version": [1, 0, 0],
+        "min_engine_version": [ 1, 21, 0 ]
+    },
+    "modules": [
+        {
+            "type": "script",
+            "language": "javascript",
+            "uuid": "fedcba09-0002-0002-0002-cba987654321",
+            "version": [1, 0, 0],
+            "entry": "scripts/main.js"
+        }
+    ],
+    "dependencies": [
+        {
+            "module_name": "@minecraft/server",
+            "version": "2.2.0-beta"
+        },
+        {
+            "module_name": "@minecraft/server-ui",
+            "version": "2.1.0-beta"
+        },
+        {
+            "module_name": "@minecraft/server-gametest",
+            "version": "1.0.0-beta"
+        }
+    ],
+    "capabilities": [
+        "script_eval"
+    ]
+}

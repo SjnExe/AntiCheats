@@ -80,19 +80,17 @@ export const dependencies = {
     playerUtils,
     worldBorderManager,
     checks,
-};
 
-/**
- * A flag to indicate if the core dependencies have been initialized.
- */
-let isInitialized = false;
+    // Initialization flag
+    isInitialized: false,
+};
 
 /**
  * Initializes all core modules that require setup after the world is loaded.
  * This function should only be called once.
  */
 export function initializeCoreDependencies() {
-    if (isInitialized) {
+    if (dependencies.isInitialized) {
         playerUtils.log('Core dependencies are already initialized.');
         return;
     }
@@ -109,5 +107,5 @@ export function initializeCoreDependencies() {
     // configValidator does not have an initializer, it contains only pure functions.
 
     playerUtils.log('Core dependencies initialized successfully.');
-    isInitialized = true;
+    dependencies.isInitialized = true;
 }

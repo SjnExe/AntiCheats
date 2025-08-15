@@ -3,6 +3,16 @@ import {
     system
 } from '@minecraft/server';
 import * as mc from '@minecraft/server';
+import { dependencies as liveDependencies } from './dependencies.js';
+import * as actionManager from './actionManager.js';
+import * as automodManager from './automodManager.js';
+import * as chatProcessor from './chatProcessor.js';
+import * as commandManager from './commandManager.js';
+import * as economyManager from './economyManager.js';
+import * as logManager from './logManager.js';
+import * as playerDataManager from './playerDataManager.js';
+import * as rankManager from './rankManager.js';
+import * as checks from '../modules/detections/index.js';
 import {
     getExpectedBreakTicks,
     isNetherLocked,
@@ -29,32 +39,39 @@ const minTimeoutDelayTicks = 1;
  */
 function profileEventHandler(handlerName, handlerFunction) {
     return async function (...args) {
-        const dependencies = args[args.length - 1];
-        if (dependencies && dependencies.config && dependencies.config.development.enablePerformanceProfiling && dependencies.profilingData) {
+        // Guard clause using the LIVE imported dependencies object to prevent race conditions.
+        if (!liveDependencies.isInitialized) {
+            return;
+        }
+
+        // Replace the potentially stale dependencies object from the closure with the live one.
+        const newArgs = [...args.slice(0, -1), liveDependencies];
+
+        if (liveDependencies.config && liveDependencies.config.development.enablePerformanceProfiling && liveDependencies.profilingData) {
             const startTime = Date.now();
             try {
-                await handlerFunction.apply(null, args);
+                await handlerFunction.apply(null, newArgs);
             } finally {
                 const endTime = Date.now();
                 const duration = endTime - startTime;
-                const stats = dependencies.profilingData.eventHandlers[handlerName] = dependencies.profilingData.eventHandlers[handlerName] || { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] };
+                const stats = liveDependencies.profilingData.eventHandlers[handlerName] = liveDependencies.profilingData.eventHandlers[handlerName] || { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] };
                 stats.totalTime += duration;
                 stats.count++;
                 stats.maxTime = Math.max(stats.maxTime, duration);
                 stats.minTime = Math.min(stats.minTime, duration);
                 stats.history.push(duration);
-                if (stats.history.length > dependencies.config.development.maxProfilingHistory) {
+                if (stats.history.length > liveDependencies.config.development.maxProfilingHistory) {
                     stats.history.shift();
                 }
             }
         } else {
             try {
-                await handlerFunction.apply(null, args);
+                await handlerFunction.apply(null, newArgs);
             } catch (e) {
                 logError(`[EventHandler.${handlerName}] Unhandled error (profiling disabled): ${e?.message}\n${e?.stack}`, e);
                 const player = args[0]?.player ?? args[0]?.source ?? args[0]?.damagingEntity ?? args[0]?.hurtEntity;
-                if (dependencies?.logManager) {
-                    dependencies.logManager.addLog({
+                if (liveDependencies?.logManager) {
+                    liveDependencies.logManager.addLog({
                         actionType: `error.event.${handlerName}`,
                         context: `eventHandlers.${handlerName}`,
                         targetName: player?.name,
@@ -63,7 +80,7 @@ function profileEventHandler(handlerName, handlerFunction) {
                             message: e?.message ?? 'N/A',
                             rawErrorStack: e?.stack ?? 'N/A',
                         },
-                    }, dependencies);
+                    }, liveDependencies);
                 }
             }
         }
@@ -75,7 +92,7 @@ function profileEventHandler(handlerName, handlerFunction) {
  * @param {import('../types.js').Dependencies} dependencies
  */
 export const handlePlayerLeaveBeforeEvent = profileEventHandler('handlePlayerLeaveBeforeEvent', (eventData, dependencies) => {
-    const { playerDataManager, playerUtils, config, logManager, actionManager, economyManager } = dependencies;
+    const { playerUtils, config } = dependencies;
     const { player } = eventData;
     const { name: playerName, id: playerId } = player;
 
@@ -309,7 +326,7 @@ export const handlePistonActivateAntiGrief = profileEventHandler('handlePistonAc
  * @param {import('../types.js').Dependencies} dependencies
  */
 export const handleEntitySpawnEventAntiGrief = profileEventHandler('handleEntitySpawnEventAntiGrief', async (eventData, dependencies) => {
-    const { config, playerUtils, actionManager, playerDataManager, checks, logManager, system } = dependencies;
+    const { config, playerUtils, system } = dependencies;
     const { entity, cause } = eventData;
 
     if (!entity?.isValid()) {
@@ -924,13 +941,13 @@ export const handlePlayerPlaceBlockAfterEvent = profileEventHandler('handlePlaye
  * @param {import('../types.js').Dependencies} dependencies
  */
 export const handleBeforeChatSend = profileEventHandler('handleBeforeChatSend', async (eventData, dependencies) => {
-    const { playerUtils, chatProcessor, config, commandManager } = dependencies;
+    const { playerUtils, config } = dependencies;
     const { sender: player, message } = eventData;
 
     if (message.startsWith(config.prefix)) {
         await commandManager.handleChatCommand(eventData, dependencies);
     } else {
-        const pData = dependencies.playerDataManager.getPlayerData(player.id);
+        const pData = playerDataManager.getPlayerData(player.id);
         if (!pData) {
             playerUtils.warnPlayer(player, playerUtils.getString('error.playerDataNotFound', dependencies));
             eventData.cancel = true;

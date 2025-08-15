@@ -38,29 +38,29 @@ function subscribeToEvents() {
     };
 
     for (const eventName in beforeEventSubscriptions) {
-        if (mc.system.beforeEvents[eventName]) {
-            mc.system.beforeEvents[eventName].subscribe((eventData) => {
+        try {
+            mc.world.beforeEvents[eventName].subscribe((eventData) => {
                 try {
                     beforeEventSubscriptions[eventName](eventData, dependencies);
                 } catch (e) {
                     playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
                 }
             });
-        } else {
+        } catch (e) {
             playerUtils.logError(`[CoreSystem] Could not subscribe to beforeEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
         }
     }
 
     for (const eventName in afterEventSubscriptions) {
-        if (mc.system.afterEvents[eventName]) {
-            mc.system.afterEvents[eventName].subscribe((eventData) => {
+        try {
+            mc.world.afterEvents[eventName].subscribe((eventData) => {
                 try {
                     afterEventSubscriptions[eventName](eventData, dependencies);
                 } catch (e) {
                     playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
                 }
             });
-        } else {
+        } catch (e) {
             playerUtils.logError(`[CoreSystem] Could not subscribe to afterEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
         }
     }
@@ -163,16 +163,24 @@ function performInitializations() {
 
     const initMessage = playerUtils.getString('system.core.initialized', { version: dependencies.acVersion });
     mc.world.sendMessage(initMessage);
-    playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Starting tick loops.', 'System', dependencies);
-    mc.system.runInterval(() => mainTick(dependencies), 1);
+    playerUtils.debugLog('[Main] Anti-Cheat Core System Initialized. Tick loops are now active.', 'System', dependencies);
+    // The main tick loop is driven by `ac:main_tick` scriptevent.
+    // The TPA tick loop starts here if enabled.
     if (config.enableTpaSystem) {
         mc.system.runInterval(() => tpaTick(dependencies), tpaSystemTickInterval);
     }
 }
 
 mc.system.afterEvents.scriptEventReceive.subscribe((event) => {
-    if (event.id === 'ac:init') {
-        const { sourceEntity: player } = event;
+    const { id, sourceEntity } = event;
+
+    if (id === 'ac:main_tick') {
+        mainTick(dependencies, { currentTick: mc.system.currentTick });
+        return;
+    }
+
+    if (id === 'ac:init') {
+        const player = sourceEntity;
 
         // User requested to remove the admin check for initialization.
         // We still check if the source is a player to prevent command block execution without context.
@@ -181,7 +189,7 @@ mc.system.afterEvents.scriptEventReceive.subscribe((event) => {
             return;
         }
 
-        if (mc.world.getDynamicProperty('ac:initialized')) {
+        if (dependencies.isInitialized) {
             player.sendMessage(playerUtils.getString('system.core.alreadyInitialized', { dependencies }));
             return;
         }
