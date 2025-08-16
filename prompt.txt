@@ -1,0 +1,29 @@
+Hello Jules,
+
+We are continuing the development of a Minecraft Bedrock AntiCheats addon. This session is a continuation of a previous one. Here is a summary of the project's status to get you up to speed.
+
+## Project Goal
+Our main goal is to rebuild an old, non-functional AntiCheats addon from scratch, creating a modern, robust, and maintainable version while preserving the logic and features of the original.
+
+## Work Completed So Far
+In the previous session, we accomplished the following foundational tasks:
+1.  **Archived Old Addon**: The original `AntiCheatsBP` and `AntiCheatsRP` directories were renamed to `OldAntiCheatsBP` and `OldAntiCheatsRP` respectively, to keep them for reference.
+2.  **New Addon Structure**: A new, clean directory structure was created for the new addon under `AntiCheatsBP`. This includes a `scripts/core` directory for foundational managers and a `scripts/modules` directory (with subdirectories for `commands`, `detections`, and `utils`) for future features.
+3.  **Automatic Initialization**: A fully automatic, "plug-and-play" initialization system was implemented in `scripts/core/main.js`. It uses `system.run()` to run on load and creates a persistent configuration using a world dynamic property (`anticheats:config`).
+4.  **Configuration File**: A dedicated configuration file was created at `scripts/config.js`. It currently holds the addon version (for config migration purposes), a placeholder for the owner's name, and the tag used for admins.
+5.  **Permission & Rank System**: A foundational permission system was implemented. This includes:
+    *   `scripts/core/ranksConfig.js` to define ranks (Owner, Admin, Member).
+    *   `scripts/core/rankManager.js` to determine a player's rank based on their name (for the owner) or tags (for admins).
+    *   `scripts/core/playerDataManager.js` to manage player data in memory during their session.
+6.  **Bug Fixes**: We diagnosed and fixed several bugs related to initialization events and file paths.
+
+## Current State of the Code
+The addon now has a solid, well-structured foundation. It successfully loads, creates a default config, and assigns ranks to players when they join. The basic framework is in place, but it does not yet contain any actual cheat-detection logic.
+
+## Next Task
+The next major task is to begin porting the cheat-detection modules from the old addon to the new one.
+
+**Please begin by reviewing the test results from my latest run of the addon.**
+
+## Verbose Logs from Latest Test
+--- PASTE VERBOSE LOGS HERE ---
