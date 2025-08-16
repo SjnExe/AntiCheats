@@ -22,13 +22,13 @@
 
 /** @type {Required<ChatFormatting>} */
 export const defaultChatFormatting = {
-    prefixText: '§8[§9Member§8] ',
-    nameColor: '§9',
+    prefixText: '§8[§fMember§8] ',
+    nameColor: '§f',
     messageColor: '§7',
 };
 
 /** @type {string} */
-export const defaultNametagPrefix = '§9Member §f\n';
+export const defaultNametagPrefix = '§fMember §f\n';
 
 /** @type {number} */
 export const defaultPermissionLevel = 1024;
