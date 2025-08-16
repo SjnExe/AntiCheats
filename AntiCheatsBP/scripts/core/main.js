@@ -36,17 +36,8 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
     world.sendMessage(`§l§cAnti §eCheats§r> §a${eventData.sender.name}§r: ${eventData.message}`);
 });
 
-world.afterEvents.playerJoin.subscribe((event) => {
-    console.log(`[Debug] playerJoin event fired. Keys on event: ${Object.keys(event).join(', ')}`);
+world.afterEvents.playerSpawn.subscribe((event) => {
     const { player } = event;
-
-    if (!player) {
-        console.error('[Debug] Player object is undefined or null in playerJoin event!');
-        return;
-    }
-
-    console.log(`[Debug] Player object received. Name: ${player.name}, ID: ${player.id}`);
-
     const pData = playerDataManager.addPlayer(player);
     const rank = rankManager.getPlayerRank(player, addonConfig);
     pData.rankId = rank.id;
