@@ -49,8 +49,8 @@ system.run(() => {
         console.error(`[AntiCheats] Failed to load commands: ${error.stack}`);
     });
 
-    // Run the mainTick every 60 ticks (3 seconds) to reduce performance impact
-    system.runInterval(mainTick, 60);
+    // Run the mainTick every 20 ticks (1 second)
+    system.runInterval(mainTick, 20);
     console.log('[AntiCheats] Addon initialized successfully.');
 });
 
