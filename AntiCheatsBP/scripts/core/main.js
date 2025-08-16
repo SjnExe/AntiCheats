@@ -7,7 +7,19 @@ let addonConfig;
 
 // This function will contain the main logic of the addon that runs continuously.
 function mainTick() {
-    // For now, this is empty. We will add cheat detections here later.
+    // Rank update check
+    for (const player of world.getAllPlayers()) {
+        const pData = playerDataManager.getPlayer(player.id);
+        if (!pData) continue;
+
+        const currentRank = rankManager.getPlayerRank(player, addonConfig);
+        if (pData.rankId !== currentRank.id) {
+            pData.rankId = currentRank.id;
+            pData.permissionLevel = currentRank.permissionLevel;
+            console.log(`[AntiCheats] Player ${player.name}'s rank updated to ${currentRank.name}.`);
+            player.sendMessage(`§aYour rank has been updated to ${currentRank.name}.`);
+        }
+    }
 }
 
 // Run the initialization logic on the next tick after the script is loaded.
@@ -26,14 +38,33 @@ system.run(() => {
     }
 
     rankManager.initialize();
-    system.runInterval(mainTick);
+    // Run the mainTick every 20 ticks (1 second)
+    system.runInterval(mainTick, 20);
     console.log('[AntiCheats] Addon initialized successfully.');
 });
 
-// For now, I will keep the chat message forwarder to show the addon is active.
+// Handle chat formatting
 world.beforeEvents.chatSend.subscribe((eventData) => {
     eventData.cancel = true;
-    world.sendMessage(`§l§cAnti §eCheats§r> §a${eventData.sender.name}§r: ${eventData.message}`);
+
+    const player = eventData.sender;
+    const pData = playerDataManager.getPlayer(player.id);
+
+    if (!pData) {
+        // Player data not found, send a default formatted message
+        world.sendMessage(`§7${player.name}§r: ${eventData.message}`);
+        return;
+    }
+
+    const rank = rankManager.getRankById(pData.rankId);
+    if (!rank) {
+        // Rank not found, send a default formatted message
+        world.sendMessage(`§7${player.name}§r: ${eventData.message}`);
+        return;
+    }
+
+    const format = rank.chatFormatting;
+    world.sendMessage(`${format.prefixText}${format.nameColor}${player.name}§r: ${format.messageColor}${eventData.message}`);
 });
 
 world.afterEvents.playerSpawn.subscribe((event) => {
