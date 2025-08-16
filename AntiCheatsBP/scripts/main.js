@@ -5,8 +5,8 @@ function mainTick() {
     // For now, this is empty. We will add cheat detections here later.
 }
 
-// This event runs once when the world is loaded.
-world.afterEvents.worldInitialize.subscribe((eventData) => {
+// Run the initialization logic on the next tick after the script is loaded.
+system.run(() => {
     console.log('[AntiCheats] Initializing addon...');
 
     const defaultConfig = {
