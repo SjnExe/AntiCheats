@@ -32,9 +32,11 @@ system.run(() => {
         addonConfig = defaultConfig;
         console.log('[AntiCheats] No existing config found. Created a new one.');
     } else {
-        addonConfig = JSON.parse(configStr);
-        // We will add config migration logic here in the future
-        console.log('[AntiCheats] Existing config found.');
+        const savedConfig = JSON.parse(configStr);
+        addonConfig = { ...defaultConfig, ...savedConfig };
+        // Save the merged config back to the dynamic property to persist new default values
+        world.setDynamicProperty('anticheats:config', JSON.stringify(addonConfig));
+        console.log('[AntiCheats] Existing config found and updated with any new default values.');
     }
 
     rankManager.initialize();
