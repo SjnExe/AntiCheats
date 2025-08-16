@@ -1,4 +1,8 @@
 import { world, system } from '@minecraft/server';
+import * as rankManager from './rankManager.js';
+import * as playerDataManager from './playerDataManager.js';
+
+let addonConfig;
 
 // This function will contain the main logic of the addon that runs continuously.
 function mainTick() {
@@ -11,6 +15,8 @@ system.run(() => {
 
     const defaultConfig = {
         version: '1.0.0',
+        ownerPlayerName: 'YourNameHere',
+        adminTag: 'admin',
         modules: {
             fly: {
                 enabled: true,
@@ -24,23 +30,18 @@ system.run(() => {
         },
     };
 
-    // Check if the configuration is already stored in a dynamic property
-    const config = world.getDynamicProperty('anticheats:config');
-    if (config === undefined) {
-        // If not, this is the first time the addon is running.
-        // Store the default configuration.
+    const configStr = world.getDynamicProperty('anticheats:config');
+    if (configStr === undefined) {
         world.setDynamicProperty('anticheats:config', JSON.stringify(defaultConfig));
+        addonConfig = defaultConfig;
         console.log('[AntiCheats] No existing config found. Created a new one.');
     } else {
-        // If a config already exists, we will load it.
-        // For now, we just log that we found it.
-        // In the future, we will add migration logic here.
+        addonConfig = JSON.parse(configStr);
         console.log('[AntiCheats] Existing config found.');
     }
 
-    // Start the main tick loop
+    rankManager.initialize();
     system.runInterval(mainTick);
-
     console.log('[AntiCheats] Addon initialized successfully.');
 });
 
@@ -48,4 +49,19 @@ system.run(() => {
 world.beforeEvents.chatSend.subscribe((eventData) => {
     eventData.cancel = true;
     world.sendMessage(`§l§cAnti §eCheats§r> §a${eventData.sender.name}§r: ${eventData.message}`);
+});
+
+world.afterEvents.playerJoin.subscribe((event) => {
+    const { player } = event;
+    const pData = playerDataManager.addPlayer(player);
+    const rank = rankManager.getPlayerRank(player, addonConfig);
+    pData.rankId = rank.id;
+    pData.permissionLevel = rank.permissionLevel;
+    console.log(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);
+});
+
+world.afterEvents.playerLeave.subscribe((event) => {
+    const { playerId, playerName } = event;
+    playerDataManager.removePlayer(playerId);
+    console.log(`[AntiCheats] Player ${playerName} left.`);
 });
