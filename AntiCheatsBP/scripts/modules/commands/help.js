@@ -17,6 +17,7 @@ function showGeneralHelp(player, userPermissionLevel) {
     if (commandCount === 0) {
         player.sendMessage("§cYou do not have permission to use any commands.");
     } else {
+        helpMessage += "\n§7For more details, type !help <commandName>";
         player.sendMessage(helpMessage.trim());
     }
 }
