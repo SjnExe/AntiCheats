@@ -1,4 +1,5 @@
 import { world, system } from '@minecraft/server';
+import { config as defaultConfig } from '../config.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 
@@ -13,23 +14,6 @@ function mainTick() {
 system.run(() => {
     console.log('[AntiCheats] Initializing addon...');
 
-    const defaultConfig = {
-        version: '1.0.0',
-        ownerPlayerName: 'YourNameHere',
-        adminTag: 'admin',
-        modules: {
-            fly: {
-                enabled: true,
-                puniishment: 'kick',
-            },
-            speed: {
-                enabled: true,
-                maxSpeed: 10,
-                punishment: 'teleport_back',
-            },
-        },
-    };
-
     const configStr = world.getDynamicProperty('anticheats:config');
     if (configStr === undefined) {
         world.setDynamicProperty('anticheats:config', JSON.stringify(defaultConfig));
@@ -37,6 +21,7 @@ system.run(() => {
         console.log('[AntiCheats] No existing config found. Created a new one.');
     } else {
         addonConfig = JSON.parse(configStr);
+        // We will add config migration logic here in the future
         console.log('[AntiCheats] Existing config found.');
     }
 
