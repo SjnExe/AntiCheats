@@ -28,6 +28,7 @@ for (const cmd of gamemodeCommands) {
 
 commandManager.register({
     name: 'gamemode',
+    aliases: ['gm'],
     description: 'Shows help for gamemode commands.',
     permissionLevel: 1024, // Available to everyone
     execute: (player, args) => {
