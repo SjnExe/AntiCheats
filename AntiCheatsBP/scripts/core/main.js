@@ -2,6 +2,7 @@ import { world, system } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
+import { commandManager } from '../modules/commands/commandManager.js';
 
 let addonConfig;
 
@@ -40,14 +41,29 @@ system.run(() => {
     }
 
     rankManager.initialize();
+
+    // Load all command modules
+    import('../modules/commands/index.js').then(() => {
+        console.log('[AntiCheats] Commands loaded.');
+    }).catch(error => {
+        console.error(`[AntiCheats] Failed to load commands: ${error.stack}`);
+    });
+
     // Run the mainTick every 20 ticks (1 second)
     system.runInterval(mainTick, 20);
     console.log('[AntiCheats] Addon initialized successfully.');
 });
 
-// Handle chat formatting
+// Handle commands and chat formatting
 world.beforeEvents.chatSend.subscribe((eventData) => {
-    eventData.cancel = true;
+    // Try to handle it as a command first.
+    const wasCommand = commandManager.handleCommand(eventData, addonConfig);
+    if (wasCommand) {
+        return; // Command was handled (or was an invalid command), so we're done.
+    }
+
+    // If it wasn't a command, proceed with chat formatting.
+    eventData.cancel = true; // We need to cancel the original message to format it.
 
     const player = eventData.sender;
     const pData = playerDataManager.getPlayer(player.id);
