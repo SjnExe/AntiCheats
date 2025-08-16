@@ -25,3 +25,17 @@ for (const cmd of gamemodeCommands) {
         }
     });
 }
+
+commandManager.register({
+    name: 'gamemode',
+    description: 'Shows help for gamemode commands.',
+    permissionLevel: 1024, // Available to everyone
+    execute: (player, args) => {
+        let helpMessage = "§a--- Gamemode Commands ---\n";
+        helpMessage += "§e!gmc (creative)§r: Sets your gamemode to Creative.\n";
+        helpMessage += "§e!gms (survival)§r: Sets your gamemode to Survival.\n";
+        helpMessage += "§e!gma (adventure)§r: Sets your gamemode to Adventure.\n";
+        helpMessage += "§e!gmsp (spectator)§r: Sets your gamemode to Spectator.";
+        player.sendMessage(helpMessage);
+    }
+});
