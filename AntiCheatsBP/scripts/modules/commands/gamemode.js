@@ -1,3 +1,4 @@
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 
 // Helper function to create the gamemode command registration
@@ -9,13 +10,12 @@ function registerGamemodeCommand(name, alias) {
         permissionLevel: 1,
         execute: async (player, args) => {
             try {
-                // Execute the .mcfunction file, which has the necessary permissions
-                await player.runCommandAsync(`function ${name}`);
-                // The success message will be handled by the script, as the function provides no feedback.
+                // Using world.runCommandAsync as the final and most robust method.
+                await world.runCommandAsync(`gamemode ${alias} "${player.name}"`);
                 player.sendMessage(`§aYour gamemode has been set to ${alias}.`);
             } catch (error) {
-                player.sendMessage(`§cFailed to execute gamemode function. Player may not have permission to run function commands.`);
-                console.error(`[${name}] Failed to run '/function ${name}' for ${player.name}. Error: ${error?.stack ?? JSON.stringify(error)}`);
+                player.sendMessage(`§cFailed to set gamemode. Please check server console for errors.`);
+                console.error(`[${name}] Failed to run command for ${player.name}. Error: ${error?.stack ?? JSON.stringify(error)}`);
             }
         }
     });

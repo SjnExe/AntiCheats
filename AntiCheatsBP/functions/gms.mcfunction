@@ -1,1 +1,0 @@
-gamemode survival @s
