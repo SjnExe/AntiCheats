@@ -15,21 +15,13 @@ for (const cmd of gamemodeCommands) {
         description: `Sets your gamemode to ${cmd.alias}.`,
         permissionLevel: cmd.permission,
         execute: async (player, args) => {
-            console.log(`[DEBUG] Attempting to set gamemode for ${player.name} to ${cmd.alias}.`);
-            console.log(`[DEBUG] Player object valid: ${player.isValid()}`);
-
             try {
-                // Using world.runCommandAsync without quotes around player name.
-                await world.getDimension('overworld').runCommandAsync(`gamemode ${cmd.alias} ${player.name}`);
+                // Using world.runCommandAsync directly.
+                await world.runCommandAsync(`gamemode ${cmd.alias} "${player.name}"`);
                 player.sendMessage(`§aYour gamemode has been set to ${cmd.alias}.`);
-                console.log(`[DEBUG] Successfully executed gamemode command for ${player.name}.`);
             } catch (error) {
                 player.sendMessage(`§cFailed to set gamemode. See server console for details.`);
-                console.error(`[GamemodeCommand] Error setting gamemode for ${player.name}.`);
-                console.error(`[GamemodeCommand] Error Name: ${error?.name}`);
-                console.error(`[GamemodeCommand] Error Message: ${error?.message}`);
-                console.error(`[GamemodeCommand] Error Stack: ${error?.stack}`);
-                console.error(`[GamemodeCommand] Full Error Object: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
+                console.error(`[GamemodeCommand] Failed to run '/gamemode ${cmd.alias} "${player.name}"'. Error: ${error?.stack ?? JSON.stringify(error)}`);
             }
         }
     });
