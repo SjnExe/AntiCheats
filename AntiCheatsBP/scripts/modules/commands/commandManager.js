@@ -1,4 +1,4 @@
-import { world } from '@minecraft/server';
+import { world, system } from '@minecraft/server';
 import { getPlayer } from '../../core/playerDataManager.js';
 
 class CommandManager {
@@ -38,7 +38,7 @@ class CommandManager {
     }
 
     /**
-     * Handles an incoming chat message and executes it if it's a valid command.
+     * Handles an incoming chat message and schedules it for execution if it's a valid command.
      * @param {import('@minecraft/server').BeforeChatSendEvent} eventData The chat event data.
      * @param {object} config The addon's configuration object.
      * @returns {boolean} `true` if the message was a command, otherwise `false`.
@@ -72,12 +72,15 @@ class CommandManager {
             return true;
         }
 
-        try {
-            command.execute(player, args);
-        } catch (error) {
-            console.error(`[CommandManager] Error executing command '${commandName}': ${error.stack}`);
-            player.sendMessage("§cAn unexpected error occurred while running this command.");
-        }
+        // Schedule the command to run on the next tick to escape the read-only event context.
+        system.run(() => {
+            try {
+                command.execute(player, args);
+            } catch (error) {
+                console.error(`[CommandManager] Error executing command '${commandName}': ${error.stack}`);
+                player.sendMessage("§cAn unexpected error occurred while running this command.");
+            }
+        });
 
         return true;
     }

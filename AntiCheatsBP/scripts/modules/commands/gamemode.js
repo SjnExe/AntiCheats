@@ -1,11 +1,11 @@
-import { world } from '@minecraft/server';
+import { GameMode } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 
 const gamemodeCommands = [
-    { name: 'gmc', alias: 'creative', permission: 1 },
-    { name: 'gms', alias: 'survival', permission: 1 },
-    { name: 'gma', alias: 'adventure', permission: 1 },
-    { name: 'gmsp', alias: 'spectator', permission: 1 }
+    { name: 'gmc', alias: 'creative', permission: 1, gameModeEnum: GameMode.creative },
+    { name: 'gms', alias: 'survival', permission: 1, gameModeEnum: GameMode.survival },
+    { name: 'gma', alias: 'adventure', permission: 1, gameModeEnum: GameMode.adventure },
+    { name: 'gmsp', alias: 'spectator', permission: 1, gameModeEnum: GameMode.spectator }
 ];
 
 for (const cmd of gamemodeCommands) {
@@ -14,14 +14,14 @@ for (const cmd of gamemodeCommands) {
         aliases: [cmd.alias],
         description: `Sets your gamemode to ${cmd.alias}.`,
         permissionLevel: cmd.permission,
-        execute: async (player, args) => {
+        execute: (player, args) => {
             try {
-                // Using world.runCommandAsync directly.
-                await world.runCommandAsync(`gamemode ${cmd.alias} "${player.name}"`);
+                // Using the direct API, which should now work thanks to the system.run wrapper in the command manager.
+                player.setGameMode(cmd.gameModeEnum);
                 player.sendMessage(`§aYour gamemode has been set to ${cmd.alias}.`);
             } catch (error) {
                 player.sendMessage(`§cFailed to set gamemode. See server console for details.`);
-                console.error(`[GamemodeCommand] Failed to run '/gamemode ${cmd.alias} "${player.name}"'. Error: ${error?.stack ?? JSON.stringify(error)}`);
+                console.error(`[GamemodeCommand] Failed to set gamemode for ${player.name}. Error: ${error?.stack ?? JSON.stringify(error)}`);
             }
         }
     });
