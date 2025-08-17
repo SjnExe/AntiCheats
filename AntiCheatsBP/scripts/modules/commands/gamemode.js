@@ -15,8 +15,11 @@ for (const cmd of gamemodeCommands) {
         description: `Sets your gamemode to ${cmd.alias}.`,
         permissionLevel: cmd.permission,
         execute: (player, args) => {
+            console.log(`[Gamemode DEBUG] Executing command for '${cmd.name}'.`);
+            console.log(`[Gamemode DEBUG] cmd object: ${JSON.stringify(cmd)}`);
+            console.log(`[Gamemode DEBUG] Type of gameModeEnum: ${typeof cmd.gameModeEnum}`);
+            console.log(`[Gamemode DEBUG] Value of gameModeEnum: ${cmd.gameModeEnum}`);
             try {
-                // Using the direct API, which should now work thanks to the system.run wrapper in the command manager.
                 player.setGameMode(cmd.gameModeEnum);
                 player.sendMessage(`§aYour gamemode has been set to ${cmd.alias}.`);
             } catch (error) {
