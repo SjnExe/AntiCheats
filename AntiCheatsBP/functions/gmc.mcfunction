@@ -1,0 +1,1 @@
+gamemode creative @s

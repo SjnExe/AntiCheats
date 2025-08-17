@@ -1,73 +1,31 @@
-import { GameMode } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 
-// Register Creative command
-commandManager.register({
-    name: 'gmc',
-    aliases: ['creative'],
-    description: 'Sets your gamemode to creative.',
-    permissionLevel: 1,
-    execute: (player, args) => {
-        try {
-            player.setGameMode(GameMode.creative);
-            player.sendMessage("§aYour gamemode has been set to creative.");
-        } catch (error) {
-            player.sendMessage("§cFailed to set gamemode.");
-            console.error(`[gmc] ${error.stack}`);
+// Helper function to create the gamemode command registration
+function registerGamemodeCommand(name, alias) {
+    commandManager.register({
+        name: name,
+        aliases: [alias],
+        description: `Sets your gamemode to ${alias}.`,
+        permissionLevel: 1,
+        execute: async (player, args) => {
+            try {
+                // Execute the .mcfunction file, which has the necessary permissions
+                await player.runCommandAsync(`function ${name}`);
+                // The success message will be handled by the script, as the function provides no feedback.
+                player.sendMessage(`§aYour gamemode has been set to ${alias}.`);
+            } catch (error) {
+                player.sendMessage(`§cFailed to execute gamemode function. Player may not have permission to run function commands.`);
+                console.error(`[${name}] Failed to run '/function ${name}' for ${player.name}. Error: ${error?.stack ?? JSON.stringify(error)}`);
+            }
         }
-    }
-});
+    });
+}
 
-// Register Survival command
-commandManager.register({
-    name: 'gms',
-    aliases: ['survival'],
-    description: 'Sets your gamemode to survival.',
-    permissionLevel: 1,
-    execute: (player, args) => {
-        try {
-            player.setGameMode(GameMode.survival);
-            player.sendMessage("§aYour gamemode has been set to survival.");
-        } catch (error) {
-            player.sendMessage("§cFailed to set gamemode.");
-            console.error(`[gms] ${error.stack}`);
-        }
-    }
-});
-
-// Register Adventure command
-commandManager.register({
-    name: 'gma',
-    aliases: ['adventure'],
-    description: 'Sets your gamemode to adventure.',
-    permissionLevel: 1,
-    execute: (player, args) => {
-        try {
-            player.setGameMode(GameMode.adventure);
-            player.sendMessage("§aYour gamemode has been set to adventure.");
-        } catch (error) {
-            player.sendMessage("§cFailed to set gamemode.");
-            console.error(`[gma] ${error.stack}`);
-        }
-    }
-});
-
-// Register Spectator command
-commandManager.register({
-    name: 'gmsp',
-    aliases: ['spectator'],
-    description: 'Sets your gamemode to spectator.',
-    permissionLevel: 1,
-    execute: (player, args) => {
-        try {
-            player.setGameMode(GameMode.spectator);
-            player.sendMessage("§aYour gamemode has been set to spectator.");
-        } catch (error) {
-            player.sendMessage("§cFailed to set gamemode.");
-            console.error(`[gmsp] ${error.stack}`);
-        }
-    }
-});
+// Register all gamemode commands
+registerGamemodeCommand('gmc', 'creative');
+registerGamemodeCommand('gms', 'survival');
+registerGamemodeCommand('gma', 'adventure');
+registerGamemodeCommand('gmsp', 'spectator');
 
 // Register Gamemode help command
 commandManager.register({

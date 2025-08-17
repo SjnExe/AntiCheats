@@ -3,4 +3,3 @@
 
 import './gamemode.js';
 import './help.js';
-import './debug.js';
