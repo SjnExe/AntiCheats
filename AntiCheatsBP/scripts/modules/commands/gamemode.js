@@ -1,11 +1,11 @@
-import { GameMode } from '@minecraft/server';
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 
 const gamemodeCommands = [
-    { name: 'gmc', alias: 'creative', permission: 1, gameModeEnum: GameMode.creative },
-    { name: 'gms', alias: 'survival', permission: 1, gameModeEnum: GameMode.survival },
-    { name: 'gma', alias: 'adventure', permission: 1, gameModeEnum: GameMode.adventure },
-    { name: 'gmsp', alias: 'spectator', permission: 1, gameModeEnum: GameMode.spectator }
+    { name: 'gmc', alias: 'creative', permission: 1 },
+    { name: 'gms', alias: 'survival', permission: 1 },
+    { name: 'gma', alias: 'adventure', permission: 1 },
+    { name: 'gmsp', alias: 'spectator', permission: 1 }
 ];
 
 for (const cmd of gamemodeCommands) {
@@ -14,14 +14,22 @@ for (const cmd of gamemodeCommands) {
         aliases: [cmd.alias],
         description: `Sets your gamemode to ${cmd.alias}.`,
         permissionLevel: cmd.permission,
-        execute: (player, args) => {
+        execute: async (player, args) => {
+            console.log(`[DEBUG] Attempting to set gamemode for ${player.name} to ${cmd.alias}.`);
+            console.log(`[DEBUG] Player object valid: ${player.isValid()}`);
+
             try {
-                // Reverting to the setGameMode API as requested by the user.
-                player.setGameMode(cmd.gameModeEnum);
+                // Using world.runCommandAsync without quotes around player name.
+                await world.getDimension('overworld').runCommandAsync(`gamemode ${cmd.alias} ${player.name}`);
                 player.sendMessage(`§aYour gamemode has been set to ${cmd.alias}.`);
+                console.log(`[DEBUG] Successfully executed gamemode command for ${player.name}.`);
             } catch (error) {
                 player.sendMessage(`§cFailed to set gamemode. See server console for details.`);
-                console.error(`[GamemodeCommand] Failed to set gamemode for ${player.name}. Error: ${error?.stack ?? JSON.stringify(error)}`);
+                console.error(`[GamemodeCommand] Error setting gamemode for ${player.name}.`);
+                console.error(`[GamemodeCommand] Error Name: ${error?.name}`);
+                console.error(`[GamemodeCommand] Error Message: ${error?.message}`);
+                console.error(`[GamemodeCommand] Error Stack: ${error?.stack}`);
+                console.error(`[GamemodeCommand] Full Error Object: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
             }
         }
     });
