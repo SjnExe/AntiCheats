@@ -33,36 +33,38 @@ export function showPanel(player, panelId) {
         form.button(item.text, item.icon);
     }
 
-    console.log('[UIManager] Calling form.show(player)...');
-    form.show(player).then(response => {
-        console.log('[UIManager] form.show() promise resolved.');
-        if (response.canceled) {
-            console.log('[UIManager] Player cancelled the form.');
-            return;
-        }
-
-        const selectedItem = validItems[response.selection];
-        if (!selectedItem) {
-            console.error('[UIManager] Selected item was not found in validItems array.');
-            return;
-        }
-
-        console.log(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
-
-        if (selectedItem.actionType === 'openPanel') {
-            showPanel(player, selectedItem.actionValue);
-        } else if (selectedItem.actionType === 'functionCall') {
-            const actionFunction = UI_ACTION_FUNCTIONS[selectedItem.actionValue];
-            if (actionFunction) {
-                actionFunction(player);
-            } else {
-                console.warn(`[UIManager] No UI action function found for "${selectedItem.actionValue}"`);
-                player.sendMessage(`§cFunctionality for "${selectedItem.text}" is not implemented yet.`);
+    console.log('[UIManager] Calling form.show(player) after a short delay...');
+    system.runTimeout(() => {
+        form.show(player).then(response => {
+            console.log('[UIManager] form.show() promise resolved.');
+            if (response.canceled) {
+                console.log('[UIManager] Player cancelled the form.');
+                return;
             }
-        }
-    }).catch(e => {
-        console.error(`[UIManager] form.show() promise was rejected with error: ${e.stack}`);
-    });
+
+            const selectedItem = validItems[response.selection];
+            if (!selectedItem) {
+                console.error('[UIManager] Selected item was not found in validItems array.');
+                return;
+            }
+
+            console.log(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
+
+            if (selectedItem.actionType === 'openPanel') {
+                showPanel(player, selectedItem.actionValue);
+            } else if (selectedItem.actionType === 'functionCall') {
+                const actionFunction = UI_ACTION_FUNCTIONS[selectedItem.actionValue];
+                if (actionFunction) {
+                    actionFunction(player);
+                } else {
+                    console.warn(`[UIManager] No UI action function found for "${selectedItem.actionValue}"`);
+                    player.sendMessage(`§cFunctionality for "${selectedItem.text}" is not implemented yet.`);
+                }
+            }
+        }).catch(e => {
+            console.error(`[UIManager] form.show() promise was rejected with error: ${e.stack}`);
+        });
+    }, 5);
 }
 
 UI_ACTION_FUNCTIONS['showKickForm'] = (player) => {

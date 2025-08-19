@@ -1,8 +1,8 @@
 {
-    "format_version": "1.16.100",
+    "format_version": "1.21.100",
     "minecraft:item": {
         "description": {
-            "identifier": "anticheats:admin_panel",
+            "identifier": "ac:panel",
             "category": "Items"
         },
         "components": {

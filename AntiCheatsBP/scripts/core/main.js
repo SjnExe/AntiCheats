@@ -94,7 +94,7 @@ world.afterEvents.playerLeave.subscribe((event) => {
 
 world.afterEvents.itemUse.subscribe((event) => {
     const { source: player, itemStack } = event;
-    if (itemStack.typeId === 'anticheats:admin_panel') {
+    if (itemStack.typeId === 'ac:panel') {
         const pData = playerDataManager.getPlayer(player.id);
         // Permission level 1 or lower (Admins and Owners)
         if (pData && pData.permissionLevel <= 1) {
