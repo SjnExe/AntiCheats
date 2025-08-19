@@ -52,3 +52,12 @@ export function getPlayerRank(player, config) {
         conditions: [{ type: 'default' }],
     };
 }
+
+/**
+ * Gets a rank definition by its ID.
+ * @param {string} rankId The ID of the rank to get.
+ * @returns {import('./ranksConfig.js').RankDefinition | undefined}
+ */
+export function getRankById(rankId) {
+    return rankDefinitions.find(rank => rank.id === rankId);
+}
