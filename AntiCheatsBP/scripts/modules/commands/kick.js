@@ -1,6 +1,7 @@
 import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
+import { getPlayer } from '../../core/playerDataManager.js';
 
 commandManager.register({
     name: 'kick',
@@ -22,11 +23,26 @@ commandManager.register({
             return;
         }
 
+        if (player.id === targetPlayer.id) {
+            player.sendMessage("§cYou cannot kick yourself.");
+            return;
+        }
+
+        const executorData = getPlayer(player.id);
+        const targetData = getPlayer(targetPlayer.id);
+
+        if (!executorData || !targetData) {
+            player.sendMessage("§cCould not retrieve player data for permission check.");
+            return;
+        }
+
+        if (executorData.permissionLevel >= targetData.permissionLevel) {
+            player.sendMessage("§cYou cannot kick a player with the same or higher rank than you.");
+            return;
+        }
+
         try {
-            // Use world.runCommandAsync to ensure the command has permissions.
             await world.runCommandAsync(`kick "${targetPlayer.name}" ${reason}`);
-            // The kick command has its own public message, so we don't need to send one.
-            // We can send a confirmation to the admin who ran it.
             player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}.`);
         } catch (error) {
             player.sendMessage(`§cFailed to kick ${targetPlayer.name}.`);

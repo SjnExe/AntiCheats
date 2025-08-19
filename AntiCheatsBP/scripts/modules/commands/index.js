@@ -5,3 +5,4 @@ import './help.js';
 import './clearchat.js';
 import './kick.js';
 import './mute.js';
+import './ban.js';

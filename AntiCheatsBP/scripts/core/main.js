@@ -3,6 +3,7 @@ import { config as defaultConfig } from '../config.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
+import { getBanInfo } from './banManager.js';
 
 let addonConfig;
 
@@ -93,13 +94,26 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
     world.sendMessage(`${format.prefixText}${format.nameColor}${player.name}§r: ${format.messageColor}${eventData.message}`);
 });
 
-world.afterEvents.playerSpawn.subscribe((event) => {
-    const { player } = event;
-    const pData = playerDataManager.addPlayer(player);
-    const rank = rankManager.getPlayerRank(player, addonConfig);
-    pData.rankId = rank.id;
-    pData.permissionLevel = rank.permissionLevel;
-    console.log(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);
+world.afterEvents.playerSpawn.subscribe(async (event) => {
+    const { player, initialSpawn } = event;
+
+    // Check if the player is banned
+    const banInfo = getBanInfo(player.name);
+    if (banInfo) {
+        // Use a system.run to ensure the kick command executes reliably
+        system.run(() => {
+            player.runCommandAsync(`kick "${player.name}" You are banned. Reason: ${banInfo.reason}`);
+        });
+        return; // Stop further processing for this player
+    }
+
+    if (initialSpawn) {
+        const pData = playerDataManager.addPlayer(player);
+        const rank = rankManager.getPlayerRank(player, addonConfig);
+        pData.rankId = rank.id;
+        pData.permissionLevel = rank.permissionLevel;
+        console.log(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);
+    }
 });
 
 world.afterEvents.playerLeave.subscribe((event) => {
