@@ -45,7 +45,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
 
     if (player.hasTag('muted')) {
         eventData.cancel = true;
-        player.sendMessage("§cYou are muted and cannot send messages.");
+        player.sendMessage('§cYou are muted and cannot send messages.');
         return;
     }
 
@@ -100,7 +100,7 @@ world.afterEvents.itemUse.subscribe((event) => {
         if (pData && pData.permissionLevel <= 1) {
             showPanel(player, 'mainAdminPanel');
         } else {
-            player.sendMessage("§cYou do not have permission to use this item.");
+            player.sendMessage('§cYou do not have permission to use this item.');
         }
     }
 });

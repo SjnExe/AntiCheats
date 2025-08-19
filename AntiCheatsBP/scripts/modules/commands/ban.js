@@ -11,7 +11,7 @@ commandManager.register({
     permissionLevel: 1, // Admins only
     execute: async (player, args) => {
         if (args.length < 1) {
-            player.sendMessage("§cUsage: !ban <player> [reason]");
+            player.sendMessage('§cUsage: !ban <player> [reason]');
             return;
         }
 
@@ -26,7 +26,7 @@ commandManager.register({
         }
 
         if (player.id === targetPlayer.id) {
-            player.sendMessage("§cYou cannot ban yourself.");
+            player.sendMessage('§cYou cannot ban yourself.');
             return;
         }
 
@@ -34,12 +34,12 @@ commandManager.register({
         const targetData = getPlayer(targetPlayer.id);
 
         if (!executorData || !targetData) {
-            player.sendMessage("§cCould not retrieve player data for permission check.");
+            player.sendMessage('§cCould not retrieve player data for permission check.');
             return;
         }
 
         if (executorData.permissionLevel >= targetData.permissionLevel) {
-            player.sendMessage("§cYou cannot ban a player with the same or higher rank than you.");
+            player.sendMessage('§cYou cannot ban a player with the same or higher rank than you.');
             return;
         }
 
@@ -52,7 +52,7 @@ commandManager.register({
             player.sendMessage(`§cFailed to ban ${targetPlayer.name}.`);
             console.error(`[!ban] ${error.stack}`);
         }
-    }
+    },
 });
 
 // Unban command
@@ -62,7 +62,7 @@ commandManager.register({
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {
-            player.sendMessage("§cUsage: !unban <player>");
+            player.sendMessage('§cUsage: !unban <player>');
             return;
         }
 
@@ -73,5 +73,5 @@ commandManager.register({
         } else {
             player.sendMessage(`§cPlayer "${targetName}" was not found in the ban list.`);
         }
-    }
+    },
 });

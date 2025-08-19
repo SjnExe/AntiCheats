@@ -20,7 +20,7 @@
         "controls": [
             {
                 "dialog_bg@common.dialog_bg_template": {
-                    "size": [ 300, 250 ],
+                    "size": [300, 250],
                     "layer": 1
                 }
             },
@@ -33,8 +33,8 @@
             {
                 "body_text@common.label": {
                     "layer": 2,
-                    "size": [ "80%", "default" ],
-                    "offset": [ 0, 15 ],
+                    "size": ["80%", "default"],
+                    "offset": [0, 15],
                     "text": "#body",
                     "color": "$body_text_color"
                 }
@@ -43,10 +43,10 @@
                 "button_panel": {
                     "type": "panel",
                     "layer": 2,
-                    "size": [ "100%-20px", "100%-60px" ],
+                    "size": ["100%-20px", "100%-60px"],
                     "anchor_from": "bottom_middle",
                     "anchor_to": "bottom_middle",
-                    "offset": [ 0, -10 ],
+                    "offset": [0, -10],
                     "controls": [
                         {
                             "button_grid@anticheat_panel_ui.button_grid": {}
@@ -57,10 +57,10 @@
             {
                 "back_button@common.button": {
                     "layer": 2,
-                    "size": [ 100, 20 ],
+                    "size": [100, 20],
                     "anchor_from": "bottom_left",
                     "anchor_to": "bottom_left",
-                    "offset": [ 10, -10 ],
+                    "offset": [10, -10],
                     "$pressed_button_name": "button.back",
                     "text": "Back"
                 }
@@ -68,10 +68,10 @@
             {
                 "exit_button@common.button": {
                     "layer": 2,
-                    "size": [ 100, 20 ],
+                    "size": [100, 20],
                     "anchor_from": "bottom_right",
                     "anchor_to": "bottom_right",
-                    "offset": [ -10, -10 ],
+                    "offset": [-10, -10],
                     "$pressed_button_name": "button.exit",
                     "text": "Exit"
                 }
@@ -81,8 +81,8 @@
 
     "button_grid": {
         "type": "grid",
-        "size": [ "100%", "100%" ],
-        "grid_dimensions": [ 1, 6 ],
+        "size": ["100%", "100%"],
+        "grid_dimensions": [1, 6],
         "grid_rescaling_type": "horizontal",
         "collection_name": "buttons",
         "bindings": [

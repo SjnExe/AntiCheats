@@ -67,9 +67,9 @@ export function showPanel(player, panelId) {
 
 UI_ACTION_FUNCTIONS['showKickForm'] = (player) => {
     const form = new ModalFormData()
-        .title("Kick Player")
-        .textField("Player Name", "Enter name of player to kick")
-        .textField("Reason", "Enter kick reason", "No reason provided");
+        .title('Kick Player')
+        .textField('Player Name', 'Enter name of player to kick')
+        .textField('Reason', 'Enter kick reason', 'No reason provided');
 
     form.show(player).then(async response => {
         if (response.canceled) return;
@@ -83,15 +83,15 @@ UI_ACTION_FUNCTIONS['showKickForm'] = (player) => {
             await world.runCommandAsync(`kick "${targetPlayer.name}" ${reason}`);
             player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}.`);
         } catch (e) {
-            player.sendMessage(`§cFailed to kick player.`);
+            player.sendMessage('§cFailed to kick player.');
         }
     });
 };
 
 UI_ACTION_FUNCTIONS['showMuteForm'] = (player) => {
     const form = new ModalFormData()
-        .title("Mute Player")
-        .textField("Player Name", "Enter name of player to mute");
+        .title('Mute Player')
+        .textField('Player Name', 'Enter name of player to mute');
 
     form.show(player).then(response => {
         if (response.canceled) return;
@@ -104,9 +104,9 @@ UI_ACTION_FUNCTIONS['showMuteForm'] = (player) => {
         try {
             targetPlayer.addTag('muted');
             player.sendMessage(`§aSuccessfully muted ${targetPlayer.name}.`);
-            targetPlayer.sendMessage("§cYou have been muted.");
+            targetPlayer.sendMessage('§cYou have been muted.');
         } catch (e) {
-            player.sendMessage(`§cFailed to mute player.`);
+            player.sendMessage('§cFailed to mute player.');
         }
     });
 };

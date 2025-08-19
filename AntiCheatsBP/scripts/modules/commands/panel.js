@@ -9,5 +9,5 @@ commandManager.register({
         console.log(`[PanelCommand] Executing !panel for ${player.name}.`);
         // Show the main admin panel by default
         showPanel(player, 'mainAdminPanel');
-    }
+    },
 });

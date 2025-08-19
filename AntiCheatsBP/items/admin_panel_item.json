@@ -1,21 +1,21 @@
 {
-  "format_version": "1.16.100",
-  "minecraft:item": {
-    "description": {
-      "identifier": "anticheats:admin_panel",
-      "category": "Items"
-    },
-    "components": {
-      "minecraft:icon": {
-        "texture": "compass"
-      },
-      "minecraft:display_name": {
-        "value": "§l§bAdmin Panel§r"
-      },
-      "minecraft:hand_equipped": true,
-      "minecraft:can_destroy_in_creative": false,
-      "minecraft:stacked_by_data": true,
-      "minecraft:max_stack_size": 1
+    "format_version": "1.16.100",
+    "minecraft:item": {
+        "description": {
+            "identifier": "anticheats:admin_panel",
+            "category": "Items"
+        },
+        "components": {
+            "minecraft:icon": {
+                "texture": "compass"
+            },
+            "minecraft:display_name": {
+                "value": "§l§bAdmin Panel§r"
+            },
+            "minecraft:hand_equipped": true,
+            "minecraft:can_destroy_in_creative": false,
+            "minecraft:stacked_by_data": true,
+            "minecraft:max_stack_size": 1
+        }
     }
-  }
 }

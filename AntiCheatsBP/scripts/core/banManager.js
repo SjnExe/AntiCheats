@@ -14,7 +14,7 @@ function getBans() {
     try {
         return JSON.parse(rawBans);
     } catch (e) {
-        console.error("Failed to parse ban list, returning empty list.", e);
+        console.error('Failed to parse ban list, returning empty list.', e);
         return {};
     }
 }
@@ -39,7 +39,7 @@ export function addBan(targetPlayer, banInfo) {
     const banData = {
         reason: banInfo.reason,
         bannedBy: banInfo.bannedBy,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
     };
     // Use player's name as the key for easy lookup. Note that players can change names.
     // A more robust system would use the player's ID, but that's not available when they are offline.

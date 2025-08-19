@@ -9,7 +9,7 @@ commandManager.register({
     permissionLevel: 1, // Admins only
     execute: async (player, args) => {
         if (args.length < 1) {
-            player.sendMessage("§cUsage: !kick <player> [reason]");
+            player.sendMessage('§cUsage: !kick <player> [reason]');
             return;
         }
 
@@ -24,7 +24,7 @@ commandManager.register({
         }
 
         if (player.id === targetPlayer.id) {
-            player.sendMessage("§cYou cannot kick yourself.");
+            player.sendMessage('§cYou cannot kick yourself.');
             return;
         }
 
@@ -32,12 +32,12 @@ commandManager.register({
         const targetData = getPlayer(targetPlayer.id);
 
         if (!executorData || !targetData) {
-            player.sendMessage("§cCould not retrieve player data for permission check.");
+            player.sendMessage('§cCould not retrieve player data for permission check.');
             return;
         }
 
         if (executorData.permissionLevel >= targetData.permissionLevel) {
-            player.sendMessage("§cYou cannot kick a player with the same or higher rank than you.");
+            player.sendMessage('§cYou cannot kick a player with the same or higher rank than you.');
             return;
         }
 
@@ -48,5 +48,5 @@ commandManager.register({
             player.sendMessage(`§cFailed to kick ${targetPlayer.name}.`);
             console.error(`[!kick] ${error.stack}`);
         }
-    }
+    },
 });
