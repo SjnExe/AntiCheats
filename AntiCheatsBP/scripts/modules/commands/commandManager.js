@@ -68,7 +68,7 @@ class CommandManager {
 
         const pData = getPlayer(player.id);
         if (!pData || pData.permissionLevel > command.permissionLevel) {
-            player.sendMessage("§cYou do not have permission to use this command.");
+            player.sendMessage('§cYou do not have permission to use this command.');
             return true;
         }
 
@@ -78,7 +78,7 @@ class CommandManager {
                 command.execute(player, args);
             } catch (error) {
                 console.error(`[CommandManager] Error executing command '${commandName}': ${error.stack}`);
-                player.sendMessage("§cAn unexpected error occurred while running this command.");
+                player.sendMessage('§cAn unexpected error occurred while running this command.');
             }
         });
 

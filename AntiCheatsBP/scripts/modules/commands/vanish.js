@@ -12,17 +12,17 @@ commandManager.register({
                 // Unvanish
                 player.removeTag('vanished');
                 player.removeEffect(EffectTypes.get('invisibility'));
-                player.sendMessage("§aYou are no longer vanished.");
+                player.sendMessage('§aYou are no longer vanished.');
             } else {
                 // Vanish
                 player.addTag('vanished');
                 // Apply invisibility for a very long time (approx. 2.7 years in ticks)
                 player.addEffect(EffectTypes.get('invisibility'), 1700000000, { amplifier: 0, showParticles: false });
-                player.sendMessage("§aYou are now vanished.");
+                player.sendMessage('§aYou are now vanished.');
             }
         } catch (error) {
-            player.sendMessage("§cFailed to toggle vanish state.");
+            player.sendMessage('§cFailed to toggle vanish state.');
             console.error(`[!vanish] ${error.stack}`);
         }
-    }
+    },
 });

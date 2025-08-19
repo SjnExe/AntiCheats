@@ -45,7 +45,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
 
     if (player.hasTag('muted')) {
         eventData.cancel = true;
-        player.sendMessage("§cYou are muted and cannot send messages.");
+        player.sendMessage('§cYou are muted and cannot send messages.');
         return;
     }
 
@@ -94,13 +94,13 @@ world.afterEvents.playerLeave.subscribe((event) => {
 
 world.afterEvents.itemUse.subscribe((event) => {
     const { source: player, itemStack } = event;
-    if (itemStack.typeId === 'anticheats:admin_panel') {
+    if (itemStack.typeId === 'ac:panel') {
         const pData = playerDataManager.getPlayer(player.id);
         // Permission level 1 or lower (Admins and Owners)
         if (pData && pData.permissionLevel <= 1) {
             showPanel(player, 'mainAdminPanel');
         } else {
-            player.sendMessage("§cYou do not have permission to use this item.");
+            player.sendMessage('§cYou do not have permission to use this item.');
         }
     }
 });

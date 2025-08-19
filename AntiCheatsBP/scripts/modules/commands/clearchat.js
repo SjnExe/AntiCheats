@@ -13,8 +13,8 @@ commandManager.register({
             world.sendMessage(emptyLines);
             world.sendMessage(`§aChat has been cleared by ${player.name}.`);
         } catch (error) {
-            player.sendMessage("§cFailed to clear chat.");
+            player.sendMessage('§cFailed to clear chat.');
             console.error(`[!clearchat] ${error.stack}`);
         }
-    }
+    },
 });

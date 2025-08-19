@@ -2,7 +2,7 @@ import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 
 function showGeneralHelp(player, userPermissionLevel) {
-    let helpMessage = "§a--- Available Commands ---\n";
+    let helpMessage = '§a--- Available Commands ---\n';
     let commandCount = 0;
 
     const sortedCommands = [...commandManager.commands.values()].sort((a, b) => a.name.localeCompare(b.name));
@@ -15,9 +15,9 @@ function showGeneralHelp(player, userPermissionLevel) {
     }
 
     if (commandCount === 0) {
-        player.sendMessage("§cYou do not have permission to use any commands.");
+        player.sendMessage('§cYou do not have permission to use any commands.');
     } else {
-        helpMessage += "\n§7For more details, type !help <commandName>";
+        helpMessage += '\n§7For more details, type !help <commandName>';
         player.sendMessage(helpMessage.trim());
     }
 }
@@ -41,7 +41,7 @@ function showSpecificHelp(player, commandName) {
 }
 
 function showGamemodeHelp(player) {
-    let helpMessage = "§a--- Gamemode Commands ---\n";
+    let helpMessage = '§a--- Gamemode Commands ---\n';
     const gamemodeCommands = ['gmc', 'gms', 'gma', 'gmsp'];
     for (const cmdName of gamemodeCommands) {
         const cmd = commandManager.commands.get(cmdName);
@@ -69,5 +69,5 @@ commandManager.register({
         } else {
             showSpecificHelp(player, topic);
         }
-    }
+    },
 });

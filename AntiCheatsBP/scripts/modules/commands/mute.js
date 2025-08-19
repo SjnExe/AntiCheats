@@ -9,7 +9,7 @@ commandManager.register({
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {
-            player.sendMessage("§cUsage: !mute <player>");
+            player.sendMessage('§cUsage: !mute <player>');
             return;
         }
 
@@ -22,7 +22,7 @@ commandManager.register({
         }
 
         if (player.id === targetPlayer.id) {
-            player.sendMessage("§cYou cannot mute yourself.");
+            player.sendMessage('§cYou cannot mute yourself.');
             return;
         }
 
@@ -30,24 +30,24 @@ commandManager.register({
         const targetData = getPlayer(targetPlayer.id);
 
         if (!executorData || !targetData) {
-            player.sendMessage("§cCould not retrieve player data for permission check.");
+            player.sendMessage('§cCould not retrieve player data for permission check.');
             return;
         }
 
         if (executorData.permissionLevel >= targetData.permissionLevel) {
-            player.sendMessage("§cYou cannot mute a player with the same or higher rank than you.");
+            player.sendMessage('§cYou cannot mute a player with the same or higher rank than you.');
             return;
         }
 
         try {
             targetPlayer.addTag('muted');
             player.sendMessage(`§aSuccessfully muted ${targetPlayer.name}.`);
-            targetPlayer.sendMessage("§cYou have been muted.");
+            targetPlayer.sendMessage('§cYou have been muted.');
         } catch (error) {
             player.sendMessage(`§cFailed to mute ${targetPlayer.name}.`);
             console.error(`[!mute] ${error.stack}`);
         }
-    }
+    },
 });
 
 // Unmute command
@@ -57,7 +57,7 @@ commandManager.register({
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {
-            player.sendMessage("§cUsage: !unmute <player>");
+            player.sendMessage('§cUsage: !unmute <player>');
             return;
         }
 
@@ -72,10 +72,10 @@ commandManager.register({
         try {
             targetPlayer.removeTag('muted');
             player.sendMessage(`§aSuccessfully unmuted ${targetPlayer.name}.`);
-            targetPlayer.sendMessage("§aYou have been unmuted.");
+            targetPlayer.sendMessage('§aYou have been unmuted.');
         } catch (error) {
             player.sendMessage(`§cFailed to unmute ${targetPlayer.name}.`);
             console.error(`[!unmute] ${error.stack}`);
         }
-    }
+    },
 });

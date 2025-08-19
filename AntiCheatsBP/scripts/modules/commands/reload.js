@@ -8,10 +8,10 @@ commandManager.register({
     execute: (player, args) => {
         try {
             loadConfig();
-            player.sendMessage("§aConfiguration reloaded successfully.");
+            player.sendMessage('§aConfiguration reloaded successfully.');
         } catch (error) {
-            player.sendMessage("§cFailed to reload configuration.");
+            player.sendMessage('§cFailed to reload configuration.');
             console.error(`[!reload] ${error.stack}`);
         }
-    }
+    },
 });
