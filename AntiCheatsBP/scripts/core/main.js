@@ -1,11 +1,9 @@
 import { world, system } from '@minecraft/server';
-import { config as defaultConfig } from '../config.js';
+import { loadConfig, getConfig } from './configManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
 import { getBanInfo } from './banManager.js';
-
-let addonConfig;
 
 // This function will contain the main logic of the addon that runs continuously.
 function mainTick() {
@@ -14,7 +12,7 @@ function mainTick() {
         const pData = playerDataManager.getPlayer(player.id);
         if (!pData) continue;
 
-        const currentRank = rankManager.getPlayerRank(player, addonConfig);
+        const currentRank = rankManager.getPlayerRank(player, getConfig());
         if (pData.rankId !== currentRank.id) {
             pData.rankId = currentRank.id;
             pData.permissionLevel = currentRank.permissionLevel;
@@ -28,19 +26,10 @@ function mainTick() {
 system.run(() => {
     console.log('[AntiCheats] Initializing addon...');
 
-    const configStr = world.getDynamicProperty('anticheats:config');
-    if (configStr === undefined) {
-        world.setDynamicProperty('anticheats:config', JSON.stringify(defaultConfig));
-        addonConfig = defaultConfig;
-        console.log('[AntiCheats] No existing config found. Created a new one.');
-    } else {
-        const savedConfig = JSON.parse(configStr);
-        addonConfig = { ...defaultConfig, ...savedConfig };
-        // Save the merged config back to the dynamic property to persist new default values
-        world.setDynamicProperty('anticheats:config', JSON.stringify(addonConfig));
-        console.log('[AntiCheats] Existing config found and updated with any new default values.');
-    }
+    // Load configuration
+    loadConfig();
 
+    // Initialize managers
     rankManager.initialize();
 
     // Load all command modules
@@ -67,7 +56,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
     }
 
     // Try to handle it as a command.
-    const wasCommand = commandManager.handleCommand(eventData, addonConfig);
+    const wasCommand = commandManager.handleCommand(eventData, getConfig());
     if (wasCommand) {
         return; // Command was handled, so we're done.
     }
@@ -78,14 +67,12 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
     const pData = playerDataManager.getPlayer(player.id);
 
     if (!pData) {
-        // Player data not found, send a default formatted message
         world.sendMessage(`§7${player.name}§r: ${eventData.message}`);
         return;
     }
 
     const rank = rankManager.getRankById(pData.rankId);
     if (!rank) {
-        // Rank not found, send a default formatted message
         world.sendMessage(`§7${player.name}§r: ${eventData.message}`);
         return;
     }
@@ -100,16 +87,15 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
     // Check if the player is banned
     const banInfo = getBanInfo(player.name);
     if (banInfo) {
-        // Use a system.run to ensure the kick command executes reliably
         system.run(() => {
             player.runCommandAsync(`kick "${player.name}" You are banned. Reason: ${banInfo.reason}`);
         });
-        return; // Stop further processing for this player
+        return;
     }
 
     if (initialSpawn) {
         const pData = playerDataManager.addPlayer(player);
-        const rank = rankManager.getPlayerRank(player, addonConfig);
+        const rank = rankManager.getPlayerRank(player, getConfig());
         pData.rankId = rank.id;
         pData.permissionLevel = rank.permissionLevel;
         console.log(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);

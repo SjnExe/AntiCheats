@@ -6,3 +6,6 @@ import './clearchat.js';
 import './kick.js';
 import './mute.js';
 import './ban.js';
+import './vanish.js';
+import './reload.js';
+import './panel.js';
