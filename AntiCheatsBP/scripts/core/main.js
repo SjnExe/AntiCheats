@@ -4,6 +4,7 @@ import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
 import { getBanInfo } from './banManager.js';
+import { showPanel } from './uiManager.js';
 
 // This function will contain the main logic of the addon that runs continuously.
 function mainTick() {
@@ -25,21 +26,15 @@ function mainTick() {
 // Run the initialization logic on the next tick after the script is loaded.
 system.run(() => {
     console.log('[AntiCheats] Initializing addon...');
-
-    // Load configuration
     loadConfig();
-
-    // Initialize managers
     rankManager.initialize();
 
-    // Load all command modules
     import('../modules/commands/index.js').then(() => {
         console.log('[AntiCheats] Commands loaded.');
     }).catch(error => {
         console.error(`[AntiCheats] Failed to load commands: ${error.stack}`);
     });
 
-    // Run the mainTick every 20 ticks (1 second)
     system.runInterval(mainTick, 20);
     console.log('[AntiCheats] Addon initialized successfully.');
 });
@@ -48,35 +43,26 @@ system.run(() => {
 world.beforeEvents.chatSend.subscribe((eventData) => {
     const player = eventData.sender;
 
-    // Check if the player is muted
     if (player.hasTag('muted')) {
         eventData.cancel = true;
         player.sendMessage("§cYou are muted and cannot send messages.");
         return;
     }
 
-    // Try to handle it as a command.
     const wasCommand = commandManager.handleCommand(eventData, getConfig());
-    if (wasCommand) {
-        return; // Command was handled, so we're done.
-    }
+    if (wasCommand) return;
 
-    // If it wasn't a command, proceed with chat formatting.
     eventData.cancel = true;
-
     const pData = playerDataManager.getPlayer(player.id);
-
     if (!pData) {
         world.sendMessage(`§7${player.name}§r: ${eventData.message}`);
         return;
     }
-
     const rank = rankManager.getRankById(pData.rankId);
     if (!rank) {
         world.sendMessage(`§7${player.name}§r: ${eventData.message}`);
         return;
     }
-
     const format = rank.chatFormatting;
     world.sendMessage(`${format.prefixText}${format.nameColor}${player.name}§r: ${format.messageColor}${eventData.message}`);
 });
@@ -84,7 +70,6 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
 world.afterEvents.playerSpawn.subscribe(async (event) => {
     const { player, initialSpawn } = event;
 
-    // Check if the player is banned
     const banInfo = getBanInfo(player.name);
     if (banInfo) {
         system.run(() => {
@@ -103,7 +88,19 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
 });
 
 world.afterEvents.playerLeave.subscribe((event) => {
-    const { playerId, playerName } = event;
-    playerDataManager.removePlayer(playerId);
-    console.log(`[AntiCheats] Player ${playerName} left.`);
+    playerDataManager.removePlayer(event.playerId);
+    console.log(`[AntiCheats] Player ${event.playerName} left.`);
+});
+
+world.afterEvents.itemUse.subscribe((event) => {
+    const { source: player, itemStack } = event;
+    if (itemStack.typeId === 'anticheats:admin_panel') {
+        const pData = playerDataManager.getPlayer(player.id);
+        // Permission level 1 or lower (Admins and Owners)
+        if (pData && pData.permissionLevel <= 1) {
+            showPanel(player, 'mainAdminPanel');
+        } else {
+            player.sendMessage("§cYou do not have permission to use this item.");
+        }
+    }
 });
