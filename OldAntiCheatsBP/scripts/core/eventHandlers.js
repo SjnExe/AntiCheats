@@ -5,13 +5,11 @@ import {
 import * as mc from '@minecraft/server';
 import { dependencies as liveDependencies } from './dependencies.js';
 import * as actionManager from './actionManager.js';
-import * as automodManager from './automodManager.js';
 import * as chatProcessor from './chatProcessor.js';
 import * as commandManager from './commandManager.js';
 import * as economyManager from './economyManager.js';
 import * as logManager from './logManager.js';
 import * as playerDataManager from './playerDataManager.js';
-import * as rankManager from './rankManager.js';
 import * as checks from '../modules/detections/index.js';
 import {
     getExpectedBreakTicks,

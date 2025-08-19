@@ -4,7 +4,7 @@ import { getPlayer } from './playerDataManager.js';
 import { findPlayerByName } from '../modules/utils/playerUtils.js';
 import { world } from '@minecraft/server';
 
-const UI_ACTION_FUNCTIONS = {};
+const uiActionFunctions = {};
 
 export function showPanel(player, panelId) {
     console.log(`[UIManager] Attempting to show panel "${panelId}" to ${player.name}.`);
@@ -53,7 +53,7 @@ export function showPanel(player, panelId) {
             if (selectedItem.actionType === 'openPanel') {
                 showPanel(player, selectedItem.actionValue);
             } else if (selectedItem.actionType === 'functionCall') {
-                const actionFunction = UI_ACTION_FUNCTIONS[selectedItem.actionValue];
+                const actionFunction = uiActionFunctions[selectedItem.actionValue];
                 if (actionFunction) {
                     actionFunction(player);
                 } else {
@@ -67,7 +67,7 @@ export function showPanel(player, panelId) {
     }, 5);
 }
 
-UI_ACTION_FUNCTIONS['showKickForm'] = (player) => {
+uiActionFunctions['showKickForm'] = (player) => {
     const form = new ModalFormData()
         .title('Kick Player')
         .textField('Player Name', 'Enter name of player to kick')
@@ -84,13 +84,13 @@ UI_ACTION_FUNCTIONS['showKickForm'] = (player) => {
         try {
             await world.runCommandAsync(`kick "${targetPlayer.name}" ${reason}`);
             player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}.`);
-        } catch (e) {
+        } catch {
             player.sendMessage('§cFailed to kick player.');
         }
     });
 };
 
-UI_ACTION_FUNCTIONS['showMuteForm'] = (player) => {
+uiActionFunctions['showMuteForm'] = (player) => {
     const form = new ModalFormData()
         .title('Mute Player')
         .textField('Player Name', 'Enter name of player to mute');
@@ -107,7 +107,7 @@ UI_ACTION_FUNCTIONS['showMuteForm'] = (player) => {
             targetPlayer.addTag('muted');
             player.sendMessage(`§aSuccessfully muted ${targetPlayer.name}.`);
             targetPlayer.sendMessage('§cYou have been muted.');
-        } catch (e) {
+        } catch {
             player.sendMessage('§cFailed to mute player.');
         }
     });
