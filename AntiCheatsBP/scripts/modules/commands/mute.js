@@ -1,5 +1,6 @@
 import { commandManager } from './commandManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
+import { getPlayer } from '../../core/playerDataManager.js';
 
 // Mute command
 commandManager.register({
@@ -17,6 +18,24 @@ commandManager.register({
 
         if (!targetPlayer) {
             player.sendMessage(`§cPlayer "${targetName}" not found.`);
+            return;
+        }
+
+        if (player.id === targetPlayer.id) {
+            player.sendMessage("§cYou cannot mute yourself.");
+            return;
+        }
+
+        const executorData = getPlayer(player.id);
+        const targetData = getPlayer(targetPlayer.id);
+
+        if (!executorData || !targetData) {
+            player.sendMessage("§cCould not retrieve player data for permission check.");
+            return;
+        }
+
+        if (executorData.permissionLevel >= targetData.permissionLevel) {
+            player.sendMessage("§cYou cannot mute a player with the same or higher rank than you.");
             return;
         }
 
