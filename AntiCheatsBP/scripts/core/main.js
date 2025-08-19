@@ -54,18 +54,26 @@ system.run(() => {
     console.log('[AntiCheats] Addon initialized successfully.');
 });
 
-// Handle commands and chat formatting
+// Handle muted players, commands, and chat formatting
 world.beforeEvents.chatSend.subscribe((eventData) => {
-    // Try to handle it as a command first.
+    const player = eventData.sender;
+
+    // Check if the player is muted
+    if (player.hasTag('muted')) {
+        eventData.cancel = true;
+        player.sendMessage("§cYou are muted and cannot send messages.");
+        return;
+    }
+
+    // Try to handle it as a command.
     const wasCommand = commandManager.handleCommand(eventData, addonConfig);
     if (wasCommand) {
-        return; // Command was handled (or was an invalid command), so we're done.
+        return; // Command was handled, so we're done.
     }
 
     // If it wasn't a command, proceed with chat formatting.
-    eventData.cancel = true; // We need to cancel the original message to format it.
+    eventData.cancel = true;
 
-    const player = eventData.sender;
     const pData = playerDataManager.getPlayer(player.id);
 
     if (!pData) {
