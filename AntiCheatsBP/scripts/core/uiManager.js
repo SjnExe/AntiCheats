@@ -4,21 +4,16 @@ import { getPlayer } from './playerDataManager.js';
 import { findPlayerByName } from '../modules/utils/playerUtils.js';
 import { world } from '@minecraft/server';
 
-// This object will map actionValue strings from the config to actual functions.
-// We will populate this with functions for kicking, muting, etc.
 const UI_ACTION_FUNCTIONS = {};
 
-/**
- * Shows a panel to a player based on a panelId from the panelLayoutConfig.
- * @param {import('@minecraft/server').Player} player The player to show the panel to.
- * @param {string} panelId The ID of the panel to show.
- */
 export function showPanel(player, panelId) {
+    console.log(`[UIManager] Attempting to show panel "${panelId}" to ${player.name}.`);
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) {
         console.error(`[UIManager] Panel with ID "${panelId}" not found.`);
         return;
     }
+    console.log(`[UIManager] Found panel definition for "${panelId}". Title: ${panelDef.title}`);
 
     const pData = getPlayer(player.id);
     if (!pData) {
@@ -26,23 +21,33 @@ export function showPanel(player, panelId) {
         return;
     }
 
-    const form = new ActionFormData()
-        .title(panelDef.title);
+    const form = new ActionFormData().title(panelDef.title);
 
-    // Filter items based on player's permission level and add them to the form
     const validItems = panelDef.items
         .filter(item => pData.permissionLevel <= item.permissionLevel)
         .sort((a, b) => (a.sortId || 0) - (b.sortId || 0));
+
+    console.log(`[UIManager] Found ${validItems.length} valid buttons for player's permission level.`);
 
     for (const item of validItems) {
         form.button(item.text, item.icon);
     }
 
+    console.log('[UIManager] Calling form.show(player)...');
     form.show(player).then(response => {
-        if (response.canceled) return;
+        console.log('[UIManager] form.show() promise resolved.');
+        if (response.canceled) {
+            console.log('[UIManager] Player cancelled the form.');
+            return;
+        }
 
         const selectedItem = validItems[response.selection];
-        if (!selectedItem) return;
+        if (!selectedItem) {
+            console.error('[UIManager] Selected item was not found in validItems array.');
+            return;
+        }
+
+        console.log(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
 
         if (selectedItem.actionType === 'openPanel') {
             showPanel(player, selectedItem.actionValue);
@@ -55,13 +60,10 @@ export function showPanel(player, panelId) {
                 player.sendMessage(`§cFunctionality for "${selectedItem.text}" is not implemented yet.`);
             }
         }
+    }).catch(e => {
+        console.error(`[UIManager] form.show() promise was rejected with error: ${e.stack}`);
     });
 }
-
-// --- Define Action Functions ---
-
-// These functions will be called by the panel buttons.
-// We will add more here as we implement more features.
 
 UI_ACTION_FUNCTIONS['showKickForm'] = (player) => {
     const form = new ModalFormData()
