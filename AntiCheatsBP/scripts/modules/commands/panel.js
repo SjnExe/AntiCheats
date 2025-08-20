@@ -3,9 +3,9 @@ import { showPanel } from '../../core/uiManager.js';
 
 commandManager.register({
     name: 'panel',
-    description: 'Gives the player the admin panel item.',
-    category: 'Admin',
-    permissionLevel: 1, // Admin only
+    description: 'Gives you the panel item.',
+    category: 'General',
+    permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         try {
             player.runCommandAsync('give @s ac:panel');

@@ -2,7 +2,7 @@ import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 import { getConfig } from '../../core/configManager.js';
 
-const commandCategories = ['General', 'Admin']; // Defines the sort order
+const commandCategories = ['General', 'Moderation', 'Admin']; // Defines the sort order
 
 function showCategorizedHelp(player, userPermissionLevel) {
     const availableCommands = [...commandManager.commands.values()].filter(cmd => userPermissionLevel <= cmd.permissionLevel);
