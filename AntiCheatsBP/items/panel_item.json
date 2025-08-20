@@ -3,12 +3,12 @@
     "minecraft:item": {
         "description": {
             "identifier": "ac:panel",
-            "category": "Items"
+            "menu_category": {
+                "category": "items"
+            }
         },
         "components": {
-            "minecraft:icon": {
-                "texture": "compass"
-            },
+            "minecraft:icon": "compass",
             "minecraft:display_name": {
                 "value": "§l§bAdmin Panel§r"
             },
