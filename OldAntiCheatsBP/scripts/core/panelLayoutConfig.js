@@ -22,10 +22,10 @@
  *                                      required for a player to see and interact with this item.
  *                                      Example: Owner=0, Admin=1, Moderator=2, Member=1024.
  * @property {'functionCall' | 'openPanel'} actionType - Defines what happens when the item is selected.
- *                                                     - `'functionCall'`: Calls a JavaScript function defined in `uiManager.uiActionFunctions`.
+ *                                                     - `'functionCall'`: Calls a JavaScript function defined in `uiManager.UI_ACTION_FUNCTIONS`.
  *                                                     - `'openPanel'`: Navigates to another panel.
  * @property {string} actionValue - If `actionType` is `'functionCall'`, this is the name of the function to call
- *                                 (must be a key in `uiManager.uiActionFunctions`).
+ *                                 (must be a key in `uiManager.UI_ACTION_FUNCTIONS`).
  *                                 If `actionType` is `'openPanel'`, this is the `panelId` of the target panel to open.
  * @property {Array<{contextKey: string, contextValue: any, text: string}>} [textVariants] - Optional. Allows dynamic button text.
  *                                   The first variant where `currentContext[contextKey] === contextValue` will be used.

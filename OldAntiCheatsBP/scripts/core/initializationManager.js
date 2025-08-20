@@ -46,7 +46,7 @@ function subscribeToEvents() {
                     playerUtils.logError(`Unhandled error in beforeEvent:${eventName}: ${e?.message}`, e);
                 }
             });
-        } catch {
+        } catch (e) {
             playerUtils.logError(`[CoreSystem] Could not subscribe to beforeEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
         }
     }
@@ -60,7 +60,7 @@ function subscribeToEvents() {
                     playerUtils.logError(`Unhandled error in afterEvent:${eventName}: ${e?.message}`, e);
                 }
             });
-        } catch {
+        } catch (e) {
             playerUtils.logError(`[CoreSystem] Could not subscribe to afterEvent '${eventName}'. It may be a beta feature that is not enabled in this world.`);
         }
     }

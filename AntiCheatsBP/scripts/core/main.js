@@ -92,6 +92,7 @@ world.afterEvents.playerLeave.subscribe((event) => {
     console.log(`[AntiCheats] Player ${event.playerName} left.`);
 });
 
+// Handle the custom admin panel item being used
 world.afterEvents.itemUse.subscribe((event) => {
     const { source: player, itemStack } = event;
     if (itemStack.typeId === 'ac:panel') {
