@@ -1,4 +1,4 @@
-import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
+import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer } from './playerDataManager.js';
 import { findPlayerByName } from '../modules/utils/playerUtils.js';
@@ -164,4 +164,39 @@ uiActionFunctions['showMuteForm'] = (player, context) => {
     }).catch(e => {
         console.error(`[UIManager] showMuteForm promise rejected: ${e.stack}`);
     });
+};
+
+uiActionFunctions['showRules'] = (player) => {
+    const rules = [
+        'Rule 1: Be respectful to all players and staff.',
+        'Rule 2: No cheating, exploiting, or using unauthorized modifications.',
+        'Rule 3: Do not spam chat or use excessive caps/symbols.',
+        'Rule 4: Follow instructions from server administrators and moderators.',
+        'Rule 5: Keep chat appropriate and avoid offensive language.',
+        'Rule 6: Have fun and contribute to a positive community!',
+    ];
+
+    const form = new MessageFormData()
+        .title('§lServer Rules§r')
+        .body(rules.join('\n\n'))
+        .button1('§l§cClose§r');
+
+    form.show(player).catch(e => console.error(`[UIManager] showRules promise rejected: ${e.stack}`));
+};
+
+uiActionFunctions['showStatus'] = (player) => {
+    const onlinePlayers = world.getAllPlayers().length;
+    const statusText = [
+        `§l§bServer Status§r`,
+        `§eOnline Players: §f${onlinePlayers}`,
+        `§eCurrent Tick: §f${system.currentTick}`,
+        // Add more status info here later
+    ].join('\n\n');
+
+    const form = new MessageFormData()
+        .title('§lServer Status§r')
+        .body(statusText)
+        .button1('§l§cClose§r');
+
+    form.show(player).catch(e => console.error(`[UIManager] showStatus promise rejected: ${e.stack}`));
 };

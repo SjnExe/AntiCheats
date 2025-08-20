@@ -58,14 +58,28 @@ export const panelDefinitions = {
         title: '§lServer Rules§r',
         parentPanelId: 'mainAdminPanel',
         items: [
-            // TODO: Add rules as buttons or text here.
+            {
+                id: 'viewRules',
+                text: 'View All Rules',
+                icon: 'textures/ui/book_writable.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showRules',
+            },
         ],
     },
     statusPanel: {
         title: '§lServer Status§r',
         parentPanelId: 'mainAdminPanel',
         items: [
-            // TODO: Add server status information here.
+            {
+                id: 'viewStatus',
+                text: 'View Server Info',
+                icon: 'textures/ui/icon_setting.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showStatus',
+            },
         ],
     },
     playerListPanel: {
