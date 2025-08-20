@@ -12,6 +12,7 @@ class CommandManager {
      * @param {object} commandOptions
      * @param {string} commandOptions.name The primary name of the command.
      * @param {string[]} [commandOptions.aliases=[]] A list of alternative names for the command.
+     * @param {string} [commandOptions.category='General'] The category for the help command.
      * @param {string} commandOptions.description A brief description of what the command does.
      * @param {number} commandOptions.permissionLevel The minimum permission level required to use the command.
      * @param {(player: import('@minecraft/server').Player, args: string[]) => void} commandOptions.execute The function to run when the command is executed.
@@ -23,7 +24,8 @@ class CommandManager {
             return;
         }
 
-        this.commands.set(name, commandOptions);
+        const commandData = { category: 'General', ...commandOptions };
+        this.commands.set(name, commandData);
 
         if (commandOptions.aliases) {
             for (const alias of commandOptions.aliases) {

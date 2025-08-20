@@ -5,6 +5,7 @@ commandManager.register({
     name: 'status',
     aliases: ['stats'],
     description: 'Displays the server status.',
+    category: 'General',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         showPanel(player, 'statusPanel');

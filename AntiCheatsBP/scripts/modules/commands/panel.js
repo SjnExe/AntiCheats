@@ -4,6 +4,7 @@ import { showPanel } from '../../core/uiManager.js';
 commandManager.register({
     name: 'panel',
     description: 'Opens the control panel.',
+    category: 'Admin',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         console.log(`[PanelCommand] Executing !panel for ${player.name}.`);
