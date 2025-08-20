@@ -2,7 +2,7 @@ import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer } from './playerDataManager.js';
 import { findPlayerByName } from '../modules/utils/playerUtils.js';
-import { world } from '@minecraft/server';
+import { world, system } from '@minecraft/server';
 
 const uiActionFunctions = {};
 
