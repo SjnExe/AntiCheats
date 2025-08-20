@@ -42,7 +42,7 @@ export function showPanel(player, panelId, context = {}) {
                     showPanel(player, 'playerManagementPanel', { targetPlayer: selectedPlayer });
                 }
             }).catch(e => console.error(`[UIManager] playerListPanel promise rejected: ${e.stack}`));
-        }, 5);
+        }, 10);
         return; // Stop further processing for this panel
     }
 
@@ -90,13 +90,18 @@ export function showPanel(player, panelId, context = {}) {
         }).catch(e => {
             console.error(`[UIManager] form.show() promise was rejected with error: ${e.stack}`);
         });
-    }, 5);
+    }, 10);
 }
 
 uiActionFunctions['showKickForm'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) {
         player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+
+    if (player.id === targetPlayer.id) {
+        player.sendMessage("§cYou cannot kick yourself.");
         return;
     }
 
@@ -128,6 +133,11 @@ uiActionFunctions['showMuteForm'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) {
         player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+
+    if (player.id === targetPlayer.id) {
+        player.sendMessage("§cYou cannot mute yourself.");
         return;
     }
 
