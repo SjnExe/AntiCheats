@@ -9,6 +9,6 @@ commandManager.register({
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();
-        player.sendMessage(`§7AntiCheat Addon Version: §e${config.ac_version}`);
+        player.sendMessage(`§7AntiCheat Addon Version: §e${config.version}`);
     },
 });

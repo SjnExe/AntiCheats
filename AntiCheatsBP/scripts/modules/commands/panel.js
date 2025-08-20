@@ -3,12 +3,16 @@ import { showPanel } from '../../core/uiManager.js';
 
 commandManager.register({
     name: 'panel',
-    description: 'Opens the control panel.',
+    description: 'Gives the player the admin panel item.',
     category: 'Admin',
-    permissionLevel: 1024, // Everyone
+    permissionLevel: 1, // Admin only
     execute: (player, args) => {
-        console.log(`[PanelCommand] Executing !panel for ${player.name}.`);
-        // Show the main admin panel by default
-        showPanel(player, 'mainAdminPanel');
+        try {
+            player.runCommandAsync('give @s ac:panel');
+            player.sendMessage('§aYou have been given the admin panel item.');
+        } catch (e) {
+            player.sendMessage('§cFailed to give the admin panel item.');
+            console.error(`[PanelCommand] Failed to give panel item: ${e.stack}`);
+        }
     },
 });

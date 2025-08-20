@@ -8,7 +8,7 @@
             }
         },
         "components": {
-            "minecraft:icon": "minecraft:knowledge_book",
+            "minecraft:icon": "end_rod",
             "minecraft:foil": true,
             "minecraft:display_name": {
                 "value": "§l§bAdmin Panel§r"

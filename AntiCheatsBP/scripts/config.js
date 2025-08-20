@@ -1,6 +1,5 @@
 export const config = {
-    ac_version: '0.9.9',
-    version: '1.0.0',
+    version: '0.9.9',
     ownerPlayerName: 'YourNameHere',
     adminTag: 'admin',
     commandPrefix: '!',
