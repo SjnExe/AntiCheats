@@ -2,15 +2,13 @@
     "format_version": "1.21.100",
     "minecraft:item": {
         "description": {
-            "identifier": "panel",
+            "identifier": "ac:panel",
             "menu_category": {
                 "category": "items"
             }
         },
         "components": {
-            "minecraft:icon": {
-                "texture": "banner_pattern"
-            },
+            "minecraft:icon": "banner_pattern",
             "minecraft:display_name": {
                 "value": "§l§bAdmin Panel§r"
             },
