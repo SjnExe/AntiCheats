@@ -6,14 +6,19 @@ import { world, system } from '@minecraft/server';
 
 const uiActionFunctions = {};
 
-export function showPanel(player, panelId) {
-    console.log(`[UIManager] Attempting to show panel "${panelId}" to ${player.name}.`);
+export function showPanel(player, panelId, context = {}) {
+    console.log(`[UIManager] Attempting to show panel "${panelId}" to ${player.name} with context: ${JSON.stringify(context)}`);
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) {
         console.error(`[UIManager] Panel with ID "${panelId}" not found.`);
         return;
     }
-    console.log(`[UIManager] Found panel definition for "${panelId}". Title: ${panelDef.title}`);
+
+    let title = panelDef.title;
+    if (context.targetPlayer) {
+        title = title.replace('{playerName}', context.targetPlayer.name);
+    }
+    console.log(`[UIManager] Found panel definition for "${panelId}". Title: ${title}`);
 
     const pData = getPlayer(player.id);
     if (!pData) {
@@ -21,7 +26,28 @@ export function showPanel(player, panelId) {
         return;
     }
 
-    const form = new ActionFormData().title(panelDef.title);
+    // Special handling for dynamic panels
+    if (panelId === 'playerListPanel') {
+        const onlinePlayers = world.getAllPlayers();
+        const form = new ActionFormData().title(title);
+        for (const p of onlinePlayers) {
+            form.button(p.name);
+        }
+
+        system.runTimeout(() => {
+            form.show(player).then(response => {
+                if (response.canceled) return;
+                const selectedPlayer = onlinePlayers[response.selection];
+                if (selectedPlayer) {
+                    showPanel(player, 'playerManagementPanel', { targetPlayer: selectedPlayer });
+                }
+            }).catch(e => console.error(`[UIManager] playerListPanel promise rejected: ${e.stack}`));
+        }, 5);
+        return; // Stop further processing for this panel
+    }
+
+
+    const form = new ActionFormData().title(title);
 
     const validItems = panelDef.items
         .filter(item => pData.permissionLevel <= item.permissionLevel)
@@ -55,7 +81,7 @@ export function showPanel(player, panelId) {
             } else if (selectedItem.actionType === 'functionCall') {
                 const actionFunction = uiActionFunctions[selectedItem.actionValue];
                 if (actionFunction) {
-                    actionFunction(player);
+                    actionFunction(player, context);
                 } else {
                     console.warn(`[UIManager] No UI action function found for "${selectedItem.actionValue}"`);
                     player.sendMessage(`§cFunctionality for "${selectedItem.text}" is not implemented yet.`);
@@ -67,48 +93,65 @@ export function showPanel(player, panelId) {
     }, 5);
 }
 
-uiActionFunctions['showKickForm'] = (player) => {
+uiActionFunctions['showKickForm'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) {
+        player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+
     const form = new ModalFormData()
-        .title('Kick Player')
-        .textField('Player Name', 'Enter name of player to kick')
+        .title(`Kick ${targetPlayer.name}`)
         .textField('Reason', 'Enter kick reason', 'No reason provided');
 
     form.show(player).then(async response => {
         if (response.canceled) return;
-        const [targetName, reason] = response.formValues;
-        const targetPlayer = findPlayerByName(targetName);
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found.`);
-            return;
-        }
+        const [reason] = response.formValues;
         try {
-            await world.runCommandAsync(`kick "${targetPlayer.name}" ${reason}`);
-            player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}.`);
+            // Re-fetch the player object to ensure it's still valid
+            const freshTarget = world.getPlayer(targetPlayer.id);
+            if (!freshTarget) {
+                player.sendMessage(`§cPlayer ${targetPlayer.name} is no longer online.`);
+                return;
+            }
+            await world.runCommandAsync(`kick "${freshTarget.name}" ${reason}`);
+            player.sendMessage(`§aSuccessfully kicked ${freshTarget.name}.`);
         } catch {
             player.sendMessage('§cFailed to kick player.');
         }
+    }).catch(e => {
+        console.error(`[UIManager] showKickForm promise rejected: ${e.stack}`);
     });
 };
 
-uiActionFunctions['showMuteForm'] = (player) => {
+uiActionFunctions['showMuteForm'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) {
+        player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+
     const form = new ModalFormData()
-        .title('Mute Player')
-        .textField('Player Name', 'Enter name of player to mute');
+        .title(`Mute ${targetPlayer.name}?`)
+        .toggle('Confirm Mute', false);
 
     form.show(player).then(response => {
-        if (response.canceled) return;
-        const [targetName] = response.formValues;
-        const targetPlayer = findPlayerByName(targetName);
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found.`);
-            return;
-        }
+        if (response.canceled || !response.formValues[0]) return;
+
         try {
-            targetPlayer.addTag('muted');
-            player.sendMessage(`§aSuccessfully muted ${targetPlayer.name}.`);
-            targetPlayer.sendMessage('§cYou have been muted.');
+            // Re-fetch the player object to ensure it's still valid
+            const freshTarget = world.getPlayer(targetPlayer.id);
+            if (!freshTarget) {
+                player.sendMessage(`§cPlayer ${targetPlayer.name} is no longer online.`);
+                return;
+            }
+            freshTarget.addTag('muted');
+            player.sendMessage(`§aSuccessfully muted ${freshTarget.name}.`);
+            freshTarget.sendMessage('§cYou have been muted.');
         } catch {
             player.sendMessage('§cFailed to mute player.');
         }
+    }).catch(e => {
+        console.error(`[UIManager] showMuteForm promise rejected: ${e.stack}`);
     });
 };

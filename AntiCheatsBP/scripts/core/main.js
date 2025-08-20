@@ -96,12 +96,10 @@ world.afterEvents.playerLeave.subscribe((event) => {
 world.afterEvents.itemUse.subscribe((event) => {
     const { source: player, itemStack } = event;
     if (itemStack.typeId === 'ac:panel') {
+        // Player data is still needed for button permissions inside the panel
         const pData = playerDataManager.getPlayer(player.id);
-        // Permission level 1 or lower (Admins and Owners)
-        if (pData && pData.permissionLevel <= 1) {
+        if (pData) {
             showPanel(player, 'mainAdminPanel');
-        } else {
-            player.sendMessage('§cYou do not have permission to use this item.');
         }
     }
 });

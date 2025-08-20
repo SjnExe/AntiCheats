@@ -34,14 +34,48 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_multiplayer',
                 permissionLevel: 1,
                 actionType: 'openPanel',
-                actionValue: 'playerManagementPanel',
+                actionValue: 'playerListPanel',
             },
-            // We can add a "Server Management" button here later.
+            {
+                id: 'rules',
+                text: 'Rules',
+                icon: 'textures/ui/book_writable.png',
+                permissionLevel: 1024,
+                actionType: 'openPanel',
+                actionValue: 'rulesPanel',
+            },
+            {
+                id: 'status',
+                text: 'Status',
+                icon: 'textures/ui/icon_setting.png',
+                permissionLevel: 1024,
+                actionType: 'openPanel',
+                actionValue: 'statusPanel',
+            },
         ],
     },
-    playerManagementPanel: {
-        title: '§lPlayer Management§r',
+    rulesPanel: {
+        title: '§lServer Rules§r',
         parentPanelId: 'mainAdminPanel',
+        items: [
+            // TODO: Add rules as buttons or text here.
+        ],
+    },
+    statusPanel: {
+        title: '§lServer Status§r',
+        parentPanelId: 'mainAdminPanel',
+        items: [
+            // TODO: Add server status information here.
+        ],
+    },
+    playerListPanel: {
+        title: '§lSelect a Player§r',
+        parentPanelId: 'mainAdminPanel',
+        items: [], // This will be populated dynamically by uiManager
+    },
+    playerManagementPanel: {
+        title: '§lActions for {playerName}§r',
+        parentPanelId: 'playerListPanel',
         items: [
             {
                 id: 'kickPlayer',

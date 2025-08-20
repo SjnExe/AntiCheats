@@ -3,8 +3,8 @@ import { showPanel } from '../../core/uiManager.js';
 
 commandManager.register({
     name: 'panel',
-    description: 'Opens the admin control panel.',
-    permissionLevel: 1, // Admins only
+    description: 'Opens the control panel.',
+    permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         console.log(`[PanelCommand] Executing !panel for ${player.name}.`);
         // Show the main admin panel by default

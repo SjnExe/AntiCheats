@@ -8,7 +8,8 @@
             }
         },
         "components": {
-            "minecraft:icon": "banner_pattern",
+            "minecraft:icon": "stick",
+            "minecraft:foil": true,
             "minecraft:display_name": {
                 "value": "§l§bAdmin Panel§r"
             },
