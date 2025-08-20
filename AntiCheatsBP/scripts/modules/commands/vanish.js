@@ -1,28 +1,26 @@
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
-import { EffectTypes } from '@minecraft/server';
 
 commandManager.register({
     name: 'vanish',
     aliases: ['v'],
-    description: 'Toggles visibility for yourself.',
-    permissionLevel: 1, // Admins only
+    description: 'Makes you invisible to other players.',
+    category: 'Moderation',
+    permissionLevel: 1, // Admin only
     execute: (player, args) => {
-        try {
-            if (player.hasTag('vanished')) {
-                // Unvanish
-                player.removeTag('vanished');
-                player.removeEffect(EffectTypes.get('invisibility'));
-                player.sendMessage('§aYou are no longer vanished.');
-            } else {
-                // Vanish
-                player.addTag('vanished');
-                // Apply invisibility for a very long time (approx. 2.7 years in ticks)
-                player.addEffect(EffectTypes.get('invisibility'), 1700000000, { amplifier: 0, showParticles: false });
-                player.sendMessage('§aYou are now vanished.');
-            }
-        } catch (error) {
-            player.sendMessage('§cFailed to toggle vanish state.');
-            console.error(`[!vanish] ${error.stack}`);
+        const vanishedTag = 'vanished';
+        const isVanished = player.hasTag(vanishedTag);
+
+        if (isVanished) {
+            player.removeTag(vanishedTag);
+            player.removeEffect('invisibility');
+            player.sendMessage('§aYou are no longer vanished.');
+            world.sendMessage(`§e${player.name} joined the game.`);
+        } else {
+            player.addTag(vanishedTag);
+            player.addEffect('invisibility', 2000000, { amplifier: 1, showParticles: false });
+            player.sendMessage('§aYou are now vanished.');
+            world.sendMessage(`§e${player.name} left the game.`);
         }
     },
 });

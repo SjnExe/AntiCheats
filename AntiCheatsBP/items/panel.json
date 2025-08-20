@@ -3,14 +3,15 @@
     "minecraft:item": {
         "description": {
             "identifier": "ac:panel",
-            "category": "Items"
+            "menu_category": {
+                "category": "items"
+            }
         },
         "components": {
-            "minecraft:icon": {
-                "texture": "compass"
-            },
+            "minecraft:icon": "end_rod",
+            "minecraft:foil": true,
             "minecraft:display_name": {
-                "value": "§l§bAdmin Panel§r"
+                "value": "§l§bPanel§r"
             },
             "minecraft:hand_equipped": true,
             "minecraft:can_destroy_in_creative": false,

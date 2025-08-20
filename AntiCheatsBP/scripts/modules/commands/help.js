@@ -1,32 +1,46 @@
 import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
+import { getConfig } from '../../core/configManager.js';
 
-function showGeneralHelp(player, userPermissionLevel) {
+const commandCategories = ['General', 'Moderation', 'Admin']; // Defines the sort order
+
+function showCategorizedHelp(player, userPermissionLevel) {
+    const availableCommands = [...commandManager.commands.values()].filter(cmd => userPermissionLevel <= cmd.permissionLevel);
+
+    if (availableCommands.length === 0) {
+        player.sendMessage('§cYou do not have permission to use any commands.');
+        return;
+    }
+
+    const categorized = {};
+    for (const cmd of availableCommands) {
+        const category = cmd.category || 'General';
+        if (!categorized[category]) {
+            categorized[category] = [];
+        }
+        categorized[category].push(cmd);
+    }
+
     let helpMessage = '§a--- Available Commands ---\n';
-    let commandCount = 0;
 
-    const sortedCommands = [...commandManager.commands.values()].sort((a, b) => a.name.localeCompare(b.name));
-
-    for (const command of sortedCommands) {
-        if (userPermissionLevel <= command.permissionLevel) {
-            helpMessage += `§e!${command.name}§r: ${command.description}\n`;
-            commandCount++;
+    for (const category of commandCategories) {
+        if (categorized[category]) {
+            helpMessage += `§l§e--- ${category} ---\n`;
+            const sortedCommands = categorized[category].sort((a, b) => a.name.localeCompare(b.name));
+            for (const cmd of sortedCommands) {
+                helpMessage += `§b!${cmd.name}§r: ${cmd.description}\n`;
+            }
         }
     }
 
-    if (commandCount === 0) {
-        player.sendMessage('§cYou do not have permission to use any commands.');
-    } else {
-        helpMessage += '\n§7For more details, type !help <commandName>';
-        player.sendMessage(helpMessage.trim());
-    }
+    player.sendMessage(helpMessage.trim());
 }
 
 function showSpecificHelp(player, commandName) {
-    let cmd = commandManager.commands.get(commandName) || commandManager.commands.get(commandManager.aliases.get(commandName));
+    const cmd = commandManager.commands.get(commandName) || commandManager.commands.get(commandManager.aliases.get(commandName));
 
     if (!cmd) {
-        player.sendMessage(`§cUnknown command or category: '${commandName}'.`);
+        player.sendMessage(`§cUnknown command: '${commandName}'.`);
         return;
     }
 
@@ -35,27 +49,17 @@ function showSpecificHelp(player, commandName) {
     if (cmd.aliases && cmd.aliases.length > 0) {
         helpMessage += `§eAliases§r: ${cmd.aliases.map(a => `!${a}`).join(', ')}\n`;
     }
+    helpMessage += `§eCategory§r: ${cmd.category || 'General'}\n`;
     helpMessage += `§ePermission Level§r: ${cmd.permissionLevel}`;
 
     player.sendMessage(helpMessage);
-}
-
-function showGamemodeHelp(player) {
-    let helpMessage = '§a--- Gamemode Commands ---\n';
-    const gamemodeCommands = ['gmc', 'gms', 'gma', 'gmsp'];
-    for (const cmdName of gamemodeCommands) {
-        const cmd = commandManager.commands.get(cmdName);
-        if (cmd) {
-            helpMessage += `§e!${cmd.name}§r (${cmd.aliases[0]}): ${cmd.description}\n`;
-        }
-    }
-    player.sendMessage(helpMessage.trim());
 }
 
 commandManager.register({
     name: 'help',
     aliases: ['?'],
     description: 'Displays a list of available commands or help for a specific command.',
+    category: 'General',
     permissionLevel: 1024, // Available to everyone
     execute: (player, args) => {
         const pData = getPlayer(player.id);
@@ -63,9 +67,7 @@ commandManager.register({
         const topic = args[0] ? args[0].toLowerCase() : null;
 
         if (!topic) {
-            showGeneralHelp(player, userPermissionLevel);
-        } else if (topic === 'gamemode') {
-            showGamemodeHelp(player);
+            showCategorizedHelp(player, userPermissionLevel);
         } else {
             showSpecificHelp(player, topic);
         }

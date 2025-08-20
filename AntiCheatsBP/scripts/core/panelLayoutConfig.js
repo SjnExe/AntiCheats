@@ -34,14 +34,62 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_multiplayer',
                 permissionLevel: 1,
                 actionType: 'openPanel',
-                actionValue: 'playerManagementPanel',
+                actionValue: 'playerListPanel',
             },
-            // We can add a "Server Management" button here later.
+            {
+                id: 'rules',
+                text: 'Rules',
+                icon: 'textures/ui/book_writable.png',
+                permissionLevel: 1024,
+                actionType: 'openPanel',
+                actionValue: 'rulesPanel',
+            },
+            {
+                id: 'status',
+                text: 'Status',
+                icon: 'textures/ui/icon_setting.png',
+                permissionLevel: 1024,
+                actionType: 'openPanel',
+                actionValue: 'statusPanel',
+            },
         ],
     },
-    playerManagementPanel: {
-        title: '§lPlayer Management§r',
+    rulesPanel: {
+        title: '§lServer Rules§r',
         parentPanelId: 'mainAdminPanel',
+        items: [
+            {
+                id: 'viewRules',
+                text: 'View All Rules',
+                icon: 'textures/ui/book_writable.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showRules',
+            },
+        ],
+    },
+    statusPanel: {
+        title: '§lServer Status§r',
+        parentPanelId: 'mainAdminPanel',
+        items: [
+            {
+                id: 'viewStatus',
+                text: 'View Server Info',
+                icon: 'textures/ui/icon_setting.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showStatus',
+            },
+        ],
+    },
+    playerListPanel: {
+        title: '§lSelect a Player§r',
+        parentPanelId: 'mainAdminPanel',
+        items: [], // This will be populated dynamically by uiManager
+    },
+    playerManagementPanel: {
+        title: '§lActions for {playerName}§r',
+        parentPanelId: 'playerListPanel',
         items: [
             {
                 id: 'kickPlayer',
