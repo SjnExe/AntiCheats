@@ -8,9 +8,7 @@
             }
         },
         "components": {
-            "minecraft:icon": {
-                "texture": "end_rod"
-            },
+            "minecraft:icon": "minecraft:end_rod",
             "minecraft:foil": true,
             "minecraft:display_name": {
                 "value": "§l§bPanel§r"

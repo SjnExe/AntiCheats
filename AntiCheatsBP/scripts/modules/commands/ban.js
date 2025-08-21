@@ -8,6 +8,7 @@ import { addBan, removeBan } from '../../core/banManager.js';
 commandManager.register({
     name: 'ban',
     description: 'Bans a player from the server.',
+    category: 'Admin',
     permissionLevel: 1, // Admins only
     execute: async (player, args) => {
         if (args.length < 1) {
@@ -59,6 +60,7 @@ commandManager.register({
 commandManager.register({
     name: 'unban',
     description: 'Unbans a player, allowing them to rejoin.',
+    category: 'Admin',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {

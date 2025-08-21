@@ -1,8 +1,5 @@
 import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
-import { getConfig } from '../../core/configManager.js';
-
-const commandCategories = ['General', 'Moderation', 'Admin']; // Defines the sort order
 
 function showCategorizedHelp(player, userPermissionLevel) {
     const availableCommands = [...commandManager.commands.values()].filter(cmd => userPermissionLevel <= cmd.permissionLevel);
@@ -23,8 +20,19 @@ function showCategorizedHelp(player, userPermissionLevel) {
 
     let helpMessage = '§a--- Available Commands ---\n';
 
-    for (const category of commandCategories) {
-        if (categorized[category]) {
+    // Dynamically get and sort categories to be more robust
+    const categoryOrder = ['General', 'Moderation', 'Admin'];
+    const sortedCategories = Object.keys(categorized).sort((a, b) => {
+        const indexA = categoryOrder.indexOf(a);
+        const indexB = categoryOrder.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB; // Both in preferred order
+        if (indexA !== -1) return -1; // A is in order, B is not
+        if (indexB !== -1) return 1; // B is in order, A is not
+        return a.localeCompare(b); // Neither in order, sort alphabetically
+    });
+
+    for (const category of sortedCategories) {
+        if (categorized[category].length > 0) {
             helpMessage += `§l§e--- ${category} ---\n`;
             const sortedCommands = categorized[category].sort((a, b) => a.name.localeCompare(b.name));
             for (const cmd of sortedCommands) {
