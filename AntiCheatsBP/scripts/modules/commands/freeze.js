@@ -9,7 +9,7 @@ commandManager.register({
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {
-            player.sendMessage("§cUsage: !freeze <playerName> [on|off]");
+            player.sendMessage('§cUsage: !freeze <playerName> [on|off]');
             return;
         }
 
@@ -22,7 +22,7 @@ commandManager.register({
         }
 
         if (player.id === targetPlayer.id) {
-            player.sendMessage("§cYou cannot freeze yourself.");
+            player.sendMessage('§cYou cannot freeze yourself.');
             return;
         }
 

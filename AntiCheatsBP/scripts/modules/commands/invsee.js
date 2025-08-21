@@ -9,7 +9,7 @@ commandManager.register({
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {
-            player.sendMessage("§cUsage: !invsee <playerName>");
+            player.sendMessage('§cUsage: !invsee <playerName>');
             return;
         }
 
