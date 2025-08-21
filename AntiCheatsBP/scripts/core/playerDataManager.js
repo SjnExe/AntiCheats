@@ -1,7 +1,16 @@
 /**
+ * @typedef {object} HomeLocation
+ * @property {number} x
+ * @property {number} y
+ * @property {number} z
+ * @property {string} dimensionId
+ */
+
+/**
  * @typedef {object} PlayerData
  * @property {string} rankId
  * @property {number} permissionLevel
+ * @property {Object.<string, HomeLocation>} homes
  */
 
 /**
@@ -18,6 +27,7 @@ export function addPlayer(player) {
     const playerData = {
         rankId: 'member', // Default rank
         permissionLevel: 1024, // Default permission level
+        homes: {},
     };
     activePlayerData.set(player.id, playerData);
     return playerData;
