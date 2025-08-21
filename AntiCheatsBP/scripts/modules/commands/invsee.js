@@ -5,11 +5,11 @@ import { commandManager } from './commandManager.js';
 commandManager.register({
     name: 'invsee',
     description: "Views a player's inventory.",
-    category: 'Moderation',
+    category: 'Admin',
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {
-            player.sendMessage("§cUsage: !invsee <playerName>");
+            player.sendMessage('§cUsage: !invsee <playerName>');
             return;
         }
 

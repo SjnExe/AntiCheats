@@ -1,5 +1,5 @@
 export const config = {
-    version: '0.9.9',
+    version: 'v__VERSION_STRING__',
     ownerPlayerName: 'YourNameHere',
     adminTag: 'admin',
     commandPrefix: '!',

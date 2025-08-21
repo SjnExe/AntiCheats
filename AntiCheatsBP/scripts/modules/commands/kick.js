@@ -6,6 +6,7 @@ import { getPlayer } from '../../core/playerDataManager.js';
 commandManager.register({
     name: 'kick',
     description: 'Kicks a player from the server.',
+    category: 'Admin',
     permissionLevel: 1, // Admins only
     execute: async (player, args) => {
         if (args.length < 1) {

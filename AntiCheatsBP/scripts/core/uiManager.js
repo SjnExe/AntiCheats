@@ -1,7 +1,6 @@
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer } from './playerDataManager.js';
-import { findPlayerByName } from '../modules/utils/playerUtils.js';
 import { world, system } from '@minecraft/server';
 
 const uiActionFunctions = {};
@@ -59,38 +58,35 @@ export function showPanel(player, panelId, context = {}) {
         form.button(item.text, item.icon);
     }
 
-    console.log('[UIManager] Calling form.show(player) after a short delay...');
-    system.runTimeout(() => {
-        form.show(player).then(response => {
-            console.log('[UIManager] form.show() promise resolved.');
-            if (response.canceled) {
-                console.log('[UIManager] Player cancelled the form.');
-                return;
-            }
+    form.show(player).then(response => {
+        console.log('[UIManager] form.show() promise resolved.');
+        if (response.canceled) {
+            console.log('[UIManager] Player cancelled the form.');
+            return;
+        }
 
-            const selectedItem = validItems[response.selection];
-            if (!selectedItem) {
-                console.error('[UIManager] Selected item was not found in validItems array.');
-                return;
-            }
+        const selectedItem = validItems[response.selection];
+        if (!selectedItem) {
+            console.error('[UIManager] Selected item was not found in validItems array.');
+            return;
+        }
 
-            console.log(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
+        console.log(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
 
-            if (selectedItem.actionType === 'openPanel') {
-                showPanel(player, selectedItem.actionValue);
-            } else if (selectedItem.actionType === 'functionCall') {
-                const actionFunction = uiActionFunctions[selectedItem.actionValue];
-                if (actionFunction) {
-                    actionFunction(player, context);
-                } else {
-                    console.warn(`[UIManager] No UI action function found for "${selectedItem.actionValue}"`);
-                    player.sendMessage(`§cFunctionality for "${selectedItem.text}" is not implemented yet.`);
-                }
+        if (selectedItem.actionType === 'openPanel') {
+            showPanel(player, selectedItem.actionValue);
+        } else if (selectedItem.actionType === 'functionCall') {
+            const actionFunction = uiActionFunctions[selectedItem.actionValue];
+            if (actionFunction) {
+                actionFunction(player, context);
+            } else {
+                console.warn(`[UIManager] No UI action function found for "${selectedItem.actionValue}"`);
+                player.sendMessage(`§cFunctionality for "${selectedItem.text}" is not implemented yet.`);
             }
-        }).catch(e => {
-            console.error(`[UIManager] form.show() promise was rejected with error: ${e.stack}`);
-        });
-    }, 10);
+        }
+    }).catch(e => {
+        console.error(`[UIManager] form.show() promise was rejected with error: ${e.stack}`);
+    });
 }
 
 uiActionFunctions['showKickForm'] = (player, context) => {
@@ -101,7 +97,7 @@ uiActionFunctions['showKickForm'] = (player, context) => {
     }
 
     if (player.id === targetPlayer.id) {
-        player.sendMessage("§cYou cannot kick yourself.");
+        player.sendMessage('§cYou cannot kick yourself.');
         return;
     }
 
@@ -137,7 +133,7 @@ uiActionFunctions['showMuteForm'] = (player, context) => {
     }
 
     if (player.id === targetPlayer.id) {
-        player.sendMessage("§cYou cannot mute yourself.");
+        player.sendMessage('§cYou cannot mute yourself.');
         return;
     }
 
@@ -187,7 +183,7 @@ uiActionFunctions['showRules'] = (player) => {
 uiActionFunctions['showStatus'] = (player) => {
     const onlinePlayers = world.getAllPlayers().length;
     const statusText = [
-        `§l§bServer Status§r`,
+        '§l§bServer Status§r',
         `§eOnline Players: §f${onlinePlayers}`,
         `§eCurrent Tick: §f${system.currentTick}`,
         // Add more status info here later

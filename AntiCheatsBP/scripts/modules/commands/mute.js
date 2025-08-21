@@ -6,6 +6,7 @@ import { getPlayer } from '../../core/playerDataManager.js';
 commandManager.register({
     name: 'mute',
     description: 'Mutes a player, preventing them from sending chat messages.',
+    category: 'Admin',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {
@@ -54,6 +55,7 @@ commandManager.register({
 commandManager.register({
     name: 'unmute',
     description: 'Unmutes a player, allowing them to send chat messages.',
+    category: 'Admin',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {
