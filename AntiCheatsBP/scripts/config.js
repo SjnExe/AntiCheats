@@ -70,5 +70,10 @@ export const config = {
         'home': { enabled: true },
         'delhome': { enabled: true },
         'homes': { enabled: true },
+        'tpa': { enabled: true },
+        'tpahere': { enabled: true },
+        'tpaccept': { enabled: true },
+        'tpadeny': { enabled: true },
+        'tpacancel': { enabled: true },
     },
 };

@@ -17,3 +17,8 @@ import './sethome.js';
 import './home.js';
 import './delhome.js';
 import './homes.js';
+import './tpa.js';
+import './tpahere.js';
+import './tpaccept.js';
+import './tpadeny.js';
+import './tpacancel.js';
