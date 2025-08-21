@@ -4,7 +4,7 @@ commandManager.register({
     name: 'panel',
     description: 'Gives you the panel item.',
     category: 'General',
-    permissionLevel: 1024, // Everyone
+    permissionLevel: 1, // Admins only
     execute: (player, args) => {
         try {
             player.runCommandAsync('give @s ac:panel');
