@@ -11,7 +11,10 @@
  * @property {string} rankId
  * @property {number} permissionLevel
  * @property {Object.<string, HomeLocation>} homes
+ * @property {number} balance
  */
+
+import { getConfig } from './configManager.js';
 
 /**
  * @type {Map<string, PlayerData>}
@@ -24,10 +27,12 @@ const activePlayerData = new Map();
  * @returns {PlayerData}
  */
 export function addPlayer(player) {
+    const config = getConfig();
     const playerData = {
         rankId: 'member', // Default rank
         permissionLevel: 1024, // Default permission level
         homes: {},
+        balance: config.economy.startingBalance,
     };
     activePlayerData.set(player.id, playerData);
     return playerData;
@@ -48,4 +53,12 @@ export function getPlayer(playerId) {
  */
 export function removePlayer(playerId) {
     activePlayerData.delete(playerId);
+}
+
+/**
+ * Gets all active player data.
+ * @returns {Map<string, PlayerData>}
+ */
+export function getAllPlayerData() {
+    return activePlayerData;
 }

@@ -22,3 +22,6 @@ import './tpahere.js';
 import './tpaccept.js';
 import './tpadeny.js';
 import './tpacancel.js';
+import './balance.js';
+import './pay.js';
+import './baltop.js';

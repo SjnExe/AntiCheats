@@ -75,5 +75,8 @@ export const config = {
         'tpaccept': { enabled: true },
         'tpadeny': { enabled: true },
         'tpacancel': { enabled: true },
+        'balance': { enabled: true },
+        'pay': { enabled: true },
+        'baltop': { enabled: true },
     },
 };
