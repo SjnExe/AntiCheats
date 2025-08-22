@@ -8,15 +8,14 @@
             }
         },
         "components": {
-            "minecraft:icon": "nether_star",
+            "minecraft:icon": "end_rod",
             "minecraft:foil": true,
             "minecraft:display_name": {
-                "value": "§l§bAdmin Panel§r"
+                "value": "§l§bPanel§r"
             },
             "minecraft:lore": {
                 "value": [
-                    "§r§7Right-click to open",
-                    "§r§7the admin menu."
+                    "§r§7Right-click to open"
                 ]
             },
             "minecraft:hand_equipped": true,

@@ -27,7 +27,8 @@ export const config = {
     },
     economy: {
         enabled: true,
-        startingBalance: 100,
+        startingBalance: 0,
+        baltopLimit: 10,
     },
     playerInfo: {
         enableWelcomer: true,
