@@ -99,7 +99,7 @@ world.afterEvents.itemUse.subscribe((event) => {
         // Player data is still needed for button permissions inside the panel
         const pData = playerDataManager.getPlayer(player.id);
         if (pData) {
-            showPanel(player, 'mainAdminPanel');
+            showPanel(player, 'mainPanel');
         }
     }
 });

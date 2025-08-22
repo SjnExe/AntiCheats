@@ -24,7 +24,7 @@
  * @type {Record<string, PanelDefinition>}
  */
 export const panelDefinitions = {
-    mainAdminPanel: {
+    mainPanel: {
         title: '§l§bPanel§r',
         parentPanelId: null,
         items: [
@@ -56,7 +56,7 @@ export const panelDefinitions = {
     },
     statusPanel: {
         title: '§lServer Status§r',
-        parentPanelId: 'mainAdminPanel',
+        parentPanelId: 'mainPanel',
         items: [
             {
                 id: 'viewStatus',
@@ -70,7 +70,7 @@ export const panelDefinitions = {
     },
     playerListPanel: {
         title: '§lSelect a Player§r',
-        parentPanelId: 'mainAdminPanel',
+        parentPanelId: 'mainPanel',
         items: [], // This will be populated dynamically by uiManager
     },
     playerManagementPanel: {

@@ -202,7 +202,7 @@ uiActionFunctions['showRules'] = (player) => {
 
     form.show(player).then(response => {
         if (response.selection === 0) { // Back button
-            showPanel(player, 'mainAdminPanel');
+            showPanel(player, 'mainPanel');
         }
     }).catch(e => console.error(`[UIManager] showRules promise rejected: ${e.stack}`));
 };
@@ -224,7 +224,7 @@ uiActionFunctions['showStatus'] = (player) => {
 
     form.show(player).then(response => {
         if (response.selection === 0) { // Back button
-            showPanel(player, 'mainAdminPanel');
+            showPanel(player, 'mainPanel');
         }
     }).catch(e => console.error(`[UIManager] showStatus promise rejected: ${e.stack}`));
 };
