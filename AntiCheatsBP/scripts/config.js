@@ -4,7 +4,8 @@ export const config = {
     ownerPlayerName: 'YourNameHere',
     adminTag: 'admin',
     commandPrefix: '!',
-    enableDebugLogging: false,
+    defaultGamemode: 'survival',
+    debug: true,
     acGlobalNotificationsDefaultOn: true,
 
     // --- Player Tags ---
@@ -17,18 +18,29 @@ export const config = {
     tpa: {
         enabled: true,
         requestTimeoutSeconds: 60,
+        cooldownSeconds: 300, // 5 minutes
+        teleportWarmupSeconds: 5,
     },
     homes: {
         enabled: true,
         maxHomes: 5,
+        cooldownSeconds: 300, // 5 minutes
+        teleportWarmupSeconds: 5,
     },
     kits: {
-        enabled: true,
+        enabled: false,
     },
     economy: {
         enabled: true,
         startingBalance: 0,
         baltopLimit: 10,
+    },
+    creativeDetection: {
+        enabled: true,
+        periodicCheck: {
+            enabled: true,
+            intervalSeconds: 300, // 5 minutes
+        },
     },
     playerInfo: {
         enableWelcomer: true,

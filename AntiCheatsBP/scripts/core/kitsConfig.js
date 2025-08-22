@@ -18,6 +18,7 @@
  */
 export const kits = {
     starter: {
+        enabled: true,
         description: 'A basic kit to get you started.',
         cooldownSeconds: 3600, // 1 hour
         items: [
@@ -29,6 +30,7 @@ export const kits = {
         ],
     },
     food: {
+        enabled: true,
         description: 'A simple food refill.',
         cooldownSeconds: 900, // 15 minutes
         items: [

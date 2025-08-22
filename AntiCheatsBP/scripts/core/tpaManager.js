@@ -117,19 +117,42 @@ export function acceptRequest(player) {
         return;
     }
 
-    if (request.type === 'tpa') {
-        // Source teleports to Target
-        sourcePlayer.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
-        sourcePlayer.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
-        targetPlayer.sendMessage(`§a${sourcePlayer.name} has teleported to you.`);
-    } else { // 'tpahere'
-        // Target teleports to Source
-        targetPlayer.teleport(sourcePlayer.location, { dimension: sourcePlayer.dimension });
-        targetPlayer.sendMessage(`§aTeleported to ${sourcePlayer.name}.`);
-        sourcePlayer.sendMessage(`§a${targetPlayer.name} has been teleported to you.`);
-    }
+    const config = getConfig();
+    const warmupSeconds = config.tpa.teleportWarmupSeconds;
 
-    clearRequest(request);
+    const teleportLogic = () => {
+        // Re-fetch players in case they logged off during warmup
+        const freshSource = [...world.getPlayers()].find(p => p.id === request.sourcePlayerId);
+        const freshTarget = [...world.getPlayers()].find(p => p.id === request.targetPlayerId);
+
+        if (!freshSource || !freshTarget) {
+            player.sendMessage('§cThe other player logged off during the teleport warmup.');
+            if (freshSource) freshSource.sendMessage('§cThe other player logged off during the teleport warmup.');
+            if (freshTarget) freshTarget.sendMessage('§cThe other player logged off during the teleport warmup.');
+            return; // Don't clear the request, it will expire naturally
+        }
+
+        if (request.type === 'tpa') {
+            // Source teleports to Target
+            freshSource.teleport(freshTarget.location, { dimension: freshTarget.dimension });
+            freshSource.sendMessage(`§aTeleported to ${freshTarget.name}.`);
+            freshTarget.sendMessage(`§a${freshSource.name} has teleported to you.`);
+        } else { // 'tpahere'
+            // Target teleports to Source
+            freshTarget.teleport(freshSource.location, { dimension: freshSource.dimension });
+            freshTarget.sendMessage(`§aTeleported to ${freshSource.name}.`);
+            freshSource.sendMessage(`§a${freshTarget.name} has been teleported to you.`);
+        }
+        clearRequest(request);
+    };
+
+    if (warmupSeconds > 0) {
+        sourcePlayer.sendMessage(`§aTeleporting in ${warmupSeconds} seconds. Don't move!`);
+        targetPlayer.sendMessage(`§aTeleporting in ${warmupSeconds} seconds. Don't move!`);
+        system.runTimeout(teleportLogic, warmupSeconds * 20);
+    } else {
+        teleportLogic();
+    }
 }
 
 /**

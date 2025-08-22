@@ -12,11 +12,11 @@ export function getKit(kitName) {
 }
 
 /**
- * Lists the names of all available kits.
+ * Lists the names of all available and enabled kits.
  * @returns {string[]}
  */
 export function listKits() {
-    return Object.keys(kits);
+    return Object.keys(kits).filter(kitName => kits[kitName].enabled);
 }
 
 /**
@@ -41,7 +41,7 @@ export function getKitCooldown(player, kitName) {
 }
 
 /**
- * Gives a kit to a player if they are off cooldown.
+ * Gives a kit to a player if they are off cooldown and the kit is enabled.
  * @param {import('@minecraft/server').Player} player The player to give the kit to.
  * @param {string} kitName The name of the kit to give.
  * @returns {{success: boolean, message: string}}
@@ -52,6 +52,10 @@ export function giveKit(player, kitName) {
 
     if (!kit) {
         return { success: false, message: `Kit '${kitName}' does not exist.` };
+    }
+
+    if (!kit.enabled) {
+        return { success: false, message: `Kit '${kitName}' is currently disabled.` };
     }
 
     const remainingCooldown = getKitCooldown(player, lowerCaseKitName);
