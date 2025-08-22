@@ -22,6 +22,13 @@ export default [
             'package-lock.json',
             '.git/',
             'AntiCheatsRP/font/',
+            '.github/',
+            'Dev/',
+            'Docs/',
+            'OldAntiCheatsBP/',
+            'OldAntiCheatsRP/',
+            'eslint.config.js',
+            'package.json',
         ],
     },
     // Base JS configuration
