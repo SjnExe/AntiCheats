@@ -1,4 +1,5 @@
 import { commandManager } from './commandManager.js';
+import { ItemStack, EntityInventoryComponent } from '@minecraft/server';
 
 commandManager.register({
     name: 'panel',
@@ -7,10 +8,18 @@ commandManager.register({
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         try {
-            player.runCommandAsync('give @s ac:panel');
-            player.sendMessage('§aYou have been given the admin panel item.');
+            const inventory = player.getComponent('inventory');
+            if (!inventory) {
+                player.sendMessage('§cCould not get your inventory.');
+                return;
+            }
+
+            const panelItem = new ItemStack('ac:panel', 1);
+            inventory.container.addItem(panelItem);
+
+            player.sendMessage('§aYou have been given the panel item.');
         } catch (e) {
-            player.sendMessage(`§cFailed to give the admin panel item. Please report this to an admin. Error: ${e.stack}`);
+            player.sendMessage(`§cFailed to give the panel item. Please report this to an admin. Error: ${e.stack}`);
             console.error(`[PanelCommand] Failed to give panel item: ${e.stack}`);
         }
     },

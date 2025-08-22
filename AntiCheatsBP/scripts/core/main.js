@@ -123,18 +123,18 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         return;
     }
 
-    // Creative detection on join
-    const config = getConfig();
-    if (config.creativeDetection.enabled && config.defaultGamemode !== 'creative') {
-        checkPlayerGamemode(player);
-    }
-
     if (initialSpawn) {
         const pData = playerDataManager.addPlayer(player);
         const rank = rankManager.getPlayerRank(player, getConfig());
         pData.rankId = rank.id;
         pData.permissionLevel = rank.permissionLevel;
         debugLog(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);
+    }
+
+    // Creative detection on join (runs after player data is initialized)
+    const config = getConfig();
+    if (config.creativeDetection.enabled && config.defaultGamemode !== 'creative') {
+        checkPlayerGamemode(player);
     }
 });
 
