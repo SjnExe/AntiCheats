@@ -18,13 +18,17 @@ export const config = {
     tpa: {
         enabled: true,
         requestTimeoutSeconds: 60,
+        cooldownSeconds: 300, // 5 minutes
+        teleportWarmupSeconds: 5,
     },
     homes: {
         enabled: true,
         maxHomes: 5,
+        cooldownSeconds: 300, // 5 minutes
+        teleportWarmupSeconds: 5,
     },
     kits: {
-        enabled: true,
+        enabled: false,
     },
     economy: {
         enabled: true,
