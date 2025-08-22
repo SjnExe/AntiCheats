@@ -1,4 +1,5 @@
 import { commandManager } from './commandManager.js';
+import { GameMode } from '@minecraft/server';
 
 commandManager.register({
     name: 'gms',
@@ -8,7 +9,7 @@ commandManager.register({
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         try {
-            player.runCommandAsync('gamemode survival @s');
+            player.setGameMode(GameMode.Survival);
             player.sendMessage('§aYour gamemode has been set to Survival.');
         } catch (e) {
             player.sendMessage(`§cFailed to set gamemode. Error: ${e.message}`);
