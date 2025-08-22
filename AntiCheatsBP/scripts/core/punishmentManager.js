@@ -1,8 +1,8 @@
 import { world, system } from '@minecraft/server';
 import { debugLog } from './logger.js';
 
-const PUNISHMENT_DB_KEY = 'anticheats:punishments';
-const SAVE_INTERVAL_TICKS = 6000; // Every 5 minutes (20 ticks/sec * 60 sec/min * 5 min)
+const punishmentDbKey = 'anticheats:punishments';
+const saveIntervalTicks = 6000; // Every 5 minutes (20 ticks/sec * 60 sec/min * 5 min)
 
 /**
  * @typedef {'mute' | 'ban'} PunishmentType
@@ -26,7 +26,7 @@ let needsSave = false;
  */
 export function loadPunishments() {
     debugLog('[PunishmentManager] Loading punishments...');
-    const dataStr = world.getDynamicProperty(PUNISHMENT_DB_KEY);
+    const dataStr = world.getDynamicProperty(punishmentDbKey);
     if (dataStr) {
         try {
             const parsedData = JSON.parse(dataStr);
@@ -48,7 +48,7 @@ function savePunishments() {
     try {
         // JSON can't stringify a Map directly, so convert to an array first.
         const dataToSave = Array.from(punishments.entries());
-        world.setDynamicProperty(PUNISHMENT_DB_KEY, JSON.stringify(dataToSave));
+        world.setDynamicProperty(punishmentDbKey, JSON.stringify(dataToSave));
         needsSave = false;
         debugLog('[PunishmentManager] Saved punishments to world properties.');
     } catch (e) {
@@ -100,4 +100,4 @@ export function removePunishment(playerId) {
 }
 
 // Periodically save punishments
-system.runInterval(savePunishments, SAVE_INTERVAL_TICKS);
+system.runInterval(savePunishments, saveIntervalTicks);
