@@ -8,7 +8,7 @@
             }
         },
         "components": {
-            "minecraft:icon": "end_rod",
+            "minecraft:icon": "stick",
             "minecraft:foil": true,
             "minecraft:display_name": {
                 "value": "§l§bPanel§r"

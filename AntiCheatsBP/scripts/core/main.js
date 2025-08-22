@@ -101,16 +101,20 @@ world.afterEvents.playerLeave.subscribe((event) => {
 });
 
 // Handle the custom admin panel item being used
-world.afterEvents.itemUse.subscribe((event) => {
-    const { source: player, itemStack } = event;
-    if (itemStack.typeId === 'ac:panel') {
-        // Player data is still needed for button permissions inside the panel
-        const pData = playerDataManager.getPlayer(player.id);
-        if (pData) {
-            showPanel(player, 'mainAdminPanel');
+if (world.afterEvents.itemUse) {
+    world.afterEvents.itemUse.subscribe((event) => {
+        const { source: player, itemStack } = event;
+        if (itemStack.typeId === 'ac:panel') {
+            // Player data is still needed for button permissions inside the panel
+            const pData = playerDataManager.getPlayer(player.id);
+            if (pData) {
+                showPanel(player, 'mainAdminPanel');
+            }
         }
-    }
-});
+    });
+} else {
+    console.warn("[AntiCheats] world.afterEvents.itemUse is not available. The admin panel item will not work.");
+}
 
 // Save all player data when the world is saved
 world.beforeEvents.worldSave.subscribe((eventData) => {
