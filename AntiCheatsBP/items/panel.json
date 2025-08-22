@@ -8,10 +8,15 @@
             }
         },
         "components": {
-            "minecraft:icon": "minecraft:stick",
+            "minecraft:icon": "end_rod",
             "minecraft:foil": true,
             "minecraft:display_name": {
                 "value": "§l§bPanel§r"
+            },
+            "minecraft:lore": {
+                "value": [
+                    "§r§7Right-click to open"
+                ]
             },
             "minecraft:hand_equipped": true,
             "minecraft:can_destroy_in_creative": false,

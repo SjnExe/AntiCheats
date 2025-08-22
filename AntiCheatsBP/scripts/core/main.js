@@ -13,6 +13,13 @@ function mainTick() {
         const pData = playerDataManager.getPlayer(player.id);
         if (!pData) continue;
 
+        // Update player name if it has changed
+        if (pData.name !== player.name) {
+            console.log(`[AntiCheats] Player name change detected for ${pData.name} -> ${player.name}.`);
+            pData.name = player.name;
+        }
+
+        // Rank update check
         const currentRank = rankManager.getPlayerRank(player, getConfig());
         if (pData.rankId !== currentRank.id) {
             pData.rankId = currentRank.id;
@@ -27,6 +34,7 @@ function mainTick() {
 system.run(() => {
     console.log('[AntiCheats] Initializing addon...');
     loadConfig();
+    playerDataManager.loadAllPlayerData();
     rankManager.initialize();
 
     import('../modules/commands/index.js').then(() => {
@@ -102,4 +110,9 @@ world.afterEvents.itemUse.subscribe((event) => {
             showPanel(player, 'mainAdminPanel');
         }
     }
+});
+
+// Save all player data when the world is saved
+world.beforeEvents.worldSave.subscribe((eventData) => {
+    playerDataManager.saveAllPlayerData();
 });

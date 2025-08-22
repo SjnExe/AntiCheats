@@ -33,7 +33,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
 
     for (const category of sortedCategories) {
         if (categorized[category].length > 0) {
-            helpMessage += `§l§e--- ${category} ---\n`;
+            helpMessage += `§l§e--- ${category} ---§r\n`;
             const sortedCommands = categorized[category].sort((a, b) => a.name.localeCompare(b.name));
             for (const cmd of sortedCommands) {
                 helpMessage += `§b!${cmd.name}§r: ${cmd.description}\n`;

@@ -68,6 +68,13 @@ class CommandManager {
             return true;
         }
 
+        // Check if the command is disabled in the config
+        const commandSetting = config.commandSettings?.[commandName];
+        if (commandSetting && commandSetting.enabled === false) {
+            player.sendMessage('§cThis command is currently disabled by the server administrator.');
+            return true;
+        }
+
         const pData = getPlayer(player.id);
         if (!pData || pData.permissionLevel > command.permissionLevel) {
             player.sendMessage('§cYou do not have permission to use this command.');
