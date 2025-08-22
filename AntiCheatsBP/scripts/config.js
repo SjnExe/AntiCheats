@@ -78,5 +78,6 @@ export const config = {
         'balance': { enabled: true },
         'pay': { enabled: true },
         'baltop': { enabled: true },
+        'kit': { enabled: true },
     },
 };
