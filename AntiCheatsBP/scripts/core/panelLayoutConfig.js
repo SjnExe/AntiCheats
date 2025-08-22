@@ -39,10 +39,10 @@ export const panelDefinitions = {
             {
                 id: 'rules',
                 text: 'Rules',
-                icon: 'textures/ui/book_writable.png',
+                icon: 'textures/ui/book_icon',
                 permissionLevel: 1024,
-                actionType: 'openPanel',
-                actionValue: 'rulesPanel',
+                actionType: 'functionCall',
+                actionValue: 'showRules',
             },
             {
                 id: 'status',
@@ -51,20 +51,6 @@ export const panelDefinitions = {
                 permissionLevel: 1024,
                 actionType: 'openPanel',
                 actionValue: 'statusPanel',
-            },
-        ],
-    },
-    rulesPanel: {
-        title: '§lServer Rules§r',
-        parentPanelId: 'mainAdminPanel',
-        items: [
-            {
-                id: 'viewRules',
-                text: 'View All Rules',
-                icon: 'textures/ui/book_writable.png',
-                permissionLevel: 1024,
-                actionType: 'functionCall',
-                actionValue: 'showRules',
             },
         ],
     },

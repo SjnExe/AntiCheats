@@ -2,6 +2,7 @@ import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/serve
 import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer } from './playerDataManager.js';
 import { world, system } from '@minecraft/server';
+import { getConfig } from './configManager.js';
 
 const uiActionFunctions = {};
 
@@ -163,14 +164,17 @@ uiActionFunctions['showMuteForm'] = (player, context) => {
 };
 
 uiActionFunctions['showRules'] = (player) => {
-    const rules = [
-        'Rule 1: Be respectful to all players and staff.',
-        'Rule 2: No cheating, exploiting, or using unauthorized modifications.',
-        'Rule 3: Do not spam chat or use excessive caps/symbols.',
-        'Rule 4: Follow instructions from server administrators and moderators.',
-        'Rule 5: Keep chat appropriate and avoid offensive language.',
-        'Rule 6: Have fun and contribute to a positive community!',
-    ];
+    const config = getConfig();
+    const rules = config.serverInfo.rules;
+
+    if (!rules || rules.length === 0) {
+        const form = new MessageFormData()
+            .title('§lServer Rules§r')
+            .body('§cThe server rules have not been configured.')
+            .button1('§l§cClose§r');
+        form.show(player).catch(e => console.error(`[UIManager] showRules promise rejected: ${e.stack}`));
+        return;
+    }
 
     const form = new MessageFormData()
         .title('§lServer Rules§r')
