@@ -6,7 +6,7 @@ import { getConfig } from './configManager.js';
  */
 export function debugLog(message) {
     const config = getConfig();
-    if (config.debug) {
+    if (config && config.debug) {
         console.log(message);
     }
 }

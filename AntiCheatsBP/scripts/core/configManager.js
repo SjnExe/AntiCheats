@@ -34,7 +34,7 @@ export function loadConfig() {
  * @returns {object} The loaded configuration object.
  */
 export function getConfig() {
-    return loadedConfig;
+    return loadedConfig || defaultConfig;
 }
 
 /**

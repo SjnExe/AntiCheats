@@ -26,8 +26,8 @@ function mainTick() {
 
 // Run the initialization logic on the next tick after the script is loaded.
 system.run(() => {
-    debugLog('[AntiCheats] Initializing addon...');
     loadConfig();
+    debugLog('[AntiCheats] Initializing addon...');
     loadPunishments();
     rankManager.initialize();
 
