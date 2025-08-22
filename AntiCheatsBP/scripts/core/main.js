@@ -3,7 +3,7 @@ import { loadConfig, getConfig } from './configManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
-import { getPunishment } from './punishmentManager.js';
+import { getPunishment, loadPunishments } from './punishmentManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 
@@ -28,6 +28,7 @@ function mainTick() {
 system.run(() => {
     debugLog('[AntiCheats] Initializing addon...');
     loadConfig();
+    loadPunishments();
     rankManager.initialize();
 
     import('../modules/commands/index.js').then(() => {

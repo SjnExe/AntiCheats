@@ -99,8 +99,5 @@ export function removePunishment(playerId) {
     }
 }
 
-// Load punishments on startup
-system.run(loadPunishments);
-
 // Periodically save punishments
 system.runInterval(savePunishments, SAVE_INTERVAL_TICKS);
