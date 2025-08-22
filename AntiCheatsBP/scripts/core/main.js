@@ -1,4 +1,4 @@
-import { world, system } from '@minecraft/server';
+import { world, system, GameMode } from '@minecraft/server';
 import { loadConfig, getConfig } from './configManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
@@ -20,6 +20,14 @@ function mainTick() {
             pData.permissionLevel = currentRank.permissionLevel;
             debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${currentRank.name}.`);
             player.sendMessage(`§aYour rank has been updated to ${currentRank.name}.`);
+        }
+
+        // Creative mode detection
+        const config = getConfig();
+        if (player.getGameMode() === GameMode.Creative && pData.permissionLevel > 1) {
+            player.setGameMode(config.defaultGamemode);
+            player.sendMessage("§cYou are not allowed to be in creative mode.");
+            debugLog(`[AntiCheats] Detected ${player.name} in creative mode without permission. Switched to ${config.defaultGamemode}.`);
         }
     }
 }

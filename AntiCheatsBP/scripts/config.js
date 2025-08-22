@@ -4,6 +4,7 @@ export const config = {
     ownerPlayerName: 'YourNameHere',
     adminTag: 'admin',
     commandPrefix: '!',
+    defaultGamemode: 'survival',
     debug: true,
     acGlobalNotificationsDefaultOn: true,
 
