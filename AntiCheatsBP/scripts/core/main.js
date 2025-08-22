@@ -3,7 +3,7 @@ import { loadConfig, getConfig } from './configManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
-import { getBanInfo } from './banManager.js';
+import { getPunishment } from './punishmentManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 
@@ -44,9 +44,12 @@ system.run(() => {
 world.beforeEvents.chatSend.subscribe((eventData) => {
     const player = eventData.sender;
 
-    if (player.hasTag('muted')) {
+    const punishment = getPunishment(player.id);
+    if (punishment?.type === 'mute') {
         eventData.cancel = true;
-        player.sendMessage('§cYou are muted and cannot send messages.');
+        const remainingTime = Math.round((punishment.expires - Date.now()) / 1000);
+        const durationText = punishment.expires === Infinity ? 'permanently' : `for another ${remainingTime} seconds`;
+        player.sendMessage(`§cYou are muted ${durationText}. Reason: ${punishment.reason}`);
         return;
     }
 
@@ -71,10 +74,13 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
 world.afterEvents.playerSpawn.subscribe(async (event) => {
     const { player, initialSpawn } = event;
 
-    const banInfo = getBanInfo(player.name);
-    if (banInfo) {
+    const punishment = getPunishment(player.id);
+    if (punishment?.type === 'ban') {
+        const remainingTime = Math.round((punishment.expires - Date.now()) / 1000);
+        const durationText = punishment.expires === Infinity ? 'permanently' : `for another ${remainingTime} seconds`;
+
         system.run(() => {
-            player.runCommandAsync(`kick "${player.name}" You are banned. Reason: ${banInfo.reason}`);
+            player.runCommandAsync(`kick "${player.name}" You are banned ${durationText}. Reason: ${punishment.reason}`);
         });
         return;
     }
