@@ -13,13 +13,6 @@ function mainTick() {
         const pData = playerDataManager.getPlayer(player.id);
         if (!pData) continue;
 
-        // Update player name if it has changed
-        if (pData.name !== player.name) {
-            console.log(`[AntiCheats] Player name change detected for ${pData.name} -> ${player.name}.`);
-            pData.name = player.name;
-        }
-
-        // Rank update check
         const currentRank = rankManager.getPlayerRank(player, getConfig());
         if (pData.rankId !== currentRank.id) {
             pData.rankId = currentRank.id;
@@ -34,7 +27,6 @@ function mainTick() {
 system.run(() => {
     console.log('[AntiCheats] Initializing addon...');
     loadConfig();
-    playerDataManager.loadAllPlayerData();
     rankManager.initialize();
 
     import('../modules/commands/index.js').then(() => {
@@ -101,22 +93,13 @@ world.afterEvents.playerLeave.subscribe((event) => {
 });
 
 // Handle the custom admin panel item being used
-if (world.afterEvents.itemUse) {
-    world.afterEvents.itemUse.subscribe((event) => {
-        const { source: player, itemStack } = event;
-        if (itemStack.typeId === 'ac:panel') {
-            // Player data is still needed for button permissions inside the panel
-            const pData = playerDataManager.getPlayer(player.id);
-            if (pData) {
-                showPanel(player, 'mainAdminPanel');
-            }
+world.afterEvents.itemUse.subscribe((event) => {
+    const { source: player, itemStack } = event;
+    if (itemStack.typeId === 'ac:panel') {
+        // Player data is still needed for button permissions inside the panel
+        const pData = playerDataManager.getPlayer(player.id);
+        if (pData) {
+            showPanel(player, 'mainAdminPanel');
         }
-    });
-} else {
-    console.warn("[AntiCheats] world.afterEvents.itemUse is not available. The admin panel item will not work.");
-}
-
-// Save all player data when the world is saved
-world.beforeEvents.worldSave.subscribe((eventData) => {
-    playerDataManager.saveAllPlayerData();
+    }
 });
