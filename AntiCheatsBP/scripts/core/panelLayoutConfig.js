@@ -39,7 +39,7 @@ export const panelDefinitions = {
             {
                 id: 'rules',
                 text: 'Rules',
-                icon: 'textures/ui/book_icon',
+                icon: 'textures/items/book_normal',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showRules',
