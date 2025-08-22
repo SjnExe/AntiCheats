@@ -7,6 +7,22 @@ import { getPunishment, loadPunishments } from './punishmentManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 
+/**
+ * Checks a player's gamemode and corrects it if they are in creative without permission.
+ * @param {import('@minecraft/server').Player} player The player to check.
+ */
+function checkPlayerGamemode(player) {
+    const config = getConfig();
+    const pData = playerDataManager.getPlayer(player.id);
+    if (!pData) return;
+
+    if (player.getGameMode() === GameMode.Creative && pData.permissionLevel > 1) {
+        player.setGameMode(config.defaultGamemode);
+        player.sendMessage("§cYou are not allowed to be in creative mode.");
+        debugLog(`[AntiCheats] Detected ${player.name} in creative mode without permission. Switched to ${config.defaultGamemode}.`);
+    }
+}
+
 // This function will contain the main logic of the addon that runs continuously.
 function mainTick() {
     // Rank update check
@@ -21,14 +37,6 @@ function mainTick() {
             debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${currentRank.name}.`);
             player.sendMessage(`§aYour rank has been updated to ${currentRank.name}.`);
         }
-
-        // Creative mode detection
-        const config = getConfig();
-        if (player.getGameMode() === GameMode.Creative && pData.permissionLevel > 1) {
-            player.setGameMode(config.defaultGamemode);
-            player.sendMessage("§cYou are not allowed to be in creative mode.");
-            debugLog(`[AntiCheats] Detected ${player.name} in creative mode without permission. Switched to ${config.defaultGamemode}.`);
-        }
     }
 }
 
@@ -38,6 +46,26 @@ system.run(() => {
     debugLog('[AntiCheats] Initializing addon...');
     loadPunishments();
     rankManager.initialize();
+
+    const config = getConfig();
+
+    // Setup Creative Detection
+    if (config.creativeDetection.enabled) {
+        if (config.defaultGamemode === 'creative') {
+            console.warn('[AntiCheats] Creative detection is disabled because the default gamemode is set to creative, which would cause a loop.');
+        } else {
+            // Run periodic check
+            if (config.creativeDetection.periodicCheck.enabled) {
+                system.runInterval(() => {
+                    for (const player of world.getAllPlayers()) {
+                        checkPlayerGamemode(player);
+                    }
+                }, config.creativeDetection.periodicCheck.intervalSeconds * 20);
+            }
+            // The on-join check is handled in the playerSpawn event
+        }
+    }
+
 
     import('../modules/commands/index.js').then(() => {
         debugLog('[AntiCheats] Commands loaded.');
@@ -83,6 +111,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
 world.afterEvents.playerSpawn.subscribe(async (event) => {
     const { player, initialSpawn } = event;
 
+    // Ban check
     const punishment = getPunishment(player.id);
     if (punishment?.type === 'ban') {
         const remainingTime = Math.round((punishment.expires - Date.now()) / 1000);
@@ -92,6 +121,12 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
             player.runCommandAsync(`kick "${player.name}" You are banned ${durationText}. Reason: ${punishment.reason}`);
         });
         return;
+    }
+
+    // Creative detection on join
+    const config = getConfig();
+    if (config.creativeDetection.enabled && config.defaultGamemode !== 'creative') {
+        checkPlayerGamemode(player);
     }
 
     if (initialSpawn) {

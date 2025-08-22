@@ -31,6 +31,13 @@ export const config = {
         startingBalance: 0,
         baltopLimit: 10,
     },
+    creativeDetection: {
+        enabled: true,
+        periodicCheck: {
+            enabled: true,
+            intervalSeconds: 300, // 5 minutes
+        },
+    },
     playerInfo: {
         enableWelcomer: true,
         welcomeMessage: 'Welcome, {playerName}, to our amazing server!',
