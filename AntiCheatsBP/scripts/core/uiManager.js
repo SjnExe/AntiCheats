@@ -49,13 +49,25 @@ export function showPanel(player, panelId, context = {}) {
 
     const form = new ActionFormData().title(title);
 
-    const validItems = panelDef.items
+    const menuItems = panelDef.items
         .filter(item => pData.permissionLevel <= item.permissionLevel)
         .sort((a, b) => (a.sortId || 0) - (b.sortId || 0));
 
-    console.log(`[UIManager] Found ${validItems.length} valid buttons for player's permission level.`);
+    // Add a back button if this is not a top-level panel
+    if (panelDef.parentPanelId) {
+        menuItems.unshift({
+            id: '__back__',
+            text: '§l§8< Back',
+            icon: 'textures/ui/icon_left_arrow',
+            permissionLevel: 1024,
+            actionType: 'openPanel', // This is a placeholder, the logic is handled specially
+            actionValue: panelDef.parentPanelId,
+        });
+    }
 
-    for (const item of validItems) {
+    console.log(`[UIManager] Found ${menuItems.length} valid buttons for player's permission level.`);
+
+    for (const item of menuItems) {
         form.button(item.text, item.icon);
     }
 
@@ -66,7 +78,7 @@ export function showPanel(player, panelId, context = {}) {
             return;
         }
 
-        const selectedItem = validItems[response.selection];
+        const selectedItem = menuItems[response.selection];
         if (!selectedItem) {
             console.error('[UIManager] Selected item was not found in validItems array.');
             return;
@@ -74,8 +86,14 @@ export function showPanel(player, panelId, context = {}) {
 
         console.log(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
 
+        // Special handling for the back button
+        if (selectedItem.id === '__back__') {
+            showPanel(player, selectedItem.actionValue, context); // Pass context back
+            return;
+        }
+
         if (selectedItem.actionType === 'openPanel') {
-            showPanel(player, selectedItem.actionValue);
+            showPanel(player, selectedItem.actionValue, context);
         } else if (selectedItem.actionType === 'functionCall') {
             const actionFunction = uiActionFunctions[selectedItem.actionValue];
             if (actionFunction) {
@@ -179,9 +197,14 @@ uiActionFunctions['showRules'] = (player) => {
     const form = new MessageFormData()
         .title('§lServer Rules§r')
         .body(rules.join('\n\n'))
-        .button1('§l§cClose§r');
+        .button1('Back')
+        .button2('Close');
 
-    form.show(player).catch(e => console.error(`[UIManager] showRules promise rejected: ${e.stack}`));
+    form.show(player).then(response => {
+        if (response.selection === 0) { // Back button
+            showPanel(player, 'mainAdminPanel');
+        }
+    }).catch(e => console.error(`[UIManager] showRules promise rejected: ${e.stack}`));
 };
 
 uiActionFunctions['showStatus'] = (player) => {
@@ -196,7 +219,12 @@ uiActionFunctions['showStatus'] = (player) => {
     const form = new MessageFormData()
         .title('§lServer Status§r')
         .body(statusText)
-        .button1('§l§cClose§r');
+        .button1('Back')
+        .button2('Close');
 
-    form.show(player).catch(e => console.error(`[UIManager] showStatus promise rejected: ${e.stack}`));
+    form.show(player).then(response => {
+        if (response.selection === 0) { // Back button
+            showPanel(player, 'mainAdminPanel');
+        }
+    }).catch(e => console.error(`[UIManager] showStatus promise rejected: ${e.stack}`));
 };
