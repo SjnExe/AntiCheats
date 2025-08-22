@@ -42,16 +42,22 @@ commandManager.register({
             return;
         }
 
-        const durationString = args[1] || 'perm';
-        const reason = args.slice(2).join(' ') || 'No reason provided';
-
+        let durationString = 'perm';
+        let reason;
         let durationMs = Infinity;
-        if (durationString.toLowerCase() !== 'perm') {
-            durationMs = parseDuration(durationString);
-            if (durationMs === 0) {
-                player.sendMessage(`§cInvalid duration format. Use 'perm' or a format like 10m, 2h, 7d.`);
-                return;
+
+        if (args.length > 1) {
+            const parsedMs = parseDuration(args[1]);
+            if (parsedMs > 0) {
+                durationString = args[1];
+                durationMs = parsedMs;
+                reason = args.slice(2).join(' ') || 'No reason provided.';
+            } else {
+                // Invalid duration format, treat it as part of the reason
+                reason = args.slice(1).join(' ');
             }
+        } else {
+            reason = 'No reason provided.';
         }
 
         const expires = durationMs === Infinity ? Infinity : Date.now() + durationMs;
