@@ -25,7 +25,7 @@
  */
 export const panelDefinitions = {
     mainAdminPanel: {
-        title: '§l§bAdmin Panel§r',
+        title: '§l§bPanel§r',
         parentPanelId: null,
         items: [
             {

@@ -16,12 +16,16 @@ commandManager.register({
         }
 
         const allData = playerDataManager.getAllPlayerData();
+        const allPlayers = world.getAllPlayers();
 
-        const leaderboard = [...allData.values()]
-            .map(pData => ({
-                name: pData.name,
-                balance: pData.balance,
-            }))
+        const leaderboard = [...allData.entries()]
+            .map(([playerId, pData]) => {
+                const player = allPlayers.find(p => p.id === playerId);
+                return {
+                    name: player ? player.name : "Unknown",
+                    balance: pData.balance,
+                };
+            })
             .sort((a, b) => b.balance - a.balance)
             .slice(0, config.economy.baltopLimit);
 
