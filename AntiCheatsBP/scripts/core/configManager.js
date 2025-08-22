@@ -1,5 +1,6 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
+import { debugLog } from './logger.js';
 
 let loadedConfig = null;
 
@@ -8,13 +9,13 @@ let loadedConfig = null;
  * It merges the saved config with the default config to handle new additions.
  */
 export function loadConfig() {
-    console.log('[ConfigManager] Loading configuration...');
+    debugLog('[ConfigManager] Loading configuration...');
     const configStr = world.getDynamicProperty('anticheats:config');
 
     if (configStr === undefined) {
         world.setDynamicProperty('anticheats:config', JSON.stringify(defaultConfig));
         loadedConfig = defaultConfig;
-        console.log('[ConfigManager] No existing config found. Created a new one.');
+        debugLog('[ConfigManager] No existing config found. Created a new one.');
     } else {
         try {
             const savedConfig = JSON.parse(configStr);
@@ -22,7 +23,7 @@ export function loadConfig() {
             loadedConfig = { ...defaultConfig, ...savedConfig };
             // Save the potentially updated config back to the world
             world.setDynamicProperty('anticheats:config', JSON.stringify(loadedConfig));
-            console.log('[ConfigManager] Existing config loaded and merged.');
+            debugLog('[ConfigManager] Existing config loaded and merged.');
         } catch (error) {
             console.error('[ConfigManager] Failed to parse saved config. Loading default config instead.', error);
             loadedConfig = defaultConfig;
@@ -40,4 +41,18 @@ export function getConfig() {
         loadConfig();
     }
     return loadedConfig;
+}
+
+/**
+ * Updates a specific key in the configuration and saves it.
+ * @param {string} key The configuration key to update.
+ * @param {*} value The new value for the key.
+ */
+export function updateConfig(key, value) {
+    if (!loadedConfig) {
+        loadConfig();
+    }
+    loadedConfig[key] = value;
+    world.setDynamicProperty('anticheats:config', JSON.stringify(loadedConfig));
+    debugLog(`[ConfigManager] Config updated: ${key} = ${value}`);
 }

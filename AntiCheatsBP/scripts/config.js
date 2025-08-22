@@ -4,7 +4,7 @@ export const config = {
     ownerPlayerName: 'YourNameHere',
     adminTag: 'admin',
     commandPrefix: '!',
-    enableDebugLogging: false,
+    debug: true,
     acGlobalNotificationsDefaultOn: true,
 
     // --- Player Tags ---

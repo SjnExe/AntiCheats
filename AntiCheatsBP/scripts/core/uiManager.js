@@ -3,11 +3,12 @@ import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer } from './playerDataManager.js';
 import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
+import { debugLog } from './logger.js';
 
 const uiActionFunctions = {};
 
 export function showPanel(player, panelId, context = {}) {
-    console.log(`[UIManager] Attempting to show panel "${panelId}" to ${player.name} with context: ${JSON.stringify(context)}`);
+    debugLog(`[UIManager] Attempting to show panel "${panelId}" to ${player.name} with context: ${JSON.stringify(context)}`);
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) {
         console.error(`[UIManager] Panel with ID "${panelId}" not found.`);
@@ -18,7 +19,7 @@ export function showPanel(player, panelId, context = {}) {
     if (context.targetPlayer) {
         title = title.replace('{playerName}', context.targetPlayer.name);
     }
-    console.log(`[UIManager] Found panel definition for "${panelId}". Title: ${title}`);
+    debugLog(`[UIManager] Found panel definition for "${panelId}". Title: ${title}`);
 
     const pData = getPlayer(player.id);
     if (!pData) {
@@ -65,16 +66,16 @@ export function showPanel(player, panelId, context = {}) {
         });
     }
 
-    console.log(`[UIManager] Found ${menuItems.length} valid buttons for player's permission level.`);
+    debugLog(`[UIManager] Found ${menuItems.length} valid buttons for player's permission level.`);
 
     for (const item of menuItems) {
         form.button(item.text, item.icon);
     }
 
     form.show(player).then(response => {
-        console.log('[UIManager] form.show() promise resolved.');
+        debugLog('[UIManager] form.show() promise resolved.');
         if (response.canceled) {
-            console.log('[UIManager] Player cancelled the form.');
+            debugLog('[UIManager] Player cancelled the form.');
             return;
         }
 
@@ -84,7 +85,7 @@ export function showPanel(player, panelId, context = {}) {
             return;
         }
 
-        console.log(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
+        debugLog(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
 
         // Special handling for the back button
         if (selectedItem.id === '__back__') {

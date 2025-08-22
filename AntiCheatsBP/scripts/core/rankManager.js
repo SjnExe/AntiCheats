@@ -1,4 +1,5 @@
 import { rankDefinitions, defaultPermissionLevel } from './ranksConfig.js';
+import { debugLog } from './logger.js';
 
 let sortedRanks = [];
 
@@ -7,7 +8,7 @@ let sortedRanks = [];
  */
 export function initialize() {
     sortedRanks = [...rankDefinitions].sort((a, b) => a.permissionLevel - b.permissionLevel);
-    console.log(`[RankManager] Initialized ${sortedRanks.length} ranks.`);
+    debugLog(`[RankManager] Initialized ${sortedRanks.length} ranks.`);
 }
 
 /**

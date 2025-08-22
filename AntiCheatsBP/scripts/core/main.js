@@ -5,6 +5,7 @@ import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
 import { getBanInfo } from './banManager.js';
 import { showPanel } from './uiManager.js';
+import { debugLog } from './logger.js';
 
 // This function will contain the main logic of the addon that runs continuously.
 function mainTick() {
@@ -17,7 +18,7 @@ function mainTick() {
         if (pData.rankId !== currentRank.id) {
             pData.rankId = currentRank.id;
             pData.permissionLevel = currentRank.permissionLevel;
-            console.log(`[AntiCheats] Player ${player.name}'s rank updated to ${currentRank.name}.`);
+            debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${currentRank.name}.`);
             player.sendMessage(`§aYour rank has been updated to ${currentRank.name}.`);
         }
     }
@@ -25,18 +26,18 @@ function mainTick() {
 
 // Run the initialization logic on the next tick after the script is loaded.
 system.run(() => {
-    console.log('[AntiCheats] Initializing addon...');
+    debugLog('[AntiCheats] Initializing addon...');
     loadConfig();
     rankManager.initialize();
 
     import('../modules/commands/index.js').then(() => {
-        console.log('[AntiCheats] Commands loaded.');
+        debugLog('[AntiCheats] Commands loaded.');
     }).catch(error => {
         console.error(`[AntiCheats] Failed to load commands: ${error.stack}`);
     });
 
     system.runInterval(mainTick, 20);
-    console.log('[AntiCheats] Addon initialized successfully.');
+    debugLog('[AntiCheats] Addon initialized successfully.');
 });
 
 // Handle muted players, commands, and chat formatting
@@ -83,13 +84,13 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         const rank = rankManager.getPlayerRank(player, getConfig());
         pData.rankId = rank.id;
         pData.permissionLevel = rank.permissionLevel;
-        console.log(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);
+        debugLog(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);
     }
 });
 
 world.afterEvents.playerLeave.subscribe((event) => {
     playerDataManager.removePlayer(event.playerId);
-    console.log(`[AntiCheats] Player ${event.playerName} left.`);
+    debugLog(`[AntiCheats] Player ${event.playerName} left.`);
 });
 
 // Handle the custom admin panel item being used
