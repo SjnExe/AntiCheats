@@ -109,7 +109,7 @@ export const panelDefinitions = {
             {
                 id: 'mutePlayer',
                 text: 'Mute',
-                icon: 'textures/ui/chat_bubble',
+                icon: 'textures/ui/mute_on.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showMuteForm',
@@ -117,7 +117,7 @@ export const panelDefinitions = {
             {
                 id: 'unmutePlayer',
                 text: 'Unmute',
-                icon: 'textures/ui/check',
+                icon: 'textures/ui/mute_off.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showUnmuteForm',
