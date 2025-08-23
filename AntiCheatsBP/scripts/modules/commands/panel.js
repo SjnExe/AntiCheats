@@ -1,5 +1,5 @@
 import { commandManager } from './commandManager.js';
-import { ItemStack, Enchantment, EnchantmentTypes } from '@minecraft/server';
+import { ItemStack } from '@minecraft/server';
 
 commandManager.register({
     name: 'panel',
@@ -15,12 +15,12 @@ commandManager.register({
             }
 
             const panelItem = new ItemStack('ac:panel', 1);
-            const enchantable = panelItem.getComponent('minecraft:enchantable');
-            enchantable.addEnchantment(new Enchantment(EnchantmentTypes.get('vanishing'), 1));
+            // const enchantable = panelItem.getComponent('minecraft:enchantable');
+            // enchantable.addEnchantment(new Enchantment(EnchantmentTypes.get('vanishing'), 1));
 
             inventory.container.addItem(panelItem);
 
-            player.sendMessage('§aYou have been given the panel item with Curse of Vanishing.');
+            player.sendMessage('§aYou have been given the panel item.');
         } catch (e) {
             player.sendMessage(`§cFailed to give the panel item. Please report this to an admin. Error: ${e.stack}`);
             console.error(`[PanelCommand] Failed to give panel item: ${e.stack}`);
