@@ -101,7 +101,7 @@ export const panelDefinitions = {
             {
                 id: 'kickPlayer',
                 text: 'Kick',
-                icon: 'textures/ui/warning_glyph',
+                icon: 'textures/ui/icon_import.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showKickForm',
@@ -125,7 +125,7 @@ export const panelDefinitions = {
             {
                 id: 'freezePlayer',
                 text: 'Freeze',
-                icon: 'textures/ui/icon_lock',
+                icon: 'textures/ui/lock_color.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'toggleFreeze',
