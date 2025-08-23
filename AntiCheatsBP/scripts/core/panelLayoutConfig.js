@@ -149,7 +149,7 @@ export const panelDefinitions = {
             {
                 id: 'teleportToPlayer',
                 text: 'Teleport to Player',
-                icon: 'textures/items/ender_pearl',
+                icon: 'textures/ui/flyingascend.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'teleportTo',
@@ -157,7 +157,7 @@ export const panelDefinitions = {
             {
                 id: 'teleportPlayerHere',
                 text: 'Teleport Player Here',
-                icon: 'textures/items/ender_pearl',
+                icon: 'textures/ui/flyingdescend.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'teleportHere',
