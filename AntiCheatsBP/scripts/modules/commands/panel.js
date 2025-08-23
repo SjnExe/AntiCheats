@@ -1,5 +1,5 @@
 import { commandManager } from './commandManager.js';
-import { ItemStack, Enchantment, EnchantmentType } from '@minecraft/server';
+import { ItemStack, Enchantment, EnchantmentTypes } from '@minecraft/server';
 
 commandManager.register({
     name: 'panel',
@@ -16,7 +16,7 @@ commandManager.register({
 
             const panelItem = new ItemStack('ac:panel', 1);
             const enchantable = panelItem.getComponent('minecraft:enchantable');
-            enchantable.addEnchantment(new Enchantment(EnchantmentType.get('vanishing'), 1));
+            enchantable.addEnchantment(new Enchantment(EnchantmentTypes.get('vanishing'), 1));
 
             inventory.container.addItem(panelItem);
 
