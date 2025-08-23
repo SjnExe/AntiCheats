@@ -62,7 +62,7 @@ export function showPanel(player, panelId, context = {}) {
         });
 
         // Add a back button
-        form.button('§l§8< Back');
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
 
         playerList.forEach(p => form.button(p.displayName, p.icon));
 
@@ -101,7 +101,7 @@ export function showPanel(player, panelId, context = {}) {
         });
 
         // Add a back button
-        form.button('§l§8< Back');
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
 
         playerList.forEach(p => form.button(p.displayName)); // No icons needed here
 
@@ -147,7 +147,7 @@ export function showPanel(player, panelId, context = {}) {
         menuItems.unshift({
             id: '__back__',
             text: '§l§8< Back',
-            icon: 'textures/ui/arrow_left',
+            icon: 'textures/gui/controls/left.png',
             permissionLevel: 1024,
             actionType: 'openPanel', // This is a placeholder, the logic is handled specially
             actionValue: panelDef.parentPanelId,

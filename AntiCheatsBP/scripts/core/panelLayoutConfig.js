@@ -47,7 +47,7 @@ export const panelDefinitions = {
             {
                 id: 'rules',
                 text: 'Rules',
-                icon: 'textures/items/book_normal',
+                icon: 'textures/items/book_enchanted.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showRules',
