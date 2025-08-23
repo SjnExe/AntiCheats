@@ -21,27 +21,48 @@ commandManager.register({
             return;
         }
 
-        const inventory = targetPlayer.getComponent('inventory').container;
-        let inventoryDetails = `§6Inventory of ${targetPlayer.name}:\n`;
-        let itemCount = 0;
+        const ITEMS_PER_PAGE = 15;
 
-        for (let i = 0; i < inventory.size; i++) {
-            const item = inventory.getItem(i);
-            if (item) {
-                itemCount++;
-                inventoryDetails += `§eSlot ${i}: §f${item.typeId.replace('minecraft:', '')} §7x${item.amount}\n`;
+        function showInventoryPage(viewingPlayer, target, page = 0) {
+            const inventory = target.getComponent('inventory').container;
+            const items = [];
+            for (let i = 0; i < inventory.size; i++) {
+                const item = inventory.getItem(i);
+                if (item) {
+                    items.push(`§eSlot ${i}: §f${item.typeId.replace('minecraft:', '')} §7x${item.amount}`);
+                }
             }
+
+            if (items.length === 0) {
+                new MessageFormData()
+                    .title(`Inventory: ${target.name}`)
+                    .body('§7(Inventory is empty)')
+                    .button1('§cClose')
+                    .show(viewingPlayer).catch(e => console.error(`[InvSee] Empty inv form promise rejected: ${e.stack}`));
+                return;
+            }
+
+            const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+            const startIndex = page * ITEMS_PER_PAGE;
+            const pageItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+            const form = new MessageFormData()
+                .title(`Inventory: ${target.name} (Page ${page + 1}/${totalPages})`)
+                .body(pageItems.join('\n'))
+                .button1('Close');
+
+            if (page + 1 < totalPages) {
+                form.button2('Next Page');
+            }
+
+            form.show(viewingPlayer).then(response => {
+                if (response.canceled || response.selection === 0) return;
+                if (response.selection === 1) {
+                    showInventoryPage(viewingPlayer, target, page + 1);
+                }
+            }).catch(e => console.error(`[InvSee] form.show promise rejected: ${e.stack}`));
         }
 
-        if (itemCount === 0) {
-            inventoryDetails += '§7(Inventory is empty)';
-        }
-
-        const form = new MessageFormData()
-            .title(`Inventory: ${targetPlayer.name}`)
-            .body(inventoryDetails.trim())
-            .button1('§cClose');
-
-        form.show(player);
+        showInventoryPage(player, targetPlayer, 0);
     },
 });

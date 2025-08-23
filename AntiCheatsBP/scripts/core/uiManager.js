@@ -10,7 +10,6 @@ import { playSound } from './utils.js';
 const uiActionFunctions = {};
 
 export function showPanel(player, panelId, context = {}) {
-    playSound(player, 'ui.button.click');
     debugLog(`[UIManager] Attempting to show panel "${panelId}" to ${player.name} with context: ${JSON.stringify(context)}`);
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) {
@@ -54,7 +53,6 @@ export function showPanel(player, panelId, context = {}) {
 
         // Add a back button
         form.button('§l§8< Back');
-        playSound(player, 'ui.button.click');
 
         playerList.forEach(p => form.button(p.displayName));
 

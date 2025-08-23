@@ -80,7 +80,7 @@ export const panelDefinitions = {
             {
                 id: 'kickPlayer',
                 text: 'Kick Player',
-                icon: 'textures/ui/hammer_l.png',
+                icon: 'textures/ui/icon_hammer', // New kick icon
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showKickForm',
@@ -88,7 +88,7 @@ export const panelDefinitions = {
             {
                 id: 'banPlayer',
                 text: 'Ban Player',
-                icon: 'textures/ui/icon_lock',
+                icon: 'textures/ui/hammer_l.png', // Old kick icon
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showBanForm',
@@ -96,7 +96,7 @@ export const panelDefinitions = {
             {
                 id: 'mutePlayer',
                 text: 'Mute Player',
-                icon: 'textures/ui/speaker_off',
+                icon: 'textures/ui/speaker_off_light', // New mute icon
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showMuteForm',
@@ -104,7 +104,7 @@ export const panelDefinitions = {
             {
                 id: 'unmutePlayer',
                 text: 'Unmute Player',
-                icon: 'textures/ui/speaker_on',
+                icon: 'textures/ui/speaker_on_light', // New unmute icon
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showUnmuteForm',
@@ -112,7 +112,7 @@ export const panelDefinitions = {
             {
                 id: 'freezePlayer',
                 text: 'Freeze Player',
-                icon: 'textures/ui/debug_glyph_color',
+                icon: 'textures/ui/icon_lock', // Old ban icon
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'toggleFreeze',
