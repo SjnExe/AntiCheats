@@ -1,8 +1,24 @@
 import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
+import { getConfig } from '../../core/configManager.js';
 
 function showCategorizedHelp(player, userPermissionLevel) {
-    const availableCommands = [...commandManager.commands.values()].filter(cmd => userPermissionLevel <= cmd.permissionLevel);
+    const config = getConfig();
+    const availableCommands = [...commandManager.commands.values()].filter(cmd => {
+        // Check permission level
+        if (userPermissionLevel > cmd.permissionLevel) {
+            return false;
+        }
+
+        // Check if the command is explicitly disabled in config
+        const commandSetting = config.commandSettings?.[cmd.name];
+        if (commandSetting && commandSetting.enabled === false) {
+            return false;
+        }
+
+        // If not disabled or not in config, it's available
+        return true;
+    });
 
     if (availableCommands.length === 0) {
         player.sendMessage('§cYou do not have permission to use any commands.');
