@@ -5,7 +5,7 @@ export const config = {
     adminTag: 'admin',
     commandPrefix: '!',
     defaultGamemode: 'survival',
-    debug: true,
+    debug: false,
     acGlobalNotificationsDefaultOn: true,
 
     // --- Player Tags ---
