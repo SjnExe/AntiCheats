@@ -5,14 +5,7 @@ const commandFiles = [
     'help.js', 'clearchat.js', 'kick.js', 'mute.js', 'ban.js', 'vanish.js', 'reload.js',
     'gmc.js', 'gms.js', 'gma.js', 'gmsp.js', 'sethome.js', 'home.js', 'delhome.js', 'homes.js',
     'tpa.js', 'tpahere.js', 'tpaccept.js', 'tpadeny.js', 'tpacancel.js', 'balance.js', 'pay.js',
-    'baltop.js', 'kit.js', 'clear.js', 'ecwipe.js',
-    // Debugging files
-    'test1.js',
-    'test2.js',
-    'test3.js',
-    'test4.js',
-    // Keep panel.js last for easier debugging if it fails
-    'panel.js'
+    'baltop.js', 'kit.js', 'clear.js', 'ecwipe.js', 'panel.js'
 ];
 
 async function loadCommands() {
