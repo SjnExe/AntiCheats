@@ -43,7 +43,7 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 
 - **Scripting Power:** Built entirely with the Minecraft Scripting API, offering flexibility and complex detection logic not always possible with traditional methods.
 - **Comprehensive Detection:** A wide array of checks covering movement, combat, world interactions, and player exploits.
-- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`!panel`) and extensive text commands. The `!ui` command is a convenient alias.
+- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`!panel`) and extensive text commands. The `!ui` command is a convenient alias. Features a detailed Player Management panel with sorting, role display, and a wide array of actions.
 - **Highly Customizable:** Fine-tune almost every aspect, from detection sensitivity to automated actions, to perfectly suit your server's needs.
 - **Active Development:** Continuously updated with new features, improvements, and compatibility for the latest Minecraft versions.
 - **Open & Documented:** With clear documentation and an open codebase, understand how it works and even contribute!
@@ -63,7 +63,12 @@ This addon is packed with features to keep your server clean:
   - **Player Behavior:** Anti-Gamemode Creative (AntiGMC), NameSpoof, Self-Hurt, Inventory Modifications.
   - **Chat:** Spam (fast message, max words, content repeat), Swear/Advertising filtering, CAPS/Symbol abuse, Unicode abuse, Impersonation.
 - 🛠️ **Powerful Admin & Moderation Tools:**
-  - Intuitive in-game UI (`!panel` or its alias `!ui`) for player management, server settings, and log viewing.
+  - Intuitive in-game UI (`!panel` or its alias `!ui`) for server administration.
+  - **Enhanced Player Management Panel:**
+    - View online players, sorted by rank and name.
+    - Player names are clearly marked with `(Owner)`, `(Admin)`, and `(You)` suffixes.
+    - Perform a wide range of actions: Kick, Ban, Mute/Unmute, Freeze, View/Clear Inventory, Teleport.
+  - **New Commands:** `!clear` (clear inventory), `!ecwipe` (wipe ender chest), `!invsee` (view inventory).
   - Extensive text commands for all administrative functions (Note: the `!` prefix is configurable).
 - 💾 **Persistent Player Data Management:**
   - Flags, violation records, mutes, and bans are saved across player sessions using dynamic properties.

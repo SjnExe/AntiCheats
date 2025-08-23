@@ -45,6 +45,10 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
   - **Syntax:** `!ban <playerName> [duration] [reason]`
   - **Description:** Bans a player. Duration e.g., `30m`, `2h`, `7d`, `perm`.
   - **Permission:** Admin
+- **`!clear`**
+  - **Syntax:** `!clear [playerName]`
+  - **Description:** Clears your own inventory, or the inventory of another player (Admin only).
+  - **Permission:** Member (self), Admin (others)
 - **`!clearchat`** (Alias: `!clrchat`)
   - **Syntax:** `!clearchat`
   - **Description:** Clears the global chat for all players.
@@ -60,6 +64,10 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
 - **`!debug`**
   - **Syntax:** `!debug <subcommand> [args...]`
   - **Description:** Accesses debugging features and diagnostic information. Use `!debug help` for subcommands.
+  - **Permission:** Admin
+- **`!ecwipe`**
+  - **Syntax:** `!ecwipe <playerName>`
+  - **Description:** Clears the Ender Chest of the specified player.
   - **Permission:** Admin
 - **`!endlock`** (Alias: `!el`)
   - **Syntax:** `!endlock <on|off|status>`
