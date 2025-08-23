@@ -134,8 +134,12 @@ The addon includes a comprehensive suite of chat checks to maintain a clean and 
 ### A. Core Admin Tools
 
 - **Intuitive Admin Panel:** Accessible via `!panel`. Provides a graphical user interface whose content and available actions vary based on user permissions.
-  - For staff: Viewing/managing online players, server management, log viewing, etc. The structure and items of this panel are highly configurable via `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
-  - For regular players: Shows user-specific info like stats, rules, links (previously `!uinfo`).
+  - **Enhanced Player Management:** The panel provides a list of online players, sorted by rank and name. Each player's name is clearly marked with `(Owner)`, `(Admin)`, and `(You)` suffixes for easy identification. Selecting a player opens a dedicated menu with a wide range of moderation actions:
+    - Kick, Ban, Mute, and Unmute players.
+    - Freeze and Vanish players.
+    - View and Clear player inventories.
+    - Teleport to a player or teleport a player to you.
+  - For regular players: Shows user-specific info like stats, rules, and links.
   - Some settings may be editable directly from the UI by authorized users (typically Owner).
 - **Comprehensive Text Commands:** A full suite of chat-based commands offers granular control over all features and administrative actions. (See [Commands List](Commands.md) for a complete reference).
 - **Persistent Player Data:** Critical player data such as flags, violation records, active mutes, and bans are saved using Minecraft's dynamic properties, ensuring they persist across player sessions and server restarts.

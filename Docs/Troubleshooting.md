@@ -64,6 +64,7 @@ This guide helps you resolve common issues you might encounter with the AntiChea
   - Basic commands like `!help` should be available to everyone by default.
   - Admin commands (like `!kick`, `!ban`, `!panel`) require appropriate permissions. Ensure you are set as the Owner (see [Configuration Problems](#2-configuration-problems)) or have an Admin rank assigned via the Rank System.
 - **Typos:** Ensure you're typing the command correctly. Use `!help` to see available commands.
+- **Addon Fails to Load Commands:** If you see an error in the logs like `Failed to load commands`, it may indicate a syntax error in one of the command files. The addon will now attempt to log exactly which command file is causing the failure. Check the logs for a more specific error message to help pinpoint the problematic file.
 
 ---
 
