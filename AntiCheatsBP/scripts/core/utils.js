@@ -36,3 +36,16 @@ export function parseDuration(durationString) {
 
     return value * multiplier;
 }
+
+/**
+ * Plays a sound for a specific player.
+ * @param {import('@minecraft/server').Player} player The player to play the sound for.
+ * @param {string} soundId The ID of the sound to play.
+ */
+export function playSound(player, soundId) {
+    try {
+        player.playSound(soundId);
+    } catch (e) {
+        console.error(`Failed to play sound "${soundId}" for player ${player.name}: ${e}`);
+    }
+}
