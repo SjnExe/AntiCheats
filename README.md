@@ -57,7 +57,7 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 This addon is packed with features to keep your server clean:
 
 - 🛠️ **Powerful Admin & Moderation Tools:**
-  - Intuitive in-game UI (`!panel` or its alias `!ui`) for server administration.
+  - Intuitive in-game UI for server administration, accessible to admins with `!panel` (or its alias `!ui`). The panel item can also be crafted.
   - **Enhanced Player Management Panel:**
     - View online players, sorted by rank and name.
     - Player names are clearly marked with `(Owner)`, `(Admin)`, and `(You)` suffixes.
@@ -101,6 +101,8 @@ Get up and running in minutes!
    - Set `ownerPlayerName` to your **exact** in-game name. This is case-sensitive.
    - **Failure to set an owner will result in no player having administrative permissions.**
 6. **🎮 Explore:** Join your world and type `!panel` (or `!ui`) to open the Admin UI.
+   > [!NOTE]
+   > The `!panel` and `!ui` commands are admin-only. If you prefer, the panel item can also be crafted with a single stick.
 7. **🔧 Configure (Optional but Recommended):**
    - Review `AntiCheatsBP/scripts/config.js` for other core settings (like the command `prefix`).
    - For detailed setup and advanced options, visit our [**Setup and Configuration Guide**](Docs/ConfigurationGuide.md).
