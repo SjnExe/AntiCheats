@@ -56,12 +56,6 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 
 This addon is packed with features to keep your server clean:
 
-- 🛡️ **Comprehensive Cheat Detection Suite:**
-  - **Movement:** Fly, Speed, NoFall, NoSlow, Invalid Sprint, Nether Roof exploits, and more.
-  - **Combat:** Reach, Clicks Per Second (CPS), View Snapping (Aimbot utils), Multi-Target Aura, State Conflicts (e.g., attacking while eating).
-  - **World Interaction:** Nuker, Illegal Item usage/placement, Fast Place/Use, AutoTool, InstaBreak, Anti-Grief (TNT, Fire, Lava, Wither, etc.), Building exploits (Tower, Scaffold).
-  - **Player Behavior:** Anti-Gamemode Creative (AntiGMC), NameSpoof, Self-Hurt, Inventory Modifications.
-  - **Chat:** Spam (fast message, max words, content repeat), Swear/Advertising filtering, CAPS/Symbol abuse, Unicode abuse, Impersonation.
 - 🛠️ **Powerful Admin & Moderation Tools:**
   - Intuitive in-game UI (`!panel` or its alias `!ui`) for server administration.
   - **Enhanced Player Management Panel:**
@@ -75,20 +69,18 @@ This addon is packed with features to keep your server clean:
 - ⚙️ **Highly Configurable System:**
   - Fine-tune detection sensitivity, toggle checks, and customize actions via configuration files.
   - In-game UI settings for many common configurations.
-- 🤖 **Automated Moderation (AutoMod):**
-  - Define escalating punishments (warn, kick, mute, ban) based on accumulated flag counts.
-- 🗺️ **Dynamic World Border System:**
-  - Per-dimension, resizable (square or circle) borders with visual cues and configurable damage.
 - 🏅 **Flexible Rank System:**
   - Define Owner, Admin, Member, and custom roles with specific permissions and visual chat/nametag prefixes.
 - 📞 **Teleport Request System (TPA/TPAHere):**
   - Allows players to request teleports to others or summon others, with configurable cooldowns and warmup periods.
-- 📝 **Reporting System:**
-  - Players can report others for violations, viewable by admins.
 - ✨ **Player & Server Utilities:**
   - **Economy:** A simple economy system with player balances and payment commands.
   - **Homes:** Allows players to set and teleport to their own personal "homes".
   - **Kits:** A system for players to claim predefined kits of items with cooldowns.
+
+> [!NOTE]
+> **Cheat Detection Suite Coming Soon!**
+> A comprehensive suite of cheat detections is under active development and will be added in a future update.
 
 ➡️ **Dive Deeper:** For a full list and details of all features, check out our [**Features Overview in the Docs**](Docs/FeaturesOverview.md)!
 
@@ -103,17 +95,13 @@ Get up and running in minutes!
 3. **Enable Beta APIs (CRITICAL!):**
    - In your world settings, go to the "Experiments" section.
    - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function correctly without this setting enabled.
-4. **Initialize the Addon (CRITICAL!):**
-   - Once in your world, run the command `/function ac`.
-   - This command initializes the addon and sets up necessary components. It must be run for the AntiCheat to work.
-5. **Prioritize:** Ensure `AntiCheatsBP` is at the **TOP** of your behavior pack list. This is crucial for the AntiCheat to function correctly.
-6. **👑 Set Owner (CRUCIAL!):**
-   - Access the addon files. If you downloaded the `.mcaddon`, you may need to rename it to `.zip` to extract the contents.
-   - Open `AntiCheatsBP/scripts/config.js` in a text editor.
-   - Set `ownerPlayerName` to your **exact** in-game name (case-sensitive).
-   - **Failure to set an owner will result in no player having administrative permissions**, making it impossible to manage the addon.
-7. **🎮 Explore:** Join your world and type `!panel` (or `!ui`) to open the Admin UI.
-8. **🔧 Configure (Optional but Recommended):**
+4. **Prioritize:** Ensure `AntiCheatsBP` is at the **TOP** of your behavior pack list. This is crucial for the AntiCheat to function correctly.
+5. **👑 Set Owner (CRUCIAL!):**
+   - After applying the packs, open `AntiCheatsBP/scripts/config.js` in a text editor. (You may need to extract the `.mcaddon` file to access its contents).
+   - Set `ownerPlayerName` to your **exact** in-game name. This is case-sensitive.
+   - **Failure to set an owner will result in no player having administrative permissions.**
+6. **🎮 Explore:** Join your world and type `!panel` (or `!ui`) to open the Admin UI.
+7. **🔧 Configure (Optional but Recommended):**
    - Review `AntiCheatsBP/scripts/config.js` for other core settings (like the command `prefix`).
    - For detailed setup and advanced options, visit our [**Setup and Configuration Guide**](Docs/ConfigurationGuide.md).
 
@@ -141,8 +129,6 @@ If problems persist after checking the guide, please [report an issue](https://g
 All detailed information has been moved to our `Docs` folder for clarity:
 
 - 📜 [**Commands List**](Docs/Commands.md) - Every command for players and admins.
-- 🛡️ [**AutoMod System**](Docs/AutoModDetails.md) - Setup and rules for automated moderation.
-- 🗺️ [**World Border System**](Docs/WorldBorderDetails.md) - Full guide on using the world border.
 - 🏅 [**Rank System**](Docs/RankSystem.md) - How to configure and use ranks.
 - ✨ [**Full Features Overview**](Docs/FeaturesOverview.md) - A detailed breakdown of all addon features.
 - ⚙️ [**Configuration Guide**](Docs/ConfigurationGuide.md) - In-depth look at `config.js` and other settings.
