@@ -4,10 +4,13 @@ import { getPlayer } from './playerDataManager.js';
 import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
+import { getPlayerRank } from './rankManager.js';
+import { playSound } from './utils.js';
 
 const uiActionFunctions = {};
 
 export function showPanel(player, panelId, context = {}) {
+    playSound(player, 'ui.button.click');
     debugLog(`[UIManager] Attempting to show panel "${panelId}" to ${player.name} with context: ${JSON.stringify(context)}`);
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) {
@@ -29,16 +32,40 @@ export function showPanel(player, panelId, context = {}) {
 
     // Special handling for dynamic panels
     if (panelId === 'playerListPanel') {
+        const config = getConfig();
         const onlinePlayers = world.getAllPlayers();
         const form = new ActionFormData().title(title);
-        for (const p of onlinePlayers) {
-            form.button(p.name);
-        }
+
+        const playerList = onlinePlayers.map(p => {
+            const rank = getPlayerRank(p, config);
+            let displayName = p.name;
+            if (p.name === player.name) displayName += ' (You)';
+            if (rank.name === 'Owner') displayName += ' (Owner)';
+            else if (rank.name === 'Admin') displayName += ' (Admin)';
+            return { player: p, rank, displayName };
+        });
+
+        playerList.sort((a, b) => {
+            if (a.rank.permissionLevel !== b.rank.permissionLevel) {
+                return a.rank.permissionLevel - b.rank.permissionLevel;
+            }
+            return a.displayName.localeCompare(b.displayName);
+        });
+
+        // Add a back button
+        form.button('§l§8< Back');
+        playSound(player, 'ui.button.click');
+
+        playerList.forEach(p => form.button(p.displayName));
 
         system.runTimeout(() => {
             form.show(player).then(response => {
                 if (response.canceled) return;
-                const selectedPlayer = onlinePlayers[response.selection];
+                if (response.selection === 0) { // Back button
+                    showPanel(player, 'mainPanel');
+                    return;
+                }
+                const selectedPlayer = playerList[response.selection - 1].player;
                 if (selectedPlayer) {
                     showPanel(player, 'playerManagementPanel', { targetPlayer: selectedPlayer });
                 }
@@ -82,9 +109,11 @@ export function showPanel(player, panelId, context = {}) {
         const selectedItem = menuItems[response.selection];
         if (!selectedItem) {
             console.error('[UIManager] Selected item was not found in validItems array.');
+            playSound(player, 'note.bass');
             return;
         }
 
+        playSound(player, 'random.click');
         debugLog(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
 
         // Special handling for the back button
@@ -102,6 +131,7 @@ export function showPanel(player, panelId, context = {}) {
             } else {
                 console.warn(`[UIManager] No UI action function found for "${selectedItem.actionValue}"`);
                 player.sendMessage(`§cFunctionality for "${selectedItem.text}" is not implemented yet.`);
+                playSound(player, 'note.bass');
             }
         }
     }).catch(e => {
@@ -228,4 +258,64 @@ uiActionFunctions['showStatus'] = (player) => {
             showPanel(player, 'mainPanel');
         }
     }).catch(e => console.error(`[UIManager] showStatus promise rejected: ${e.stack}`));
+};
+
+uiActionFunctions['showBanForm'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+
+    const form = new ModalFormData()
+        .title(`Ban ${targetPlayer.name}`)
+        .textField('Duration (e.g., 1d, 2h, 30m)', 'Enter duration, or leave blank for permanent', 'perm')
+        .textField('Reason', 'Enter ban reason', 'No reason provided');
+
+    form.show(player).then(response => {
+        if (response.canceled) return;
+        const [duration, reason] = response.formValues;
+        player.runCommandAsync(`ban "${targetPlayer.name}" ${duration} ${reason}`);
+    }).catch(e => console.error(`[UIManager] showBanForm promise rejected: ${e.stack}`));
+};
+
+uiActionFunctions['showUnmuteForm'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+
+    const form = new ModalFormData()
+        .title(`Unmute ${targetPlayer.name}?`)
+        .toggle('Confirm Unmute', false);
+
+    form.show(player).then(response => {
+        if (response.canceled || !response.formValues[0]) return;
+        player.runCommandAsync(`unmute "${targetPlayer.name}"`);
+    }).catch(e => console.error(`[UIManager] showUnmuteForm promise rejected: ${e.stack}`));
+};
+
+uiActionFunctions['toggleFreeze'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+    player.runCommandAsync(`freeze "${targetPlayer.name}"`);
+};
+
+uiActionFunctions['viewInventory'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+    player.runCommandAsync(`invsee "${targetPlayer.name}"`);
+};
+
+uiActionFunctions['clearInventory'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+    player.runCommandAsync(`clear "${targetPlayer.name}"`);
+};
+
+uiActionFunctions['teleportTo'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+    player.runCommandAsync(`tp "${player.name}" "${targetPlayer.name}"`);
+};
+
+uiActionFunctions['teleportHere'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+    player.runCommandAsync(`tp "${targetPlayer.name}" "${player.name}"`);
 };

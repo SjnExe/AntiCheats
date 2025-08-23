@@ -26,3 +26,5 @@ import './balance.js';
 import './pay.js';
 import './baltop.js';
 import './kit.js';
+import './clear.js';
+import './ecwipe.js';
