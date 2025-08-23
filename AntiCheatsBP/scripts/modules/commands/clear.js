@@ -1,6 +1,8 @@
 import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
-import { getPlayer, playSound } from '../../core/utils.js';
+import { playSound } from '../../core/utils.js';
+import { findPlayerByName } from '../utils/playerUtils.js';
+import { getPlayer } from '../../core/playerDataManager.js';
 
 commandManager.register({
     name: 'clear',
@@ -10,15 +12,15 @@ commandManager.register({
     execute: (player, args) => {
         if (args.length > 0) {
             // Clearing another player's inventory (requires admin)
-            const pData = global.playerData.get(player.name);
-            if (pData.permissionLevel < 1) {
+            const pData = getPlayer(player.id);
+            if (pData.permissionLevel > 1) { // Assuming 0=owner, 1=admin
                 player.sendMessage("§cYou do not have permission to clear another player's inventory.");
                 playSound(player, 'note.bass');
                 return;
             }
 
             const targetName = args[0];
-            const targetPlayer = getPlayer(targetName);
+            const targetPlayer = findPlayerByName(targetName);
 
             if (!targetPlayer) {
                 player.sendMessage(`§cPlayer "${targetName}" not found.`);

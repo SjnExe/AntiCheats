@@ -1,6 +1,7 @@
 import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
-import { getPlayer, playSound } from '../../core/utils.js';
+import { playSound } from '../../core/utils.js';
+import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({
     name: 'ecwipe',
@@ -15,7 +16,7 @@ commandManager.register({
         }
 
         const targetName = args[0];
-        const targetPlayer = getPlayer(targetName);
+        const targetPlayer = findPlayerByName(targetName);
 
         if (!targetPlayer) {
             player.sendMessage(`§cPlayer "${targetName}" not found.`);
