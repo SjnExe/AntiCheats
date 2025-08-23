@@ -7,7 +7,10 @@ const commandFiles = [
     'tpa.js', 'tpahere.js', 'tpaccept.js', 'tpadeny.js', 'tpacancel.js', 'balance.js', 'pay.js',
     'baltop.js', 'kit.js', 'clear.js', 'ecwipe.js',
     // Debugging files
-    'test_enchants.js',
+    'test1.js',
+    'test2.js',
+    'test3.js',
+    'test4.js',
     // Keep panel.js last for easier debugging if it fails
     'panel.js'
 ];
