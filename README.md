@@ -6,7 +6,7 @@
 
 <div align="center">
 
-[![Latest Release](https://img.shields.io/github/v/release/SjnExe/AntiCheats?label=latest%20version&display_name=tag&sort=semver&style=for-the-badge)](https://github.com/SjnExe/AntiCheats/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/SjnExe/AntiCheats?label=latest%20version&display_name=tag&style=for-the-badge)](https://github.com/SjnExe/AntiCheats/releases/latest)
 [![GitHub All Releases](https://img.shields.io/github/downloads/SjnExe/AntiCheats/total?style=for-the-badge)](https://github.com/SjnExe/AntiCheats/releases)
 ![Minecraft BE Version](https://img.shields.io/badge/Minecraft_BE-1.21.100%2B-brightgreen?style=for-the-badge&logo=minecraft)
 [![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AntiCheats?style=for-the-badge&logo=github)](https://github.com/SjnExe/AntiCheats/issues)
