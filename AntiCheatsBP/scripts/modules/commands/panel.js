@@ -1,5 +1,5 @@
 import { commandManager } from './commandManager.js';
-import { ItemStack, EntityInventoryComponent } from '@minecraft/server';
+import { ItemStack } from '@minecraft/server';
 
 commandManager.register({
     name: 'panel',

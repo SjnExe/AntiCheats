@@ -15,13 +15,15 @@
             },
             "minecraft:lore": {
                 "value": [
-                    "§r§7Right-click to open"
+                    "§r§7Right-click to open",
+                    "§r§7From AntiCheats Addon"
                 ]
             },
             "minecraft:hand_equipped": true,
             "minecraft:can_destroy_in_creative": false,
             "minecraft:stacked_by_data": true,
-            "minecraft:max_stack_size": 1
+            "minecraft:max_stack_size": 1,
+            "minecraft:rarity": "common"
         }
     }
 }
