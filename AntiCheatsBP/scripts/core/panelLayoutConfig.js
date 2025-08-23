@@ -37,6 +37,14 @@ export const panelDefinitions = {
                 actionValue: 'playerListPanel',
             },
             {
+                id: 'publicPlayerList',
+                text: 'View Players',
+                icon: 'textures/ui/icon_multiplayer',
+                permissionLevel: 1024,
+                actionType: 'openPanel',
+                actionValue: 'publicPlayerListPanel',
+            },
+            {
                 id: 'rules',
                 text: 'Rules',
                 icon: 'textures/items/book_normal',
@@ -53,6 +61,11 @@ export const panelDefinitions = {
                 actionValue: 'statusPanel',
             },
         ],
+    },
+    publicPlayerListPanel: {
+        title: '§lOnline Players§r',
+        parentPanelId: 'mainPanel',
+        items: [], // This will be populated dynamically by uiManager
     },
     statusPanel: {
         title: '§lServer Status§r',
@@ -78,32 +91,32 @@ export const panelDefinitions = {
         parentPanelId: 'playerListPanel',
         items: [
             {
-                id: 'kickPlayer',
-                text: 'Kick Player',
-                icon: 'textures/ui/icon_hammer',
-                permissionLevel: 1,
-                actionType: 'functionCall',
-                actionValue: 'showKickForm',
-            },
-            {
                 id: 'banPlayer',
-                text: 'Ban Player',
+                text: 'Ban',
                 icon: 'textures/ui/hammer_l.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showBanForm',
             },
             {
+                id: 'kickPlayer',
+                text: 'Kick',
+                icon: 'textures/ui/warning_glyph',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'showKickForm',
+            },
+            {
                 id: 'mutePlayer',
-                text: 'Mute Player',
-                icon: 'textures/ui/cancel',
+                text: 'Mute',
+                icon: 'textures/ui/chat_bubble',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showMuteForm',
             },
             {
                 id: 'unmutePlayer',
-                text: 'Unmute Player',
+                text: 'Unmute',
                 icon: 'textures/ui/check',
                 permissionLevel: 1,
                 actionType: 'functionCall',
@@ -111,7 +124,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'freezePlayer',
-                text: 'Freeze Player',
+                text: 'Freeze',
                 icon: 'textures/ui/icon_lock',
                 permissionLevel: 1,
                 actionType: 'functionCall',
@@ -123,7 +136,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/inventory_icon',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'viewInventory',
+                actionValue: 'showInventoryPanel',
             },
             {
                 id: 'clearInventory',

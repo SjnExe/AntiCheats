@@ -12,9 +12,13 @@ function showCategorizedHelp(player, userPermissionLevel) {
             systemToggle: null,
             commands: ['help', 'status', 'rules', 'version'],
         },
-        '§dTeleportation': {
-            systemToggles: ['tpa', 'homes'], // Is visible if EITHER is enabled
-            commands: ['tpa', 'tpahere', 'tpaccept', 'tpadeny', 'tpacancel', 'sethome', 'home', 'delhome', 'homes'],
+        '§dTeleportation (TPA)': {
+            systemToggle: 'tpa',
+            commands: ['tpa', 'tpahere', 'tpaccept', 'tpadeny', 'tpacancel'],
+        },
+        '§2Homes': {
+            systemToggle: 'homes',
+            commands: ['sethome', 'home', 'delhome', 'homes'],
         },
         '§6Economy': {
             systemToggle: 'economy',
@@ -26,11 +30,11 @@ function showCategorizedHelp(player, userPermissionLevel) {
         },
         '§cModeration': {
             systemToggle: null,
-            commands: ['panel', 'kick', 'mute', 'unmute', 'freeze', 'vanish', 'invsee', 'tp'],
+            commands: ['panel', 'kick', 'mute', 'unmute', 'freeze', 'vanish', 'invsee', 'tp', 'ban', 'unban', 'clearchat'],
         },
         '§9Administration': {
             systemToggle: null,
-            commands: ['admin', 'ban', 'unban', 'gmc', 'gms', 'gma', 'gmsp', 'clear', 'ecwipe', 'clearchat', 'reload', 'debug'],
+            commands: ['admin', 'gmc', 'gms', 'gma', 'gmsp', 'clear', 'ecwipe', 'reload', 'debug'],
         },
     };
 
@@ -39,9 +43,6 @@ function showCategorizedHelp(player, userPermissionLevel) {
 
         // --- System-level toggle check ---
         if (category.systemToggle && !config[category.systemToggle]?.enabled) {
-            continue;
-        }
-        if (category.systemToggles && !category.systemToggles.some(toggle => config[toggle]?.enabled)) {
             continue;
         }
 
@@ -53,9 +54,6 @@ function showCategorizedHelp(player, userPermissionLevel) {
                 // Individual command toggle check
                 const cmdSetting = config.commandSettings?.[cmd.name];
                 if (cmdSetting && cmdSetting.enabled === false) return false;
-                // System toggle check for commands within combined categories
-                if (['tpa', 'tpahere', 'tpaccept', 'tpadeny', 'tpacancel'].includes(cmd.name) && !config.tpa?.enabled) return false;
-                if (['sethome', 'home', 'delhome', 'homes'].includes(cmd.name) && !config.homes?.enabled) return false;
 
                 return true;
             });

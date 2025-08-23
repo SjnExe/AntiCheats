@@ -38,10 +38,20 @@ export function showPanel(player, panelId, context = {}) {
         const playerList = onlinePlayers.map(p => {
             const rank = getPlayerRank(p, config);
             let displayName = p.name;
-            if (p.name === player.name) displayName += ' (You)';
-            if (rank.name === 'Owner') displayName += ' (Owner)';
-            else if (rank.name === 'Admin') displayName += ' (Admin)';
-            return { player: p, rank, displayName };
+            let icon; // Default icon is undefined
+
+            if (rank.name === 'Owner') {
+                displayName += ` §r${rank.chatFormatting?.nameColor ?? '§4'}§lOwner§r`;
+                icon = 'textures/ui/crown_glyph_color';
+            } else if (rank.name === 'Admin') {
+                displayName += ` §r${rank.chatFormatting?.nameColor ?? '§c'}§lAdmin§r`;
+            }
+
+            if (p.id === player.id) {
+                displayName += ' §7(You)§r';
+            }
+
+            return { player: p, rank, displayName, icon };
         });
 
         playerList.sort((a, b) => {
@@ -54,7 +64,7 @@ export function showPanel(player, panelId, context = {}) {
         // Add a back button
         form.button('§l§8< Back');
 
-        playerList.forEach(p => form.button(p.displayName));
+        playerList.forEach(p => form.button(p.displayName, p.icon));
 
         system.runTimeout(() => {
             form.show(player).then(response => {
@@ -70,10 +80,63 @@ export function showPanel(player, panelId, context = {}) {
             }).catch(e => console.error(`[UIManager] playerListPanel promise rejected: ${e.stack}`));
         }, 10);
         return; // Stop further processing for this panel
+    } else if (panelId === 'publicPlayerListPanel') {
+        const config = getConfig();
+        const onlinePlayers = world.getAllPlayers();
+        const form = new ActionFormData().title(title);
+
+        const playerList = onlinePlayers.map(p => {
+            const rank = getPlayerRank(p, config);
+            // Use the chat prefix for the display name
+            const prefix = rank.chatFormatting?.prefixText ?? '';
+            let displayName = `${prefix}${p.name}§r`;
+            return { rank, displayName };
+        });
+
+        playerList.sort((a, b) => {
+            if (a.rank.permissionLevel !== b.rank.permissionLevel) {
+                return a.rank.permissionLevel - b.rank.permissionLevel;
+            }
+            return a.displayName.localeCompare(b.displayName);
+        });
+
+        // Add a back button
+        form.button('§l§8< Back');
+
+        playerList.forEach(p => form.button(p.displayName)); // No icons needed here
+
+        system.runTimeout(() => {
+            form.show(player).then(response => {
+                if (response.canceled || response.selection === 0) {
+                    showPanel(player, 'mainPanel');
+                }
+                // No action when a player name is clicked
+            }).catch(e => console.error(`[UIManager] publicPlayerListPanel promise rejected: ${e.stack}`));
+        }, 10);
+        return;
     }
 
 
     const form = new ActionFormData().title(title);
+
+    // If it's the player management panel, add the profile body
+    if (panelId === 'playerManagementPanel') {
+        const targetPlayer = context.targetPlayer;
+        // This check should always pass if we reached here, but good practice
+        if (targetPlayer) {
+            const config = getConfig();
+            const targetPData = getPlayer(targetPlayer.id);
+            const rank = getPlayerRank(targetPlayer, config);
+            const profile = [
+                `§fName: §e${targetPlayer.name}`,
+                `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+                `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`,
+                `§fDimension: §6${targetPlayer.dimension.id.replace('minecraft:', '')}`,
+                `§fCoords: §bX: ${Math.floor(targetPlayer.location.x)}, Y: ${Math.floor(targetPlayer.location.y)}, Z: ${Math.floor(targetPlayer.location.z)}`,
+            ].join('\n\n'); // Use double newline for spacing
+            form.body(profile);
+        }
+    }
 
     const menuItems = panelDef.items
         .filter(item => pData.permissionLevel <= item.permissionLevel)
@@ -315,4 +378,66 @@ uiActionFunctions['teleportHere'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
     player.runCommandAsync(`tp "${targetPlayer.name}" "${player.name}"`);
+};
+
+// --- Inventory Viewer Logic ---
+// This is kept inside the UI manager to avoid command/UI conflicts.
+uiActionFunctions['showInventoryPanel'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) {
+        player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+
+    const targetId = targetPlayer.id;
+    const targetName = targetPlayer.name;
+    const ITEMS_PER_PAGE = 10;
+
+    function showInventoryPage(viewingPlayer, page = 0) {
+        const target = world.getPlayer(targetId);
+        if (!target) {
+            viewingPlayer.sendMessage(`§cPlayer "${targetName}" is no longer online.`);
+            return;
+        }
+
+        const inventory = target.getComponent('inventory').container;
+        const items = [];
+        for (let i = 0; i < inventory.size; i++) {
+            const item = inventory.getItem(i);
+            if (item) {
+                items.push(`§eSlot ${i}: §f${item.typeId.replace('minecraft:', '')} §7x${item.amount}`);
+            }
+        }
+
+        if (items.length === 0) {
+            new MessageFormData()
+                .title(`Inventory: ${target.name}`)
+                .body('§7(Inventory is empty)')
+                .button1('§cClose')
+                .show(viewingPlayer).catch(e => console.error(`[InvSeePanel] Empty inv form promise rejected: ${e.stack}`));
+            return;
+        }
+
+        const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+        const startIndex = page * ITEMS_PER_PAGE;
+        const pageItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+        const form = new MessageFormData()
+            .title(`Inventory: ${target.name} (Page ${page + 1}/${totalPages})`)
+            .body(pageItems.join('\n'))
+            .button1('Close');
+
+        if (page + 1 < totalPages) {
+            form.button2('Next Page');
+        }
+
+        form.show(viewingPlayer).then(response => {
+            if (response.canceled || response.selection === 0) return;
+            if (response.selection === 1) {
+                showInventoryPage(viewingPlayer, page + 1);
+            }
+        }).catch(e => console.error(`[InvSeePanel] form.show promise rejected: ${e.stack}`));
+    }
+
+    showInventoryPage(player, 0);
 };
