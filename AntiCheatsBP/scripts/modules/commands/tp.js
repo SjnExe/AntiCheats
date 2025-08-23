@@ -9,7 +9,7 @@ commandManager.register({
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length === 0) {
-            player.sendMessage("§cUsage: !tp <targetPlayer> [destinationPlayer] or !tp [targetPlayer] <x> <y> <z>");
+            player.sendMessage('§cUsage: !tp <targetPlayer> [destinationPlayer] or !tp [targetPlayer] <x> <y> <z>');
             return;
         }
 
@@ -46,7 +46,7 @@ commandManager.register({
         if (args.length === 3) {
             const [x, y, z] = args.map(Number);
             if (isNaN(x) || isNaN(y) || isNaN(z)) {
-                player.sendMessage("§cInvalid coordinates provided.");
+                player.sendMessage('§cInvalid coordinates provided.');
                 return;
             }
             player.teleport({ x, y, z });
@@ -63,7 +63,7 @@ commandManager.register({
             }
             const [x, y, z] = args.slice(1).map(Number);
             if (isNaN(x) || isNaN(y) || isNaN(z)) {
-                player.sendMessage("§cInvalid coordinates provided.");
+                player.sendMessage('§cInvalid coordinates provided.');
                 return;
             }
             targetPlayer.teleport({ x, y, z }, { dimension: targetPlayer.dimension });
@@ -71,6 +71,6 @@ commandManager.register({
             return;
         }
 
-        player.sendMessage("§cInvalid syntax for !tp command.");
+        player.sendMessage('§cInvalid syntax for !tp command.');
     },
 });

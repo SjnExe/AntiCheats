@@ -70,7 +70,7 @@ commandManager.register({
         addPunishment(targetPlayer.id, {
             type: 'ban',
             expires,
-            reason
+            reason,
         });
 
         const durationText = durationMs === Infinity ? 'permanently' : `for ${durationString}`;

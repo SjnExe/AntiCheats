@@ -18,7 +18,7 @@ function checkPlayerGamemode(player) {
 
     if (player.getGameMode() === GameMode.Creative && pData.permissionLevel > 1) {
         player.setGameMode(config.defaultGamemode);
-        player.sendMessage("§cYou are not allowed to be in creative mode.");
+        player.sendMessage('§cYou are not allowed to be in creative mode.');
         debugLog(`[AntiCheats] Detected ${player.name} in creative mode without permission. Switched to ${config.defaultGamemode}.`);
     }
 }

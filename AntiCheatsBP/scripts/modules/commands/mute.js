@@ -69,7 +69,7 @@ commandManager.register({
         addPunishment(targetPlayer.id, {
             type: 'mute',
             expires,
-            reason
+            reason,
         });
 
         const durationText = durationMs === Infinity ? 'permanently' : `for ${durationString}`;
