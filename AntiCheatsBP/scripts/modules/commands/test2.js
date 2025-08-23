@@ -5,7 +5,7 @@ commandManager.register({
     name: 'test2',
     description: 'Enchantment API test.',
     category: 'Admin',
-    permissionLevel: 0,
+    permissionLevel: 1,
     execute: (player, args) => {
         try {
             player.sendMessage("§eRunning Test 2: Attempting to use Enchantment API...");

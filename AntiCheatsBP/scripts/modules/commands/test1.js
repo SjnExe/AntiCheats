@@ -5,7 +5,7 @@ commandManager.register({
     name: 'test1',
     description: 'Control test: Gives a plain diamond sword.',
     category: 'Admin',
-    permissionLevel: 0,
+    permissionLevel: 1,
     execute: (player, args) => {
         try {
             player.sendMessage("§eRunning Test 1: Giving plain diamond sword...");
