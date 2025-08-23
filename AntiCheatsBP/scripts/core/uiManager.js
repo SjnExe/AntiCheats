@@ -441,3 +441,45 @@ uiActionFunctions['showInventoryPanel'] = (player, context) => {
 
     showInventoryPage(player, 0);
 };
+
+uiActionFunctions['showMyStats'] = (player, context) => {
+    const pData = getPlayer(player.id);
+    const config = getConfig();
+    const rank = getPlayerRank(player, config);
+
+    if (!pData) {
+        player.sendMessage('§cCould not retrieve your data.');
+        return;
+    }
+
+    const stats = [
+        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+        `§fBalance: §a$${pData.balance.toFixed(2)}`,
+        `§fHomes Set: §e${Object.keys(pData.homes).length} / ${config.homes.maxHomes}`,
+    ].join('\n');
+
+    const form = new MessageFormData()
+        .title('§lMy Stats§r')
+        .body(stats)
+        .button1('§cClose');
+
+    form.show(player).catch(e => console.error(`[UIManager] showMyStats promise rejected: ${e.stack}`));
+};
+
+uiActionFunctions['showHelpfulLinks'] = (player, context) => {
+    const config = getConfig();
+    const links = [
+        '§l§9Discord Server:§r',
+        `§f${config.serverInfo.discordLink}`,
+        '',
+        '§l§bWebsite:§r',
+        `§f${config.serverInfo.websiteLink}`,
+    ].join('\n');
+
+    const form = new MessageFormData()
+        .title('§lHelpful Links§r')
+        .body(links)
+        .button1('§cClose');
+
+    form.show(player).catch(e => console.error(`[UIManager] showHelpfulLinks promise rejected: ${e.stack}`));
+};

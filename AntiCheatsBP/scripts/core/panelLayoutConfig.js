@@ -60,6 +60,22 @@ export const panelDefinitions = {
                 actionType: 'openPanel',
                 actionValue: 'statusPanel',
             },
+            {
+                id: 'myStats',
+                text: 'My Stats',
+                icon: 'textures/ui/icon_bestfriend',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showMyStats',
+            },
+            {
+                id: 'helpfulLinks',
+                text: 'Helpful Links',
+                icon: 'textures/ui/icon_Details',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showHelpfulLinks',
+            },
         ],
     },
     publicPlayerListPanel: {
