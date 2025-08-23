@@ -10,23 +10,23 @@
 [![GitHub All Releases](https://img.shields.io/github/downloads/SjnExe/AntiCheats/total?style=for-the-badge)](https://github.com/SjnExe/AntiCheats/releases)
 ![Minecraft BE Version](https://img.shields.io/badge/Minecraft_BE-1.21.100%2B-brightgreen?style=for-the-badge&logo=minecraft)
 [![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AntiCheats?style=for-the-badge&logo=github)](https://github.com/SjnExe/AntiCheats/issues)
-![Status: Under Development](https://img.shields.io/badge/Status-Under%20Development-orange?style=for-the-badge)
+![Status: Beta Release](https://img.shields.io/badge/Status-Beta%20Release-yellow?style=for-the-badge)
 [![Discord Server](https://img.shields.io/discord/633296555650318346?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/SMUHUnGyyz)
 
 </div>
 
 > [!IMPORTANT]
-> **CURRENT PROJECT STATUS: EXPERIMENTAL - USE WITH CAUTION**
+> **CURRENT PROJECT STATUS: BETA RELEASE**
 >
-> This AntiCheats Addon is currently **under active development** and should be considered **experimental**.
+> This AntiCheats Addon is now in **Beta**.
 >
 > **Please be aware:**
 >
-> - The addon may contain **significant bugs or errors**.
-> - Functionality is subject to change and may be unstable.
-> - **Not recommended for production servers** or public worlds at this stage.
+> - While more stable than pre-release versions, some bugs may still be present.
+> - We encourage you to back up your world before installation.
+> - Your feedback is crucial for identifying and fixing remaining issues.
 >
-> We appreciate your understanding and encourage testers to [report any issues on GitHub](https://github.com/SjnExe/AntiCheats/issues). Your feedback is vital for improvement!
+> We appreciate your understanding and encourage testers to [report any issues on GitHub](https://github.com/SjnExe/AntiCheats/issues). Your feedback is vital for the final release!
 
 ---
 
