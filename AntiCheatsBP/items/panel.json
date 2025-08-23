@@ -23,15 +23,7 @@
             "minecraft:can_destroy_in_creative": false,
             "minecraft:stacked_by_data": true,
             "minecraft:max_stack_size": 1,
-            "minecraft:rarity": "common",
-            "minecraft:enchantments": {
-                "enchantments": [
-                    {
-                        "enchantment": "vanishing",
-                        "level": 1
-                    }
-                ]
-            }
+            "minecraft:rarity": "common"
         }
     }
 }
