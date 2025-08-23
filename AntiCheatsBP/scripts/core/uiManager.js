@@ -111,7 +111,6 @@ export function showPanel(player, panelId, context = {}) {
             return;
         }
 
-        playSound(player, 'random.click');
         debugLog(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
 
         // Special handling for the back button

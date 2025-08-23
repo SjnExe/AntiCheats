@@ -14,16 +14,23 @@ commandManager.register({
         }
 
         const targetName = args[0];
-        const targetPlayer = [...world.getPlayers()].find(p => p.name === targetName);
+        let initialTarget = [...world.getPlayers()].find(p => p.name === targetName);
 
-        if (!targetPlayer) {
+        if (!initialTarget) {
             player.sendMessage(`§cPlayer "${targetName}" not found.`);
             return;
         }
 
-        const ITEMS_PER_PAGE = 15;
+        const targetId = initialTarget.id; // Store the ID to re-fetch the player object
+        const ITEMS_PER_PAGE = 10; // Reduced for safety
 
-        function showInventoryPage(viewingPlayer, target, page = 0) {
+        function showInventoryPage(viewingPlayer, page = 0) {
+            const target = world.getPlayer(targetId); // Re-fetch player on each page
+            if (!target) {
+                viewingPlayer.sendMessage(`§cPlayer "${targetName}" is no longer online.`);
+                return;
+            }
+
             const inventory = target.getComponent('inventory').container;
             const items = [];
             for (let i = 0; i < inventory.size; i++) {
@@ -58,11 +65,11 @@ commandManager.register({
             form.show(viewingPlayer).then(response => {
                 if (response.canceled || response.selection === 0) return;
                 if (response.selection === 1) {
-                    showInventoryPage(viewingPlayer, target, page + 1);
+                    showInventoryPage(viewingPlayer, page + 1);
                 }
             }).catch(e => console.error(`[InvSee] form.show promise rejected: ${e.stack}`));
         }
 
-        showInventoryPage(player, targetPlayer, 0);
+        showInventoryPage(player, 0);
     },
 });

@@ -81,7 +81,7 @@ function showSpecificHelp(player, commandName) {
 
 commandManager.register({
     name: 'help',
-    aliases: ['?'],
+    aliases: ['?', 'h'],
     description: 'Displays a list of available commands or help for a specific command.',
     category: 'General',
     permissionLevel: 1024, // Available to everyone
