@@ -86,7 +86,7 @@ export function showPanel(player, panelId, context = {}) {
         menuItems.unshift({
             id: '__back__',
             text: '§l§8< Back',
-            icon: 'textures/ui/icon_left_arrow',
+            icon: 'textures/ui/arrow_left',
             permissionLevel: 1024,
             actionType: 'openPanel', // This is a placeholder, the logic is handled specially
             actionValue: panelDef.parentPanelId,

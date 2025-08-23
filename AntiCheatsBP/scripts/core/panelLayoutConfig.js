@@ -88,7 +88,7 @@ export const panelDefinitions = {
             {
                 id: 'banPlayer',
                 text: 'Ban Player',
-                icon: 'textures/ui/icon_resource_pack',
+                icon: 'textures/ui/icon_lock',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showBanForm',
@@ -96,7 +96,7 @@ export const panelDefinitions = {
             {
                 id: 'mutePlayer',
                 text: 'Mute Player',
-                icon: 'textures/ui/mute_l.png',
+                icon: 'textures/ui/speaker_off',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showMuteForm',
@@ -104,7 +104,7 @@ export const panelDefinitions = {
             {
                 id: 'unmutePlayer',
                 text: 'Unmute Player',
-                icon: 'textures/ui/speaker_on_light',
+                icon: 'textures/ui/speaker_on',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showUnmuteForm',
@@ -136,7 +136,7 @@ export const panelDefinitions = {
             {
                 id: 'teleportToPlayer',
                 text: 'Teleport to Player',
-                icon: 'textures/ui/portal',
+                icon: 'textures/items/ender_pearl',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'teleportTo',
@@ -144,7 +144,7 @@ export const panelDefinitions = {
             {
                 id: 'teleportPlayerHere',
                 text: 'Teleport Player Here',
-                icon: 'textures/ui/arrow_down_thin',
+                icon: 'textures/items/ender_pearl',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'teleportHere',
