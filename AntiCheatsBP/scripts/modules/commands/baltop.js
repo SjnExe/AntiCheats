@@ -1,3 +1,4 @@
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import * as playerDataManager from '../../core/playerDataManager.js';
 import { getConfig } from '../../core/configManager.js';
