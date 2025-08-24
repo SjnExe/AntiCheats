@@ -13,7 +13,7 @@ const commandFiles = [
     // Kits
     'kit.js',
     // Moderation
-    'panel.js', 'panelitem.js', 'kick.js', 'mute.js', 'ban.js', 'freeze.js', 'vanish.js', 'invsee.js', 'tp.js', 'clearchat.js',
+    'panel.js', 'kick.js', 'mute.js', 'ban.js', 'freeze.js', 'vanish.js', 'invsee.js', 'tp.js', 'clearchat.js',
     // Admin
     'admin.js', 'rank.js', 'gmc.js', 'gms.js', 'gma.js', 'gmsp.js', 'clear.js', 'ecwipe.js', 'copyinv.js', 'reload.js', 'debug.js', 'setbalance.js',
     // Spawning
