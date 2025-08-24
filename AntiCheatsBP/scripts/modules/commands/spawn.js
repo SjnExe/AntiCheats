@@ -28,5 +28,5 @@ commandManager.register({
             console.error(`[SpawnCommand] Failed to teleport: ${e.stack}`);
             playSound(player, 'note.bass');
         }
-    },
+    }
 });

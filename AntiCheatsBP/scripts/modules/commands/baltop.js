@@ -27,7 +27,7 @@ commandManager.register({
         const leaderboard = [...allData.entries()]
             .map(([playerId, pData]) => ({
                 name: allPlayers.find(p => p.id === playerId)?.name ?? 'Unknown',
-                balance: pData.balance ?? 0,
+                balance: pData.balance ?? 0
             }))
             .filter(p => p.balance > 0)
             .sort((a, b) => b.balance - a.balance)
@@ -44,5 +44,5 @@ commandManager.register({
         });
 
         player.sendMessage(message.trim());
-    },
+    }
 });

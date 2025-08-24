@@ -46,5 +46,5 @@ commandManager.register({
             player.sendMessage('§cFailed to copy inventory.');
             console.error(`[CopyInv] Error: ${e.stack}`);
         }
-    },
+    }
 });

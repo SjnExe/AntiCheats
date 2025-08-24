@@ -34,7 +34,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_multiplayer',
                 permissionLevel: 1,
                 actionType: 'openPanel',
-                actionValue: 'playerListPanel',
+                actionValue: 'playerListPanel'
             },
             {
                 id: 'publicPlayerList',
@@ -42,7 +42,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_multiplayer',
                 permissionLevel: 1024,
                 actionType: 'openPanel',
-                actionValue: 'publicPlayerListPanel',
+                actionValue: 'publicPlayerListPanel'
             },
             {
                 id: 'rules',
@@ -50,7 +50,7 @@ export const panelDefinitions = {
                 icon: 'textures/items/book_enchanted.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
-                actionValue: 'showRules',
+                actionValue: 'showRules'
             },
             {
                 id: 'status',
@@ -58,7 +58,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_setting.png',
                 permissionLevel: 1024,
                 actionType: 'openPanel',
-                actionValue: 'statusPanel',
+                actionValue: 'statusPanel'
             },
             {
                 id: 'myStats',
@@ -66,7 +66,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_bestfriend',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
-                actionValue: 'showMyStats',
+                actionValue: 'showMyStats'
             },
             {
                 id: 'helpfulLinks',
@@ -74,14 +74,14 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_Details',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
-                actionValue: 'showHelpfulLinks',
-            },
-        ],
+                actionValue: 'showHelpfulLinks'
+            }
+        ]
     },
     publicPlayerListPanel: {
         title: '§lOnline Players§r',
         parentPanelId: 'mainPanel',
-        items: [], // This will be populated dynamically by uiManager
+        items: [] // This will be populated dynamically by uiManager
     },
     statusPanel: {
         title: '§lServer Status§r',
@@ -93,14 +93,14 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_setting.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
-                actionValue: 'showStatus',
-            },
-        ],
+                actionValue: 'showStatus'
+            }
+        ]
     },
     playerListPanel: {
         title: '§lSelect a Player§r',
         parentPanelId: 'mainPanel',
-        items: [], // This will be populated dynamically by uiManager
+        items: [] // This will be populated dynamically by uiManager
     },
     playerManagementPanel: {
         title: '§lActions for {playerName}§r',
@@ -112,7 +112,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/hammer_l.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'showBanForm',
+                actionValue: 'showBanForm'
             },
             {
                 id: 'kickPlayer',
@@ -120,7 +120,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_import.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'showKickForm',
+                actionValue: 'showKickForm'
             },
             {
                 id: 'mutePlayer',
@@ -128,7 +128,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/mute_on.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'showMuteForm',
+                actionValue: 'showMuteForm'
             },
             {
                 id: 'unmutePlayer',
@@ -136,7 +136,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/mute_off.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'showUnmuteForm',
+                actionValue: 'showUnmuteForm'
             },
             {
                 id: 'freezePlayer',
@@ -144,7 +144,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/lock_color.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'toggleFreeze',
+                actionValue: 'toggleFreeze'
             },
             {
                 id: 'viewInventory',
@@ -152,7 +152,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/inventory_icon',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'showInventoryPanel',
+                actionValue: 'showInventoryPanel'
             },
             {
                 id: 'clearInventory',
@@ -160,7 +160,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/trash',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'clearInventory',
+                actionValue: 'clearInventory'
             },
             {
                 id: 'teleportToPlayer',
@@ -168,7 +168,7 @@ export const panelDefinitions = {
                 icon: 'textures/ui/flyingascend.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'teleportTo',
+                actionValue: 'teleportTo'
             },
             {
                 id: 'teleportPlayerHere',
@@ -176,8 +176,8 @@ export const panelDefinitions = {
                 icon: 'textures/ui/flyingdescend.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'teleportHere',
-            },
-        ],
-    },
+                actionValue: 'teleportHere'
+            }
+        ]
+    }
 };

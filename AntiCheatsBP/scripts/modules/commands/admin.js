@@ -58,5 +58,5 @@ commandManager.register({
             player.sendMessage(`§cFailed to ${action} admin tag. Error: ${e.message}`);
             console.error(`[AdminCommand] Failed to ${action} tag: ${e.stack}`);
         }
-    },
+    }
 });

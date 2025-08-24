@@ -47,5 +47,5 @@ commandManager.register({
             player.sendMessage('§cFailed to update rank.');
             console.error(`[RankCommand] Error: ${e.stack}`);
         }
-    },
+    }
 });

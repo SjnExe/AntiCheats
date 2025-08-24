@@ -35,5 +35,5 @@ commandManager.register({
         } else {
             player.sendMessage('§eYou can obtain the panel by crafting it with a single stick in the crafting menu.');
         }
-    },
+    }
 });

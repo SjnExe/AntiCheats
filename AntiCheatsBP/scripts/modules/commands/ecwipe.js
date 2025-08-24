@@ -39,5 +39,5 @@ commandManager.register({
         targetPlayer.sendMessage('§eYour Ender Chest has been wiped by an admin.');
         playSound(player, 'random.orb');
         playSound(targetPlayer, 'random.orb');
-    },
+    }
 });

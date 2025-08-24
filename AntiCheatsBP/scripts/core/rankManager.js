@@ -18,7 +18,7 @@ export function initialize() {
  * @returns {import('./ranksConfig.js').RankDefinition}
  */
 export function getPlayerRank(player, config) {
-    const ownerName = config.ownerPlayerName?.toLowerCase();
+    const ownerNames = (config.ownerPlayerNames || []).map(name => name.toLowerCase());
     const adminTag = config.adminTag;
 
     for (const rank of sortedRanks) {
@@ -26,7 +26,7 @@ export function getPlayerRank(player, config) {
             let match = false;
             switch (condition.type) {
                 case 'ownerName':
-                    if (ownerName && player.name.toLowerCase() === ownerName) {
+                    if (ownerNames.includes(player.name.toLowerCase())) {
                         match = true;
                     }
                     break;
@@ -50,7 +50,7 @@ export function getPlayerRank(player, config) {
         id: 'member',
         name: 'Member',
         permissionLevel: defaultPermissionLevel,
-        conditions: [{ type: 'default' }],
+        conditions: [{ type: 'default' }]
     };
 }
 

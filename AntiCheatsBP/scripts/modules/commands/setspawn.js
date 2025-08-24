@@ -12,7 +12,7 @@ commandManager.register({
             x: player.location.x,
             y: player.location.y,
             z: player.location.z,
-            dimensionId: player.dimension.id,
+            dimensionId: player.dimension.id
         };
 
         updateConfig('spawnLocation', location);
@@ -20,5 +20,5 @@ commandManager.register({
         const locationString = `X: ${Math.floor(location.x)}, Y: ${Math.floor(location.y)}, Z: ${Math.floor(location.z)}`;
         player.sendMessage(`§aServer spawn point set to your location: ${locationString}`);
         playSound(player, 'random.orb');
-    },
+    }
 });

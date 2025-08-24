@@ -34,5 +34,5 @@ commandManager.register({
 
         player.sendMessage(statusMessage.trim());
         playSound(player, 'random.orb');
-    },
+    }
 });

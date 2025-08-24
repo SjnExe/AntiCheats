@@ -14,5 +14,5 @@ commandManager.register({
             player.sendMessage(`§cTest 2 failed: ${e.message}`);
             console.error(`[Test2] ${e.stack}`);
         }
-    },
+    }
 });

@@ -57,5 +57,5 @@ commandManager.register({
             playSound(player, 'note.bass');
             console.error(`[!kick] ${error.stack}`);
         }
-    },
+    }
 });

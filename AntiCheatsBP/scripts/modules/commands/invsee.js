@@ -34,5 +34,5 @@ commandManager.register({
         // The command will just open the player management panel for that player.
         showPanel(player, 'playerManagementPanel', { targetPlayer: targetPlayer });
         player.sendMessage(`§aOpening management panel for ${targetPlayer.name}. Please click 'View Inventory'.`);
-    },
+    }
 });

@@ -22,5 +22,5 @@ commandManager.register({
             player.sendMessage('§cFailed to reload addon systems. Check the console for errors.');
             console.error(`[!reload] ${error.stack}`);
         }
-    },
+    }
 });

@@ -132,7 +132,7 @@ export function showPanel(player, panelId, context = {}) {
                 `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
                 `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`,
                 `§fDimension: §6${targetPlayer.dimension.id.replace('minecraft:', '')}`,
-                `§fCoords: §bX: ${Math.floor(targetPlayer.location.x)}, Y: ${Math.floor(targetPlayer.location.y)}, Z: ${Math.floor(targetPlayer.location.z)}`,
+                `§fCoords: §bX: ${Math.floor(targetPlayer.location.x)}, Y: ${Math.floor(targetPlayer.location.y)}, Z: ${Math.floor(targetPlayer.location.z)}`
             ].join('\n\n'); // Use double newline for spacing
             form.body(profile);
         }
@@ -150,7 +150,7 @@ export function showPanel(player, panelId, context = {}) {
             icon: 'textures/gui/controls/left.png',
             permissionLevel: 1024,
             actionType: 'openPanel', // This is a placeholder, the logic is handled specially
-            actionValue: panelDef.parentPanelId,
+            actionValue: panelDef.parentPanelId
         });
     }
 
@@ -303,7 +303,7 @@ uiActionFunctions['showStatus'] = (player) => {
     const statusText = [
         '§l§bServer Status§r',
         `§eOnline Players: §f${onlinePlayers}`,
-        `§eCurrent Tick: §f${system.currentTick}`,
+        `§eCurrent Tick: §f${system.currentTick}`
         // Add more status info here later
     ].join('\n\n');
 
@@ -455,7 +455,7 @@ uiActionFunctions['showMyStats'] = (player, context) => {
     const stats = [
         `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
         `§fBalance: §a$${pData.balance.toFixed(2)}`,
-        `§fHomes Set: §e${Object.keys(pData.homes).length} / ${config.homes.maxHomes}`,
+        `§fHomes Set: §e${Object.keys(pData.homes).length} / ${config.homes.maxHomes}`
     ].join('\n');
 
     const form = new MessageFormData()
@@ -473,7 +473,7 @@ uiActionFunctions['showHelpfulLinks'] = (player, context) => {
         `§f${config.serverInfo.discordLink}`,
         '',
         '§l§bWebsite:§r',
-        `§f${config.serverInfo.websiteLink}`,
+        `§f${config.serverInfo.websiteLink}`
     ].join('\n');
 
     const form = new MessageFormData()

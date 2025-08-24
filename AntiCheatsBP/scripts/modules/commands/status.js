@@ -9,5 +9,5 @@ commandManager.register({
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         showPanel(player, 'statusPanel');
-    },
+    }
 });

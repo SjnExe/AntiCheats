@@ -39,5 +39,5 @@ commandManager.register({
         } else {
             player.sendMessage(`§c${result.message}`);
         }
-    },
+    }
 });

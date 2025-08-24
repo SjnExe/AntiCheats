@@ -72,5 +72,5 @@ commandManager.register({
         }
 
         player.sendMessage('§cInvalid syntax for !tp command.');
-    },
+    }
 });

@@ -22,5 +22,5 @@ commandManager.register({
             player.sendMessage('§aYou are now vanished.');
             world.sendMessage(`§e${player.name} left the game.`);
         }
-    },
+    }
 });

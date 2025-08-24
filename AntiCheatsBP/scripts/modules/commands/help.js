@@ -10,32 +10,32 @@ function showCategorizedHelp(player, userPermissionLevel) {
     const commandStructure = {
         '§aGeneral': {
             systemToggle: null,
-            commands: ['help', 'status', 'rules', 'version'],
+            commands: ['help', 'status', 'rules', 'version']
         },
         '§dTeleportation (TPA)': {
             systemToggle: 'tpa',
-            commands: ['tpa', 'tpahere', 'tpaccept', 'tpadeny', 'tpacancel'],
+            commands: ['tpa', 'tpahere', 'tpaccept', 'tpadeny', 'tpacancel']
         },
         '§2Homes': {
             systemToggle: 'homes',
-            commands: ['sethome', 'home', 'delhome', 'homes'],
+            commands: ['sethome', 'home', 'delhome', 'homes']
         },
         '§6Economy': {
             systemToggle: 'economy',
-            commands: ['balance', 'pay', 'baltop'],
+            commands: ['balance', 'pay', 'baltop']
         },
         '§eKits': {
             systemToggle: 'kits',
-            commands: ['kit'],
+            commands: ['kit']
         },
         '§cModeration': {
             systemToggle: null,
-            commands: ['panel', 'kick', 'mute', 'unmute', 'freeze', 'vanish', 'invsee', 'tp', 'ban', 'unban', 'clearchat'],
+            commands: ['panel', 'kick', 'mute', 'unmute', 'freeze', 'vanish', 'invsee', 'tp', 'ban', 'unban', 'clearchat']
         },
         '§9Administration': {
             systemToggle: null,
-            commands: ['admin', 'gmc', 'gms', 'gma', 'gmsp', 'clear', 'ecwipe', 'reload', 'debug'],
-        },
+            commands: ['admin', 'gmc', 'gms', 'gma', 'gmsp', 'clear', 'ecwipe', 'reload', 'debug']
+        }
     };
 
     for (const categoryName in commandStructure) {
@@ -111,5 +111,5 @@ commandManager.register({
         } else {
             showSpecificHelp(player, topic);
         }
-    },
+    }
 });

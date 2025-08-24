@@ -49,6 +49,16 @@ system.run(() => {
 
     const config = getConfig();
 
+    // Owner configuration check
+    if (!config.ownerPlayerNames || config.ownerPlayerNames.length === 0 || config.ownerPlayerNames[0] === 'Your•Name•Here') {
+        const warningMessage = '§l§c[AntiCheats] WARNING: No owner is configured. Please set `ownerPlayerNames` in `scripts/config.js` to gain access to admin commands.';
+        // Use a runTimeout to ensure the message is sent after the world is fully initialized.
+        system.runTimeout(() => {
+            world.sendMessage(warningMessage);
+        }, 20);
+        console.warn('[AntiCheats] No owner configured.');
+    }
+
     // Setup Creative Detection
     if (config.creativeDetection.enabled) {
         if (config.defaultGamemode === 'creative') {
