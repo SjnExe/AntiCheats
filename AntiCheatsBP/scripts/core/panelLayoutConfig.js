@@ -55,7 +55,7 @@ export const panelDefinitions = {
             {
                 id: 'myStats',
                 text: 'My Stats',
-                icon: 'textures/ui/icon_setting.png',
+                icon: 'textures/ui/iconsicon_multiplayer.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showMyStats'
