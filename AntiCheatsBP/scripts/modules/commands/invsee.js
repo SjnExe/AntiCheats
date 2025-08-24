@@ -1,38 +1,52 @@
-import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
-import { showPanel } from '../../core/uiManager.js'; // Note: This might create a circular dependency if uiManager imports command files. Assuming it doesn't.
+import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({
     name: 'invsee',
-    description: "Views a player's inventory via the UI panel.",
+    description: "Views a player's inventory in chat.",
     category: 'Admin',
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {
-            player.sendMessage('§cUsage: !invsee <playerName>');
+            player.sendMessage('§cUsage: !invsee <playerName> [page]');
             return;
         }
 
         const targetName = args[0];
-        const targetPlayer = [...world.getPlayers()].find(p => p.name === targetName);
+        const targetPlayer = findPlayerByName(targetName);
 
         if (!targetPlayer) {
             player.sendMessage(`§cPlayer "${targetName}" not found.`);
             return;
         }
 
-        // The 'showInventoryPanel' function is defined in uiManager and expects a context object.
-        // However, showPanel itself is the entry point. We need to call the function directly if possible.
-        // A better approach is to have uiManager export the function.
-        // I will assume uiActionFunctions is not exported, so I must call `showPanel` for the management panel, which is not ideal.
-        // Let's reconsider. The `viewInventory` function is now in `uiActionFunctions`.
-        // The most direct way to call this is not exposed.
+        const inventory = targetPlayer.getComponent('inventory').container;
+        const items = [];
+        for (let i = 0; i < inventory.size; i++) {
+            const item = inventory.getItem(i);
+            if (item) {
+                items.push(`§eS${i}: §f${item.typeId.replace('minecraft:', '')} §7x${item.amount}`);
+            }
+        }
 
-        // The simplest way to trigger the UI is to open the panel that can lead to it.
-        // A better way would be to export uiActionFunctions and call it directly.
-        // Let's assume I can't change exports now.
-        // The command will just open the player management panel for that player.
-        showPanel(player, 'playerManagementPanel', { targetPlayer: targetPlayer });
-        player.sendMessage(`§aOpening management panel for ${targetPlayer.name}. Please click 'View Inventory'.`);
+        if (items.length === 0) {
+            player.sendMessage(`§6Inventory of ${targetPlayer.name}: §r§7(Empty)`);
+            return;
+        }
+
+        const ITEMS_PER_PAGE = 10;
+        const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+        let page = parseInt(args[1], 10) - 1 || 0;
+        if (page < 0 || page >= totalPages) {
+            page = 0;
+        }
+
+        const startIndex = page * ITEMS_PER_PAGE;
+        const pageItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+        let message = `§6Inv: ${targetPlayer.name} (Page ${page + 1}/${totalPages})§r\n`;
+        message += pageItems.join('\n');
+
+        player.sendMessage(message);
     }
 });

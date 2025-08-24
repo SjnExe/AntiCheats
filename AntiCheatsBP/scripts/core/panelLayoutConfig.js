@@ -53,17 +53,9 @@ export const panelDefinitions = {
                 actionValue: 'showRules'
             },
             {
-                id: 'status',
-                text: 'Status',
-                icon: 'textures/ui/icon_setting.png',
-                permissionLevel: 1024,
-                actionType: 'openPanel',
-                actionValue: 'statusPanel'
-            },
-            {
                 id: 'myStats',
                 text: 'My Stats',
-                icon: 'textures/ui/icon_bestfriend',
+                icon: 'textures/ui/icon_setting.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showMyStats'
@@ -71,7 +63,7 @@ export const panelDefinitions = {
             {
                 id: 'helpfulLinks',
                 text: 'Helpful Links',
-                icon: 'textures/ui/icon_Details',
+                icon: 'textures/ui/book_writable',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showHelpfulLinks'
@@ -82,20 +74,6 @@ export const panelDefinitions = {
         title: '§lOnline Players§r',
         parentPanelId: 'mainPanel',
         items: [] // This will be populated dynamically by uiManager
-    },
-    statusPanel: {
-        title: '§lServer Status§r',
-        parentPanelId: 'mainPanel',
-        items: [
-            {
-                id: 'viewStatus',
-                text: 'View Server Info',
-                icon: 'textures/ui/icon_setting.png',
-                permissionLevel: 1024,
-                actionType: 'functionCall',
-                actionValue: 'showStatus'
-            }
-        ]
     },
     playerListPanel: {
         title: '§lSelect a Player§r',
@@ -145,14 +123,6 @@ export const panelDefinitions = {
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'toggleFreeze'
-            },
-            {
-                id: 'viewInventory',
-                text: 'View Inventory',
-                icon: 'textures/ui/inventory_icon',
-                permissionLevel: 1,
-                actionType: 'functionCall',
-                actionValue: 'showInventoryPanel'
             },
             {
                 id: 'clearInventory',

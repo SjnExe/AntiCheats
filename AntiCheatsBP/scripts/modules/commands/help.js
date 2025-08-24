@@ -10,11 +10,11 @@ function showCategorizedHelp(player, userPermissionLevel) {
     const commandStructure = {
         '§aGeneral': {
             systemToggle: null,
-            commands: ['help', 'status', 'rules', 'version']
+            commands: ['help', 'status', 'rules', 'version', 'spawn']
         },
         '§dTeleportation (TPA)': {
             systemToggle: 'tpa',
-            commands: ['tpa', 'tpahere', 'tpaccept', 'tpadeny', 'tpacancel']
+            commands: ['tpa', 'tpahere', 'tpaccept', 'tpadeny', 'tpacancel', 'tpastatus']
         },
         '§2Homes': {
             systemToggle: 'homes',
@@ -34,7 +34,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
         },
         '§9Administration': {
             systemToggle: null,
-            commands: ['admin', 'gmc', 'gms', 'gma', 'gmsp', 'clear', 'ecwipe', 'reload', 'debug']
+            commands: ['admin', 'rank', 'gmc', 'gms', 'gma', 'gmsp', 'clear', 'ecwipe', 'copyinv', 'reload', 'debug', 'setspawn']
         }
     };
 

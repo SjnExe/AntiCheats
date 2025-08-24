@@ -1,13 +1,19 @@
 import { commandManager } from './commandManager.js';
-import { showPanel } from '../../core/uiManager.js';
+import { world, system } from '@minecraft/server';
 
 commandManager.register({
     name: 'status',
-    aliases: ['stats'],
-    description: 'Displays the server status.',
+    description: 'Displays the current server status.',
     category: 'General',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
-        showPanel(player, 'statusPanel');
+        const onlinePlayers = world.getAllPlayers().length;
+        const statusText = [
+            '§l§b--- Server Status ---§r',
+            `§eOnline Players: §f${onlinePlayers}`,
+            `§eCurrent Tick: §f${system.currentTick}`
+        ].join('\n');
+
+        player.sendMessage(statusText);
     }
 });

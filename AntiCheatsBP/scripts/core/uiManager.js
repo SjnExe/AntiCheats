@@ -380,67 +380,6 @@ uiActionFunctions['teleportHere'] = (player, context) => {
     player.runCommandAsync(`tp "${targetPlayer.name}" "${player.name}"`);
 };
 
-// --- Inventory Viewer Logic ---
-// This is kept inside the UI manager to avoid command/UI conflicts.
-uiActionFunctions['showInventoryPanel'] = (player, context) => {
-    const targetPlayer = context.targetPlayer;
-    if (!targetPlayer) {
-        player.sendMessage('§cTarget player not found in context.');
-        return;
-    }
-
-    const targetId = targetPlayer.id;
-    const targetName = targetPlayer.name;
-    const ITEMS_PER_PAGE = 10;
-
-    function showInventoryPage(viewingPlayer, page = 0) {
-        const target = world.getPlayer(targetId);
-        if (!target) {
-            viewingPlayer.sendMessage(`§cPlayer "${targetName}" is no longer online.`);
-            return;
-        }
-
-        const inventory = target.getComponent('inventory').container;
-        const items = [];
-        for (let i = 0; i < inventory.size; i++) {
-            const item = inventory.getItem(i);
-            if (item) {
-                items.push(`§eSlot ${i}: §f${item.typeId.replace('minecraft:', '')} §7x${item.amount}`);
-            }
-        }
-
-        if (items.length === 0) {
-            new MessageFormData()
-                .title(`Inventory: ${target.name}`)
-                .body('§7(Inventory is empty)')
-                .button1('§cClose')
-                .show(viewingPlayer).catch(e => console.error(`[InvSeePanel] Empty inv form promise rejected: ${e.stack}`));
-            return;
-        }
-
-        const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
-        const startIndex = page * ITEMS_PER_PAGE;
-        const pageItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-        const form = new MessageFormData()
-            .title(`Inventory: ${target.name} (Page ${page + 1}/${totalPages})`)
-            .body(pageItems.join('\n'))
-            .button1('Close');
-
-        if (page + 1 < totalPages) {
-            form.button2('Next Page');
-        }
-
-        form.show(viewingPlayer).then(response => {
-            if (response.canceled || response.selection === 0) return;
-            if (response.selection === 1) {
-                showInventoryPage(viewingPlayer, page + 1);
-            }
-        }).catch(e => console.error(`[InvSeePanel] form.show promise rejected: ${e.stack}`));
-    }
-
-    showInventoryPage(player, 0);
-};
 
 uiActionFunctions['showMyStats'] = (player, context) => {
     const pData = getPlayer(player.id);
