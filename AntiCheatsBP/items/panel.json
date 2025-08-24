@@ -26,7 +26,7 @@
             "minecraft:rarity": "common",
             "minecraft:enchantable": {
                 "value": 10,
-                "slot": "mainhand"
+                "slot": "sword"
             }
         }
     }
