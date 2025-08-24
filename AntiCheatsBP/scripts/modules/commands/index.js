@@ -9,7 +9,7 @@ const commandFiles = [
     // Homes
     'sethome.js', 'home.js', 'delhome.js', 'homes.js',
     // Economy
-    'balance.js', 'pay.js', 'baltop.js', 'bounty.js',
+    'balance.js', 'pay.js', 'baltop.js', 'bounty.js', 'listbounty.js', 'rbounty.js',
     // Kits
     'kit.js',
     // Moderation

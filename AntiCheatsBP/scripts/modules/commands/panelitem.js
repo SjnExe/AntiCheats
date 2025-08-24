@@ -25,8 +25,7 @@ commandManager.register({
         }
 
         const panelItem = new ItemStack('ac:panel', 1);
-        const enchantable = panelItem.getComponent('enchantable');
-        enchantable.addEnchantment({ type: new EnchantmentType('curse_of_vanishing'), level: 1 });
+        panelItem.getComponent('enchantable')?.addEnchantment({ type: new EnchantmentType('curse_of_vanishing'), level: 1 });
         container.addItem(panelItem);
         player.sendMessage('§aYou have received the panel item.');
     }
