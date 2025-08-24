@@ -34,7 +34,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
         },
         '§9Administration': {
             systemToggle: null,
-            commands: ['admin', 'rank', 'gmc', 'gms', 'gma', 'gmsp', 'clear', 'ecwipe', 'copyinv', 'reload', 'debug', 'setspawn']
+            commands: ['admin', 'rank', 'gmc', 'gms', 'gma', 'gmsp', 'clear', 'ecwipe', 'copyinv', 'reload', 'debug', 'setspawn', 'setbalance']
         }
     };
 
