@@ -1,5 +1,5 @@
 import { commandManager } from './commandManager.js';
-import { ItemStack, EnchantmentType } from '@minecraft/server';
+import { ItemStack, MinecraftEnchantmentTypes } from '@minecraft/server';
 
 commandManager.register({
     name: 'panelitem',
@@ -25,7 +25,7 @@ commandManager.register({
         }
 
         const panelItem = new ItemStack('ac:panel', 1);
-        panelItem.getComponent('enchantable')?.addEnchantment({ type: new EnchantmentType('curse_of_vanishing'), level: 1 });
+        panelItem.getComponent('enchantable')?.addEnchantment({ type: MinecraftEnchantmentTypes.vanishing, level: 1 });
         container.addItem(panelItem);
         player.sendMessage('§aYou have received the panel item.');
     }
