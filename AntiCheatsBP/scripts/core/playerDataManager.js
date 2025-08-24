@@ -13,6 +13,8 @@
  * @property {Object.<string, HomeLocation>} homes
  * @property {number} balance
  * @property {Object.<string, number>} kitCooldowns
+ * @property {number} bounty
+ * @property {Object.<string, number>} bounties
  */
 
 import { getConfig } from './configManager.js';
@@ -34,7 +36,9 @@ export function addPlayer(player) {
         permissionLevel: 1024, // Default permission level
         homes: {},
         balance: config.economy.startingBalance,
-        kitCooldowns: {}
+        kitCooldowns: {},
+        bounty: 0,
+        bounties: {}
     };
     activePlayerData.set(player.id, playerData);
     return playerData;

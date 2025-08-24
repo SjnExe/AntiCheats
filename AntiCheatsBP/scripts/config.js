@@ -33,7 +33,8 @@ export const config = {
     economy: {
         enabled: true,
         startingBalance: 0,
-        baltopLimit: 10
+        baltopLimit: 10,
+        minimumBounty: 100
     },
     creativeDetection: {
         enabled: true,

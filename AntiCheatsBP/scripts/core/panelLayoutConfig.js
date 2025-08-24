@@ -149,5 +149,27 @@ export const panelDefinitions = {
                 actionValue: 'teleportHere'
             }
         ]
+    },
+    publicPlayerActionsPanel: {
+        title: '§lActions for {playerName}§r',
+        parentPanelId: 'publicPlayerListPanel',
+        items: [
+            {
+                id: 'setBounty',
+                text: 'Set Bounty',
+                icon: 'textures/items/gold_ingot.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showBountyForm'
+            },
+            {
+                id: 'sendTpaRequest',
+                text: 'Send TPA Request',
+                icon: 'textures/ui/icon_out.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'sendTpaRequest'
+            }
+        ]
     }
 };

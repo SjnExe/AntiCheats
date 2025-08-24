@@ -22,7 +22,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
         },
         '§6Economy': {
             systemToggle: 'economy',
-            commands: ['balance', 'pay', 'baltop']
+            commands: ['balance', 'pay', 'baltop', 'bounty']
         },
         '§eKits': {
             systemToggle: 'kits',

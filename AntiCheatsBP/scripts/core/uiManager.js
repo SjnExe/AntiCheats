@@ -90,7 +90,7 @@ export function showPanel(player, panelId, context = {}) {
             // Use the chat prefix for the display name
             const prefix = rank.chatFormatting?.prefixText ?? '';
             let displayName = `${prefix}${p.name}§r`;
-            return { rank, displayName };
+            return { player: p, rank, displayName };
         });
 
         playerList.sort((a, b) => {
@@ -109,8 +109,12 @@ export function showPanel(player, panelId, context = {}) {
             form.show(player).then(response => {
                 if (response.canceled || response.selection === 0) {
                     showPanel(player, 'mainPanel');
+                    return;
                 }
-                // No action when a player name is clicked
+                const selectedPlayer = playerList[response.selection - 1].player;
+                if (selectedPlayer) {
+                    showPanel(player, 'publicPlayerActionsPanel', { targetPlayer: selectedPlayer });
+                }
             }).catch(e => console.error(`[UIManager] publicPlayerListPanel promise rejected: ${e.stack}`));
         }, 10);
         return;
@@ -378,6 +382,40 @@ uiActionFunctions['teleportHere'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
     player.runCommandAsync(`tp "${targetPlayer.name}" "${player.name}"`);
+};
+
+uiActionFunctions['showBountyForm'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) {
+        player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+
+    if (player.id === targetPlayer.id) {
+        player.sendMessage('§cYou cannot place a bounty on yourself.');
+        return;
+    }
+
+    const form = new ModalFormData()
+        .title(`Set Bounty on ${targetPlayer.name}`)
+        .textField('Bounty Amount', 'Enter amount');
+
+    form.show(player).then(response => {
+        if (response.canceled) return;
+        const [amountStr] = response.formValues;
+        player.runCommandAsync(`bounty "${targetPlayer.name}" ${amountStr}`);
+    }).catch(e => {
+        console.error(`[UIManager] showBountyForm promise rejected: ${e.stack}`);
+    });
+};
+
+uiActionFunctions['sendTpaRequest'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) {
+        player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+    player.runCommandAsync(`tpa "${targetPlayer.name}"`);
 };
 
 
