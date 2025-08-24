@@ -1,4 +1,4 @@
-import { commandManager } from '../../core/commandManager.js';
+import { commandManager } from './commandManager.js';
 import { ItemStack, EnchantmentType } from '@minecraft/server';
 
 commandManager.register({

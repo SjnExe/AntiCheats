@@ -1,4 +1,4 @@
-import { commandManager } from '../../core/commandManager.js';
+import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
