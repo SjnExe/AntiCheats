@@ -45,6 +45,14 @@ export const panelDefinitions = {
                 actionValue: 'publicPlayerListPanel'
             },
             {
+                id: 'reportManagement',
+                text: 'Report Management',
+                icon: 'textures/ui/feed.png',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'reportListPanel'
+            },
+            {
                 id: 'rules',
                 text: 'Rules',
                 icon: 'textures/items/book_enchanted.png',
@@ -169,6 +177,49 @@ export const panelDefinitions = {
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'sendTpaRequest'
+            },
+            {
+                id: 'reportPlayer',
+                text: 'Report Player',
+                icon: 'textures/ui/chat_send.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showReportForm'
+            }
+        ]
+    },
+    reportListPanel: {
+        title: '§lActive Reports§r',
+        parentPanelId: 'mainPanel',
+        items: [] // This will be populated dynamically by uiManager
+    },
+    reportActionsPanel: {
+        title: '§lReport Details§r',
+        parentPanelId: 'reportListPanel',
+        items: [
+            {
+                id: 'assignReport',
+                text: 'Assign to Me',
+                icon: 'textures/ui/mine.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'assignReport'
+            },
+            {
+                id: 'resolveReport',
+                text: 'Mark as Resolved',
+                icon: 'textures/ui/check.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'resolveReport'
+            },
+            {
+                id: 'clearReport',
+                text: 'Clear Report',
+                icon: 'textures/ui/trash.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'clearReport'
             }
         ]
     }

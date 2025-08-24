@@ -6,6 +6,7 @@ import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 import { getPlayerRank } from './rankManager.js';
 import { playSound } from './utils.js';
+import { createReport, getAllReports } from './reportManager.js';
 
 const uiActionFunctions = {};
 
@@ -80,6 +81,30 @@ export function showPanel(player, panelId, context = {}) {
             }).catch(e => console.error(`[UIManager] playerListPanel promise rejected: ${e.stack}`));
         }, 10);
         return; // Stop further processing for this panel
+    } else if (panelId === 'reportListPanel') {
+        const reports = getAllReports();
+        const form = new ActionFormData().title(title);
+
+        // Add a back button
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
+
+        reports.forEach(report => {
+            form.button(`Report against ${report.reportedPlayerName}\n§7By: ${report.reporterName} §8- Status: ${report.status}`);
+        });
+
+        system.runTimeout(() => {
+            form.show(player).then(response => {
+                if (response.canceled || response.selection === 0) {
+                    showPanel(player, 'mainPanel');
+                    return;
+                }
+                const selectedReport = reports[response.selection - 1];
+                if (selectedReport) {
+                    showPanel(player, 'reportActionsPanel', { targetReport: selectedReport });
+                }
+            }).catch(e => console.error(`[UIManager] reportListPanel promise rejected: ${e.stack}`));
+        }, 10);
+        return;
     } else if (panelId === 'publicPlayerListPanel') {
         const config = getConfig();
         const onlinePlayers = world.getAllPlayers();
@@ -139,6 +164,19 @@ export function showPanel(player, panelId, context = {}) {
                 `§fCoords: §bX: ${Math.floor(targetPlayer.location.x)}, Y: ${Math.floor(targetPlayer.location.y)}, Z: ${Math.floor(targetPlayer.location.z)}`
             ].join('\n\n'); // Use double newline for spacing
             form.body(profile);
+        }
+    } else if (panelId === 'reportActionsPanel') {
+        const report = context.targetReport;
+        if (report) {
+            const details = [
+                `§fReport ID: §e${report.id}`,
+                `§fReporter: §e${report.reporterName}`,
+                `§fReported: §e${report.reportedPlayerName}`,
+                `§fReason: §e${report.reason}`,
+                `§fStatus: §e${report.status}`,
+                `§fAssigned to: §e${report.assignedAdminId || 'N/A'}`
+            ].join('\n\n');
+            form.body(details);
         }
     }
 
@@ -416,6 +454,48 @@ uiActionFunctions['sendTpaRequest'] = (player, context) => {
         return;
     }
     player.runCommandAsync(`tpa "${targetPlayer.name}"`);
+};
+
+uiActionFunctions['showReportForm'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) {
+        player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+
+    const form = new ModalFormData()
+        .title(`Report ${targetPlayer.name}`)
+        .textField('Reason', 'Enter report reason');
+
+    form.show(player).then(response => {
+        if (response.canceled) return;
+        const [reason] = response.formValues;
+        createReport(player, targetPlayer, reason);
+        player.sendMessage('§aThank you for your report. An admin will review it shortly.');
+    }).catch(e => {
+        console.error(`[UIManager] showReportForm promise rejected: ${e.stack}`);
+    });
+};
+
+uiActionFunctions['assignReport'] = (player, context) => {
+    const report = context.targetReport;
+    if (!report) return player.sendMessage('§cReport not found in context.');
+    // assignReport(report.id, player.id); // To be implemented in reportManager
+    player.sendMessage(`§aReport ${report.id} assigned to you.`);
+};
+
+uiActionFunctions['resolveReport'] = (player, context) => {
+    const report = context.targetReport;
+    if (!report) return player.sendMessage('§cReport not found in context.');
+    // resolveReport(report.id); // To be implemented in reportManager
+    player.sendMessage(`§aReport ${report.id} marked as resolved.`);
+};
+
+uiActionFunctions['clearReport'] = (player, context) => {
+    const report = context.targetReport;
+    if (!report) return player.sendMessage('§cReport not found in context.');
+    // clearReport(report.id); // To be implemented in reportManager
+    player.sendMessage(`§aReport ${report.id} cleared.`);
 };
 
 
