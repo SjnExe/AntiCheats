@@ -1,7 +1,7 @@
 export const config = {
     // --- System & Core Settings ---
     version: 'v__VERSION_STRING__',
-    ownerPlayerName: 'Your•Name•Here',
+    ownerPlayerNames: ['Your•Name•Here'],
     adminTag: 'admin',
     commandPrefix: '!',
     defaultGamemode: 'survival',
@@ -91,6 +91,6 @@ export const config = {
         'balance': { enabled: true },
         'pay': { enabled: true },
         'baltop': { enabled: true },
-        'kit': { enabled: true },
+        'kit': { enabled: true }
     },
 };
