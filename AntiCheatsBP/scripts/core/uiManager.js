@@ -10,7 +10,6 @@ import { playSound } from './utils.js';
 const uiActionFunctions = {};
 
 export function showPanel(player, panelId, context = {}) {
-    playSound(player, 'ui.button.click');
     debugLog(`[UIManager] Attempting to show panel "${panelId}" to ${player.name} with context: ${JSON.stringify(context)}`);
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) {
@@ -39,10 +38,20 @@ export function showPanel(player, panelId, context = {}) {
         const playerList = onlinePlayers.map(p => {
             const rank = getPlayerRank(p, config);
             let displayName = p.name;
-            if (p.name === player.name) displayName += ' (You)';
-            if (rank.name === 'Owner') displayName += ' (Owner)';
-            else if (rank.name === 'Admin') displayName += ' (Admin)';
-            return { player: p, rank, displayName };
+            let icon; // Default icon is undefined
+
+            if (rank.name === 'Owner') {
+                displayName += ` §r${rank.chatFormatting?.nameColor ?? '§4'}§lOwner§r`;
+                icon = 'textures/ui/crown_glyph_color';
+            } else if (rank.name === 'Admin') {
+                displayName += ` §r${rank.chatFormatting?.nameColor ?? '§c'}§lAdmin§r`;
+            }
+
+            if (p.id === player.id) {
+                displayName += ' §7(You)§r';
+            }
+
+            return { player: p, rank, displayName, icon };
         });
 
         playerList.sort((a, b) => {
@@ -53,10 +62,9 @@ export function showPanel(player, panelId, context = {}) {
         });
 
         // Add a back button
-        form.button('§l§8< Back');
-        playSound(player, 'ui.button.click');
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
 
-        playerList.forEach(p => form.button(p.displayName));
+        playerList.forEach(p => form.button(p.displayName, p.icon));
 
         system.runTimeout(() => {
             form.show(player).then(response => {
@@ -72,10 +80,63 @@ export function showPanel(player, panelId, context = {}) {
             }).catch(e => console.error(`[UIManager] playerListPanel promise rejected: ${e.stack}`));
         }, 10);
         return; // Stop further processing for this panel
+    } else if (panelId === 'publicPlayerListPanel') {
+        const config = getConfig();
+        const onlinePlayers = world.getAllPlayers();
+        const form = new ActionFormData().title(title);
+
+        const playerList = onlinePlayers.map(p => {
+            const rank = getPlayerRank(p, config);
+            // Use the chat prefix for the display name
+            const prefix = rank.chatFormatting?.prefixText ?? '';
+            let displayName = `${prefix}${p.name}§r`;
+            return { rank, displayName };
+        });
+
+        playerList.sort((a, b) => {
+            if (a.rank.permissionLevel !== b.rank.permissionLevel) {
+                return a.rank.permissionLevel - b.rank.permissionLevel;
+            }
+            return a.displayName.localeCompare(b.displayName);
+        });
+
+        // Add a back button
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
+
+        playerList.forEach(p => form.button(p.displayName)); // No icons needed here
+
+        system.runTimeout(() => {
+            form.show(player).then(response => {
+                if (response.canceled || response.selection === 0) {
+                    showPanel(player, 'mainPanel');
+                }
+                // No action when a player name is clicked
+            }).catch(e => console.error(`[UIManager] publicPlayerListPanel promise rejected: ${e.stack}`));
+        }, 10);
+        return;
     }
 
 
     const form = new ActionFormData().title(title);
+
+    // If it's the player management panel, add the profile body
+    if (panelId === 'playerManagementPanel') {
+        const targetPlayer = context.targetPlayer;
+        // This check should always pass if we reached here, but good practice
+        if (targetPlayer) {
+            const config = getConfig();
+            const targetPData = getPlayer(targetPlayer.id);
+            const rank = getPlayerRank(targetPlayer, config);
+            const profile = [
+                `§fName: §e${targetPlayer.name}`,
+                `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+                `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`,
+                `§fDimension: §6${targetPlayer.dimension.id.replace('minecraft:', '')}`,
+                `§fCoords: §bX: ${Math.floor(targetPlayer.location.x)}, Y: ${Math.floor(targetPlayer.location.y)}, Z: ${Math.floor(targetPlayer.location.z)}`
+            ].join('\n\n'); // Use double newline for spacing
+            form.body(profile);
+        }
+    }
 
     const menuItems = panelDef.items
         .filter(item => pData.permissionLevel <= item.permissionLevel)
@@ -86,10 +147,10 @@ export function showPanel(player, panelId, context = {}) {
         menuItems.unshift({
             id: '__back__',
             text: '§l§8< Back',
-            icon: 'textures/ui/arrow_left',
+            icon: 'textures/gui/controls/left.png',
             permissionLevel: 1024,
             actionType: 'openPanel', // This is a placeholder, the logic is handled specially
-            actionValue: panelDef.parentPanelId,
+            actionValue: panelDef.parentPanelId
         });
     }
 
@@ -113,7 +174,6 @@ export function showPanel(player, panelId, context = {}) {
             return;
         }
 
-        playSound(player, 'random.click');
         debugLog(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
 
         // Special handling for the back button
@@ -243,7 +303,7 @@ uiActionFunctions['showStatus'] = (player) => {
     const statusText = [
         '§l§bServer Status§r',
         `§eOnline Players: §f${onlinePlayers}`,
-        `§eCurrent Tick: §f${system.currentTick}`,
+        `§eCurrent Tick: §f${system.currentTick}`
         // Add more status info here later
     ].join('\n\n');
 
@@ -318,4 +378,47 @@ uiActionFunctions['teleportHere'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
     player.runCommandAsync(`tp "${targetPlayer.name}" "${player.name}"`);
+};
+
+
+uiActionFunctions['showMyStats'] = (player, context) => {
+    const pData = getPlayer(player.id);
+    const config = getConfig();
+    const rank = getPlayerRank(player, config);
+
+    if (!pData) {
+        player.sendMessage('§cCould not retrieve your data.');
+        return;
+    }
+
+    const stats = [
+        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+        `§fBalance: §a$${pData.balance.toFixed(2)}`,
+        `§fHomes Set: §e${Object.keys(pData.homes).length} / ${config.homes.maxHomes}`
+    ].join('\n');
+
+    const form = new MessageFormData()
+        .title('§lMy Stats§r')
+        .body(stats)
+        .button1('§cClose');
+
+    form.show(player).catch(e => console.error(`[UIManager] showMyStats promise rejected: ${e.stack}`));
+};
+
+uiActionFunctions['showHelpfulLinks'] = (player, context) => {
+    const config = getConfig();
+    const links = [
+        '§l§9Discord Server:§r',
+        `§f${config.serverInfo.discordLink}`,
+        '',
+        '§l§bWebsite:§r',
+        `§f${config.serverInfo.websiteLink}`
+    ].join('\n');
+
+    const form = new MessageFormData()
+        .title('§lHelpful Links§r')
+        .body(links)
+        .button1('§cClose');
+
+    form.show(player).catch(e => console.error(`[UIManager] showHelpfulLinks promise rejected: ${e.stack}`));
 };

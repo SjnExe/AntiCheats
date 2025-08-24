@@ -18,7 +18,7 @@ function checkPlayerGamemode(player) {
 
     if (player.getGameMode() === GameMode.Creative && pData.permissionLevel > 1) {
         player.setGameMode(config.defaultGamemode);
-        player.sendMessage("§cYou are not allowed to be in creative mode.");
+        player.sendMessage('§cYou are not allowed to be in creative mode.');
         debugLog(`[AntiCheats] Detected ${player.name} in creative mode without permission. Switched to ${config.defaultGamemode}.`);
     }
 }
@@ -48,6 +48,16 @@ system.run(() => {
     rankManager.initialize();
 
     const config = getConfig();
+
+    // Owner configuration check
+    if (!config.ownerPlayerNames || config.ownerPlayerNames.length === 0 || config.ownerPlayerNames[0] === 'Your•Name•Here') {
+        const warningMessage = '§l§c[AntiCheats] WARNING: No owner is configured. Please set `ownerPlayerNames` in `scripts/config.js` to gain access to admin commands.';
+        // Use a runTimeout to ensure the message is sent after the world is fully initialized.
+        system.runTimeout(() => {
+            world.sendMessage(warningMessage);
+        }, 20);
+        console.warn('[AntiCheats] No owner configured.');
+    }
 
     // Setup Creative Detection
     if (config.creativeDetection.enabled) {

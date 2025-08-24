@@ -26,16 +26,16 @@ export const kits = {
             { typeId: 'minecraft:stone_pickaxe', amount: 1 },
             { typeId: 'minecraft:stone_axe', amount: 1 },
             { typeId: 'minecraft:stone_shovel', amount: 1 },
-            { typeId: 'minecraft:bread', amount: 16 },
-        ],
+            { typeId: 'minecraft:bread', amount: 16 }
+        ]
     },
     food: {
         enabled: true,
         description: 'A simple food refill.',
         cooldownSeconds: 900, // 15 minutes
         items: [
-            { typeId: 'minecraft:cooked_beef', amount: 8 },
-        ],
-    },
+            { typeId: 'minecraft:cooked_beef', amount: 8 }
+        ]
+    }
     // Add more kits here in the future
 };

@@ -28,7 +28,7 @@ export function setHome(player, homeName) {
         x: player.location.x,
         y: player.location.y,
         z: player.location.z,
-        dimensionId: player.dimension.id,
+        dimensionId: player.dimension.id
     };
 
     return { success: true, message: `Home '${homeName}' has been set.` };

@@ -34,7 +34,7 @@ export function addPlayer(player) {
         permissionLevel: 1024, // Default permission level
         homes: {},
         balance: config.economy.startingBalance,
-        kitCooldowns: {},
+        kitCooldowns: {}
     };
     activePlayerData.set(player.id, playerData);
     return playerData;

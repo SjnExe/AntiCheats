@@ -2,10 +2,22 @@
 // By importing this single file, all commands within the imported modules will be registered.
 
 const commandFiles = [
-    'help.js', 'clearchat.js', 'kick.js', 'mute.js', 'ban.js', 'vanish.js', 'reload.js',
-    'gmc.js', 'gms.js', 'gma.js', 'gmsp.js', 'sethome.js', 'home.js', 'delhome.js', 'homes.js',
-    'tpa.js', 'tpahere.js', 'tpaccept.js', 'tpadeny.js', 'tpacancel.js', 'balance.js', 'pay.js',
-    'baltop.js', 'kit.js', 'clear.js', 'ecwipe.js', 'panel.js'
+    // General & Info
+    'help.js', 'status.js', 'rules.js', 'version.js',
+    // TPA
+    'tpa.js', 'tpahere.js', 'tpaccept.js', 'tpadeny.js', 'tpacancel.js', 'tpastatus.js',
+    // Homes
+    'sethome.js', 'home.js', 'delhome.js', 'homes.js',
+    // Economy
+    'balance.js', 'pay.js', 'baltop.js',
+    // Kits
+    'kit.js',
+    // Moderation
+    'panel.js', 'kick.js', 'mute.js', 'ban.js', 'freeze.js', 'vanish.js', 'invsee.js', 'tp.js', 'clearchat.js',
+    // Admin
+    'admin.js', 'rank.js', 'gmc.js', 'gms.js', 'gma.js', 'gmsp.js', 'clear.js', 'ecwipe.js', 'copyinv.js', 'reload.js', 'debug.js',
+    // Spawning
+    'setspawn.js', 'spawn.js'
 ];
 
 async function loadCommands() {

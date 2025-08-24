@@ -40,5 +40,5 @@ commandManager.register({
             player.sendMessage(`§cFailed to set gamemode. Error: ${e.message}`);
             console.error(`[gms] Failed to set gamemode: ${e.stack}`);
         }
-    },
+    }
 });

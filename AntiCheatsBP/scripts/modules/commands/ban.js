@@ -79,7 +79,7 @@ commandManager.register({
 
         // Kick the player after banning them
         targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
-    },
+    }
 });
 
 commandManager.register({
@@ -109,5 +109,5 @@ commandManager.register({
         removePunishment(targetPlayer.id);
         player.sendMessage(`§aSuccessfully unbanned ${targetPlayer.name}. They can now rejoin the server.`);
         playSound(player, 'random.orb');
-    },
+    }
 });

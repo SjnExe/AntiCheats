@@ -68,7 +68,7 @@ export function createRequest(sourcePlayer, targetPlayer, type) {
         targetPlayerName: targetPlayer.name,
         type,
         expiryTimestamp,
-        timeoutId,
+        timeoutId
     };
 
     outgoingRequests.set(sourcePlayer.id, request);

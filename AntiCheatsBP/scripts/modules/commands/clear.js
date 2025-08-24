@@ -46,5 +46,5 @@ commandManager.register({
             player.sendMessage('§aYour inventory has been cleared.');
             playSound(player, 'random.orb');
         }
-    },
+    }
 });

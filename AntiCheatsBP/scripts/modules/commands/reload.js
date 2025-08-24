@@ -14,5 +14,5 @@ commandManager.register({
             player.sendMessage('§cFailed to reload configuration.');
             console.error(`[!reload] ${error.stack}`);
         }
-    },
+    }
 });

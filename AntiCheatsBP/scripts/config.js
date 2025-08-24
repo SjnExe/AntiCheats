@@ -1,17 +1,17 @@
 export const config = {
     // --- System & Core Settings ---
     version: 'v__VERSION_STRING__',
-    ownerPlayerName: 'YourNameHere',
+    ownerPlayerNames: ['SjnTechMlmYT'],
     adminTag: 'admin',
     commandPrefix: '!',
     defaultGamemode: 'survival',
-    debug: false,
+    debug: true,
     acGlobalNotificationsDefaultOn: true,
 
     // --- Player Tags ---
     playerTags: {
         vanished: 'vanished',
-        frozen: 'frozen',
+        frozen: 'frozen'
     },
 
     // --- Feature Toggles & Settings ---
@@ -19,35 +19,35 @@ export const config = {
         enabled: true,
         requestTimeoutSeconds: 60,
         cooldownSeconds: 300, // 5 minutes
-        teleportWarmupSeconds: 5,
+        teleportWarmupSeconds: 5
     },
     homes: {
         enabled: true,
         maxHomes: 5,
         cooldownSeconds: 300, // 5 minutes
-        teleportWarmupSeconds: 5,
+        teleportWarmupSeconds: 5
     },
     kits: {
-        enabled: false,
+        enabled: false
     },
     economy: {
         enabled: true,
         startingBalance: 0,
-        baltopLimit: 10,
+        baltopLimit: 10
     },
     creativeDetection: {
         enabled: true,
         periodicCheck: {
             enabled: true,
-            intervalSeconds: 300, // 5 minutes
-        },
+            intervalSeconds: 300 // 5 minutes
+        }
     },
     playerInfo: {
         enableWelcomer: true,
         welcomeMessage: 'Welcome, {playerName}, to our amazing server!',
         notifyAdminOnNewPlayer: true,
         enableDeathCoords: true,
-        deathCoordsMessage: '§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.',
+        deathCoordsMessage: '§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.'
     },
 
     // --- Server Information ---
@@ -57,8 +57,8 @@ export const config = {
         rules: [
             'Rule 1: Be respectful.',
             'Rule 2: No cheating or exploiting.',
-            'Rule 3: Have fun!',
-        ],
+            'Rule 3: Have fun!'
+        ]
     },
 
     // --- Miscellaneous ---
@@ -69,7 +69,7 @@ export const config = {
         tpaRequestReceived: { enabled: true, soundId: 'random.orb', volume: 1.0, pitch: 1.2 },
         adminNotificationReceived: { enabled: true, soundId: 'note.pling', volume: 0.8, pitch: 1.5 },
         playerWarningReceived: { enabled: true, soundId: 'note.bass', volume: 1.0, pitch: 0.8 },
-        commandError: { enabled: false, soundId: 'mob.villager.no', volume: 1.0, pitch: 0.9 },
+        commandError: { enabled: false, soundId: 'mob.villager.no', volume: 1.0, pitch: 0.9 }
     },
 
     // --- Command Enable/Disable ---
@@ -91,6 +91,6 @@ export const config = {
         'balance': { enabled: true },
         'pay': { enabled: true },
         'baltop': { enabled: true },
-        'kit': { enabled: true },
-    },
+        'kit': { enabled: true }
+    }
 };
