@@ -45,6 +45,9 @@
             "version": "__VERSION_ARRAY__"
         }
     ],
+    "capabilities": [
+        "script_eval"
+    ],
     "metadata": {
         "authors": [
             "§6Sjn.exe§r"

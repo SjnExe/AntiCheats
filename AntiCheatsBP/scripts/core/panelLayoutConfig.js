@@ -79,7 +79,7 @@ export const panelDefinitions = {
             {
                 id: 'helpfulLinks',
                 text: 'Helpful Links',
-                icon: 'textures/ui/book_glyph',
+                icon: 'textures/ui/book_icon_default',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showHelpfulLinks'

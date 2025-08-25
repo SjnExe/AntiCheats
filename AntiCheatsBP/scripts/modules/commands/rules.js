@@ -1,5 +1,5 @@
 import { commandManager } from './commandManager.js';
-import { showPanel } from '../../core/uiManager.js';
+import { getConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'rules',
@@ -8,6 +8,18 @@ commandManager.register({
     category: 'General',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
-        showPanel(player, 'rulesPanel');
+        const config = getConfig();
+        const rules = config.serverInfo.rules;
+
+        if (!rules || rules.length === 0) {
+            player.sendMessage('§cThe server rules have not been configured by the admin.');
+            return;
+        }
+
+        player.sendMessage('§l§a--- Server Rules ---');
+        for (const rule of rules) {
+            player.sendMessage(`§e- ${rule}`);
+        }
+        player.sendMessage('§l§a------------------');
     }
 });
