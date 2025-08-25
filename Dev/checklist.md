@@ -11,9 +11,9 @@ This file tracks features that have been discussed but not yet implemented. This
 - [x] **Commands:** Re-implement the `!report`, `!reports`, and `!clearreports` commands to interact with this new UI system.
 
 ## 2. Ore Mining Notification System
-- [ ] **Detection:** Create a system that detects when a player mines specific valuable ores (Diamond Ore, Deepslate Diamond Ore, Ancient Debris).
-- [ ] **Admin Notification:** When detected, send a notification to online admins.
-- [ ] **User Toggle:** Add a command (e.g., `!togglenotifs ore`) for admins to disable or enable these specific notifications for themselves, so they aren't spammed.
+- [x] **Detection:** Create a system that detects when a player mines specific valuable ores (Diamond Ore, Deepslate Diamond Ore, Ancient Debris).
+- [x] **Admin Notification:** When detected, send a notification to online admins.
+- [x] **User Toggle:** Add a command (e.g., `!togglenotifs ore`) for admins to disable or enable these specific notifications for themselves, so they aren't spammed.
 
 ## 3. Dimension Lockdown Commands
 - [ ] **`!endlock` command:** Create a command for admins to prevent players from entering the End dimension.
