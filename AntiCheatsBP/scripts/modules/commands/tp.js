@@ -1,5 +1,4 @@
 import { commandManager } from './commandManager.js';
-import { world } from '@minecraft/server';
 import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({

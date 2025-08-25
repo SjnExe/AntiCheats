@@ -42,13 +42,12 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 ## ✨ Why Choose This AntiCheat?
 
 - **Scripting Power:** Built entirely with the Minecraft Scripting API, offering flexibility and complex detection logic not always possible with traditional methods.
-- **Comprehensive Detection:** A wide array of checks covering movement, combat, world interactions, and player exploits.
+- **Comprehensive Detection (Coming Soon):** While currently a powerful moderation tool, a full suite of cheat detections is in active development.
 - **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`!panel`) and extensive text commands. The `!ui` command is a convenient alias. Features a detailed Player Management panel with sorting, role display, and a wide array of actions.
-- **Highly Customizable:** Fine-tune almost every aspect, from detection sensitivity to automated actions, to perfectly suit your server's needs.
+- **Highly Customizable:** Fine-tune almost every aspect, from feature toggles to command permissions, to perfectly suit your server's needs.
 - **Active Development:** Continuously updated with new features, improvements, and compatibility for the latest Minecraft versions.
 - **Open & Documented:** With clear documentation and an open codebase, understand how it works and even contribute!
-- **Automatic Configuration Migration:** Your settings won't get lost! The addon automatically updates your configuration to be compatible with the latest version after an update.
-- **Enhanced Stability:** Includes a watchdog handler to prevent script-related server crashes, ensuring a more stable experience.
+- **Enhanced Stability:** Includes robust error handling and a watchdog to prevent script-related server crashes, ensuring a more stable experience.
 
 ---
 
@@ -61,20 +60,19 @@ This addon is packed with features to keep your server clean:
   - **Enhanced Player Management Panel:**
     - View online players, sorted by rank and name.
     - Player names are clearly marked with `(Owner)`, `(Admin)`, and `(You)` suffixes.
-    - Perform a wide range of actions: Kick, Ban, Mute/Unmute, Freeze, View/Clear Inventory, Teleport.
+    - Perform a wide range of actions: Kick, Ban/Unban, Mute/Unmute, Freeze, View/Clear Inventory, Teleport.
   - **New Commands:** `!clear` (clear inventory), `!ecwipe` (wipe ender chest), `!invsee` (view inventory).
   - Extensive text commands for all administrative functions (Note: the `!` prefix is configurable).
 - 💾 **Persistent Player Data Management:**
-  - Flags, violation records, mutes, and bans are saved across player sessions using dynamic properties.
+  - Mutes and bans are saved across player sessions using dynamic properties.
 - ⚙️ **Highly Configurable System:**
-  - Fine-tune detection sensitivity, toggle checks, and customize actions via configuration files.
-  - In-game UI settings for many common configurations.
+  - Toggle major features, customize messages, and define all permissions and ranks in easy-to-edit configuration files.
 - 🏅 **Flexible Rank System:**
   - Define Owner, Admin, Member, and custom roles with specific permissions and visual chat/nametag prefixes.
 - 📞 **Teleport Request System (TPA/TPAHere):**
   - Allows players to request teleports to others or summon others, with configurable cooldowns and warmup periods.
 - ✨ **Player & Server Utilities:**
-  - **Economy:** A simple economy system with player balances and payment commands.
+  - **Economy & Bounties:** A simple economy system with player balances, payment commands, and a full bounty system.
   - **Homes:** Allows players to set and teleport to their own personal "homes".
   - **Kits:** A system for players to claim predefined kits of items with cooldowns.
 
@@ -96,10 +94,15 @@ Get up and running in minutes!
    - In your world settings, go to the "Experiments" section.
    - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function correctly without this setting enabled.
 4. **Prioritize:** Ensure `AntiCheatsBP` is at the **TOP** of your behavior pack list. This is crucial for the AntiCheat to function correctly.
-5. **👑 Set Owner (CRUCIAL!):**
+5. **👑 Set Owner(s) (CRUCIAL!):**
    - After applying the packs, open `AntiCheatsBP/scripts/config.js` in a text editor. (You may need to extract the `.mcaddon` file to access its contents).
-   - Set `ownerPlayerName` to your **exact** in-game name. This is case-sensitive.
-   - **Failure to set an owner will result in no player having administrative permissions.**
+   - Find the `ownerPlayerNames` setting.
+   - Add your **exact** in-game name (case-sensitive) to the array. You can add multiple owner names.
+     ```javascript
+     // Example in AntiCheatsBP/scripts/config.js
+     ownerPlayerNames: ['YourNameHere', 'AnotherOwnerName'],
+     ```
+   - **Failure to set at least one owner will result in no player having administrative permissions.**
 6. **🎮 Explore:** Join your world and open the Admin UI. Admins can get the panel item directly by typing `!panel` or `!ui`. Any player can also craft the item using a single stick.
 7. **🔧 Configure (Optional but Recommended):**
    - Review `AntiCheatsBP/scripts/config.js` for other core settings (like the command `prefix`).
@@ -112,7 +115,7 @@ Common quick checks:
 
 - **Enable "Beta APIs":** Make sure the "Beta APIs" experimental toggle is ON in your world settings. This addon requires it.
 - Ensure `AntiCheatsBP` is at the very top of your behavior packs.
-- Verify your `ownerPlayerName` in `config.js` is exact (case-sensitive).
+- Verify you have added your exact, case-sensitive name to the `ownerPlayerNames` array in `config.js`.
 - Check Minecraft version compatibility (see badge above).
 - Test for conflicts with other addons, especially those modifying player behavior.
 
