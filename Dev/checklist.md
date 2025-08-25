@@ -3,12 +3,12 @@
 This file tracks features that have been discussed but not yet implemented. This can be used to maintain context between development sessions.
 
 ## 1. UI-Based Reporting System
-- [ ] **Player-side:** Add a "Report Player" button to one of the public-facing panels.
-- [ ] **Report Form:** This button should open a form where a player can type a reason for the report.
-- [ ] **Admin-side:** Create a "Report Management" panel for admins.
-- [ ] **Report List:** The panel should list all active reports.
-- [ ] **Report Actions:** Admins should be able to select a report to view details, assign it to themselves, resolve it, or clear it individually.
-- [ ] **Commands:** Re-implement the `!report`, `!reports`, and `!clearreports` commands to interact with this new UI system.
+- [x] **Player-side:** Add a "Report Player" button to one of the public-facing panels.
+- [x] **Report Form:** This button should open a form where a player can type a reason for the report.
+- [x] **Admin-side:** Create a "Report Management" panel for admins.
+- [x] **Report List:** The panel should list all active reports.
+- [x] **Report Actions:** Admins should be able to select a report to view details, assign it to themselves, resolve it, or clear it individually.
+- [x] **Commands:** Re-implement the `!report`, `!reports`, and `!clearreports` commands to interact with this new UI system.
 
 ## 2. Ore Mining Notification System
 - [ ] **Detection:** Create a system that detects when a player mines specific valuable ores (Diamond Ore, Deepslate Diamond Ore, Ancient Debris).
