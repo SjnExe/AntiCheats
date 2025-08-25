@@ -88,7 +88,7 @@ system.run(() => {
     system.runInterval(() => {
         playerDataManager.savePlayerData();
         debugLog('[AntiCheats] Player data saved.');
-    }, 20 * 60 * 5); // Autosave every 5 minutes
+    }, 20 * 60); // Autosave every 1 minute
     debugLog('[AntiCheats] Addon initialized successfully.');
 });
 
