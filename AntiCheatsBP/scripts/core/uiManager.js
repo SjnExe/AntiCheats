@@ -429,11 +429,6 @@ uiActionFunctions['showBountyForm'] = (player, context) => {
         return;
     }
 
-    if (player.id === targetPlayer.id) {
-        player.sendMessage('§cYou cannot place a bounty on yourself.');
-        return;
-    }
-
     const form = new ModalFormData()
         .title(`Set Bounty on ${targetPlayer.name}`)
         .textField('Bounty Amount', 'Enter amount');
