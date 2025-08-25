@@ -3,8 +3,8 @@
 This document provides a detailed breakdown of the features available in the AntiCheats Addon. For in-depth configuration of these features, please refer to the [Configuration Guide](ConfigurationGuide.md) and for command usage, see the [Commands List](Commands.md).
 
 > [!NOTE]
-> **This addon is a utility and moderation tool.**
-> A comprehensive suite of cheat detections is planned for a future update.
+> **This addon is currently a powerful moderation and server utility tool.**
+> The comprehensive suite of cheat detections from the original addon is being rebuilt and will be added in a future update.
 
 ---
 
@@ -20,15 +20,15 @@ This document provides a detailed breakdown of the features available in the Ant
     - Teleport to a player or teleport a player to you.
   - For regular players: Shows user-specific info like stats, rules, and links.
 - **Comprehensive Text Commands:** A full suite of chat-based commands offers granular control over all features and administrative actions. (See [Commands List](Commands.md) for a complete reference).
-- **Persistent Player Data:** Critical player data such as active mutes and bans are saved using Minecraft's dynamic properties, ensuring they persist across player sessions and server restarts.
+- **Persistent Player Data:** Active mutes and bans are saved using Minecraft's dynamic properties, ensuring they persist across player sessions and server restarts.
 
 ### B. Flexible Rank System
 
 - Define roles like Owner, Admin, and Member with specific permission levels.
 - Permissions control access to commands and addon features.
 - Customize visual chat prefixes/suffixes and nametag appearances for each rank.
-- For configuration details, see [Rank System Details](RankSystem.md).
-  - *Key Configs: `ranksConfig.js` (file for defining rank properties and conditions)*
+- For configuration details, see the [Configuration Guide](ConfigurationGuide.md) and [Rank System Documentation](RankSystem.md).
+  - *Key Configs: `config.js`, `ranksConfig.js`*
 
 ---
 
@@ -41,21 +41,22 @@ This document provides a detailed breakdown of the features available in the Ant
   - Configurable request timeout periods.
   - Cooldowns between sending requests.
   - Teleport warmup period, during which movement or taking damage can cancel the teleport.
-  - *Key Configs: `enableTpaSystem`, `tpaRequestTimeoutSeconds`, `tpaRequestCooldownSeconds`, `tpaTeleportWarmupSeconds`, `tpaCancelOnMoveDuringWarmup`, `tpaMovementTolerance`*
+  - *Key Configs: `config.js` (under the `tpa` section)*
 
-### B. Economy System
+### B. Economy & Bounty System
 
 - A simple economy system that allows players to have balances and transfer money.
-- **Commands:** `!balance`, `!pay`, `!baltop`.
+- A full player-driven bounty system to place bounties on other players.
+- **Commands:** `!balance`, `!pay`, `!baltop`, `!bounty`, `!listbounty`, `!rbounty`.
 - **New Player Balance:** New players start with a configurable amount of money.
-- *Key Configs: `economy.enabled`, `economy.startingBalance`*
+- *Key Configs: `config.js` (under the `economy` section)*
 
 ### C. Homes System
 
 - Allows players to set a limited number of "homes" they can teleport back to.
 - **Commands:** `!sethome`, `!home`, `!delhome`, `!homes`.
 - **Max Homes:** The maximum number of homes a player can set is configurable.
-- *Key Configs: `homes.enabled`, `homes.maxHomes`*
+- *Key Configs: `config.js` (under the `homes` section)*
 
 ### D. Kits System
 
@@ -63,7 +64,7 @@ This document provides a detailed breakdown of the features available in the Ant
 - **Commands:** `!kit`.
 - **Cooldowns:** Kits can have cooldowns to prevent them from being claimed too frequently.
 - **Customizable:** Kits are defined in `AntiCheatsBP/scripts/core/kitsConfig.js`.
-- *Key Configs: `kits.enabled`*
+- *Key Configs: `config.js` (under the `kits` section)*
 
 ### E. Server Rules Display
 - Players can view server rules using the `!rules` command.

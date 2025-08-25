@@ -1,92 +1,98 @@
-# Owner and Rank System
+# Rank and Permission System
 
-This addon features a flexible rank system to visually distinguish players, grant permissions, and customize chat appearances. While "Owner", "Admin", and "Member" are foundational, the system is designed to be extensible through `ranksConfig.js`.
+This addon features a flexible rank system to grant permissions and customize player appearances (chat and nametags). This guide explains how the system works, from basic setup to advanced customization.
 
-## Core Configuration (`config.js`)
+## How Ranks and Permissions Work
 
-Two key settings in `AntiCheatsBP/scripts/config.js` establish the highest privilege levels:
+The system is designed with a clear hierarchy:
 
-- **Owner:**
-  - **Setting:** `ownerPlayerName`
-  - **Action:** Set this to the **exact** in-game Minecraft name (case-sensitive) of the primary server owner.
+1.  **`config.js` is for Quick Setup:** You can set up your server's owners and admins in seconds by editing this one file.
+2.  **`ranksConfig.js` is for Advanced Customization:** This file controls the properties of *all* ranks, including their names, permission levels, and visual styles. You edit this file if you want to add new ranks (like "Moderator" or "VIP") or change how existing ranks look.
+
+---
+
+## 1. Quick Setup (`config.js`)
+
+For most servers, this is the only step you need to manage your staff.
+
+- **File:** `AntiCheatsBP/scripts/config.js`
+
+### Set Server Owner(s)
+
+Owners have the highest permission level (0) and can use every command.
+
+- **Action:** Find the `ownerPlayerNames` setting and add the **exact** in-game names of all owners to the array.
   ```javascript
   // Example in AntiCheatsBP/scripts/config.js
-  export const ownerPlayerName = "YourExactPlayerName";
+  ownerPlayerNames: ['YourExactPlayerName', 'AnotherOwnerName'],
   ```
-  - **Importance:** The Owner rank (typically permission level 0) has ultimate control. If `ownerPlayerName` is not set correctly, the designated owner rank might not apply.
-- **Admin Tag:**
-  - **Setting:** `adminTag`
-  - **Action:** This defines the Minecraft tag (e.g., `"admin"`) that grants players the main "Admin" rank privileges.
+
+### Set Server Admin(s)
+
+Admins have the second-highest permission level (1) and can use most moderation commands.
+
+- **Action:** Find the `adminTag` setting. Any player with this tag will get the Admin rank.
   ```javascript
   // Example in AntiCheatsBP/scripts/config.js
-  export const adminTag = "admin";
+  adminTag: 'admin',
   ```
-  - **Usage:** Assign this tag using `/tag "PlayerName" add admin`.
+- **Usage:** To give a player the Admin rank, use the in-game command: `/tag "PlayerName" add admin`
 
-## Detailed Rank Definitions (`ranksConfig.js`)
+---
 
-For more comprehensive rank management, including custom ranks, specific permissions, and detailed chat/nametag styling, the primary configuration file is:
-**`AntiCheatsBP/scripts/core/ranksConfig.js`**
+## 2. Advanced Customization (`ranksConfig.js`)
 
-This file allows you to define an array of `rankDefinitions`. Each definition typically includes:
+Edit this file only if you want to create new ranks or change the appearance (colors, prefixes) of the default ranks.
 
-- `id` (string): A unique identifier for the rank (e.g., "owner", "admin", "vip", "member"). Processed as lowercase.
-- `name` (string): A user-friendly display name (e.g., "Owner", "Administrator", "VIP", "Member").
-- `permissionLevel` (number): A numeric level determining privileges. **Lower numbers mean higher privileges** (e.g., Owner = 0, Admin = 1, Member = 1024). This is crucial for command access and feature usage.
-- `chatFormatting` (object, optional): Customizes how chat messages from players with this rank appear.
-  - `prefixText` (string): Text before the player's name (e.g., "§8[§cOwner§8] ").
-  - `nameColor` (string): Color code for the player's name.
-  - `messageColor` (string): Color code for the actual message content.
-  - Defaults are provided in `ranksConfig.js` if not specified per rank.
-- `nametagPrefix` (string, optional): Text displayed above the player's nametag in the world (e.g., "§cOwner §f\n").
-- `conditions` (array of objects): Rules for how a player is assigned this rank.
-  - `type: 'ownerName'`: Matches the `ownerPlayerName` from `config.js`.
-  - `type: 'adminTag'`: Matches the `adminTag` from `config.js`.
-  - `type: 'tag', tag: 'your_custom_tag'`: Matches if the player has the specified custom tag.
-  - `type: 'manualTagPrefix', prefix: 'rank_'`: Matches if the player has a tag like `rank_vip` (where `vip` is the rank `id`).
-  - `type: 'default'`: A fallback, typically used for the base "Member" rank.
-- `assignableBy` (number, optional): The permission level required for another player (e.g., an Admin) to assign or remove this rank using commands like `!rank add` or `!rank remove`.
+- **File:** `AntiCheatsBP/scripts/core/ranksConfig.js`
+
+This file contains the `rankDefinitions` array. Each object in this array is a rank.
+
+### Rank Properties
+
+- `id` (string): A unique, lowercase identifier (e.g., "owner", "vip").
+- `name` (string): The user-friendly display name (e.g., "Owner", "VIP").
+- `permissionLevel` (number): Determines power. **Lower numbers are more powerful** (Owner=0, Admin=1, Member=1024).
+- `chatFormatting` (object): Controls how chat messages look.
+- `nametagPrefix` (string): The text that appears above a player's head.
+- `conditions` (array): The rules that assign a player to this rank.
+
+### How Conditions Work
+
+The `conditions` array tells the addon who should get the rank.
+- The `Owner` rank has a condition `{ type: 'ownerName' }`, which automatically links it to the `ownerPlayerNames` list in `config.js`.
+- The `Admin` rank has `{ type: 'adminTag' }`, linking it to the `adminTag` in `config.js`.
+- The `Member` rank has `{ type: 'default' }`, making it the fallback for everyone else.
+
+### Example: Adding a "Moderator" Rank
+
+To add a new "Moderator" rank, you would add a new object to the `rankDefinitions` array in `ranksConfig.js`:
+
+```javascript
+// In AntiCheatsBP/scripts/core/ranksConfig.js
+export const rankDefinitions = [
+    // ... Owner and Admin ranks are here ...
+
+    {
+        id: 'moderator',
+        name: 'Moderator',
+        permissionLevel: 100, // Less powerful than Admin (1) but more than Member (1024)
+        chatFormatting: {
+            prefixText: '§8[§2Mod§8] ',
+            nameColor: '§a',
+            messageColor: '§f'
+        },
+        nametagPrefix: '§2Mod §f\n',
+        conditions: [
+            { type: 'tag', tag: 'moderator' } // Assign this rank to players with the 'moderator' tag
+        ]
+    },
+
+    // ... Member rank is here ...
+];
+```
+To assign this new rank, you would use the command: `/tag "PlayerName" add moderator`.
 
 ### Rank Precedence
 
-If a player meets the conditions for multiple ranks, the rank with the **lowest `permissionLevel` number** (which signifies the highest privilege) will be considered their primary rank. This primary rank determines their command permissions, chat formatting, and nametag prefix.
-
-### Example Structure (Conceptual from `ranksConfig.js`):
-
-```javascript
-export const rankDefinitions = [
-    {
-        id: 'owner',
-        name: 'Owner',
-        permissionLevel: 0,
-        conditions: [{ type: 'ownerName' }],
-        // ... other properties
-    },
-    {
-        id: 'admin',
-        name: 'Admin',
-        permissionLevel: 1,
-        conditions: [{ type: 'adminTag' }],
-        assignableBy: 0,
-        // ... other properties
-    },
-    // Example custom rank:
-    // {
-    //     id: 'moderator',
-    //     name: 'Moderator',
-    //     permissionLevel: 100,
-    //     chatFormatting: { prefixText: '§a[Mod] ', nameColor: '§a' },
-    //     conditions: [{ type: 'tag', tag: 'mod_rank' }],
-    //     assignableBy: 1, // Admins can assign Mod
-    // },
-    {
-        id: 'member',
-        name: 'Member',
-        permissionLevel: 1024, // Default level
-        conditions: [{ type: 'default' }],
-        // ... other properties
-    }
-];
-```
-
-By editing `ranksConfig.js`, you can create a detailed hierarchy tailored to your server's needs. The `!listranks` command can be used in-game to see defined ranks.
+If a player meets the conditions for multiple ranks (e.g., they have both an "admin" tag and a "moderator" tag), the rank with the **lowest `permissionLevel` number** will always be used.
