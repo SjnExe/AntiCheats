@@ -169,3 +169,29 @@ world.afterEvents.itemUse.subscribe((event) => {
         }
     }
 });
+
+world.afterEvents.blockBreak.subscribe((event) => {
+    const { brokenBlock, player } = event;
+    const valuableOres = [
+        'minecraft:diamond_ore',
+        'minecraft:deepslate_diamond_ore',
+        'minecraft:ancient_debris'
+    ];
+
+    if (valuableOres.includes(brokenBlock.typeId)) {
+        const pData = playerDataManager.getPlayer(player.id);
+        if (!pData) return;
+
+        const onlineAdmins = world.getAllPlayers().filter(p => {
+            const adminPData = playerDataManager.getPlayer(p.id);
+            return adminPData && adminPData.permissionLevel <= 1 && adminPData.xrayNotifications;
+        });
+
+        const location = brokenBlock.location;
+        const message = `§e${player.name}§r mined §e${brokenBlock.typeId.replace('minecraft:', '')}§r at §bX: ${location.x}, Y: ${location.y}, Z: ${location.z}`;
+
+        onlineAdmins.forEach(admin => {
+            admin.sendMessage(message);
+        });
+    }
+});

@@ -74,7 +74,8 @@ export function getOrCreatePlayer(player) {
         balance: config.economy.startingBalance,
         kitCooldowns: {},
         bounty: 0,
-        bounties: {}
+        bounties: {},
+        xrayNotifications: true
     };
     activePlayerData.set(player.id, playerData);
     savePlayerData();

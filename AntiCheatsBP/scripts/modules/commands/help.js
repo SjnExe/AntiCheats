@@ -30,7 +30,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
         },
         '§cModeration': {
             systemToggle: null,
-            commands: ['panel', 'kick', 'mute', 'unmute', 'freeze', 'vanish', 'invsee', 'tp', 'ban', 'unban', 'clearchat', 'reports']
+            commands: ['panel', 'kick', 'mute', 'unmute', 'freeze', 'vanish', 'invsee', 'tp', 'ban', 'unban', 'clearchat', 'reports', 'xraynotify']
         },
         '§9Administration': {
             systemToggle: null,
