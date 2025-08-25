@@ -42,6 +42,7 @@ function mainTick() {
 
 // Run the initialization logic on the next tick after the script is loaded.
 system.run(() => {
+    playerDataManager.loadPlayerData();
     loadConfig();
     debugLog('[AntiCheats] Initializing addon...');
     loadPunishments();
@@ -84,6 +85,10 @@ system.run(() => {
     });
 
     system.runInterval(mainTick, 20);
+    system.runInterval(() => {
+        playerDataManager.savePlayerData();
+        debugLog('[AntiCheats] Player data saved.');
+    }, 20 * 60 * 5); // Autosave every 5 minutes
     debugLog('[AntiCheats] Addon initialized successfully.');
 });
 
@@ -133,11 +138,14 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         return;
     }
 
-    if (initialSpawn) {
-        const pData = playerDataManager.addPlayer(player);
-        const rank = rankManager.getPlayerRank(player, getConfig());
+    const pData = playerDataManager.getOrCreatePlayer(player);
+    const rank = rankManager.getPlayerRank(player, getConfig());
+    if (pData.rankId !== rank.id) {
         pData.rankId = rank.id;
         pData.permissionLevel = rank.permissionLevel;
+        debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${rank.name}.`);
+        player.sendMessage(`§aYour rank has been updated to ${rank.name}.`);
+    } else if (initialSpawn) {
         debugLog(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);
     }
 
@@ -149,7 +157,7 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
 });
 
 world.afterEvents.playerLeave.subscribe((event) => {
-    playerDataManager.removePlayer(event.playerId);
+    playerDataManager.handlePlayerLeave(event.playerId);
     debugLog(`[AntiCheats] Player ${event.playerName} left.`);
 });
 
