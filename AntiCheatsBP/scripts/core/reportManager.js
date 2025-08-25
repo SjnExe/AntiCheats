@@ -45,4 +45,44 @@ export function getAllReports() {
     return [...reports];
 }
 
-// More functions for managing reports will be added here later (e.g., assign, resolve, clear).
+/**
+ * Assigns a report to an admin.
+ * @param {string} reportId The ID of the report to assign.
+ * @param {string} adminId The ID of the admin to assign the report to.
+ */
+export function assignReport(reportId, adminId) {
+    const report = reports.find(r => r.id === reportId);
+    if (report) {
+        report.status = 'assigned';
+        report.assignedAdminId = adminId;
+    }
+}
+
+/**
+ * Marks a report as resolved.
+ * @param {string} reportId The ID of the report to resolve.
+ */
+export function resolveReport(reportId) {
+    const report = reports.find(r => r.id === reportId);
+    if (report) {
+        report.status = 'resolved';
+    }
+}
+
+/**
+ * Clears a report from the list.
+ * @param {string} reportId The ID of the report to clear.
+ */
+export function clearReport(reportId) {
+    const index = reports.findIndex(r => r.id === reportId);
+    if (index !== -1) {
+        reports.splice(index, 1);
+    }
+}
+
+/**
+ * Clears all reports from the list.
+ */
+export function clearAllReports() {
+    reports.length = 0;
+}

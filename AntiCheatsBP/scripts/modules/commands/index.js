@@ -3,7 +3,7 @@
 
 const commandFiles = [
     // General & Info
-    'help.js', 'status.js', 'rules.js', 'version.js',
+    'help.js', 'status.js', 'rules.js', 'version.js', 'report.js',
     // TPA
     'tpa.js', 'tpahere.js', 'tpaccept.js', 'tpadeny.js', 'tpacancel.js', 'tpastatus.js',
     // Homes
@@ -13,9 +13,9 @@ const commandFiles = [
     // Kits
     'kit.js',
     // Moderation
-    'panel.js', 'kick.js', 'mute.js', 'ban.js', 'freeze.js', 'vanish.js', 'invsee.js', 'tp.js', 'clearchat.js',
+    'panel.js', 'kick.js', 'mute.js', 'ban.js', 'freeze.js', 'vanish.js', 'invsee.js', 'tp.js', 'clearchat.js', 'reports.js',
     // Admin
-    'admin.js', 'rank.js', 'gmc.js', 'gms.js', 'gma.js', 'gmsp.js', 'clear.js', 'ecwipe.js', 'copyinv.js', 'reload.js', 'debug.js', 'setbalance.js',
+    'admin.js', 'rank.js', 'gmc.js', 'gms.js', 'gma.js', 'gmsp.js', 'clear.js', 'ecwipe.js', 'copyinv.js', 'reload.js', 'debug.js', 'setbalance.js', 'clearreports.js',
     // Spawning
     'setspawn.js', 'spawn.js'
 ];

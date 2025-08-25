@@ -6,7 +6,7 @@ import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 import { getPlayerRank } from './rankManager.js';
 import { playSound } from './utils.js';
-import { createReport, getAllReports } from './reportManager.js';
+import { createReport, getAllReports, assignReport, resolveReport, clearReport } from './reportManager.js';
 
 const uiActionFunctions = {};
 
@@ -480,21 +480,21 @@ uiActionFunctions['showReportForm'] = (player, context) => {
 uiActionFunctions['assignReport'] = (player, context) => {
     const report = context.targetReport;
     if (!report) return player.sendMessage('§cReport not found in context.');
-    // assignReport(report.id, player.id); // To be implemented in reportManager
+    assignReport(report.id, player.id);
     player.sendMessage(`§aReport ${report.id} assigned to you.`);
 };
 
 uiActionFunctions['resolveReport'] = (player, context) => {
     const report = context.targetReport;
     if (!report) return player.sendMessage('§cReport not found in context.');
-    // resolveReport(report.id); // To be implemented in reportManager
+    resolveReport(report.id);
     player.sendMessage(`§aReport ${report.id} marked as resolved.`);
 };
 
 uiActionFunctions['clearReport'] = (player, context) => {
     const report = context.targetReport;
     if (!report) return player.sendMessage('§cReport not found in context.');
-    // clearReport(report.id); // To be implemented in reportManager
+    clearReport(report.id);
     player.sendMessage(`§aReport ${report.id} cleared.`);
 };
 
