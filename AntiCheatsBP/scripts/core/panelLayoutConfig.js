@@ -45,6 +45,22 @@ export const panelDefinitions = {
                 actionValue: 'publicPlayerListPanel'
             },
             {
+                id: 'reportManagement',
+                text: 'Report Management',
+                icon: 'textures/ui/feed.png',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'reportListPanel'
+            },
+            {
+                id: 'bountyList',
+                text: 'Bounty List',
+                icon: 'textures/items/map_filled.png',
+                permissionLevel: 1024,
+                actionType: 'openPanel',
+                actionValue: 'bountyListPanel'
+            },
+            {
                 id: 'rules',
                 text: 'Rules',
                 icon: 'textures/items/book_enchanted.png',
@@ -55,7 +71,7 @@ export const panelDefinitions = {
             {
                 id: 'myStats',
                 text: 'My Stats',
-                icon: 'textures/ui/iconsicon_multiplayer.png',
+                icon: 'textures/ui/profile_glyph_color.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showMyStats'
@@ -63,7 +79,7 @@ export const panelDefinitions = {
             {
                 id: 'helpfulLinks',
                 text: 'Helpful Links',
-                icon: 'textures/ui/book_writable',
+                icon: 'textures/ui/book_writable.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showHelpfulLinks'
@@ -149,5 +165,75 @@ export const panelDefinitions = {
                 actionValue: 'teleportHere'
             }
         ]
+    },
+    publicPlayerActionsPanel: {
+        title: '§lActions for {playerName}§r',
+        parentPanelId: 'publicPlayerListPanel',
+        items: [
+            {
+                id: 'setBounty',
+                text: 'Set Bounty',
+                icon: 'textures/items/gold_ingot.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showBountyForm'
+            },
+            {
+                id: 'sendTpaRequest',
+                text: 'Send TPA Request',
+                icon: 'textures/ui/icon_out.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'sendTpaRequest'
+            },
+            {
+                id: 'reportPlayer',
+                text: 'Report Player',
+                icon: 'textures/ui/chat_send.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showReportForm'
+            }
+        ]
+    },
+    reportListPanel: {
+        title: '§lActive Reports§r',
+        parentPanelId: 'mainPanel',
+        items: [] // This will be populated dynamically by uiManager
+    },
+    reportActionsPanel: {
+        title: '§lReport Details§r',
+        parentPanelId: 'reportListPanel',
+        items: [
+            {
+                id: 'assignReport',
+                text: 'Assign to Me',
+                icon: 'textures/ui/mine.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'assignReport'
+            },
+            {
+                id: 'resolveReport',
+                text: 'Mark as Resolved',
+                icon: 'textures/ui/check.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'resolveReport'
+            },
+            {
+                id: 'clearReport',
+                text: 'Clear Report',
+                icon: 'textures/ui/trash.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'clearReport'
+            }
+        ]
+    },
+    bountyListPanel: {
+        title: '§lBounty List§r',
+        parentPanelId: 'mainPanel',
+        items: [] // This will be populated dynamically by uiManager
     }
 };

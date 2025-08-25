@@ -34,6 +34,7 @@ function mainTick() {
         if (pData.rankId !== currentRank.id) {
             pData.rankId = currentRank.id;
             pData.permissionLevel = currentRank.permissionLevel;
+            playerDataManager.savePlayerData();
             debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${currentRank.name}.`);
             player.sendMessage(`§aYour rank has been updated to ${currentRank.name}.`);
         }
@@ -42,6 +43,7 @@ function mainTick() {
 
 // Run the initialization logic on the next tick after the script is loaded.
 system.run(() => {
+    playerDataManager.loadPlayerData();
     loadConfig();
     debugLog('[AntiCheats] Initializing addon...');
     loadPunishments();
@@ -133,11 +135,14 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         return;
     }
 
-    if (initialSpawn) {
-        const pData = playerDataManager.addPlayer(player);
-        const rank = rankManager.getPlayerRank(player, getConfig());
+    const pData = playerDataManager.getOrCreatePlayer(player);
+    const rank = rankManager.getPlayerRank(player, getConfig());
+    if (pData.rankId !== rank.id) {
         pData.rankId = rank.id;
         pData.permissionLevel = rank.permissionLevel;
+        debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${rank.name}.`);
+        player.sendMessage(`§aYour rank has been updated to ${rank.name}.`);
+    } else if (initialSpawn) {
         debugLog(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);
     }
 
@@ -149,7 +154,7 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
 });
 
 world.afterEvents.playerLeave.subscribe((event) => {
-    playerDataManager.removePlayer(event.playerId);
+    playerDataManager.handlePlayerLeave(event.playerId);
     debugLog(`[AntiCheats] Player ${event.playerName} left.`);
 });
 
@@ -162,5 +167,31 @@ world.afterEvents.itemUse.subscribe((event) => {
         if (pData) {
             showPanel(player, 'mainPanel');
         }
+    }
+});
+
+world.afterEvents.blockBreak.subscribe((event) => {
+    const { brokenBlock, player } = event;
+    const valuableOres = [
+        'minecraft:diamond_ore',
+        'minecraft:deepslate_diamond_ore',
+        'minecraft:ancient_debris'
+    ];
+
+    if (valuableOres.includes(brokenBlock.typeId)) {
+        const pData = playerDataManager.getPlayer(player.id);
+        if (!pData) return;
+
+        const onlineAdmins = world.getAllPlayers().filter(p => {
+            const adminPData = playerDataManager.getPlayer(p.id);
+            return adminPData && adminPData.permissionLevel <= 1 && adminPData.xrayNotifications;
+        });
+
+        const location = brokenBlock.location;
+        const message = `§e${player.name}§r mined §e${brokenBlock.typeId.replace('minecraft:', '')}§r at §bX: ${location.x}, Y: ${location.y}, Z: ${location.z}`;
+
+        onlineAdmins.forEach(admin => {
+            admin.sendMessage(message);
+        });
     }
 });
