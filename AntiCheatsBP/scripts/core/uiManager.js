@@ -7,6 +7,7 @@ import { debugLog } from './logger.js';
 import { getPlayerRank } from './rankManager.js';
 import { playSound } from './utils.js';
 import { createReport, getAllReports, assignReport, resolveReport, clearReport } from './reportManager.js';
+import * as economyManager from './economyManager.js';
 
 const uiActionFunctions = {};
 
@@ -436,7 +437,44 @@ uiActionFunctions['showBountyForm'] = (player, context) => {
     form.show(player).then(response => {
         if (response.canceled) return;
         const [amountStr] = response.formValues;
-        player.runCommandAsync(`bounty "${targetPlayer.name}" ${amountStr}`);
+        const amount = parseInt(amountStr);
+        const config = getConfig();
+
+        if (isNaN(amount) || amount < config.economy.minimumBounty) {
+            player.sendMessage(`§cInvalid amount. The minimum bounty is $${config.economy.minimumBounty}.`);
+            return;
+        }
+
+        const sourceData = getPlayer(player.id);
+        if (!sourceData) {
+            player.sendMessage('§cCould not find your player data.');
+            return;
+        }
+
+        if (economyManager.getBalance(player.id) < amount) {
+            player.sendMessage('§cYou do not have enough money for this bounty.');
+            return;
+        }
+
+        const targetData = getPlayer(targetPlayer.id);
+        if (!targetData) {
+            player.sendMessage('§cCould not find the target player\'s data.');
+            return;
+        }
+
+        const result = economyManager.removeBalance(player.id, amount);
+
+        if (result) {
+            targetData.bounty += amount;
+            if (!sourceData.bounties) {
+                sourceData.bounties = {};
+            }
+            sourceData.bounties[targetPlayer.id] = (sourceData.bounties[targetPlayer.id] || 0) + amount;
+            player.sendMessage('§aYou have placed a bounty of §e$' + amount + '§a on ' + targetPlayer.name + '.');
+            world.sendMessage('§cSomeone has placed a bounty of §e$' + amount + '§c on ' + targetPlayer.name + '!');
+        } else {
+            player.sendMessage('§cFailed to place bounty.');
+        }
     }).catch(e => {
         console.error(`[UIManager] showBountyForm promise rejected: ${e.stack}`);
     });
