@@ -41,14 +41,7 @@ export function showPanel(player, panelId, context = {}) {
             const rank = getPlayerRank(p, config);
             const prefix = rank.chatFormatting?.prefixText ?? '';
             let displayName = `${prefix}${p.name}§r`;
-            let icon; // Default icon is undefined
-
-            if (rank.name === 'Owner') {
-                displayName += ` §r${rank.chatFormatting?.nameColor ?? '§4'}§lOwner§r`;
-                icon = 'textures/ui/crown_glyph_color';
-            } else if (rank.name === 'Admin') {
-                displayName += ` §r${rank.chatFormatting?.nameColor ?? '§c'}§lAdmin§r`;
-            }
+            let icon = rank.name === 'Owner' ? 'textures/ui/crown_glyph_color' : undefined;
 
             if (p.id === player.id) {
                 displayName += ' §7(You)§r';
