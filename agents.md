@@ -10,11 +10,11 @@ Your primary goal is to assist users by completing coding tasks, such as solving
 
 Before implementing changes, strive to understand the relevant parts of the codebase. Key architectural information can be found in `Dev/README.md`. Pay attention to:
 
-- **Core Managers (`AntiCheatsBP/scripts/core/`):** Understand how modules like `playerDataManager.js`, `actionManager.js`, `commandManager.js`, and `automodManager.js` interact.
+- **Core Managers (`AntiCheatsBP/scripts/core/`):** Understand how modules like `playerDataManager.js`, `rankManager.js`, `punishmentManager.js`, and `cooldownManager.js` interact. The `commandManager.js` in `AntiCheatsBP/scripts/modules/commands/` is also critical.
 - **Configuration Files:**
-  - `AntiCheatsBP/scripts/config.js`: Main settings, feature toggles, command aliases.
-  - `AntiCheatsBP/scripts/core/actionProfiles.js`: Defines immediate consequences for cheat detections.
-  - `AntiCheatsBP/scripts/core/automodConfig.js`: Defines escalating automated actions based on flag counts.
+  - `AntiCheatsBP/scripts/config.js`: Main settings, feature toggles, owner/admin setup.
+  - `AntiCheatsBP/scripts/core/ranksConfig.js`: Defines all ranks and their visual styles.
+  - `AntiCheatsBP/scripts/core/panelLayoutConfig.js`: Defines the layout and content of the UI panels.
 - **Coding Conventions:** Strictly follow guidelines in `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
 - **Naming Conventions:**
   - The general rule for all project-specific JavaScript identifiers is that **any code style is allowed, but not snake_case**.
@@ -52,8 +52,8 @@ This project uses a simple task management system in the `Dev/tasks/` directory.
 - **Adherence to Guidelines:** Strictly follow `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
 - **Plain JavaScript:** All Behavior Pack scripts are written in plain JavaScript. Do not use TypeScript syntax.
 - **Error Handling:** Implement robust error handling (e.g., `try...catch` blocks for risky operations, validation of inputs). Refer to `Dev/StandardizationGuidelines.md` (Section 6) for detailed error logging standards.
-- **Logging:** Utilize `playerUtils.debugLog()` for development/debug messages (conditional on `config.enableDebugLogging` or `pData.isWatched`). For persistent action logging and standardized error reporting, use `logManager.addLog()`, following the detailed error logging guidelines in `Dev/StandardizationGuidelines.md` (Section 6).
-  - **User-Facing Text:** User-facing strings for command responses, shared messages, and configurable text should generally be managed via `AntiCheatsBP/scripts/core/textDatabase.js` and retrieved using `getString()`. However, static single-use UI labels/texts are typically hardcoded directly in UI modules (e.g., `uiManager.js`). Button texts for dynamically generated panels (like `!panel`) are defined in `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
+- **Logging:** Utilize the `debugLog()` function from `core/logger.js` for development messages. This is conditional on `config.debug` being true.
+  - **User-Facing Text:** Most user-facing text is hardcoded directly in the command or UI files where it is used. Configurable messages (like the welcome message or rules) are in `config.js`. Button texts for dynamically generated panels are defined in `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
 - **Linting with ESLint:** This project uses ESLint to enforce code style and catch potential errors.
   - The configuration (`eslint.config.js`) is based on `eslint:recommended` rules plus specific project style guidelines from `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
   - Run `npm run lint` to check for linting issues.

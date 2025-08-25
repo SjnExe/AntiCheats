@@ -9,11 +9,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Node.js and cache npm dependencies
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Specify a Node.js version
+          cache: 'npm'
+      - run: npm install # Install dependencies
+
       - name: Create Changelog
         uses: anothrNick/github-tag-action@1.69.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: true
+
       - name: Extract version from tag
         shell: bash
         run: |
@@ -38,92 +47,55 @@ jobs:
           fi
           echo "VERSION_ARRAY_STRING=$VERSION_ARR_STR" >> $GITHUB_ENV
           echo "Full tag: $RAW_TAG_NAME, Extracted version string: $VERSION_STR, Resulting version array string: $VERSION_ARR_STR"
-      - name: Create staging directory
-        run: mkdir staging
-      - name: Copy addon folders to staging
+
+      - name: Create staging directory and copy addon folders
         run: |
+          mkdir staging
           cp -r AntiCheatsBP staging/
           cp -r AntiCheatsRP staging/
-      - name: Replace placeholders in staged JSON files
+
+      - name: Replace placeholders in staged files
         shell: bash
         env:
           VERSION_STRING: ${{ env.VERSION_STRING }}
           VERSION_ARRAY_STRING: ${{ env.VERSION_ARRAY_STRING }}
         run: |
           echo "--- Starting Placeholder Replacement ---"
-          echo "Using VERSION_STRING: '${VERSION_STRING}' (prefixed with 'v' for replacement: 'v${VERSION_STRING}')"
-          echo "Using VERSION_ARRAY_STRING: '${VERSION_ARRAY_STRING}'"
-
-          JSON_FILES=$(find staging -type f -name "*.json")
-          if [ -z "$JSON_FILES" ]; then
-            echo "No JSON files found in staging directory. Skipping JSON placeholder replacements."
-          else
-            echo "Found JSON files for processing: $JSON_FILES"
-            echo "Processing JSON files for 'v__VERSION_STRING__' replacement..."
-            find staging -type f -name "*.json" -exec sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" {} +
-            echo "Completed 'v__VERSION_STRING__' replacement in JSON files."
-
-            echo "Processing JSON files for '__VERSION_ARRAY__' replacement..."
-            # This replaces the JSON string ""__VERSION_ARRAY__"" with the array string like [1,2,3]
-            find staging -type f -name "*.json" -exec sed -i "s/\"__VERSION_ARRAY__\"/${VERSION_ARRAY_STRING}/g" {} +
-            echo "Completed '__VERSION_ARRAY__' replacement in JSON files."
-          fi
-
-          echo "--- Verification of Manifest Files ---"
           BP_MANIFEST="staging/AntiCheatsBP/manifest.json"
           RP_MANIFEST="staging/AntiCheatsRP/manifest.json"
-
-          if [ -f "$BP_MANIFEST" ]; then
-            echo "Contents of staged BP manifest ($BP_MANIFEST) after replacement:"
-            cat "$BP_MANIFEST"
-          else
-            echo "Warning: BP Manifest ($BP_MANIFEST) not found."
-          fi
-
-          if [ -f "$RP_MANIFEST" ]; then
-            echo "Contents of staged RP manifest ($RP_MANIFEST) after replacement:"
-            cat "$RP_MANIFEST"
-          else
-            echo "Warning: RP Manifest ($RP_MANIFEST) not found."
-          fi
-          echo "--- End Manifest Verification ---"
-
           CONFIG_JS_PATH="staging/AntiCheatsBP/scripts/config.js"
-          echo "Processing config.js for 'v__VERSION_STRING__' replacement..."
-          if [ -f "$CONFIG_JS_PATH" ]; then
-            echo "Found config.js at $CONFIG_JS_PATH. Replacing 'v__VERSION_STRING__' with 'v${VERSION_STRING}'."
-            sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" "$CONFIG_JS_PATH"
-            echo "Contents of $CONFIG_JS_PATH after replacement (first 15 lines):"
-            head -n 15 "$CONFIG_JS_PATH" # Show only first few lines to avoid overly long logs
-            echo "--- End config.js Verification ---"
-          else
-            echo "Warning: $CONFIG_JS_PATH not found. Cannot replace version string."
-          fi
-          echo "--- Placeholder Replacement Finished ---"
-      - name: Zip addon
+
+          # Replace in JSON files
+          find staging -type f -name "*.json" -exec sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" {} +
+          find staging -type f -name "*.json" -exec sed -i "s/\"__VERSION_ARRAY__\"/${VERSION_ARRAY_STRING}/g" {} +
+
+          # Replace in JS config
+          sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" "$CONFIG_JS_PATH"
+
+          echo "--- Verification ---"
+          echo "BP Manifest:"
+          cat "$BP_MANIFEST"
+          echo "RP Manifest:"
+          cat "$RP_MANIFEST"
+          echo "Config.js:"
+          head -n 15 "$CONFIG_JS_PATH"
+          echo "--- End Verification ---"
+
+      - name: Create Release Archives
         shell: bash
         env:
           FULL_TAG_NAME: ${{ env.FULL_TAG_NAME }}
         run: |
-          cd staging
-          zip -r "../AC.${{ env.FULL_TAG_NAME }}.mcaddon" ./*
-          cd ..
-      - name: Zip Behavior Pack
-        shell: bash
-        env:
-          FULL_TAG_NAME: ${{ env.FULL_TAG_NAME }}
-        run: |
-          cd staging/AntiCheatsBP
-          zip -r "../../AC BP${{ env.FULL_TAG_NAME }}.mcpack" ./*
-          cd ../..
-      - name: Zip Resource Pack
-        shell: bash
-        env:
-          FULL_TAG_NAME: ${{ env.FULL_TAG_NAME }}
-        run: |
-          cd staging/AntiCheatsRP
-          zip -r "../../AC RP${{ env.FULL_TAG_NAME }}.mcpack" ./*
-          cd ../..
+          # Create main .mcaddon
+          (cd staging && zip -r "../AC.${FULL_TAG_NAME}.mcaddon" ./*)
+
+          # Create BP .mcpack
+          (cd staging/AntiCheatsBP && zip -r "../../AC BP ${FULL_TAG_NAME}.mcpack" ./*)
+
+          # Create RP .mcpack
+          (cd staging/AntiCheatsRP && zip -r "../../AC RP ${FULL_TAG_NAME}.mcpack" ./*)
+          echo "Created release archives."
+
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:

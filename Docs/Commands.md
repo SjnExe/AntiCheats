@@ -7,56 +7,56 @@ The default command prefix for this addon is `!` (this can be configured in `Ant
 > Square brackets (`[ ]`) denote optional parameters.
 > Do not include the brackets themselves when using the commands.
 
-Command permissions are based on a level system, typically:
-
-- **Owner (0):** Highest permission, usually for server owner only.
+Command permissions are based on a level system defined in `AntiCheatsBP/scripts/core/ranksConfig.js`. Common levels are:
+- **Owner (0):** Highest permission for server owners.
 - **Admin (1):** High-level administrative commands.
-- **Moderator (2):** Mid-level moderation commands. (Note: This level might not be explicitly used by all commands; some may jump from Admin to Member).
-- **Member (Default: 1024):** Basic commands available to all players. The default permission level for members is `1024` as defined in `ranksConfig.js`.
-
-Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksConfig.js` and individual command definitions.
+- **Member (1024):** Basic commands available to all players.
 
 ---
 
-## Admin Commands
+## Owner & Admin Commands
 
-*(Typically Permission Level 1)*
+*(Permission Level 0-1)*
 
+- **`!admin`**
+  - **Syntax:** `!admin <reload|config|setrank>`
+  - **Description:** Top-level admin command for configuration and reloads.
+  - **Permission:** Owner
 - **`!ban`** (Alias: `!b`)
   - **Syntax:** `!ban <playerName> [duration] [reason]`
   - **Description:** Bans a player. Duration e.g., `30m`, `2h`, `7d`, `perm`.
   - **Permission:** Admin
 - **`!clear`**
   - **Syntax:** `!clear [playerName]`
-  - **Description:** Clears your own inventory, or the inventory of another player (Admin only).
+  - **Description:** Clears your own inventory, or the inventory of another player.
   - **Permission:** Member (self), Admin (others)
 - **`!clearchat`** (Alias: `!clrchat`)
   - **Syntax:** `!clearchat`
   - **Description:** Clears the global chat for all players.
   - **Permission:** Admin
+- **`!clearreports`**
+  - **Syntax:** `!clearreports`
+  - **Description:** Clears all player-submitted reports.
+  - **Permission:** Admin
+- **`!copyinv`**
+  - **Syntax:** `!copyinv <playerName>`
+  - **Description:** Copies the inventory of another player.
+  - **Permission:** Admin
+- **`!debug`**
+  - **Syntax:** `!debug <command> [args]`
+  - **Description:** Provides access to debug tools and information.
+  - **Permission:** Owner
 - **`!ecwipe`**
   - **Syntax:** `!ecwipe <playerName>`
   - **Description:** Clears the Ender Chest of the specified player.
   - **Permission:** Admin
 - **`!freeze`** (Alias: `!frz`)
-  - **Syntax:** `!freeze <playerName> [on|off|toggle|status]`
+  - **Syntax:** `!freeze <playerName>`
   - **Description:** Freezes or unfreezes a player, preventing movement.
   - **Permission:** Admin
-- **`!gma`**
-  - **Syntax:** `!gma [playerName]`
-  - **Description:** Sets a player's gamemode to Adventure.
-  - **Permission:** Admin
-- **`!gmc`**
+- **`!gamemode`** (Aliases: `!gmc`, `!gms`, `!gma`, `!gmsp`)
   - **Syntax:** `!gmc [playerName]`
-  - **Description:** Sets a player's gamemode to Creative.
-  - **Permission:** Admin
-- **`!gms`**
-  - **Syntax:** `!gms [playerName]`
-  - **Description:** Sets a player's gamemode to Survival.
-  - **Permission:** Admin
-- **`!gmsp`**
-  - **Syntax:** `!gmsp [playerName]`
-  - **Description:** Sets a player's gamemode to Spectator.
+  - **Description:** Sets a player's gamemode (Creative, Survival, Adventure, Spectator).
   - **Permission:** Admin
 - **`!invsee`** (Alias: `!is`)
   - **Syntax:** `!invsee <playerName>`
@@ -70,9 +70,29 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
   - **Syntax:** `!mute <playerName> [duration] [reason]`
   - **Description:** Mutes a player. Duration e.g., `30m`, `1h`, `perm`.
   - **Permission:** Admin
+- **`!rank`**
+  - **Syntax:** `!rank <get|set|remove> <playerName> [rank]`
+  - **Description:** Manages player ranks.
+  - **Permission:** Admin
 - **`!reload`**
   - **Syntax:** `!reload`
-  - **Description:** Reloads all script files and functions in behavior packs. This is useful for development to apply script changes without restarting the world.
+  - **Description:** Reloads addon scripts. (Included in `!admin reload`).
+  - **Permission:** Owner
+- **`!reports`**
+  - **Syntax:** `!reports [player|clear]`
+  - **Description:** Manages player reports.
+  - **Permission:** Admin
+- **`!setbalance`**
+  - **Syntax:** `!setbalance <playerName> <amount>`
+  - **Description:** Sets a player's balance to a specific amount.
+  - **Permission:** Admin
+- **`!setspawn`**
+  - **Syntax:** `!setspawn`
+  - **Description:** Sets the world's default spawn point to your current location.
+  - **Permission:** Admin
+- **`!tp`**
+  - **Syntax:** `!tp <playerName> [targetPlayer]`
+  - **Description:** Teleports a player to another player or location.
   - **Permission:** Admin
 - **`!unban`** (Alias: `!ub`)
   - **Syntax:** `!unban <playerName>`
@@ -83,101 +103,76 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
   - **Description:** Removes an active mute for a player.
   - **Permission:** Admin
 - **`!vanish`** (Alias: `!vsh`)
-  - **Syntax:** `!vanish [silent|notify]`
-  - **Description:** Toggles your visibility and related effects (invisibility, no item pickup, etc.).
+  - **Syntax:** `!vanish`
+  - **Description:** Toggles your visibility.
+  - **Permission:** Admin
+- **`!xraynotify`**
+  - **Syntax:** `!xraynotify <on|off>`
+  - **Description:** Toggles X-ray detection notifications for yourself.
   - **Permission:** Admin
 
 ---
 
 ## Member Commands (All Players)
 
-*(Typically Permission Level 1024 or as configured for the default rank)*
+*(Permission Level 1024)*
 
 - **`!help`** (Alias: `!h`)
   - **Syntax:** `!help [commandName]`
   - **Description:** Shows available commands or help for a specific command.
-  - **Permission:** Member
+- **`!kit`**
+  - **Syntax:** `!kit [name]`
+  - **Description:** Gives you a kit of items. If no name is provided, lists available kits.
 - **`!panel`** (Alias: `!ui`)
   - **Syntax:** `!panel`
-  - **Description:** Opens the main AntiCheat UI panel (content varies by permission; admin tools for staff, user info for regular players).
-  - **Permission:** Member
+  - **Description:** Opens the main UI panel.
+- **`!report`**
+  - **Syntax:** `!report <playerName> <reason>`
+  - **Description:** Reports a player for misconduct.
 - **`!rules`** (Alias: `!r`)
   - **Syntax:** `!rules`
   - **Description:** Displays the server rules.
-  - **Permission:** Member
+- **`!spawn`**
+  - **Syntax:** `!spawn`
+  - **Description:** Teleports you to the world spawn.
+- **`!status`**
+  - **Syntax:** `!status`
+  - **Description:** Shows your current status (rank, money, etc.).
 - **`!version`** (Alias: `!v`)
   - **Syntax:** `!version`
   - **Description:** Displays the AntiCheat addon version.
-  - **Permission:** Member
 
 ### TPA System Commands
-
-*(Available if `enableTpaSystem` is true in `config.js`)*
-
 - **`!tpa <playerName>`**
-  - **Syntax:** `!tpa <playerName>`
   - **Description:** Sends a teleport request to another player.
-  - **Permission:** Member
-- **`!tpahere <playerName>`** (Alias: `!tph`)
-  - **Syntax:** `!tpahere <playerName>`
+- **`!tpahere <playerName>`**
   - **Description:** Requests another player to teleport to your location.
-  - **Permission:** Member
-- **`!tpaccept [playerName]`** (Alias: `!tpaa`)
-  - **Syntax:** `!tpaccept [playerName]`
-  - **Description:** Accepts an incoming teleport request. Specify player name if multiple requests are pending.
-  - **Permission:** Member
-- **`!tpacancel [playerName]`** (Aliases: `!tpc`, `!tpadeny`, `!tpcancel`)
-  - **Syntax:** `!tpacancel [playerName]`
-  - **Description:** Cancels your outgoing TPA request or denies an incoming one. If no player name is given, cancels/denies the most recent or relevant request.
-  - **Permission:** Member
+- **`!tpaccept`** (Alias: `!tpaa`)
+  - **Description:** Accepts an incoming teleport request.
+- **`!tpadeny`** (Alias: `!tpacancel`)
+  - **Description:** Denies an incoming teleport request or cancels an outgoing one.
 
 ### Economy System Commands
-
-*(Available if `economy.enabled` is true in `config.js`)*
-
-- **`!balance`**
-  - **Syntax:** `!balance`
+- **`!balance`** (Alias: `!bal`)
   - **Description:** Shows your current balance.
-  - **Permission:** Member
 - **`!baltop`**
-  - **Syntax:** `!baltop`
   - **Description:** Shows the players with the highest balances.
-  - **Permission:** Member
 - **`!pay <playerName> <amount>`**
-  - **Syntax:** `!pay <playerName> <amount>`
-  - **Description:** Pays another player a specific amount from your balance.
-  - **Permission:** Member
+  - **Description:** Pays another player from your balance.
+
+### Bounty System Commands
+- **`!bounty <playerName> <amount>`**
+  - **Description:** Places a bounty on a player, making them a target.
+- **`!listbounty`**
+  - **Description:** Lists all players who currently have a bounty on them.
+- **`!rbounty <playerName> <amount>`**
+  - **Description:** Removes a portion of a bounty you have placed on a player.
 
 ### Homes System Commands
-
-*(Available if `homes.enabled` is true in `config.js`)*
-
 - **`!sethome <name>`**
-  - **Syntax:** `!sethome <name>`
-  - **Description:** Sets a home at your current location.
-  - **Permission:** Member
 - **`!home <name>`**
-  - **Syntax:** `!home <name>`
-  - **Description:** Teleports you to one of your saved homes.
-  - **Permission:** Member
 - **`!delhome <name>`**
-  - **Syntax:** `!delhome <name>`
-  - **Description:** Deletes one of your homes.
-  - **Permission:** Member
 - **`!homes`**
-  - **Syntax:** `!homes`
-  - **Description:** Lists all of your currently set homes.
-  - **Permission:** Member
-
-### Kit System Commands
-
-*(Available if `kits.enabled` is true in `config.js`)*
-
-- **`!kit [name]`**
-  - **Syntax:** `!kit [name]`
-  - **Description:** Gives you a kit of items. If no name is provided, lists available kits.
-  - **Permission:** Member
 
 ---
-
-This list is based on the addon's structure and `config.js`. Some commands' availability or exact behavior might be further influenced by specific settings in `config.js` (e.g., `commandSettings` toggles). Always refer to in-game `!help` for the most context-aware command list.
+This list is based on the addon's current structure. For the most up-to-date information, use `!help` in-game. Command availability may depend on settings in `config.js`.

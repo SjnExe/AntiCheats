@@ -1,4 +1,3 @@
-import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { playSound } from '../../core/utils.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
