@@ -90,10 +90,10 @@ jobs:
           (cd staging && zip -r "../AC.${FULL_TAG_NAME}.mcaddon" ./*)
 
           # Create BP .mcpack
-          (cd staging/AntiCheatsBP && zip -r "../../AC BP ${FULL_TAG_NAME}.mcpack" ./*)
+          (cd staging/AntiCheatsBP && zip -r "../../AC BP${FULL_TAG_NAME}.mcpack" ./*)
 
           # Create RP .mcpack
-          (cd staging/AntiCheatsRP && zip -r "../../AC RP ${FULL_TAG_NAME}.mcpack" ./*)
+          (cd staging/AntiCheatsRP && zip -r "../../AC RP${FULL_TAG_NAME}.mcpack" ./*)
           echo "Created release archives."
 
       - name: Upload Release Assets
