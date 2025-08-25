@@ -39,7 +39,9 @@ export function showPanel(player, panelId, context = {}) {
 
         const playerList = onlinePlayers.map(p => {
             const rank = getPlayerRank(p, config);
-            let displayName = p.name;
+            const pData = getPlayer(p.id);
+            const bounty = pData ? pData.bounty : 0;
+            let displayName = `${p.name}\n§eBounty: $${bounty.toFixed(2)} §7- Rank: ${rank.name}`;
             let icon; // Default icon is undefined
 
             if (rank.name === 'Owner') {
@@ -106,6 +108,32 @@ export function showPanel(player, panelId, context = {}) {
             }).catch(e => console.error(`[UIManager] reportListPanel promise rejected: ${e.stack}`));
         }, 10);
         return;
+    } else if (panelId === 'bountyListPanel') {
+        let message = '§a--- Player Bounties ---\n';
+        const onlinePlayers = world.getAllPlayers();
+        let foundBounty = false;
+        onlinePlayers.forEach(p => {
+            const pData = getPlayer(p.id);
+            if (pData && pData.bounty > 0) {
+                message += `§e${p.name}§r: $${pData.bounty.toFixed(2)}\n`;
+                foundBounty = true;
+            }
+        });
+        if (!foundBounty) {
+            message += '§7No active bounties.';
+        }
+
+        const form = new MessageFormData()
+            .title(title)
+            .body(message)
+            .button1('Back');
+
+        system.runTimeout(() => {
+            form.show(player).then(response => {
+                showPanel(player, 'mainPanel');
+            }).catch(e => console.error(`[UIManager] bountyListPanel promise rejected: ${e.stack}`));
+        }, 10);
+        return;
     } else if (panelId === 'publicPlayerListPanel') {
         const config = getConfig();
         const onlinePlayers = world.getAllPlayers();
@@ -113,9 +141,10 @@ export function showPanel(player, panelId, context = {}) {
 
         const playerList = onlinePlayers.map(p => {
             const rank = getPlayerRank(p, config);
-            // Use the chat prefix for the display name
+            const pData = getPlayer(p.id);
+            const bounty = pData ? pData.bounty : 0;
             const prefix = rank.chatFormatting?.prefixText ?? '';
-            let displayName = `${prefix}${p.name}§r`;
+            let displayName = `${prefix}${p.name}§r\n§eBounty: $${bounty.toFixed(2)} §7- Rank: ${rank.name}`;
             return { player: p, rank, displayName };
         });
 
@@ -408,13 +437,23 @@ uiActionFunctions['viewInventory'] = (player, context) => {
 uiActionFunctions['clearInventory'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
-    player.runCommandAsync(`clear "${targetPlayer.name}"`);
+    try {
+        player.runCommandAsync(`clear "${targetPlayer.name}"`);
+        player.sendMessage(`§aCleared ${targetPlayer.name}'s inventory.`);
+    } catch (e) {
+        player.sendMessage(`§cFailed to clear inventory: ${e}`);
+        console.error(`[UIManager] clearInventory failed: ${e.stack}`);
+    }
 };
 
 uiActionFunctions['teleportTo'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
-    player.runCommandAsync(`tp "${player.name}" "${targetPlayer.name}"`);
+    if (player.id === targetPlayer.id) {
+        player.sendMessage('§cYou cannot teleport to yourself.');
+        return;
+    }
+    player.runCommandAsync(`tp "${targetPlayer.name}"`);
 };
 
 uiActionFunctions['teleportHere'] = (player, context) => {
@@ -551,9 +590,14 @@ uiActionFunctions['showMyStats'] = (player, context) => {
     const form = new MessageFormData()
         .title('§lMy Stats§r')
         .body(stats)
-        .button1('§cClose');
+        .button1('Back')
+        .button2('Close');
 
-    form.show(player).catch(e => console.error(`[UIManager] showMyStats promise rejected: ${e.stack}`));
+    form.show(player).then(response => {
+        if (response.selection === 0) { // Back button
+            showPanel(player, 'mainPanel');
+        }
+    }).catch(e => console.error(`[UIManager] showMyStats promise rejected: ${e.stack}`));
 };
 
 uiActionFunctions['showHelpfulLinks'] = (player, context) => {

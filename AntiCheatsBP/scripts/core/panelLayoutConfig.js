@@ -53,6 +53,14 @@ export const panelDefinitions = {
                 actionValue: 'reportListPanel'
             },
             {
+                id: 'bountyList',
+                text: 'Bounty List',
+                icon: 'textures/items/map_filled.png',
+                permissionLevel: 1024,
+                actionType: 'openPanel',
+                actionValue: 'bountyListPanel'
+            },
+            {
                 id: 'rules',
                 text: 'Rules',
                 icon: 'textures/items/book_enchanted.png',
@@ -63,7 +71,7 @@ export const panelDefinitions = {
             {
                 id: 'myStats',
                 text: 'My Stats',
-                icon: 'textures/ui/iconsicon_multiplayer.png',
+                icon: 'textures/ui/profile_glyph_color.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showMyStats'
@@ -71,7 +79,7 @@ export const panelDefinitions = {
             {
                 id: 'helpfulLinks',
                 text: 'Helpful Links',
-                icon: 'textures/ui/book_writable',
+                icon: 'textures/ui/book_writable.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showHelpfulLinks'
@@ -222,5 +230,10 @@ export const panelDefinitions = {
                 actionValue: 'clearReport'
             }
         ]
+    },
+    bountyListPanel: {
+        title: '§lBounty List§r',
+        parentPanelId: 'mainPanel',
+        items: [] // This will be populated dynamically by uiManager
     }
 };
