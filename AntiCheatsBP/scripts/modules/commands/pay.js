@@ -45,5 +45,5 @@ commandManager.register({
         } else {
             player.sendMessage(`§cPayment failed: ${result.message}`);
         }
-    },
+    }
 });

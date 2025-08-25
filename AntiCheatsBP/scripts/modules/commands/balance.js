@@ -38,5 +38,5 @@ commandManager.register({
         } else {
             player.sendMessage(`§a${targetPlayer.name}'s balance is: §e$${balance.toFixed(2)}`);
         }
-    },
+    }
 });

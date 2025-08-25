@@ -76,7 +76,7 @@ commandManager.register({
         player.sendMessage(`§aSuccessfully muted ${targetPlayer.name} ${durationText}. Reason: ${reason}`);
         targetPlayer.sendMessage(`§cYou have been muted ${durationText}. Reason: ${reason}`);
         playSound(player, 'random.orb');
-    },
+    }
 });
 
 commandManager.register({
@@ -107,5 +107,5 @@ commandManager.register({
         player.sendMessage(`§aSuccessfully unmuted ${targetPlayer.name}.`);
         targetPlayer.sendMessage('§aYou have been unmuted.');
         playSound(player, 'random.orb');
-    },
+    }
 });

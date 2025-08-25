@@ -19,5 +19,5 @@ commandManager.register({
 
         const result = homesManager.setHome(player, homeName);
         player.sendMessage(result.success ? `§a${result.message}` : `§c${result.message}`);
-    },
+    }
 });

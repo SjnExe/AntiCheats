@@ -16,5 +16,5 @@ commandManager.register({
         }
 
         tpaManager.acceptRequest(player);
-    },
+    }
 });

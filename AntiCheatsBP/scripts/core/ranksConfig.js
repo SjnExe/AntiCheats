@@ -24,7 +24,7 @@
 export const defaultChatFormatting = {
     prefixText: '§8[§fMember§8] ',
     nameColor: '§f',
-    messageColor: '§7',
+    messageColor: '§7'
 };
 
 /** @type {string} */
@@ -42,12 +42,12 @@ export const rankDefinitions = [
         chatFormatting: {
             prefixText: '§8[§4Owner§8] ',
             nameColor: '§4',
-            messageColor: '§6',
+            messageColor: '§6'
         },
         nametagPrefix: '§4Owner §f\n',
         conditions: [
-            { type: 'ownerName' },
-        ],
+            { type: 'ownerName' }
+        ]
     },
     {
         id: 'admin',
@@ -56,12 +56,12 @@ export const rankDefinitions = [
         chatFormatting: {
             prefixText: '§8[§cAdmin§8] ',
             nameColor: '§c',
-            messageColor: '§f',
+            messageColor: '§f'
         },
         nametagPrefix: '§cAdmin §f\n',
         conditions: [
-            { type: 'adminTag' },
-        ],
+            { type: 'adminTag' }
+        ]
     },
     {
         id: 'member',
@@ -70,7 +70,7 @@ export const rankDefinitions = [
         chatFormatting: defaultChatFormatting,
         nametagPrefix: defaultNametagPrefix,
         conditions: [
-            { type: 'default' },
-        ],
-    },
+            { type: 'default' }
+        ]
+    }
 ];

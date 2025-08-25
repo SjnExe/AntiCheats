@@ -8,7 +8,8 @@ commandManager.register({
     permissionLevel: 0, // Owner only
     execute: (player, args) => {
         const config = getConfig();
-        if (player.name.toLowerCase() !== config.ownerPlayerName?.toLowerCase()) {
+        const ownerNames = (config.ownerPlayerNames || []).map(name => name.toLowerCase());
+        if (!ownerNames.includes(player.name.toLowerCase())) {
             player.sendMessage('§cYou do not have permission to use this command.');
             return;
         }
@@ -22,5 +23,5 @@ commandManager.register({
         updateConfig('debug', newDebugState);
 
         player.sendMessage(`§aDebug mode has been set to: ${newDebugState}`);
-    },
+    }
 });

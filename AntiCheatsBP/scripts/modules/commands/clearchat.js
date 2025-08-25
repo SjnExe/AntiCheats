@@ -17,5 +17,5 @@ commandManager.register({
             player.sendMessage('§cFailed to clear chat.');
             console.error(`[!clearchat] ${error.stack}`);
         }
-    },
+    }
 });

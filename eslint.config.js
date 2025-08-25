@@ -66,7 +66,7 @@ export default [
             'no-unused-vars': ['warn', { 'args': 'none' }],
             'no-undef': 'error',
             'object-curly-spacing': ['error', 'always'],
-            'comma-dangle': ['error', 'always-multiline'],
+            'comma-dangle': ['error', 'never'],
             'no-console': 'off',
             'key-spacing': ['error', { 'beforeColon': false, 'afterColon': true }],
             'keyword-spacing': ['error', { 'before': true, 'after': true }],

@@ -1,4 +1,4 @@
-import { getPlayer } from './playerDataManager.js';
+import { getPlayer, savePlayerData } from './playerDataManager.js';
 
 /**
  * Gets the balance of a player.
@@ -20,6 +20,7 @@ export function setBalance(playerId, amount) {
     const pData = getPlayer(playerId);
     if (pData && amount >= 0) {
         pData.balance = amount;
+        savePlayerData();
         return true;
     }
     return false;
@@ -36,6 +37,7 @@ export function addBalance(playerId, amount) {
     const pData = getPlayer(playerId);
     if (pData) {
         pData.balance += amount;
+        savePlayerData();
         return true;
     }
     return false;
@@ -52,6 +54,7 @@ export function removeBalance(playerId, amount) {
     const pData = getPlayer(playerId);
     if (pData && pData.balance >= amount) {
         pData.balance -= amount;
+        savePlayerData();
         return true;
     }
     return false;
@@ -85,5 +88,6 @@ export function transfer(sourcePlayerId, targetPlayerId, amount) {
     sourceData.balance -= amount;
     targetData.balance += amount;
 
+    savePlayerData();
     return { success: true, message: 'Transfer successful.' };
 }

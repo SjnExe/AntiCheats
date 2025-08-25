@@ -1,20 +1,19 @@
-import { world } from '@minecraft/server';
-import { MessageFormData } from '@minecraft/server-ui';
 import { commandManager } from './commandManager.js';
+import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({
     name: 'invsee',
-    description: "Views a player's inventory.",
+    description: "Views a player's inventory in chat.",
     category: 'Admin',
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {
-            player.sendMessage('§cUsage: !invsee <playerName>');
+            player.sendMessage('§cUsage: !invsee <playerName> [page]');
             return;
         }
 
         const targetName = args[0];
-        const targetPlayer = [...world.getPlayers()].find(p => p.name === targetName);
+        const targetPlayer = findPlayerByName(targetName);
 
         if (!targetPlayer) {
             player.sendMessage(`§cPlayer "${targetName}" not found.`);
@@ -22,26 +21,32 @@ commandManager.register({
         }
 
         const inventory = targetPlayer.getComponent('inventory').container;
-        let inventoryDetails = `§6Inventory of ${targetPlayer.name}:\n`;
-        let itemCount = 0;
-
+        const items = [];
         for (let i = 0; i < inventory.size; i++) {
             const item = inventory.getItem(i);
             if (item) {
-                itemCount++;
-                inventoryDetails += `§eSlot ${i}: §f${item.typeId.replace('minecraft:', '')} §7x${item.amount}\n`;
+                items.push(`§eS${i}: §f${item.typeId.replace('minecraft:', '')} §7x${item.amount}`);
             }
         }
 
-        if (itemCount === 0) {
-            inventoryDetails += '§7(Inventory is empty)';
+        if (items.length === 0) {
+            player.sendMessage(`§6Inventory of ${targetPlayer.name}: §r§7(Empty)`);
+            return;
         }
 
-        const form = new MessageFormData()
-            .title(`Inventory: ${targetPlayer.name}`)
-            .body(inventoryDetails.trim())
-            .button1('§cClose');
+        const ITEMS_PER_PAGE = 10;
+        const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
+        let page = parseInt(args[1], 10) - 1 || 0;
+        if (page < 0 || page >= totalPages) {
+            page = 0;
+        }
 
-        form.show(player);
-    },
+        const startIndex = page * ITEMS_PER_PAGE;
+        const pageItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+        let message = `§6Inv: ${targetPlayer.name} (Page ${page + 1}/${totalPages})§r\n`;
+        message += pageItems.join('\n');
+
+        player.sendMessage(message);
+    }
 });

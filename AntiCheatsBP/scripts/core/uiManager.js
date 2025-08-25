@@ -6,11 +6,12 @@ import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 import { getPlayerRank } from './rankManager.js';
 import { playSound } from './utils.js';
+import { createReport, getAllReports, assignReport, resolveReport, clearReport } from './reportManager.js';
+import * as economyManager from './economyManager.js';
 
 const uiActionFunctions = {};
 
 export function showPanel(player, panelId, context = {}) {
-    playSound(player, 'ui.button.click');
     debugLog(`[UIManager] Attempting to show panel "${panelId}" to ${player.name} with context: ${JSON.stringify(context)}`);
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) {
@@ -38,11 +39,15 @@ export function showPanel(player, panelId, context = {}) {
 
         const playerList = onlinePlayers.map(p => {
             const rank = getPlayerRank(p, config);
-            let displayName = p.name;
-            if (p.name === player.name) displayName += ' (You)';
-            if (rank.name === 'Owner') displayName += ' (Owner)';
-            else if (rank.name === 'Admin') displayName += ' (Admin)';
-            return { player: p, rank, displayName };
+            const prefix = rank.chatFormatting?.prefixText ?? '';
+            let displayName = `${prefix}${p.name}§r`;
+            let icon = rank.name === 'Owner' ? 'textures/ui/crown_glyph_color' : undefined;
+
+            if (p.id === player.id) {
+                displayName += ' §7(You)§r';
+            }
+
+            return { player: p, rank, displayName, icon };
         });
 
         playerList.sort((a, b) => {
@@ -53,10 +58,9 @@ export function showPanel(player, panelId, context = {}) {
         });
 
         // Add a back button
-        form.button('§l§8< Back');
-        playSound(player, 'ui.button.click');
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
 
-        playerList.forEach(p => form.button(p.displayName));
+        playerList.forEach(p => form.button(p.displayName, p.icon));
 
         system.runTimeout(() => {
             form.show(player).then(response => {
@@ -72,10 +76,140 @@ export function showPanel(player, panelId, context = {}) {
             }).catch(e => console.error(`[UIManager] playerListPanel promise rejected: ${e.stack}`));
         }, 10);
         return; // Stop further processing for this panel
+    } else if (panelId === 'reportListPanel') {
+        const reports = getAllReports();
+        const form = new ActionFormData().title(title);
+
+        // Add a back button
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
+
+        reports.forEach(report => {
+            form.button(`Report against ${report.reportedPlayerName}\n§7By: ${report.reporterName} §8- Status: ${report.status}`);
+        });
+
+        system.runTimeout(() => {
+            form.show(player).then(response => {
+                if (response.canceled || response.selection === 0) {
+                    showPanel(player, 'mainPanel');
+                    return;
+                }
+                const selectedReport = reports[response.selection - 1];
+                if (selectedReport) {
+                    showPanel(player, 'reportActionsPanel', { targetReport: selectedReport });
+                }
+            }).catch(e => console.error(`[UIManager] reportListPanel promise rejected: ${e.stack}`));
+        }, 10);
+        return;
+    } else if (panelId === 'bountyListPanel') {
+        let message = '§a--- Player Bounties ---\n';
+        const onlinePlayers = world.getAllPlayers();
+        let foundBounty = false;
+        onlinePlayers.forEach(p => {
+            const pData = getPlayer(p.id);
+            if (pData && pData.bounty > 0) {
+                message += `§e${p.name}§r: $${pData.bounty.toFixed(2)}\n`;
+                foundBounty = true;
+            }
+        });
+        if (!foundBounty) {
+            message += '§7No active bounties.';
+        }
+
+        const form = new MessageFormData()
+            .title(title)
+            .body(message)
+            .button1('Back')
+            .button2('Close');
+
+        system.runTimeout(() => {
+            form.show(player).then(response => {
+                if (response.selection === 0) {
+                    showPanel(player, 'mainPanel');
+                }
+            }).catch(e => console.error(`[UIManager] bountyListPanel promise rejected: ${e.stack}`));
+        }, 10);
+        return;
+    } else if (panelId === 'publicPlayerListPanel') {
+        const config = getConfig();
+        const onlinePlayers = world.getAllPlayers();
+        const form = new ActionFormData().title(title);
+
+        const playerList = onlinePlayers.map(p => {
+            const rank = getPlayerRank(p, config);
+            const prefix = rank.chatFormatting?.prefixText ?? '';
+            let displayName = `${prefix}${p.name}§r`;
+            return { player: p, rank, displayName };
+        });
+
+        playerList.sort((a, b) => {
+            if (a.rank.permissionLevel !== b.rank.permissionLevel) {
+                return a.rank.permissionLevel - b.rank.permissionLevel;
+            }
+            return a.displayName.localeCompare(b.displayName);
+        });
+
+        // Add a back button
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
+
+        playerList.forEach(p => form.button(p.displayName)); // No icons needed here
+
+        system.runTimeout(() => {
+            form.show(player).then(response => {
+                if (response.canceled || response.selection === 0) {
+                    showPanel(player, 'mainPanel');
+                    return;
+                }
+                const selectedPlayer = playerList[response.selection - 1].player;
+                if (selectedPlayer) {
+                    showPanel(player, 'publicPlayerActionsPanel', { targetPlayer: selectedPlayer });
+                }
+            }).catch(e => console.error(`[UIManager] publicPlayerListPanel promise rejected: ${e.stack}`));
+        }, 10);
+        return;
     }
 
 
     const form = new ActionFormData().title(title);
+
+    // If it's the player management panel, add the profile body
+    if (panelId === 'playerManagementPanel') {
+        const targetPlayer = context.targetPlayer;
+        // This check should always pass if we reached here, but good practice
+        if (targetPlayer) {
+            const config = getConfig();
+            const targetPData = getPlayer(targetPlayer.id);
+            const rank = getPlayerRank(targetPlayer, config);
+            const profile = [
+                `§fName: §e${targetPlayer.name}`,
+                `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+                `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`,
+                `§fBounty: §e$${targetPData?.bounty?.toFixed(2) ?? '0.00'}`,
+                `§fDimension: §6${targetPlayer.dimension.id.replace('minecraft:', '')}`,
+                `§fCoords: §bX: ${Math.floor(targetPlayer.location.x)}, Y: ${Math.floor(targetPlayer.location.y)}, Z: ${Math.floor(targetPlayer.location.z)}`
+            ].join('\n\n'); // Use double newline for spacing
+            form.body(profile);
+        }
+    } else if (panelId === 'publicPlayerActionsPanel') {
+        const targetPlayer = context.targetPlayer;
+        if (targetPlayer) {
+            const targetPData = getPlayer(targetPlayer.id);
+            const bounty = targetPData ? targetPData.bounty : 0;
+            form.body(`§eBounty on this player: $${bounty.toFixed(2)}`);
+        }
+    } else if (panelId === 'reportActionsPanel') {
+        const report = context.targetReport;
+        if (report) {
+            const details = [
+                `§fReport ID: §e${report.id}`,
+                `§fReporter: §e${report.reporterName}`,
+                `§fReported: §e${report.reportedPlayerName}`,
+                `§fReason: §e${report.reason}`,
+                `§fStatus: §e${report.status}`,
+                `§fAssigned to: §e${report.assignedAdminId || 'N/A'}`
+            ].join('\n\n');
+            form.body(details);
+        }
+    }
 
     const menuItems = panelDef.items
         .filter(item => pData.permissionLevel <= item.permissionLevel)
@@ -86,10 +220,10 @@ export function showPanel(player, panelId, context = {}) {
         menuItems.unshift({
             id: '__back__',
             text: '§l§8< Back',
-            icon: 'textures/ui/arrow_left',
+            icon: 'textures/gui/controls/left.png',
             permissionLevel: 1024,
             actionType: 'openPanel', // This is a placeholder, the logic is handled specially
-            actionValue: panelDef.parentPanelId,
+            actionValue: panelDef.parentPanelId
         });
     }
 
@@ -113,7 +247,6 @@ export function showPanel(player, panelId, context = {}) {
             return;
         }
 
-        playSound(player, 'random.click');
         debugLog(`[UIManager] Player selected button: "${selectedItem.id}", action: ${selectedItem.actionType}`);
 
         // Special handling for the back button
@@ -243,7 +376,7 @@ uiActionFunctions['showStatus'] = (player) => {
     const statusText = [
         '§l§bServer Status§r',
         `§eOnline Players: §f${onlinePlayers}`,
-        `§eCurrent Tick: §f${system.currentTick}`,
+        `§eCurrent Tick: §f${system.currentTick}`
         // Add more status info here later
     ].join('\n\n');
 
@@ -305,17 +438,183 @@ uiActionFunctions['viewInventory'] = (player, context) => {
 uiActionFunctions['clearInventory'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
-    player.runCommandAsync(`clear "${targetPlayer.name}"`);
+    try {
+        world.runCommandAsync(`clear "${targetPlayer.name}"`);
+        player.sendMessage(`§aCleared ${targetPlayer.name}'s inventory.`);
+    } catch (e) {
+        player.sendMessage(`§cFailed to clear inventory: ${e}`);
+        console.error(`[UIManager] clearInventory failed: ${e.stack}`);
+    }
 };
 
 uiActionFunctions['teleportTo'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
-    player.runCommandAsync(`tp "${player.name}" "${targetPlayer.name}"`);
+    if (player.id === targetPlayer.id) {
+        player.sendMessage('§cYou cannot teleport to yourself.');
+        return;
+    }
+    player.runCommandAsync(`tp "${targetPlayer.name}"`);
 };
 
 uiActionFunctions['teleportHere'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
     player.runCommandAsync(`tp "${targetPlayer.name}" "${player.name}"`);
+};
+
+uiActionFunctions['showBountyForm'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) {
+        player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+
+    const form = new ModalFormData()
+        .title(`Set Bounty on ${targetPlayer.name}`)
+        .textField('Bounty Amount', 'Enter amount');
+
+    form.show(player).then(response => {
+        if (response.canceled) return;
+        const [amountStr] = response.formValues;
+        const amount = parseInt(amountStr);
+        const config = getConfig();
+
+        if (isNaN(amount) || amount < config.economy.minimumBounty) {
+            player.sendMessage(`§cInvalid amount. The minimum bounty is $${config.economy.minimumBounty}.`);
+            return;
+        }
+
+        const sourceData = getPlayer(player.id);
+        if (!sourceData) {
+            player.sendMessage('§cCould not find your player data.');
+            return;
+        }
+
+        if (economyManager.getBalance(player.id) < amount) {
+            player.sendMessage('§cYou do not have enough money for this bounty.');
+            return;
+        }
+
+        const targetData = getPlayer(targetPlayer.id);
+        if (!targetData) {
+            player.sendMessage('§cCould not find the target player\'s data.');
+            return;
+        }
+
+        const result = economyManager.removeBalance(player.id, amount);
+
+        if (result) {
+            targetData.bounty += amount;
+            if (!sourceData.bounties) {
+                sourceData.bounties = {};
+            }
+            sourceData.bounties[targetPlayer.id] = (sourceData.bounties[targetPlayer.id] || 0) + amount;
+            player.sendMessage('§aYou have placed a bounty of §e$' + amount + '§a on ' + targetPlayer.name + '.');
+            world.sendMessage('§cSomeone has placed a bounty of §e$' + amount + '§c on ' + targetPlayer.name + '!');
+        } else {
+            player.sendMessage('§cFailed to place bounty.');
+        }
+    }).catch(e => {
+        console.error(`[UIManager] showBountyForm promise rejected: ${e.stack}`);
+    });
+};
+
+uiActionFunctions['sendTpaRequest'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) {
+        player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+    player.runCommandAsync(`tpa "${targetPlayer.name}"`);
+};
+
+uiActionFunctions['showReportForm'] = (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) {
+        player.sendMessage('§cTarget player not found in context.');
+        return;
+    }
+
+    const form = new ModalFormData()
+        .title(`Report ${targetPlayer.name}`)
+        .textField('Reason', 'Enter report reason');
+
+    form.show(player).then(response => {
+        if (response.canceled) return;
+        const [reason] = response.formValues;
+        createReport(player, targetPlayer, reason);
+        player.sendMessage('§aThank you for your report. An admin will review it shortly.');
+    }).catch(e => {
+        console.error(`[UIManager] showReportForm promise rejected: ${e.stack}`);
+    });
+};
+
+uiActionFunctions['assignReport'] = (player, context) => {
+    const report = context.targetReport;
+    if (!report) return player.sendMessage('§cReport not found in context.');
+    assignReport(report.id, player.id);
+    player.sendMessage(`§aReport ${report.id} assigned to you.`);
+};
+
+uiActionFunctions['resolveReport'] = (player, context) => {
+    const report = context.targetReport;
+    if (!report) return player.sendMessage('§cReport not found in context.');
+    resolveReport(report.id);
+    player.sendMessage(`§aReport ${report.id} marked as resolved.`);
+};
+
+uiActionFunctions['clearReport'] = (player, context) => {
+    const report = context.targetReport;
+    if (!report) return player.sendMessage('§cReport not found in context.');
+    clearReport(report.id);
+    player.sendMessage(`§aReport ${report.id} cleared.`);
+};
+
+
+uiActionFunctions['showMyStats'] = (player, context) => {
+    const pData = getPlayer(player.id);
+    const config = getConfig();
+    const rank = getPlayerRank(player, config);
+
+    if (!pData) {
+        player.sendMessage('§cCould not retrieve your data.');
+        return;
+    }
+
+    const stats = [
+        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+        `§fBalance: §a$${pData.balance.toFixed(2)}`,
+        `§fHomes Set: §e${Object.keys(pData.homes).length} / ${config.homes.maxHomes}`
+    ].join('\n');
+
+    const form = new MessageFormData()
+        .title('§lMy Stats§r')
+        .body(stats)
+        .button1('Back')
+        .button2('Close');
+
+    form.show(player).then(response => {
+        if (response.selection === 0) { // Back button
+            showPanel(player, 'mainPanel');
+        }
+    }).catch(e => console.error(`[UIManager] showMyStats promise rejected: ${e.stack}`));
+};
+
+uiActionFunctions['showHelpfulLinks'] = (player, context) => {
+    const config = getConfig();
+    const links = [
+        '§l§9Discord Server:§r',
+        `§f${config.serverInfo.discordLink}`,
+        '',
+        '§l§bWebsite:§r',
+        `§f${config.serverInfo.websiteLink}`
+    ].join('\n');
+
+    const form = new MessageFormData()
+        .title('§lHelpful Links§r')
+        .body(links)
+        .button1('§cClose');
+
+    form.show(player).catch(e => console.error(`[UIManager] showHelpfulLinks promise rejected: ${e.stack}`));
 };

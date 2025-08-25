@@ -23,5 +23,5 @@ commandManager.register({
 
         const result = homesManager.deleteHome(player, homeName);
         player.sendMessage(result.success ? `§a${result.message}` : `§c${result.message}`);
-    },
+    }
 });

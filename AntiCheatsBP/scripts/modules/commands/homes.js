@@ -23,5 +23,5 @@ commandManager.register({
         } else {
             player.sendMessage(`§aYour homes (${homeCount}/${maxHomes}): §e${homeList.join(', ')}`);
         }
-    },
+    }
 });

@@ -53,5 +53,5 @@ commandManager.register({
             player.sendMessage(`§aSuccessfully unfroze ${targetPlayer.name}.`);
             targetPlayer.sendMessage('§aYou have been unfrozen.');
         }
-    },
+    }
 });

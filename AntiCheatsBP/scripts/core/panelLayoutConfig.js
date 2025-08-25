@@ -34,96 +34,111 @@ export const panelDefinitions = {
                 icon: 'textures/ui/icon_multiplayer',
                 permissionLevel: 1,
                 actionType: 'openPanel',
-                actionValue: 'playerListPanel',
+                actionValue: 'playerListPanel'
+            },
+            {
+                id: 'publicPlayerList',
+                text: 'View Players',
+                icon: 'textures/ui/icon_multiplayer',
+                permissionLevel: 1024,
+                actionType: 'openPanel',
+                actionValue: 'publicPlayerListPanel'
+            },
+            {
+                id: 'reportManagement',
+                text: 'Report Management',
+                icon: 'textures/ui/feed.png',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'reportListPanel'
+            },
+            {
+                id: 'bountyList',
+                text: 'Bounty List',
+                icon: 'textures/items/map_filled.png',
+                permissionLevel: 1024,
+                actionType: 'openPanel',
+                actionValue: 'bountyListPanel'
             },
             {
                 id: 'rules',
                 text: 'Rules',
-                icon: 'textures/items/book_normal',
+                icon: 'textures/items/book_enchanted.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
-                actionValue: 'showRules',
+                actionValue: 'showRules'
             },
             {
-                id: 'status',
-                text: 'Status',
-                icon: 'textures/ui/icon_setting.png',
+                id: 'myStats',
+                text: 'My Stats',
+                icon: 'textures/ui/profile_glyph_color.png',
                 permissionLevel: 1024,
-                actionType: 'openPanel',
-                actionValue: 'statusPanel',
+                actionType: 'functionCall',
+                actionValue: 'showMyStats'
             },
-        ],
+            {
+                id: 'helpfulLinks',
+                text: 'Helpful Links',
+                icon: 'textures/ui/book_writable.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showHelpfulLinks'
+            }
+        ]
     },
-    statusPanel: {
-        title: '§lServer Status§r',
+    publicPlayerListPanel: {
+        title: '§lOnline Players§r',
         parentPanelId: 'mainPanel',
-        items: [
-            {
-                id: 'viewStatus',
-                text: 'View Server Info',
-                icon: 'textures/ui/icon_setting.png',
-                permissionLevel: 1024,
-                actionType: 'functionCall',
-                actionValue: 'showStatus',
-            },
-        ],
+        items: [] // This will be populated dynamically by uiManager
     },
     playerListPanel: {
         title: '§lSelect a Player§r',
         parentPanelId: 'mainPanel',
-        items: [], // This will be populated dynamically by uiManager
+        items: [] // This will be populated dynamically by uiManager
     },
     playerManagementPanel: {
         title: '§lActions for {playerName}§r',
         parentPanelId: 'playerListPanel',
         items: [
             {
-                id: 'kickPlayer',
-                text: 'Kick Player',
+                id: 'banPlayer',
+                text: 'Ban',
                 icon: 'textures/ui/hammer_l.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'showKickForm',
+                actionValue: 'showBanForm'
             },
             {
-                id: 'banPlayer',
-                text: 'Ban Player',
-                icon: 'textures/ui/icon_lock',
+                id: 'kickPlayer',
+                text: 'Kick',
+                icon: 'textures/ui/icon_import.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'showBanForm',
+                actionValue: 'showKickForm'
             },
             {
                 id: 'mutePlayer',
-                text: 'Mute Player',
-                icon: 'textures/ui/speaker_off',
+                text: 'Mute',
+                icon: 'textures/ui/mute_on.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'showMuteForm',
+                actionValue: 'showMuteForm'
             },
             {
                 id: 'unmutePlayer',
-                text: 'Unmute Player',
-                icon: 'textures/ui/speaker_on',
+                text: 'Unmute',
+                icon: 'textures/ui/mute_off.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'showUnmuteForm',
+                actionValue: 'showUnmuteForm'
             },
             {
                 id: 'freezePlayer',
-                text: 'Freeze Player',
-                icon: 'textures/ui/debug_glyph_color',
+                text: 'Freeze',
+                icon: 'textures/ui/lock_color.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'toggleFreeze',
-            },
-            {
-                id: 'viewInventory',
-                text: 'View Inventory',
-                icon: 'textures/ui/inventory_icon',
-                permissionLevel: 1,
-                actionType: 'functionCall',
-                actionValue: 'viewInventory',
+                actionValue: 'toggleFreeze'
             },
             {
                 id: 'clearInventory',
@@ -131,24 +146,94 @@ export const panelDefinitions = {
                 icon: 'textures/ui/trash',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'clearInventory',
+                actionValue: 'clearInventory'
             },
             {
                 id: 'teleportToPlayer',
                 text: 'Teleport to Player',
-                icon: 'textures/items/ender_pearl',
+                icon: 'textures/ui/flyingascend.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'teleportTo',
+                actionValue: 'teleportTo'
             },
             {
                 id: 'teleportPlayerHere',
                 text: 'Teleport Player Here',
-                icon: 'textures/items/ender_pearl',
+                icon: 'textures/ui/flyingdescend.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
-                actionValue: 'teleportHere',
-            },
-        ],
+                actionValue: 'teleportHere'
+            }
+        ]
     },
+    publicPlayerActionsPanel: {
+        title: '§lActions for {playerName}§r',
+        parentPanelId: 'publicPlayerListPanel',
+        items: [
+            {
+                id: 'setBounty',
+                text: 'Set Bounty',
+                icon: 'textures/items/gold_ingot.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showBountyForm'
+            },
+            {
+                id: 'sendTpaRequest',
+                text: 'Send TPA Request',
+                icon: 'textures/ui/icon_out.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'sendTpaRequest'
+            },
+            {
+                id: 'reportPlayer',
+                text: 'Report Player',
+                icon: 'textures/ui/chat_send.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showReportForm'
+            }
+        ]
+    },
+    reportListPanel: {
+        title: '§lActive Reports§r',
+        parentPanelId: 'mainPanel',
+        items: [] // This will be populated dynamically by uiManager
+    },
+    reportActionsPanel: {
+        title: '§lReport Details§r',
+        parentPanelId: 'reportListPanel',
+        items: [
+            {
+                id: 'assignReport',
+                text: 'Assign to Me',
+                icon: 'textures/ui/mine.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'assignReport'
+            },
+            {
+                id: 'resolveReport',
+                text: 'Mark as Resolved',
+                icon: 'textures/ui/check.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'resolveReport'
+            },
+            {
+                id: 'clearReport',
+                text: 'Clear Report',
+                icon: 'textures/ui/trash.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'clearReport'
+            }
+        ]
+    },
+    bountyListPanel: {
+        title: '§lBounty List§r',
+        parentPanelId: 'mainPanel',
+        items: [] // This will be populated dynamically by uiManager
+    }
 };

@@ -1,26 +1,33 @@
 import { commandManager } from './commandManager.js';
-import { ItemStack } from '@minecraft/server';
+import { ItemStack, EnchantmentType } from '@minecraft/server';
 
 commandManager.register({
     name: 'panel',
+    aliases: ['ui'],
     description: 'Gives you the panel item.',
     category: 'General',
-    permissionLevel: 1, // Admins only
+    permissionLevel: 1, // Admin and above
     execute: (player, args) => {
-        try {
-            const inventory = player.getComponent('inventory');
-            if (!inventory) {
-                player.sendMessage('§cCould not get your inventory.');
+        const container = player.getComponent('inventory').container;
+
+        // Check if player already has the item
+        for (let i = 0; i < container.size; i++) {
+            const item = container.getItem(i);
+            if (item && item.typeId === 'ac:panel') {
+                player.sendMessage('§cYou already have the panel item.');
                 return;
             }
-
-            const panelItem = new ItemStack('ac:panel', 1);
-            inventory.container.addItem(panelItem);
-
-            player.sendMessage('§aYou have been given the panel item.');
-        } catch (e) {
-            player.sendMessage(`§cFailed to give the panel item. Please report this to an admin. Error: ${e.stack}`);
-            console.error(`[PanelCommand] Failed to give panel item: ${e.stack}`);
         }
-    },
+
+        // Check if inventory is full
+        if (container.emptySlotsCount === 0) {
+            player.sendMessage('§cYour inventory is full.');
+            return;
+        }
+
+        const panelItem = new ItemStack('ac:panel', 1);
+        panelItem.getComponent('enchantable')?.addEnchantment({ type: new EnchantmentType('vanishing'), level: 1 });
+        container.addItem(panelItem);
+        player.sendMessage('§aYou have received the panel item.');
+    }
 });
