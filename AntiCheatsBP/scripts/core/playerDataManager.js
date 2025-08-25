@@ -77,6 +77,7 @@ export function getOrCreatePlayer(player) {
         bounties: {}
     };
     activePlayerData.set(player.id, playerData);
+    savePlayerData();
     return playerData;
 }
 

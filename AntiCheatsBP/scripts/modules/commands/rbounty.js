@@ -1,6 +1,6 @@
 import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
-import { getPlayer } from '../../core/playerDataManager.js';
+import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({
@@ -57,6 +57,7 @@ commandManager.register({
         const result = economyManager.removeBalance(player.id, amount);
         if (result) {
             targetData.bounty -= amount;
+            savePlayerData();
             player.sendMessage('§aYou have removed $' + amount.toFixed(2) + ' from ' + targetPlayer.name + "'s bounty.");
         } else {
             player.sendMessage('§cFailed to remove bounty.');

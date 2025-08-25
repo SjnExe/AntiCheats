@@ -34,6 +34,7 @@ function mainTick() {
         if (pData.rankId !== currentRank.id) {
             pData.rankId = currentRank.id;
             pData.permissionLevel = currentRank.permissionLevel;
+            playerDataManager.savePlayerData();
             debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${currentRank.name}.`);
             player.sendMessage(`§aYour rank has been updated to ${currentRank.name}.`);
         }
@@ -85,10 +86,6 @@ system.run(() => {
     });
 
     system.runInterval(mainTick, 20);
-    system.runInterval(() => {
-        playerDataManager.savePlayerData();
-        debugLog('[AntiCheats] Player data saved.');
-    }, 20 * 60); // Autosave every 1 minute
     debugLog('[AntiCheats] Addon initialized successfully.');
 });
 

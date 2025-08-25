@@ -2,7 +2,7 @@ import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
-import { getPlayer } from '../../core/playerDataManager.js';
+import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
 import { world } from '@minecraft/server';
 
 commandManager.register({
@@ -59,6 +59,7 @@ commandManager.register({
                 sourceData.bounties = {};
             }
             sourceData.bounties[targetPlayer.id] = (sourceData.bounties[targetPlayer.id] || 0) + amount;
+            savePlayerData();
             player.sendMessage('§aYou have placed a bounty of §e$' + amount + '§a on ' + targetPlayer.name + '.');
             world.sendMessage('§cSomeone has placed a bounty of §e$' + amount + '§c on ' + targetPlayer.name + '!');
         } else {
