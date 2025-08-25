@@ -47,7 +47,7 @@ export const panelDefinitions = {
             {
                 id: 'reportManagement',
                 text: 'Report Management',
-                icon: 'textures/ui/feed.png',
+                icon: 'textures/ui/WarningGlyph',
                 permissionLevel: 1,
                 actionType: 'openPanel',
                 actionValue: 'reportListPanel'
@@ -79,7 +79,7 @@ export const panelDefinitions = {
             {
                 id: 'helpfulLinks',
                 text: 'Helpful Links',
-                icon: 'textures/ui/book_writable.png',
+                icon: 'textures/ui/book_glyph',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showHelpfulLinks'

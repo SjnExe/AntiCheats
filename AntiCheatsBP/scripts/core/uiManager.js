@@ -436,11 +436,20 @@ uiActionFunctions['viewInventory'] = (player, context) => {
 };
 
 uiActionFunctions['clearInventory'] = (player, context) => {
-    const targetPlayer = context.targetPlayer;
-    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+    const targetPlayerId = context.targetPlayer?.id;
+    if (!targetPlayerId) return player.sendMessage('§cTarget player not found in context.');
+
+    const freshTarget = world.getPlayer(targetPlayerId);
+    if (!freshTarget) {
+        player.sendMessage(`§cTarget player is no longer online.`);
+        return;
+    }
+
     try {
-        world.runCommandAsync(`clear "${targetPlayer.name}"`);
-        player.sendMessage(`§aCleared ${targetPlayer.name}'s inventory.`);
+        // Use the fresh player object's name for the command
+        world.runCommandAsync(`clear "${freshTarget.name}"`);
+        player.sendMessage(`§aCleared ${freshTarget.name}'s inventory.`);
+        freshTarget.sendMessage('§eYour inventory has been cleared by an admin.');
     } catch (e) {
         player.sendMessage(`§cFailed to clear inventory: ${e}`);
         console.error(`[UIManager] clearInventory failed: ${e.stack}`);
