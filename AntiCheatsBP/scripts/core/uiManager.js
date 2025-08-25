@@ -39,9 +39,8 @@ export function showPanel(player, panelId, context = {}) {
 
         const playerList = onlinePlayers.map(p => {
             const rank = getPlayerRank(p, config);
-            const pData = getPlayer(p.id);
-            const bounty = pData ? pData.bounty : 0;
-            let displayName = `${p.name}\n§eBounty: $${bounty.toFixed(2)} §7- Rank: ${rank.name}`;
+            const prefix = rank.chatFormatting?.prefixText ?? '';
+            let displayName = `${prefix}${p.name}§r`;
             let icon; // Default icon is undefined
 
             if (rank.name === 'Owner') {
@@ -126,11 +125,14 @@ export function showPanel(player, panelId, context = {}) {
         const form = new MessageFormData()
             .title(title)
             .body(message)
-            .button1('Back');
+            .button1('Back')
+            .button2('Close');
 
         system.runTimeout(() => {
             form.show(player).then(response => {
-                showPanel(player, 'mainPanel');
+                if (response.selection === 0) {
+                    showPanel(player, 'mainPanel');
+                }
             }).catch(e => console.error(`[UIManager] bountyListPanel promise rejected: ${e.stack}`));
         }, 10);
         return;
@@ -141,10 +143,8 @@ export function showPanel(player, panelId, context = {}) {
 
         const playerList = onlinePlayers.map(p => {
             const rank = getPlayerRank(p, config);
-            const pData = getPlayer(p.id);
-            const bounty = pData ? pData.bounty : 0;
             const prefix = rank.chatFormatting?.prefixText ?? '';
-            let displayName = `${prefix}${p.name}§r\n§eBounty: $${bounty.toFixed(2)} §7- Rank: ${rank.name}`;
+            let displayName = `${prefix}${p.name}§r`;
             return { player: p, rank, displayName };
         });
 
@@ -190,10 +190,18 @@ export function showPanel(player, panelId, context = {}) {
                 `§fName: §e${targetPlayer.name}`,
                 `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
                 `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`,
+                `§fBounty: §e$${targetPData?.bounty?.toFixed(2) ?? '0.00'}`,
                 `§fDimension: §6${targetPlayer.dimension.id.replace('minecraft:', '')}`,
                 `§fCoords: §bX: ${Math.floor(targetPlayer.location.x)}, Y: ${Math.floor(targetPlayer.location.y)}, Z: ${Math.floor(targetPlayer.location.z)}`
             ].join('\n\n'); // Use double newline for spacing
             form.body(profile);
+        }
+    } else if (panelId === 'publicPlayerActionsPanel') {
+        const targetPlayer = context.targetPlayer;
+        if (targetPlayer) {
+            const targetPData = getPlayer(targetPlayer.id);
+            const bounty = targetPData ? targetPData.bounty : 0;
+            form.body(`§eBounty on this player: $${bounty.toFixed(2)}`);
         }
     } else if (panelId === 'reportActionsPanel') {
         const report = context.targetReport;
@@ -438,7 +446,7 @@ uiActionFunctions['clearInventory'] = (player, context) => {
     const targetPlayer = context.targetPlayer;
     if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
     try {
-        player.runCommandAsync(`clear "${targetPlayer.name}"`);
+        world.runCommandAsync(`clear "${targetPlayer.name}"`);
         player.sendMessage(`§aCleared ${targetPlayer.name}'s inventory.`);
     } catch (e) {
         player.sendMessage(`§cFailed to clear inventory: ${e}`);
