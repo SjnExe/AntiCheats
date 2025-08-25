@@ -170,7 +170,7 @@ world.afterEvents.itemUse.subscribe((event) => {
     }
 });
 
-world.afterEvents.blockBreak.subscribe((event) => {
+world.afterEvents.blockBreak?.subscribe((event) => {
     const { brokenBlock, player } = event;
     const valuableOres = [
         'minecraft:diamond_ore',
