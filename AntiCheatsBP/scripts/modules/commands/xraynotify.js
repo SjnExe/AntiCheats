@@ -14,7 +14,7 @@ commandManager.register({
         }
 
         pData.xrayNotifications = !pData.xrayNotifications;
-        savePlayerData();
+        savePlayerData(player.id);
 
         const status = pData.xrayNotifications ? '§aenabled' : '§cdisabled';
         player.sendMessage(`§aX-Ray notifications have been ${status}§a for you.`);

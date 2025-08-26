@@ -59,7 +59,8 @@ commandManager.register({
                 sourceData.bounties = {};
             }
             sourceData.bounties[targetPlayer.id] = (sourceData.bounties[targetPlayer.id] || 0) + amount;
-            savePlayerData();
+            savePlayerData(player.id);
+            savePlayerData(targetPlayer.id);
             player.sendMessage('§aYou have placed a bounty of §e$' + amount + '§a on ' + targetPlayer.name + '.');
             world.sendMessage('§cSomeone has placed a bounty of §e$' + amount + '§c on ' + targetPlayer.name + '!');
         } else {

@@ -34,7 +34,9 @@ export const config = {
         enabled: true,
         startingBalance: 0,
         baltopLimit: 10,
-        minimumBounty: 100
+        minimumBounty: 100,
+        paymentConfirmationThreshold: 10000, // Payments over this amount require confirmation
+        paymentConfirmationTimeout: 60 // Seconds to confirm a payment
     },
     creativeDetection: {
         enabled: true,

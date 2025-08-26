@@ -1,77 +1,99 @@
 import { getPlayer, savePlayerData } from './playerDataManager.js';
+import { getConfig } from './configManager.js';
+import { world } from '@minecraft/server';
 
 /**
- * Gets the balance of a player.
- * @param {string} playerId The ID of the player.
- * @returns {number | null} The player's balance, or null if the player data is not found.
+ * @typedef {object} PendingPayment
+ * @property {string} sourcePlayerId
+ * @property {string} targetPlayerId
+ * @property {number} amount
+ * @property {number} timestamp
  */
+
+/**
+ * @type {Map<string, PendingPayment>}
+ */
+const pendingPayments = new Map();
+
+// --- Pending Payment Management ---
+
+export function createPendingPayment(sourcePlayerId, targetPlayerId, amount) {
+    pendingPayments.set(sourcePlayerId, {
+        sourcePlayerId,
+        targetPlayerId,
+        amount,
+        timestamp: Date.now()
+    });
+}
+
+export function getPendingPayment(sourcePlayerId) {
+    return pendingPayments.get(sourcePlayerId);
+}
+
+export function clearPendingPayment(sourcePlayerId) {
+    pendingPayments.delete(sourcePlayerId);
+}
+
+export function clearExpiredPayments() {
+    const config = getConfig();
+    const timeout = config.economy.paymentConfirmationTimeout * 1000; // convert to ms
+    const now = Date.now();
+
+    for (const [playerId, payment] of pendingPayments.entries()) {
+        if (now - payment.timestamp > timeout) {
+            pendingPayments.delete(playerId);
+            const player = world.getPlayer(playerId);
+            if (player) {
+                player.sendMessage('§cYour pending payment has expired.');
+            }
+        }
+    }
+}
+
+
+// --- Balance Management ---
+
 export function getBalance(playerId) {
     const pData = getPlayer(playerId);
     return pData ? pData.balance : null;
 }
 
-/**
- * Sets the balance of a player.
- * @param {string} playerId The ID of the player.
- * @param {number} amount The new balance amount.
- * @returns {boolean} True if the balance was set, false otherwise.
- */
 export function setBalance(playerId, amount) {
     const pData = getPlayer(playerId);
     if (pData && amount >= 0) {
         pData.balance = amount;
-        savePlayerData();
+        savePlayerData(playerId);
         return true;
     }
     return false;
 }
 
-/**
- * Adds to a player's balance.
- * @param {string} playerId The ID of the player.
- * @param {number} amount The amount to add.
- * @returns {boolean} True if the amount was added, false otherwise.
- */
 export function addBalance(playerId, amount) {
     if (amount < 0) return false;
     const pData = getPlayer(playerId);
     if (pData) {
         pData.balance += amount;
-        savePlayerData();
+        savePlayerData(playerId);
         return true;
     }
     return false;
 }
 
-/**
- * Removes from a player's balance.
- * @param {string} playerId The ID of the player.
- * @param {number} amount The amount to remove.
- * @returns {boolean} True if the amount was removed, false otherwise.
- */
 export function removeBalance(playerId, amount) {
     if (amount < 0) return false;
     const pData = getPlayer(playerId);
     if (pData && pData.balance >= amount) {
         pData.balance -= amount;
-        savePlayerData();
+        savePlayerData(playerId);
         return true;
     }
     return false;
 }
 
-/**
- * Transfers money from one player to another.
- * @param {string} sourcePlayerId The ID of the player sending money.
- * @param {string} targetPlayerId The ID of the player receiving money.
- * @param {number} amount The amount to transfer.
- * @returns {{success: boolean, message: string}}
- */
 export function transfer(sourcePlayerId, targetPlayerId, amount) {
     if (amount <= 0) {
         return { success: false, message: 'Transfer amount must be positive.' };
     }
-
     const sourceData = getPlayer(sourcePlayerId);
     if (!sourceData) {
         return { success: false, message: 'Could not find your player data.' };
@@ -79,7 +101,6 @@ export function transfer(sourcePlayerId, targetPlayerId, amount) {
     if (sourceData.balance < amount) {
         return { success: false, message: 'You do not have enough money for this transaction.' };
     }
-
     const targetData = getPlayer(targetPlayerId);
     if (!targetData) {
         return { success: false, message: 'Could not find the target player\'s data.' };
@@ -88,6 +109,7 @@ export function transfer(sourcePlayerId, targetPlayerId, amount) {
     sourceData.balance -= amount;
     targetData.balance += amount;
 
-    savePlayerData();
+    savePlayerData(sourcePlayerId);
+    savePlayerData(targetPlayerId);
     return { success: true, message: 'Transfer successful.' };
 }

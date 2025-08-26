@@ -15,12 +15,14 @@
  * @property {Object.<string, number>} kitCooldowns
  * @property {number} bounty
  * @property {Object.<string, number>} bounties
+ * @property {boolean} xrayNotifications
  */
 
 import { getConfig } from './configManager.js';
 import { world } from '@minecraft/server';
+import { debugLog } from './logger.js';
 
-const PLAYER_DATA_PROPERTY = 'playerDataV1';
+const PLAYER_PROPERTY_PREFIX = 'player_';
 
 /**
  * @type {Map<string, PlayerData>}
@@ -28,37 +30,56 @@ const PLAYER_DATA_PROPERTY = 'playerDataV1';
 const activePlayerData = new Map();
 
 /**
- * Saves all player data to a dynamic property.
+ * Saves a single player's data to a unique dynamic property.
+ * @param {string} playerId The ID of the player to save.
  */
-export function savePlayerData() {
+export function savePlayerData(playerId) {
+    if (!activePlayerData.has(playerId)) {
+        console.warn(`[PlayerDataManager] Attempted to save data for non-cached player: ${playerId}`);
+        return;
+    }
     try {
-        const dataString = JSON.stringify(Array.from(activePlayerData.entries()));
-        world.setDynamicProperty(PLAYER_DATA_PROPERTY, dataString);
+        const playerData = activePlayerData.get(playerId);
+        const dataString = JSON.stringify(playerData);
+        world.setDynamicProperty(`${PLAYER_PROPERTY_PREFIX}${playerId}`, dataString);
     } catch (e) {
-        console.error(`[PlayerDataManager] Failed to save player data: ${e.stack}`);
+        console.error(`[PlayerDataManager] Failed to save data for player ${playerId}: ${e.stack}`);
     }
 }
 
 /**
- * Loads all player data from a dynamic property.
+ * Loads a single player's data from their unique dynamic property into the cache.
+ * @param {string} playerId The ID of the player to load.
+ * @returns {PlayerData | null} The loaded player data, or null if not found.
  */
-export function loadPlayerData() {
+export function loadPlayerData(playerId) {
     try {
-        const dataString = world.getDynamicProperty(PLAYER_DATA_PROPERTY);
+        const dataString = world.getDynamicProperty(`${PLAYER_PROPERTY_PREFIX}${playerId}`);
         if (dataString && typeof dataString === 'string') {
-            const dataArray = JSON.parse(dataString);
-            for (const [playerId, playerData] of dataArray) {
-                activePlayerData.set(playerId, playerData);
-            }
-            console.log(`[PlayerDataManager] Loaded data for ${activePlayerData.size} players.`);
+            const playerData = JSON.parse(dataString);
+            activePlayerData.set(playerId, playerData);
+            return playerData;
         }
     } catch (e) {
-        console.error(`[PlayerDataManager] Failed to load player data: ${e.stack}`);
+        console.error(`[PlayerDataManager] Failed to load data for player ${playerId}: ${e.stack}`);
     }
+    return null;
 }
 
 /**
- * Gets a player's data from the cache, or creates it if it doesn't exist.
+ * Loads data for all currently online players. Typically run on startup.
+ */
+export function loadAllOnlinePlayerData() {
+    debugLog('[PlayerDataManager] Loading data for all online players...');
+    for (const player of world.getAllPlayers()) {
+        getOrCreatePlayer(player);
+    }
+    debugLog(`[PlayerDataManager] Player data cache initialized for ${activePlayerData.size} players.`);
+}
+
+
+/**
+ * Gets a player's data from the cache, or loads/creates it if it doesn't exist.
  * @param {import('@minecraft/server').Player} player
  * @returns {PlayerData}
  */
@@ -66,10 +87,18 @@ export function getOrCreatePlayer(player) {
     if (activePlayerData.has(player.id)) {
         return activePlayerData.get(player.id);
     }
+
+    // Try to load from dynamic properties first
+    const loadedData = loadPlayerData(player.id);
+    if (loadedData) {
+        return loadedData;
+    }
+
+    // If still not found, create new data
     const config = getConfig();
-    const playerData = {
-        rankId: 'member', // Default rank
-        permissionLevel: 1024, // Default permission level
+    const newPlayerData = {
+        rankId: 'member',
+        permissionLevel: 1024,
         homes: {},
         balance: config.economy.startingBalance,
         kitCooldowns: {},
@@ -77,9 +106,9 @@ export function getOrCreatePlayer(player) {
         bounties: {},
         xrayNotifications: true
     };
-    activePlayerData.set(player.id, playerData);
-    savePlayerData();
-    return playerData;
+    activePlayerData.set(player.id, newPlayerData);
+    savePlayerData(player.id); // Save the new player's data immediately
+    return newPlayerData;
 }
 
 /**
@@ -92,15 +121,18 @@ export function getPlayer(playerId) {
 }
 
 /**
- * Handles a player leaving the server by saving all player data.
+ * Handles a player leaving the server by saving their data and removing them from the cache.
  * @param {string} playerId
  */
 export function handlePlayerLeave(playerId) {
-    savePlayerData();
+    if (activePlayerData.has(playerId)) {
+        savePlayerData(playerId);
+        activePlayerData.delete(playerId);
+    }
 }
 
 /**
- * Gets all active player data.
+ * Gets all active (online) player data from the cache.
  * @returns {Map<string, PlayerData>}
  */
 export function getAllPlayerData() {

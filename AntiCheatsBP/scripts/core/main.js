@@ -4,6 +4,7 @@ import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
 import { getPunishment, loadPunishments } from './punishmentManager.js';
+import { clearExpiredPayments } from './economyManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 
@@ -34,7 +35,7 @@ function mainTick() {
         if (pData.rankId !== currentRank.id) {
             pData.rankId = currentRank.id;
             pData.permissionLevel = currentRank.permissionLevel;
-            playerDataManager.savePlayerData();
+            playerDataManager.savePlayerData(player.id);
             debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${currentRank.name}.`);
             player.sendMessage(`§aYour rank has been updated to ${currentRank.name}.`);
         }
@@ -43,8 +44,8 @@ function mainTick() {
 
 // Run the initialization logic on the next tick after the script is loaded.
 system.run(() => {
-    playerDataManager.loadPlayerData();
     loadConfig();
+    playerDataManager.loadAllOnlinePlayerData();
     debugLog('[AntiCheats] Initializing addon...');
     loadPunishments();
     rankManager.initialize();
@@ -86,6 +87,8 @@ system.run(() => {
     });
 
     system.runInterval(mainTick, 20);
+    // Periodically clear expired payment confirmations
+    system.runInterval(clearExpiredPayments, 1200);
     debugLog('[AntiCheats] Addon initialized successfully.');
 });
 

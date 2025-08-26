@@ -57,7 +57,8 @@ commandManager.register({
         const result = economyManager.removeBalance(player.id, amount);
         if (result) {
             targetData.bounty -= amount;
-            savePlayerData();
+            savePlayerData(player.id);
+            savePlayerData(targetPlayer.id);
             player.sendMessage('§aYou have removed $' + amount.toFixed(2) + ' from ' + targetPlayer.name + "'s bounty.");
         } else {
             player.sendMessage('§cFailed to remove bounty.');

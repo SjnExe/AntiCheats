@@ -4,64 +4,37 @@ import { getConfig } from '../../core/configManager.js';
 
 function showCategorizedHelp(player, userPermissionLevel) {
     const config = getConfig();
+    const categorizedCommands = {};
+
+    // Dynamically categorize all registered commands
+    for (const cmd of commandManager.commands.values()) {
+        // Permission level check
+        if (userPermissionLevel > cmd.permissionLevel) continue;
+        // Individual command toggle check
+        const cmdSetting = config.commandSettings?.[cmd.name];
+        if (cmdSetting && cmdSetting.enabled === false) continue;
+
+        const category = cmd.category || 'General';
+        if (!categorizedCommands[category]) {
+            categorizedCommands[category] = [];
+        }
+        categorizedCommands[category].push(cmd);
+    }
+
     let helpMessage = '§a--- Available Commands ---\n';
     let commandsShown = false;
 
-    const commandStructure = {
-        '§aGeneral': {
-            systemToggle: null,
-            commands: ['help', 'status', 'rules', 'version', 'spawn', 'report', 'panel']
-        },
-        '§dTeleportation (TPA)': {
-            systemToggle: 'tpa',
-            commands: ['tpa', 'tpahere', 'tpaccept', 'tpadeny', 'tpacancel', 'tpastatus']
-        },
-        '§2Homes': {
-            systemToggle: 'homes',
-            commands: ['sethome', 'home', 'delhome', 'homes']
-        },
-        '§6Economy': {
-            systemToggle: 'economy',
-            commands: ['balance', 'pay', 'baltop', 'bounty', 'listbounty', 'rbounty']
-        },
-        '§eKits': {
-            systemToggle: 'kits',
-            commands: ['kit']
-        },
-        '§cModeration': {
-            systemToggle: null,
-            commands: ['kick', 'mute', 'unmute', 'freeze', 'vanish', 'invsee', 'tp', 'ban', 'unban', 'clearchat', 'reports', 'xraynotify']
-        },
-        '§9Administration': {
-            systemToggle: null,
-            commands: ['admin', 'rank', 'gmc', 'gms', 'gma', 'gmsp', 'clear', 'ecwipe', 'copyinv', 'reload', 'debug', 'setspawn', 'setbalance', 'clearreports']
-        }
-    };
+    // Get sorted list of categories
+    const sortedCategories = Object.keys(categorizedCommands).sort();
 
-    for (const categoryName in commandStructure) {
-        const category = commandStructure[categoryName];
+    for (const categoryName of sortedCategories) {
+        const commands = categorizedCommands[categoryName];
+        // Sort commands alphabetically within the category
+        const sortedCommands = commands.sort((a, b) => a.name.localeCompare(b.name));
 
-        // --- System-level toggle check ---
-        if (category.systemToggle && !config[category.systemToggle]?.enabled) {
-            continue;
-        }
-
-        const visibleCommands = category.commands.map(cmdName => commandManager.commands.get(cmdName))
-            .filter(cmd => {
-                if (!cmd) return false;
-                // Permission level check
-                if (userPermissionLevel > cmd.permissionLevel) return false;
-                // Individual command toggle check
-                const cmdSetting = config.commandSettings?.[cmd.name];
-                if (cmdSetting && cmdSetting.enabled === false) return false;
-
-                return true;
-            });
-
-        if (visibleCommands.length > 0) {
+        if (sortedCommands.length > 0) {
             commandsShown = true;
-            helpMessage += `§l${categoryName}§r\n`;
-            const sortedCommands = visibleCommands.sort((a, b) => a.name.localeCompare(b.name));
+            helpMessage += `§l§e${categoryName}§r\n`;
             for (const cmd of sortedCommands) {
                 helpMessage += ` §b!${cmd.name}§r: ${cmd.description}\n`;
             }
@@ -69,7 +42,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
     }
 
     if (!commandsShown) {
-        player.sendMessage('§cYou do not have permission to use any commands, or all commands are disabled.');
+        player.sendMessage('§cYou do not have permission to use any commands.');
         return;
     }
 

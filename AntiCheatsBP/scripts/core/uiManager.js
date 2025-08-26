@@ -6,6 +6,7 @@ import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 import { getPlayerRank } from './rankManager.js';
 import { uiWait } from './utils.js';
+import * as economyManager from './economyManager.js';
 
 const uiActionFunctions = {};
 
@@ -35,7 +36,7 @@ export async function showPanel(player, panelId, context = {}) {
 
 /**
  * Builds and returns a form object based on a panel definition, but does not show it.
- * @returns {Promise<ActionFormData | ModalFormData | MessageFormData | null>}
+ * @returns {Promise<ActionFormData | ModalFormData | null>}
  */
 async function buildPanelForm(player, panelId, context) {
     const panelDef = panelDefinitions[panelId];
@@ -196,4 +197,45 @@ uiActionFunctions['showBanForm'] = async (player, context) => {
 
     const [duration, reason] = response.formValues;
     player.runCommandAsync(`ban "${targetPlayer.name}" ${duration} ${reason}`);
+};
+
+uiActionFunctions['showPayForm'] = async (player, context) => {
+    const targetPlayer = context.targetPlayer;
+    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+    if (targetPlayer.id === player.id) return player.sendMessage('§cYou cannot pay yourself.');
+
+    const form = new ModalFormData()
+        .title(`Pay ${targetPlayer.name}`)
+        .textField('Amount', 'Enter amount to pay');
+
+    const response = await uiWait(player, form);
+    if (!response || response.canceled) return;
+
+    const [amountStr] = response.formValues;
+    const amount = parseFloat(amountStr);
+
+    if (isNaN(amount) || amount <= 0) {
+        return player.sendMessage('§cInvalid amount. Please enter a positive number.');
+    }
+
+    // This re-uses the logic from the !pay command
+    const config = getConfig();
+    const sourceData = getPlayer(player.id);
+    if (!sourceData || sourceData.balance < amount) {
+        return player.sendMessage('§cYou do not have enough money for this payment.');
+    }
+
+    if (amount > config.economy.paymentConfirmationThreshold) {
+        economyManager.createPendingPayment(player.id, targetPlayer.id, amount);
+        player.sendMessage(`§ePayment of $${amount.toFixed(2)} to ${targetPlayer.name} is pending.`);
+        player.sendMessage(`§eType §a!payconfirm§e within ${config.economy.paymentConfirmationTimeout} seconds to complete the transaction.`);
+    } else {
+        const result = economyManager.transfer(player.id, targetPlayer.id, amount);
+        if (result.success) {
+            player.sendMessage(`§aYou have paid §e$${amount.toFixed(2)}§a to ${targetPlayer.name}.`);
+            targetPlayer.sendMessage(`§aYou have received §e$${amount.toFixed(2)}§a from ${player.name}.`);
+        } else {
+            player.sendMessage(`§cPayment failed: ${result.message}`);
+        }
+    }
 };

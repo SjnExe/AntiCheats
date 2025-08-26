@@ -193,6 +193,14 @@ export const panelDefinitions = {
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showReportForm'
+            },
+            {
+                id: 'payPlayer',
+                text: 'Pay Player',
+                icon: 'textures/items/emerald.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showPayForm'
             }
         ]
     },
