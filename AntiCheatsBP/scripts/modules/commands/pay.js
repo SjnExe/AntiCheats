@@ -7,7 +7,7 @@ import { getPlayer } from '../../core/playerDataManager.js';
 commandManager.register({
     name: 'pay',
     description: 'Pays another player from your balance.',
-    category: 'Economy',
+    category: '§bPlayer Utilities',
     permissionLevel: 1024,
     execute: (player, args) => {
         const config = getConfig();

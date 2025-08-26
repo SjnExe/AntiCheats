@@ -6,7 +6,7 @@ commandManager.register({
     name: 'sethome',
     aliases: ['addhome'],
     description: 'Sets a home at your current location.',
-    category: 'Homes',
+    category: '§bPlayer Utilities',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

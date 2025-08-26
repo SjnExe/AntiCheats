@@ -5,7 +5,7 @@ import { playSound } from '../../core/utils.js';
 commandManager.register({
     name: 'setspawn',
     description: 'Sets the server\'s spawn location to your current position.',
-    category: 'Admin',
+    category: '§dServer Management',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         const location = {

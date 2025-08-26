@@ -4,7 +4,7 @@ import { loadConfig } from '../../core/configManager.js';
 commandManager.register({
     name: 'reload',
     description: 'Reloads the addon configuration from storage.',
-    category: 'Admin',
+    category: '§dServer Management',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         try {

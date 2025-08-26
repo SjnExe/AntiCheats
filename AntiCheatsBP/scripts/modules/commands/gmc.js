@@ -7,7 +7,7 @@ commandManager.register({
     name: 'gmc',
     aliases: ['c'],
     description: 'Sets your or another player\'s gamemode to Creative.',
-    category: 'Admin',
+    category: '§dServer Management',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         let targetPlayer = player;

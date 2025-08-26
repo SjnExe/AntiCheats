@@ -4,7 +4,7 @@ import { world, system } from '@minecraft/server';
 commandManager.register({
     name: 'status',
     description: 'Displays the current server status.',
-    category: 'General',
+    category: '§aGeneral',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const onlinePlayers = world.getAllPlayers().length;

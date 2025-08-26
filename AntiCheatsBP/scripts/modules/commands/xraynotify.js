@@ -4,7 +4,7 @@ import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
 commandManager.register({
     name: 'xraynotify',
     description: 'Toggles X-Ray notifications for yourself.',
-    category: 'Moderation',
+    category: '§cAdministration',
     permissionLevel: 1, // Admin and above
     execute: (player, args) => {
         const pData = getPlayer(player.id);

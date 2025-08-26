@@ -4,7 +4,7 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 commandManager.register({
     name: 'invsee',
     description: "Views a player's inventory in chat.",
-    category: 'Admin',
+    category: '§6Moderation',
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {

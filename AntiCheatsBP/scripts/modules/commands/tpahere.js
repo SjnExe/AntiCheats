@@ -6,7 +6,7 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 commandManager.register({
     name: 'tpahere',
     description: 'Requests another player to teleport to you.',
-    category: 'TPA',
+    category: '§bPlayer Utilities',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

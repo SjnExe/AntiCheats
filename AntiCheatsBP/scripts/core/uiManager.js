@@ -209,7 +209,8 @@ uiActionFunctions['showPayForm'] = async (player, context) => {
 
 uiActionFunctions['showBountyForm'] = async (player, context) => {
     const targetPlayer = context.targetPlayer;
-    if (!targetPlayer || targetPlayer.id === player.id) return;
+    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;

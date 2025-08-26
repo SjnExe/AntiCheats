@@ -7,7 +7,7 @@ commandManager.register({
     name: 'gms',
     aliases: ['s'],
     description: 'Sets your or another player\'s gamemode to Survival.',
-    category: 'Admin',
+    category: '§dServer Management',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         let targetPlayer = player;

@@ -4,7 +4,7 @@ import { showPanel } from '../../core/uiManager.js';
 commandManager.register({
     name: 'reports',
     description: 'Views the list of active reports.',
-    category: 'Moderation',
+    category: '§cAdministration',
     permissionLevel: 1, // Admin and above
     execute: (player, args) => {
         showPanel(player, 'reportListPanel');

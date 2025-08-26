@@ -5,7 +5,7 @@ import { getConfig } from '../../core/configManager.js';
 commandManager.register({
     name: 'admin',
     description: 'Grants a player the admin tag.',
-    category: 'Admin',
+    category: '§dServer Management',
     permissionLevel: 0, // Owner only
     execute: (player, args) => {
         const config = getConfig();

@@ -72,7 +72,7 @@ commandManager.register({
     name: 'help',
     aliases: ['?', 'h'],
     description: 'Displays a list of available commands or help for a specific command.',
-    category: 'General',
+    category: '§aGeneral',
     permissionLevel: 1024, // Available to everyone
     execute: (player, args) => {
         const pData = getPlayer(player.id);

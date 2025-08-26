@@ -4,7 +4,7 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 commandManager.register({
     name: 'tp',
     description: 'Teleports a player to another player or to coordinates.',
-    category: 'Admin',
+    category: '§6Moderation',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length === 0) {

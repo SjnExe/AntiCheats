@@ -5,7 +5,7 @@ commandManager.register({
     name: 'rules',
     aliases: ['rule'],
     description: 'Displays the server rules.',
-    category: 'General',
+    category: '§aGeneral',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

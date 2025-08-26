@@ -7,7 +7,7 @@ commandManager.register({
     name: 'gma',
     aliases: ['a'],
     description: 'Sets your or another player\'s gamemode to Adventure.',
-    category: 'Admin',
+    category: '§dServer Management',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         let targetPlayer = player;

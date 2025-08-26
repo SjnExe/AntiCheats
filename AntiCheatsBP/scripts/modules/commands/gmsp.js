@@ -7,7 +7,7 @@ commandManager.register({
     name: 'gmsp',
     aliases: ['sp'],
     description: 'Sets your or another player\'s gamemode to Spectator.',
-    category: 'Admin',
+    category: '§dServer Management',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         let targetPlayer = player;
