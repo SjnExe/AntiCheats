@@ -34,6 +34,11 @@ async function buildPanelForm(player, panelId, context) {
     if (!pData) return null;
     let title = panelDef.title.replace('{playerName}', context.targetPlayer?.name ?? '');
 
+    if (panelId === 'mainPanel') {
+        const config = getConfig();
+        title = config.serverName || panelDef.title;
+    }
+
     if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel') {
         return buildPlayerListForm(title, player, panelId);
     }
