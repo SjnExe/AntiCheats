@@ -1,6 +1,7 @@
+import { system } from '@minecraft/server';
+
 /**
  * Parses a duration string (e.g., "10m", "2h", "7d") and returns the duration in milliseconds.
- * Supports seconds (s), minutes (m), hours (h), days (d), and weeks (w).
  * @param {string} durationString The duration string to parse.
  * @returns {number} The duration in milliseconds, or 0 if the format is invalid.
  */
@@ -18,19 +19,19 @@ export function parseDuration(durationString) {
 
     switch (unit) {
         case 's':
-            multiplier = 1000; // seconds
+            multiplier = 1000;
             break;
         case 'm':
-            multiplier = 1000 * 60; // minutes
+            multiplier = 1000 * 60;
             break;
         case 'h':
-            multiplier = 1000 * 60 * 60; // hours
+            multiplier = 1000 * 60 * 60;
             break;
         case 'd':
-            multiplier = 1000 * 60 * 60 * 24; // days
+            multiplier = 1000 * 60 * 60 * 24;
             break;
         case 'w':
-            multiplier = 1000 * 60 * 60 * 24 * 7; // weeks
+            multiplier = 1000 * 60 * 60 * 24 * 7;
             break;
     }
 
@@ -48,4 +49,30 @@ export function playSound(player, soundId) {
     } catch (e) {
         console.error(`Failed to play sound "${soundId}" for player ${player.name}: ${e}`);
     }
+}
+
+/**
+ * Shows a form to a player, handling the 'UserBusy' case by sending a one-time message and then retrying.
+ * @param {import('@minecraft/server').Player} player The player to show the form to.
+ * @param {import('@minecraft/server-ui').ActionFormData | import('@minecraft/server-ui').ModalFormData | import('@minecraft/server-ui').MessageFormData} form The form to show.
+ * @returns {Promise<any>} A promise that resolves with the form response, or undefined if it times out or is cancelled for other reasons.
+ */
+export async function uiWait(player, form) {
+    let firstAttempt = await form.show(player);
+    if (firstAttempt.cancelationReason !== 'UserBusy') {
+        return firstAttempt;
+    }
+
+    // If the first attempt failed because the UI was busy, send the message and start retrying.
+    player.sendMessage('§eOpening UI... please close chat to view.§r');
+
+    const startTick = system.currentTick;
+    while ((system.currentTick - startTick) < 1200) { // 1 minute timeout
+        const subsequentAttempt = await form.show(player);
+        if (subsequentAttempt.cancelationReason !== 'UserBusy') {
+            return subsequentAttempt;
+        }
+    }
+
+    return undefined; // Timeout
 }
