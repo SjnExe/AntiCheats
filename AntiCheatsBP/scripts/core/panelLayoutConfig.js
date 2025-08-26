@@ -55,7 +55,7 @@ export const panelDefinitions = {
             {
                 id: 'bountyList',
                 text: 'Bounty List',
-                icon: 'textures/ui/icon_sword',
+                icon: 'textures/ui/WarningGlyph',
                 permissionLevel: 1024,
                 actionType: 'openPanel',
                 actionValue: 'bountyListPanel'
@@ -205,7 +205,7 @@ export const panelDefinitions = {
             {
                 id: 'reduceBounty',
                 text: 'Reduce Bounty',
-                icon: 'textures/items/iron_sword.png',
+                icon: 'textures/items/gold_ingot.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showReduceBountyForm'
