@@ -1,12 +1,12 @@
 export const config = {
     // --- System & Core Settings ---
     version: 'v__VERSION_STRING__',
-    ownerPlayerNames: ['SjnTechMlmYT'],
+    ownerPlayerNames: ['Your•Name•Here'],
     adminTag: 'admin',
     commandPrefix: '!',
     serverName: '§aServerExe',
     defaultGamemode: 'survival',
-    debug: true,
+    debug: false,
     exeGlobalNotificationsDefaultOn: true,
 
     // --- Player Tags ---
