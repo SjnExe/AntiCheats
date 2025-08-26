@@ -55,7 +55,7 @@ export const panelDefinitions = {
             {
                 id: 'bountyList',
                 text: 'Bounty List',
-                icon: 'textures/items/map_filled.png',
+                icon: 'textures/ui/icon_sword',
                 permissionLevel: 1024,
                 actionType: 'openPanel',
                 actionValue: 'bountyListPanel'
@@ -181,7 +181,7 @@ export const panelDefinitions = {
             {
                 id: 'sendTpaRequest',
                 text: 'Send TPA Request',
-                icon: 'textures/ui/icon_out.png',
+                icon: 'textures/ui/upload_glyph_color',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'sendTpaRequest'
@@ -201,6 +201,36 @@ export const panelDefinitions = {
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showPayForm'
+            },
+            {
+                id: 'reduceBounty',
+                text: 'Reduce Bounty',
+                icon: 'textures/items/iron_sword.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showReduceBountyForm'
+            }
+        ]
+    },
+    bountyActionsPanel: {
+        title: '§lBounty Actions for {playerName}§r',
+        parentPanelId: 'bountyListPanel',
+        items: [
+            {
+                id: 'addBounty',
+                text: 'Add to Bounty',
+                icon: 'textures/items/gold_ingot.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showBountyForm'
+            },
+            {
+                id: 'reduceBountyFromList',
+                text: 'Reduce Bounty',
+                icon: 'textures/items/iron_sword.png',
+                permissionLevel: 1024,
+                actionType: 'functionCall',
+                actionValue: 'showReduceBountyForm'
             }
         ]
     },
