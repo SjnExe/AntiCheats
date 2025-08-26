@@ -1,9 +1,7 @@
 <div align="center">
-
+  
 # AddonExe for Minecraft BE
-
 </div>
-
 <div align="center">
 
 [![Latest Release](https://img.shields.io/github/v/release/SjnExe/AddonExe?label=latest%20version&display_name=tag&style=for-the-badge)](https://github.com/SjnExe/AddonExe/releases/latest)
@@ -169,11 +167,8 @@ This project is made possible by the community and all the developers who dedica
 ➡️ You can see a list of code contributors on [**GitHub**](https://github.com/SjnExe/AddonExe/graphs/contributors).
 
 ---
-
 <div align="center">
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+</div>
 Thank you for using the AddonExe!
 We hope it helps create a fairer and more enjoyable Minecraft experience for your community.
-
-</div>
