@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an idea or enhancement for the AntiCheats Addon
+about: Suggest an idea or enhancement for the AddonExe
 title: "[FEAT] Brief description of feature"
 labels: enhancement, needs-discussion
 assignees: ''
@@ -28,9 +28,9 @@ For example:
 *   Are there similar features in other tools or addons that could serve as inspiration?
 
 **Checklist:**
-- [ ] I have searched existing [GitHub Issues](https://github.com/SjnExe/AntiCheats/issues) to ensure this feature has not already been requested.
+- [ ] I have searched existing [GitHub Issues](https://github.com/SjnExe/AddonExe/issues) to ensure this feature has not already been requested.
 - [ ] I have considered the potential impact on performance or existing functionality.
 
 ---
 
-We appreciate your ideas for improving the AntiCheats Addon!
+We appreciate your ideas for improving the AddonExe!

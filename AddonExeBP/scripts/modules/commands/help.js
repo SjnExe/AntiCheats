@@ -21,7 +21,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
         categorizedCommands[category].push(cmd);
     }
 
-    let helpMessage = '§a--- Available Commands ---\n';
+    let helpMessage = '§a--- Available Commands ---[AddonExe]';
     let commandsShown = false;
 
     // Get sorted list of categories
@@ -34,9 +34,9 @@ function showCategorizedHelp(player, userPermissionLevel) {
 
         if (sortedCommands.length > 0) {
             commandsShown = true;
-            helpMessage += `§l§e${categoryName}§r\n`;
+            helpMessage += `§l§e${categoryName}§r[AddonExe]`;
             for (const cmd of sortedCommands) {
-                helpMessage += ` §b!${cmd.name}§r: ${cmd.description}\n`;
+                helpMessage += ` §b!${cmd.name}§r: ${cmd.description}[AddonExe]`;
             }
         }
     }
@@ -57,12 +57,12 @@ function showSpecificHelp(player, commandName) {
         return;
     }
 
-    let helpMessage = `§a--- Help: !${cmd.name} ---\n`;
-    helpMessage += `§eDescription§r: ${cmd.description}\n`;
+    let helpMessage = `§a--- Help: !${cmd.name} ---[AddonExe]`;
+    helpMessage += `§eDescription§r: ${cmd.description}[AddonExe]`;
     if (cmd.aliases && cmd.aliases.length > 0) {
-        helpMessage += `§eAliases§r: ${cmd.aliases.map(a => `!${a}`).join(', ')}\n`;
+        helpMessage += `§eAliases§r: ${cmd.aliases.map(a => `!${a}`).join(', ')}[AddonExe]`;
     }
-    helpMessage += `§eCategory§r: ${cmd.category || 'General'}\n`;
+    helpMessage += `§eCategory§r: ${cmd.category || 'General'}[AddonExe]`;
     helpMessage += `§ePermission Level§r: ${cmd.permissionLevel}`;
 
     player.sendMessage(helpMessage);

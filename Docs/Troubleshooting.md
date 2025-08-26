@@ -1,6 +1,6 @@
-# Troubleshooting Guide - AntiCheats Addon
+# Troubleshooting Guide - AddonExe
 
-This guide helps you resolve common issues you might encounter with the AntiCheats Addon. If your issue isn't listed here, or the steps don't help, please consider [reporting an issue](https://github.com/SjnExe/AntiCheats/issues) with as much detail as possible.
+This guide helps you resolve common issues you might encounter with the AddonExe. If your issue isn't listed here, or the steps don't help, please consider [reporting an issue](https://github.com/SjnExe/AddonExe/issues) with as much detail as possible.
 
 ---
 
@@ -19,14 +19,14 @@ This guide helps you resolve common issues you might encounter with the AntiChea
 
 **Problem: The addon doesn't seem to be working at all.**
 
-- **Behavior Pack Order:** Ensure `AntiCheatsBP` is at the **VERY TOP** of your Behavior Pack list in your world settings. This is the most common cause of issues.
-- **Resource Pack Applied:** Make sure `AntiCheatsRP` is also applied in the Resource Pack section of your world settings.
+- **Behavior Pack Order:** Ensure `AddonExeBP` is at the **VERY TOP** of your Behavior Pack list in your world settings. This is the most common cause of issues.
+- **Resource Pack Applied:** Make sure `AddonExeRP` is also applied in the Resource Pack section of your world settings.
 - **"Beta APIs" Enabled:** In your World Settings under "Experiments", ensure the **"Beta APIs"** toggle is turned ON. The addon will not work without it.
-- **Correct Files:** Double-check you've downloaded the latest `.mcaddon` file from the official [GitHub Releases](https://github.com/SjnExe/AntiCheats/releases) and applied both packs from it.
+- **Correct Files:** Double-check you've downloaded the latest `.mcaddon` file from the official [GitHub Releases](https://github.com/SjnExe/AddonExe/releases) and applied both packs from it.
 
 **Problem: World fails to load or crashes on load after adding the addon.**
 
-- **Pack Order:** Again, verify `AntiCheatsBP` is at the top.
+- **Pack Order:** Again, verify `AddonExeBP` is at the top.
 - **Corrupted Download:** Try re-downloading and reapplying the addon.
 - **Addon Conflict:** See [General Tips](#5-general-tips) for testing addon conflicts.
 
@@ -37,7 +37,7 @@ This guide helps you resolve common issues you might encounter with the AntiChea
 **Problem: I'm not recognized as the Owner, or I can't use owner commands.**
 
 This is the most common setup issue. Follow these steps carefully:
-1.  **Open the correct file:** `AntiCheatsBP/scripts/config.js`.
+1.  **Open the correct file:** `AddonExeBP/scripts/config.js`.
 2.  **Find the `ownerPlayerNames` setting.**
 3.  **Add your name:** Add your **exact**, case-sensitive in-game name to the array.
     ```javascript
@@ -57,9 +57,9 @@ This is the most common setup issue. Follow these steps carefully:
 
 **Problem: Changes I made to `config.js` aren't taking effect.**
 
-- **Editing Correct File:** Ensure you are editing the `config.js` within the `AntiCheatsBP` (Behavior Pack) and not a stray copy.
+- **Editing Correct File:** Ensure you are editing the `config.js` within the `AddonExeBP` (Behavior Pack) and not a stray copy.
 - **Re-Applying Packs:** If you edit `config.js` *after* the pack is already applied to a world, Minecraft might not always pick up the changes immediately. The most reliable way is to:
-  1. Remove `AntiCheatsBP` and `AntiCheatsRP` from your world.
+  1. Remove `AddonExeBP` and `AddonExeRP` from your world.
   2. Make your changes to `config.js` in your source/downloaded pack.
   3. Re-import the modified `.mcaddon` or re-apply the modified packs to your world.
 - **Server vs. Local:** If on a server, ensure the server has fully restarted after updating the pack files.
@@ -84,7 +84,7 @@ This is the most common setup issue. Follow these steps carefully:
 
 **Problem: `!panel` (or `!ui`) command doesn't open the UI, or the UI is broken.**
 
-- **Resource Pack:** The UI relies on `AntiCheatsRP`. Ensure it's applied and active.
+- **Resource Pack:** The UI relies on `AddonExeRP`. Ensure it's applied and active.
 - **Permissions:** You need to be Owner or have an Admin rank with UI permissions.
 - **Scripting Errors:** If there are underlying scripting errors in the addon (possibly from a bad update or conflict), the UI might fail to load. This would usually show errors in the in-game content log if accessible.
 - **Minecraft UI Bugs:** Rarely, Minecraft's UI rendering can have temporary glitches. Try closing and reopening the game or world.
@@ -98,9 +98,9 @@ This is the most common setup issue. Follow these steps carefully:
 ## 5. General Tips
 
 - **Restart:** Sometimes, simply restarting your Minecraft client, server, or world can resolve temporary glitches.
-- **Check Minecraft Version:** Ensure your AntiCheats Addon version is designed for your current Minecraft Bedrock Edition version. Check the [GitHub Releases](https://github.com/SjnExe/AntiCheats/releases) page.
-- **Test with No Other Addons:** To rule out addon conflicts, try running the AntiCheats Addon on a test world with *no other Behavior Packs or Resource Packs* applied. If it works fine, then another addon is likely causing the issue. You can then add your other addons back one by one to find the culprit.
-- **Check for Updates:** Make sure you are using the latest version of the AntiCheats Addon.
+- **Check Minecraft Version:** Ensure your AddonExe version is designed for your current Minecraft Bedrock Edition version. Check the [GitHub Releases](https://github.com/SjnExe/AddonExe/releases) page.
+- **Test with No Other Addons:** To rule out addon conflicts, try running the AddonExe on a test world with *no other Behavior Packs or Resource Packs* applied. If it works fine, then another addon is likely causing the issue. You can then add your other addons back one by one to find the culprit.
+- **Check for Updates:** Make sure you are using the latest version of the AddonExe.
 
 ---
 
@@ -117,8 +117,8 @@ If you've tried these steps and are still facing issues, please help us by repor
 - **Error Messages (If Any):** If you see any error messages on screen or in logs (like the Content Log viewer if you have access), please include them.
 - **Other Addons:** List any other behavior packs you are using.
 
-**Where to Report:** [GitHub Issues Page](https://github.com/SjnExe/AntiCheats/issues)
+**Where to Report:** [GitHub Issues Page](https://github.com/SjnExe/AddonExe/issues)
 
 ---
 
-Thank you for using the AntiCheats Addon!
+Thank you for using the AddonExe!

@@ -15,7 +15,7 @@ The system is designed with a clear hierarchy:
 
 For most servers, this is the only step you need to manage your staff.
 
-- **File:** `AntiCheatsBP/scripts/config.js`
+- **File:** `AddonExeBP/scripts/config.js`
 
 ### Set Server Owner(s)
 
@@ -23,7 +23,7 @@ Owners have the highest permission level (0) and can use every command.
 
 - **Action:** Find the `ownerPlayerNames` setting and add the **exact** in-game names of all owners to the array.
   ```javascript
-  // Example in AntiCheatsBP/scripts/config.js
+  // Example in AddonExeBP/scripts/config.js
   ownerPlayerNames: ['YourExactPlayerName', 'AnotherOwnerName'],
   ```
 
@@ -33,7 +33,7 @@ Admins have the second-highest permission level (1) and can use most moderation 
 
 - **Action:** Find the `adminTag` setting. Any player with this tag will get the Admin rank.
   ```javascript
-  // Example in AntiCheatsBP/scripts/config.js
+  // Example in AddonExeBP/scripts/config.js
   adminTag: 'admin',
   ```
 - **Usage:** To give a player the Admin rank, use the in-game command: `/tag "PlayerName" add admin`
@@ -44,7 +44,7 @@ Admins have the second-highest permission level (1) and can use most moderation 
 
 Edit this file only if you want to create new ranks or change the appearance (colors, prefixes) of the default ranks.
 
-- **File:** `AntiCheatsBP/scripts/core/ranksConfig.js`
+- **File:** `AddonExeBP/scripts/core/ranksConfig.js`
 
 This file contains the `rankDefinitions` array. Each object in this array is a rank.
 
@@ -69,7 +69,7 @@ The `conditions` array tells the addon who should get the rank.
 To add a new "Moderator" rank, you would add a new object to the `rankDefinitions` array in `ranksConfig.js`:
 
 ```javascript
-// In AntiCheatsBP/scripts/core/ranksConfig.js
+// In AddonExeBP/scripts/core/ranksConfig.js
 export const rankDefinitions = [
     // ... Owner and Admin ranks are here ...
 

@@ -7,7 +7,7 @@ export const config = {
     serverName: '§aServerExe',
     defaultGamemode: 'survival',
     debug: true,
-    acGlobalNotificationsDefaultOn: true,
+    exeGlobalNotificationsDefaultOn: true,
 
     // --- Player Tags ---
     playerTags: {

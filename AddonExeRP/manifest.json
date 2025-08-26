@@ -1,8 +1,8 @@
 {
     "format_version": 2,
     "header": {
-        "name": "§l§cAnti §eCheats RP§r",
-        "description": "§aAnti Cheats Resource Pack §uv__VERSION_STRING__.§r",
+        "name": "§l§cAddon §eExe RP§r",
+        "description": "§aAddon Exe Resource Pack §uv__VERSION_STRING__.§r",
         "uuid": "9dca0c93-f6ec-4701-a74c-a774600640a4",
         "version": "__VERSION_ARRAY__",
         "min_engine_version": [
@@ -30,6 +30,6 @@
             "§6Sjn.exe§r"
         ],
         "license": "MIT",
-        "url": "https://github.com/SjnExe/AntiCheats"
+        "url": "https://github.com/SjnExe/AddonExe"
     }
 }

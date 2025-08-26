@@ -1,6 +1,6 @@
-# Contributing to AntiCheats Addon
+# Contributing to AddonExe
 
-First off, thank you for considering contributing to the AntiCheats Addon! We welcome any help to make this addon even better and create a fairer Minecraft Bedrock Edition experience for everyone.
+First off, thank you for considering contributing to the AddonExe! We welcome any help to make this addon even better and create a fairer Minecraft Bedrock Edition experience for everyone.
 
 This document provides guidelines for contributing to the project. Please read it carefully to ensure a smooth and effective contribution process.
 
@@ -31,7 +31,7 @@ There are many ways you can contribute to the project, even if you don't write c
 
 ## Reporting Bugs
 
-If you encounter a bug, please help us by submitting an issue to our [GitHub Issues page](https://github.com/SjnExe/AntiCheats/issues).
+If you encounter a bug, please help us by submitting an issue to our [GitHub Issues page](https://github.com/SjnExe/AddonExe/issues).
 
 Before submitting a bug report, please ensure the following:
 *   You are using the latest version of the addon.
@@ -49,7 +49,7 @@ When submitting a bug report, please include as much detail as possible:
 ## Suggesting Enhancements
 
 We welcome suggestions for new features or improvements to existing functionality! To suggest an enhancement:
-1.  Check the [GitHub Issues page](https://github.com/SjnExe/AntiCheats/issues) to see if your idea has already been suggested. If it has, feel free to add your thoughts to the existing issue.
+1.  Check the [GitHub Issues page](https://github.com/SjnExe/AddonExe/issues) to see if your idea has already been suggested. If it has, feel free to add your thoughts to the existing issue.
 2.  If your idea is new, please open a new issue. Provide a clear description of the proposed enhancement and explain why you think it would be beneficial to the project.
 
 ## Code Contributions
@@ -62,14 +62,14 @@ Details on setting up a development environment can be found in our [Addon Devel
 
 ### Contribution Workflow
 
-1.  **Fork the Repository:** Create your own fork of the [SjnExe/AntiCheats](https://github.com/SjnExe/AntiCheats) repository.
+1.  **Fork the Repository:** Create your own fork of the [SjnExe/AddonExe](https://github.com/SjnExe/AddonExe) repository.
 2.  **Create a Branch:** Make your changes in a dedicated branch on your fork. Branch names should be descriptive (e.g., `fix/fly-detection-exploit`, `feature/new-reporting-ui`).
 3.  **Develop:** Make your code changes, adhering to the project's coding standards.
 4.  **Test:** Thoroughly test your changes to ensure they work as expected and do not introduce new issues or regressions.
 5.  **Document:** Update any relevant documentation in the `Docs/` folder or JSDoc comments if your changes affect user-facing features or complex code logic.
 6.  **Commit:** Write clear, concise, and descriptive commit messages.
 7.  **Push:** Push your changes to your fork.
-8.  **Submit a Pull Request (PR):** Open a pull request from your branch to the `main` branch (or the relevant development branch) of the `SjnExe/AntiCheats` repository.
+8.  **Submit a Pull Request (PR):** Open a pull request from your branch to the `main` branch (or the relevant development branch) of the `SjnExe/AddonExe` repository.
     *   Provide a clear title and description for your PR, explaining the changes you've made and why.
     *   Reference any related issues (e.g., "Fixes #123").
 
@@ -104,7 +104,7 @@ We appreciate your patience during the review process!
 ## Development Resources
 
 Looking for a place to start or need more information on the development setup?
-*   Check out our [**issues tab**](https://github.com/SjnExe/AntiCheats/issues) – we often tag issues that are great for new contributors (e.g., `good first issue` or `help wanted` when available).
+*   Check out our [**issues tab**](https://github.com/SjnExe/AddonExe/issues) – we often tag issues that are great for new contributors (e.g., `good first issue` or `help wanted` when available).
 *   For more on development processes, project structure, and other resources, see [**Addon Development Resources**](Dev/README.md).
 
 ## Code of Conduct
@@ -113,4 +113,4 @@ While this project does not yet have a formal Code of Conduct document, we expec
 
 ---
 
-Thank you for your interest in contributing to the AntiCheats Addon! Your efforts help make the Minecraft community a better place.
+Thank you for your interest in contributing to the AddonExe! Your efforts help make the Minecraft community a better place.

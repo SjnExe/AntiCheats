@@ -38,9 +38,9 @@ commandManager.register({
             return;
         }
 
-        let message = '§l§b--- Top Balances ---§r\n';
+        let message = '§l§b--- Top Balances ---§r[AddonExe]';
         leaderboard.forEach((entry, index) => {
-            message += `§e#${index + 1}§r ${entry.name}: §a$${entry.balance.toFixed(2)}\n`;
+            message += `§e#${index + 1}§r ${entry.name}: §a$${entry.balance.toFixed(2)}[AddonExe]`;
         });
 
         player.sendMessage(message.trim());

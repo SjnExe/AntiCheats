@@ -2,7 +2,7 @@
     "format_version": "1.21.100",
     "minecraft:item": {
         "description": {
-            "identifier": "ac:panel",
+            "identifier": "exe:panel",
             "menu_category": {
                 "category": "items"
             }
@@ -16,7 +16,7 @@
             "minecraft:lore": {
                 "value": [
                     "§r§7Right-click to open",
-                    "§r§7From AntiCheats Addon"
+                    "§r§7From AddonExe"
                 ]
             },
             "minecraft:hand_equipped": true,

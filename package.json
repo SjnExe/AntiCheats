@@ -1,7 +1,7 @@
 {
     "name": "app",
     "version": "1.0.0",
-    "description": "<p align=\"center\">   <!-- TODO: Add a cool project logo/banner here. Example: <img src=\"link_to_your_logo.png\" alt=\"AntiCheats Addon Logo\" width=\"200\"/> -->   <h1 align=\"center\">AntiCheats Addon for Minecraft BE</h1> </p>",
+    "description": "<p align=\"center\">   <!-- TODO: Add a cool project logo/banner here. Example: <img src=\"link_to_your_logo.png\" alt=\"AddonExe Logo\" width=\"200\"/> -->   <h1 align=\"center\">AddonExe for Minecraft BE</h1> </p>",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,16 +11,16 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/SjnExe/AntiCheats.git"
+        "url": "git+https://github.com/SjnExe/AddonExe.git"
     },
     "keywords": [],
     "author": "",
     "license": "ISC",
     "type": "module",
     "bugs": {
-        "url": "https://github.com/SjnExe/AntiCheats/issues"
+        "url": "https://github.com/SjnExe/AddonExe/issues"
     },
-    "homepage": "https://github.com/SjnExe/AntiCheats#readme",
+    "homepage": "https://github.com/SjnExe/AddonExe#readme",
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",
         "@eslint/js": "^9.32.0",

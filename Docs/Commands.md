@@ -1,13 +1,13 @@
-# Addon Commands
+# AddonExe Commands
 
-The default command prefix for this addon is `!` (this can be configured in `AntiCheatsBP/scripts/config.js`). All commands are entered via the standard Minecraft chat.
+The default command prefix for this addon is `!` (this can be configured in `AddonExeBP/scripts/config.js`). All commands are entered via the standard Minecraft chat.
 
 > [!NOTE]
 > Angle brackets (`< >`) in command syntax denote required parameters.
 > Square brackets (`[ ]`) denote optional parameters.
 > Do not include the brackets themselves when using the commands.
 
-Command permissions are based on a level system defined in `AntiCheatsBP/scripts/core/ranksConfig.js`. Common levels are:
+Command permissions are based on a level system defined in `AddonExeBP/scripts/core/ranksConfig.js`. Common levels are:
 - **Owner (0):** Highest permission for server owners.
 - **Admin (1):** High-level administrative commands.
 - **Member (1024):** Basic commands available to all players.
@@ -140,7 +140,7 @@ Command permissions are based on a level system defined in `AntiCheatsBP/scripts
   - **Description:** Shows your current status (rank, money, etc.).
 - **`!version`** (Alias: `!v`)
   - **Syntax:** `!version`
-  - **Description:** Displays the AntiCheat addon version.
+  - **Description:** Displays the AddonExe version.
 
 ### TPA System Commands
 - **`!tpa <playerName>`**

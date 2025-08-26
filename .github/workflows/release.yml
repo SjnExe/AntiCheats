@@ -51,8 +51,8 @@ jobs:
       - name: Create staging directory and copy addon folders
         run: |
           mkdir staging
-          cp -r AntiCheatsBP staging/
-          cp -r AntiCheatsRP staging/
+          cp -r AddonExeBP staging/
+          cp -r AddonExeRP staging/
 
       - name: Replace placeholders in staged files
         shell: bash
@@ -61,9 +61,9 @@ jobs:
           VERSION_ARRAY_STRING: ${{ env.VERSION_ARRAY_STRING }}
         run: |
           echo "--- Starting Placeholder Replacement ---"
-          BP_MANIFEST="staging/AntiCheatsBP/manifest.json"
-          RP_MANIFEST="staging/AntiCheatsRP/manifest.json"
-          CONFIG_JS_PATH="staging/AntiCheatsBP/scripts/config.js"
+          BP_MANIFEST="staging/AddonExeBP/manifest.json"
+          RP_MANIFEST="staging/AddonExeRP/manifest.json"
+          CONFIG_JS_PATH="staging/AddonExeBP/scripts/config.js"
 
           # Replace in JSON files
           find staging -type f -name "*.json" -exec sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" {} +
@@ -90,10 +90,10 @@ jobs:
           (cd staging && zip -r "../AC.${FULL_TAG_NAME}.mcaddon" ./*)
 
           # Create BP .mcpack
-          (cd staging/AntiCheatsBP && zip -r "../../AC.BP${FULL_TAG_NAME}.mcpack" ./*)
+          (cd staging/AddonExeBP && zip -r "../../AC.BP${FULL_TAG_NAME}.mcpack" ./*)
 
           # Create RP .mcpack
-          (cd staging/AntiCheatsRP && zip -r "../../AC.RP${FULL_TAG_NAME}.mcpack" ./*)
+          (cd staging/AddonExeRP && zip -r "../../AC.RP${FULL_TAG_NAME}.mcpack" ./*)
           echo "Created release archives."
 
       - name: Upload Release Assets

@@ -1,6 +1,6 @@
-# Standardization Guidelines for AntiCheat Addon
+# Standardization Guidelines for AddonExe
 
-This document outlines the consolidated standardization guidelines for the AntiCheat Addon, incorporating directives from `Dev/CodingStyle.md` and further detailing other aspects of code quality and consistency. This will guide the codebase standardization effort.
+This document outlines the consolidated standardization guidelines for the AddonExe, incorporating directives from `Dev/CodingStyle.md` and further detailing other aspects of code quality and consistency. This will guide the codebase standardization effort.
 
 ## 1. References and Precedence
 
@@ -53,7 +53,7 @@ This document outlines the consolidated standardization guidelines for the AntiC
 - **Constants and Magic Strings/Numbers:**
   - Module-specific constants at the top, after imports. Shared config in `config.js`.
   - Avoid 'magic strings' and 'magic numbers'. Define constants for recurring string literals (tags, event names, property keys) and numeric literals that have specific meanings.
-  - For most user-facing messages (command responses, dynamic UI content), prefer using `getString(key, params)` from `textDatabase.js`. However, for highly specific, static, single-use UI labels or button texts within UI modules (like `uiManager.js`), these should be hardcoded directly in the module. Panel button texts (for `!panel`) are defined in `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
+  - For most user-facing messages (command responses, dynamic UI content), prefer using `getString(key, params)` from `textDatabase.js`. However, for highly specific, static, single-use UI labels or button texts within UI modules (like `uiManager.js`), these should be hardcoded directly in the module. Panel button texts (for `!panel`) are defined in `AddonExeBP/scripts/core/panelLayoutConfig.js`.
 - **Global Scope:** Minimize global scope pollution (ES6 modules help here).
 - **Single Responsibility Principle (SRP):** Aim for functions and modules to adhere to the SRP. A function should do one thing well. Modules should group closely related functionalities. This improves modularity, testability, and maintainability.
 - **Pure Functions:** Strive to write pure functions where possible, especially for utility and data transformation logic. Pure functions are easier to test and reason about.

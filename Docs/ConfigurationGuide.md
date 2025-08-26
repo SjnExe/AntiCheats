@@ -1,6 +1,6 @@
-# AntiCheats Addon: Configuration Guide
+# AddonExe: Configuration Guide
 
-This guide provides an overview of how to configure the AntiCheats Addon. Proper configuration is key to tailoring the addon's behavior to your server's specific needs.
+This guide provides an overview of how to configure the AddonExe. Proper configuration is key to tailoring the addon's behavior to your server's specific needs.
 
 ## ⚙️ Configuration Philosophy
 
@@ -23,10 +23,10 @@ These are the first crucial steps after installing the addon.
 ### 1. Set the Server Owner(s)
 This is the most important step for gaining control over the addon.
 
-- **File:** `AntiCheatsBP/scripts/config.js`
+- **File:** `AddonExeBP/scripts/config.js`
 - **Action:** Find the `ownerPlayerNames` setting and add your **exact** in-game name (case-sensitive) to the array. You can add multiple names.
   ```javascript
-  // Example in AntiCheatsBP/scripts/config.js
+  // Example in AddonExeBP/scripts/config.js
   ownerPlayerNames: ['YourExactPlayerName', 'AnotherOwnerName'],
   ```
 - **Importance:** The Owner rank has the highest level of permissions (Level 0). **If this array is empty, no one will have administrative control.**
@@ -34,10 +34,10 @@ This is the most important step for gaining control over the addon.
 ### 2. Set Server Admins (Optional)
 This is the easiest way to give other players administrative privileges.
 
-- **File:** `AntiCheatsBP/scripts/config.js`
+- **File:** `AddonExeBP/scripts/config.js`
 - **Action:** Find the `adminTag` setting. Players with this Minecraft tag will be granted the "Admin" rank.
   ```javascript
-  // Example in AntiCheatsBP/scripts/config.js
+  // Example in AddonExeBP/scripts/config.js
   adminTag: 'admin',
   ```
 - **Usage:** In-game, give a player the tag: `/tag "PlayerName" add admin`
@@ -45,7 +45,7 @@ This is the easiest way to give other players administrative privileges.
 ### 3. Configure Ranks and Permissions
 For more advanced control over permissions and visual styles, you can edit the ranks file.
 
-- **File:** `AntiCheatsBP/scripts/core/ranksConfig.js`
+- **File:** `AddonExeBP/scripts/core/ranksConfig.js`
 - **Action:** Modify the `rankDefinitions` array to define your server's roles (e.g., Moderator, VIP). You can set permission levels, chat formats, and nametags for each rank.
 - **➡️ For a complete guide, see: [Rank System Documentation](RankSystem.md)**
 
@@ -56,7 +56,7 @@ For more advanced control over permissions and visual styles, you can edit the r
 ### `config.js` - The Main Hub
 This is the primary file for most top-level settings.
 
-- **File:** `AntiCheatsBP/scripts/config.js`
+- **File:** `AddonExeBP/scripts/config.js`
 - **Purpose:**
   - Define `ownerPlayerNames` and the `adminTag`.
   - Enable or disable major systems (`tpa.enabled`, `homes.enabled`, `economy.enabled`, etc.).
@@ -68,7 +68,7 @@ This is the primary file for most top-level settings.
 ### `ranksConfig.js` - Ranks & Permissions
 This file defines the entire hierarchy of roles on your server.
 
-- **File:** `AntiCheatsBP/scripts/core/ranksConfig.js`
+- **File:** `AddonExeBP/scripts/core/ranksConfig.js`
 - **Purpose:**
   - Define all available ranks (e.g., Owner, Admin, Member, custom ranks).
   - Set the `permissionLevel` for each rank, which controls access to commands.
@@ -79,7 +79,7 @@ This file defines the entire hierarchy of roles on your server.
 ### `panelLayoutConfig.js` - Admin Panel UI
 This file controls the layout, buttons, and actions of the `!panel` user interface.
 
-- **File:** `AntiCheatsBP/scripts/core/panelLayoutConfig.js`
+- **File:** `AddonExeBP/scripts/core/panelLayoutConfig.js`
 - **Purpose:**
   - Add, remove, or reorder categories and buttons.
   - Change button text, icons, and required permission levels.
@@ -88,7 +88,7 @@ This file controls the layout, buttons, and actions of the `!panel` user interfa
 ### `kitsConfig.js` - Player Kits
 This file defines the kits that players can claim.
 
-- **File:** `AntiCheatsBP/scripts/core/kitsConfig.js`
+- **File:** `AddonExeBP/scripts/core/kitsConfig.js`
 - **Purpose:** Add, remove, or modify kits, including their items, cooldowns, and descriptions.
 
 > [!IMPORTANT]

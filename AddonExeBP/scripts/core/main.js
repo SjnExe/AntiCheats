@@ -20,7 +20,7 @@ function checkPlayerGamemode(player) {
     if (player.getGameMode() === GameMode.Creative && pData.permissionLevel > 1) {
         player.setGameMode(config.defaultGamemode);
         player.sendMessage('§cYou are not allowed to be in creative mode.');
-        debugLog(`[AntiCheats] Detected ${player.name} in creative mode without permission. Switched to ${config.defaultGamemode}.`);
+        debugLog(`[AddonExe] Detected ${player.name} in creative mode without permission. Switched to ${config.defaultGamemode}.`);
     }
 }
 
@@ -36,7 +36,7 @@ function mainTick() {
             pData.rankId = currentRank.id;
             pData.permissionLevel = currentRank.permissionLevel;
             playerDataManager.savePlayerData(player.id);
-            debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${currentRank.name}.`);
+            debugLog(`[AddonExe] Player ${player.name}'s rank updated to ${currentRank.name}.`);
             player.sendMessage(`§aYour rank has been updated to ${currentRank.name}.`);
         }
     }
@@ -46,7 +46,7 @@ function mainTick() {
 system.run(() => {
     loadConfig();
     playerDataManager.loadAllOnlinePlayerData();
-    debugLog('[AntiCheats] Initializing addon...');
+    debugLog('[AddonExe] Initializing addon...');
     loadPunishments();
     rankManager.initialize();
 
@@ -54,18 +54,18 @@ system.run(() => {
 
     // Owner configuration check
     if (!config.ownerPlayerNames || config.ownerPlayerNames.length === 0 || config.ownerPlayerNames[0] === 'Your•Name•Here') {
-        const warningMessage = '§l§c[AntiCheats] WARNING: No owner is configured. Please set `ownerPlayerNames` in `scripts/config.js` to gain access to admin commands.';
+        const warningMessage = '§l§c[AddonExe] WARNING: No owner is configured. Please set `ownerPlayerNames` in `scripts/config.js` to gain access to admin commands.';
         // Use a runTimeout to ensure the message is sent after the world is fully initialized.
         system.runTimeout(() => {
             world.sendMessage(warningMessage);
         }, 20);
-        console.warn('[AntiCheats] No owner configured.');
+        console.warn('[AddonExe] No owner configured.');
     }
 
     // Setup Creative Detection
     if (config.creativeDetection.enabled) {
         if (config.defaultGamemode === 'creative') {
-            console.warn('[AntiCheats] Creative detection is disabled because the default gamemode is set to creative, which would cause a loop.');
+            console.warn('[AddonExe] Creative detection is disabled because the default gamemode is set to creative, which would cause a loop.');
         } else {
             // Run periodic check
             if (config.creativeDetection.periodicCheck.enabled) {
@@ -81,15 +81,15 @@ system.run(() => {
 
 
     import('../modules/commands/index.js').then(() => {
-        debugLog('[AntiCheats] Commands loaded.');
+        debugLog('[AddonExe] Commands loaded.');
     }).catch(error => {
-        console.error(`[AntiCheats] Failed to load commands: ${error.stack}`);
+        console.error(`[AddonExe] Failed to load commands: ${error.stack}`);
     });
 
     system.runInterval(mainTick, 20);
     // Periodically clear expired payment confirmations
     system.runInterval(clearExpiredPayments, 1200);
-    debugLog('[AntiCheats] Addon initialized successfully.');
+    debugLog('[AddonExe] Addon initialized successfully.');
 });
 
 // Handle muted players, commands, and chat formatting
@@ -143,10 +143,10 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
     if (pData.rankId !== rank.id) {
         pData.rankId = rank.id;
         pData.permissionLevel = rank.permissionLevel;
-        debugLog(`[AntiCheats] Player ${player.name}'s rank updated to ${rank.name}.`);
+        debugLog(`[AddonExe] Player ${player.name}'s rank updated to ${rank.name}.`);
         player.sendMessage(`§aYour rank has been updated to ${rank.name}.`);
     } else if (initialSpawn) {
-        debugLog(`[AntiCheats] Player ${player.name} joined with rank ${rank.name}.`);
+        debugLog(`[AddonExe] Player ${player.name} joined with rank ${rank.name}.`);
     }
 
     // Creative detection on join (runs after player data is initialized)
@@ -158,13 +158,13 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
 
 world.afterEvents.playerLeave.subscribe((event) => {
     playerDataManager.handlePlayerLeave(event.playerId);
-    debugLog(`[AntiCheats] Player ${event.playerName} left.`);
+    debugLog(`[AddonExe] Player ${event.playerName} left.`);
 });
 
 // Handle the custom admin panel item being used
 world.afterEvents.itemUse.subscribe((event) => {
     const { source: player, itemStack } = event;
-    if (itemStack.typeId === 'ac:panel') {
+    if (itemStack.typeId === 'exe:panel') {
         // Player data is still needed for button permissions inside the panel
         const pData = playerDataManager.getPlayer(player.id);
         if (pData) {

@@ -1,15 +1,15 @@
 <div align="center">
 
-# AntiCheats Addon for Minecraft BE
+# AddonExe for Minecraft BE
 
 </div>
 
 <div align="center">
 
-[![Latest Release](https://img.shields.io/github/v/release/SjnExe/AntiCheats?label=latest%20version&display_name=tag&style=for-the-badge)](https://github.com/SjnExe/AntiCheats/releases/latest)
-[![GitHub All Releases](https://img.shields.io/github/downloads/SjnExe/AntiCheats/total?style=for-the-badge)](https://github.com/SjnExe/AntiCheats/releases)
+[![Latest Release](https://img.shields.io/github/v/release/SjnExe/AddonExe?label=latest%20version&display_name=tag&style=for-the-badge)](https://github.com/SjnExe/AddonExe/releases/latest)
+[![GitHub All Releases](https://img.shields.io/github/downloads/SjnExe/AddonExe/total?style=for-the-badge)](https://github.com/SjnExe/AddonExe/releases)
 ![Minecraft BE Version](https://img.shields.io/badge/Minecraft_BE-1.21.100%2B-brightgreen?style=for-the-badge&logo=minecraft)
-[![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AntiCheats?style=for-the-badge&logo=github)](https://github.com/SjnExe/AntiCheats/issues)
+[![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AddonExe?style=for-the-badge&logo=github)](https://github.com/SjnExe/AddonExe/issues)
 ![Status: Beta Release](https://img.shields.io/badge/Status-Beta%20Release-yellow?style=for-the-badge)
 [![Discord Server](https://img.shields.io/discord/633296555650318346?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/SMUHUnGyyz)
 
@@ -18,7 +18,7 @@
 > [!IMPORTANT]
 > **CURRENT PROJECT STATUS: BETA RELEASE**
 >
-> This AntiCheats Addon is now in **Beta**.
+> This AddonExe is now in **Beta**.
 >
 > **Please be aware:**
 >
@@ -26,20 +26,20 @@
 > - We encourage you to back up your world before installation.
 > - Your feedback is crucial for identifying and fixing remaining issues.
 >
-> We appreciate your understanding and encourage testers to [report any issues on GitHub](https://github.com/SjnExe/AntiCheats/issues). Your feedback is vital for the final release!
+> We appreciate your understanding and encourage testers to [report any issues on GitHub](https://github.com/SjnExe/AddonExe/issues). Your feedback is vital for the final release!
 
 ---
 
 <div align="center">
 
-**The ultimate scripting-based Anti-Cheat solution for your Minecraft Bedrock Edition world!**
+**The ultimate scripting-based solution for your Minecraft Bedrock Edition world!**
 Designed to be robust, highly configurable, and packed with features to ensure fair and fun gameplay.
 
 </div>
 
 ---
 
-## ✨ Why Choose This AntiCheat?
+## ✨ Why Choose This AddonExe?
 
 - **Scripting Power:** Built entirely with the Minecraft Scripting API, offering flexibility and complex detection logic not always possible with traditional methods.
 - **Comprehensive Detection (Coming Soon):** While currently a powerful moderation tool, a full suite of cheat detections is in active development.
@@ -88,24 +88,24 @@ This addon is packed with features to keep your server clean:
 
 Get up and running in minutes!
 
-1. **Download:** Grab the latest `.mcaddon` from [**GitHub Releases**](https://github.com/SjnExe/AntiCheats/releases).
-2. **Install:** Apply both `AntiCheatsBP` (Behavior Pack) and `AntiCheatsRP` (Resource Pack) to your world.
+1. **Download:** Grab the latest `.mcaddon` from [**GitHub Releases**](https://github.com/SjnExe/AddonExe/releases).
+2. **Install:** Apply both `AddonExeBP` (Behavior Pack) and `AddonExeRP` (Resource Pack) to your world.
 3. **Enable Beta APIs (CRITICAL!):**
    - In your world settings, go to the "Experiments" section.
    - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function correctly without this setting enabled.
-4. **Prioritize:** Ensure `AntiCheatsBP` is at the **TOP** of your behavior pack list. This is crucial for the AntiCheat to function correctly.
+4. **Prioritize:** Ensure `AddonExeBP` is at the **TOP** of your behavior pack list. This is crucial for the AddonExe to function correctly.
 5. **👑 Set Owner(s) (CRUCIAL!):**
-   - After applying the packs, open `AntiCheatsBP/scripts/config.js` in a text editor. (You may need to extract the `.mcaddon` file to access its contents).
+   - After applying the packs, open `AddonExeBP/scripts/config.js` in a text editor. (You may need to extract the `.mcaddon` file to access its contents).
    - Find the `ownerPlayerNames` setting.
    - Add your **exact** in-game name (case-sensitive) to the array. You can add multiple owner names.
      ```javascript
-     // Example in AntiCheatsBP/scripts/config.js
+     // Example in AddonExeBP/scripts/config.js
      ownerPlayerNames: ['YourNameHere', 'AnotherOwnerName'],
      ```
    - **Failure to set at least one owner will result in no player having administrative permissions.**
 6. **🎮 Explore:** Join your world and open the Admin UI. Admins can get the panel item directly by typing `!panel` or `!ui`. Any player can also craft the item using a single stick.
 7. **🔧 Configure (Optional but Recommended):**
-   - Review `AntiCheatsBP/scripts/config.js` for other core settings (like the command `prefix`).
+   - Review `AddonExeBP/scripts/config.js` for other core settings (like the command `prefix`).
    - For detailed setup and advanced options, visit our [**Setup and Configuration Guide**](Docs/ConfigurationGuide.md).
 
 <details>
@@ -114,14 +114,14 @@ Get up and running in minutes!
 Common quick checks:
 
 - **Enable "Beta APIs":** Make sure the "Beta APIs" experimental toggle is ON in your world settings. This addon requires it.
-- Ensure `AntiCheatsBP` is at the very top of your behavior packs.
+- Ensure `AddonExeBP` is at the very top of your behavior packs.
 - Verify you have added your exact, case-sensitive name to the `ownerPlayerNames` array in `config.js`.
 - Check Minecraft version compatibility (see badge above).
 - Test for conflicts with other addons, especially those modifying player behavior.
 
 ➡️ For a comprehensive guide, see our [**Troubleshooting Guide**](Docs/Troubleshooting.md).
 
-If problems persist after checking the guide, please [report an issue](https://github.com/SjnExe/AntiCheats/issues)!
+If problems persist after checking the guide, please [report an issue](https://github.com/SjnExe/AddonExe/issues)!
 
 </details>
 
@@ -156,7 +156,7 @@ Contributions are highly welcome and appreciated! Help us make this addon even b
 - **Document Changes:** Update relevant documentation in the `Docs` folder if you add or modify features.
 - **Pull Request:** Submit your changes for review. Explain what you've changed and why.
 
-Looking for a place to start? Check out our [**issues tab**](https://github.com/SjnExe/AntiCheats/issues) – we often tag issues that are great for new contributors.
+Looking for a place to start? Check out our [**issues tab**](https://github.com/SjnExe/AddonExe/issues) – we often tag issues that are great for new contributors.
 
 ➡️ For more on development processes, see our [**Developer README**](Dev/README.md).
 
@@ -166,14 +166,14 @@ Looking for a place to start? Check out our [**issues tab**](https://github.com/
 
 This project is made possible by the community and all the developers who dedicate their time to contribute. We are incredibly grateful for every contribution, from reporting issues and suggesting new ideas to writing code and improving documentation.
 
-➡️ You can see a list of code contributors on [**GitHub**](https://github.com/SjnExe/AntiCheats/graphs/contributors).
+➡️ You can see a list of code contributors on [**GitHub**](https://github.com/SjnExe/AddonExe/graphs/contributors).
 
 ---
 
 <div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
-Thank you for using the AntiCheats Addon!
+Thank you for using the AddonExe!
 We hope it helps create a fairer and more enjoyable Minecraft experience for your community.
 
 </div>

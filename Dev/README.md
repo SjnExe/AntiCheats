@@ -68,7 +68,7 @@ Below are links to specific sections particularly relevant for Add-On developmen
 
 To help identify potential bottlenecks, the addon includes a basic performance profiling feature.
 
-- **Enable:** Set `enablePerformanceProfiling: true` in `AntiCheatsBP/scripts/config.js`.
+- **Enable:** Set `enablePerformanceProfiling: true` in `AddonExeBP/scripts/config.js`.
 - **Logging:** When enabled, aggregated performance data for the main tick loop, individual checks, and event handlers will be logged periodically to the server console/logs (via `playerUtils.debugLog` with a `PerformanceProfile` tag).
 - **Usage:** This data can help developers pinpoint specific areas that might be consuming more resources than expected. It's recommended to only enable this for temporary debugging sessions, as continuous profiling can itself have a minor performance overhead.
 - **Configuration:** The logging interval can be adjusted with `logPerformanceProfileIntervalTicks` in the config.
@@ -99,9 +99,9 @@ The addon currently targets Minecraft Bedrock version 1.21.100 and newer. Please
 
 ## Codebase Architecture Overview
 
-The AntiCheats addon is structured to be modular and configurable. Here's a high-level overview of the new, streamlined architecture:
+The AddonExe is structured to be modular and configurable. Here's a high-level overview of the new, streamlined architecture:
 
-- **`AntiCheatsBP/scripts/`**: The root for all behavior pack scripts.
+- **`AddonExeBP/scripts/`**: The root for all behavior pack scripts.
   - **`main.js`**: The primary entry point for the addon. It handles the initialization of all core managers and subscribes to necessary game events (e.g., `beforeChatSend`, `playerJoin`). It also defines the main `system.runInterval` tick loop for periodic tasks.
   - **`config.js`**: Contains a wide array of configurable settings for features, system behaviors, and command toggles.
   - **`core/`**: Houses the central manager modules that form the backbone of the addon.
@@ -147,14 +147,14 @@ Maintaining these files helps ensure clarity on project status and facilitates s
 
 **Current Scripting Language: Plain JavaScript**
 
-The Behavior Pack scripts for this addon (`AntiCheatsBP/scripts/`) are currently written in plain JavaScript (.js files).
+The Behavior Pack scripts for this addon (`AddonExeBP/scripts/`) are currently written in plain JavaScript (.js files).
 
 - **Rationale:** While TypeScript was initially considered for its benefits (static typing, modern features), complexities were encountered in establishing a consistent and reliable TypeScript-to-JavaScript compilation process within the GitHub Actions CI/CD workflow. To ensure a stable and functional build pipeline for releases, the decision was made to use plain JavaScript directly.
 - **Future Considerations for TypeScript:** If TypeScript is to be reintroduced in the future, it would require:
   - A robust local development setup for TypeScript compilation (e.g., using `tsc` with a `tsconfig.json`).
   - A reliable method for managing TypeScript type definitions (e.g., via a `package.json` and `npm install`).
   - Ensuring that the CI/CD workflow can replicate this compilation process consistently to produce valid JavaScript for the game.
-- **Guidance for Now:** Please write all new Behavior Pack scripts in plain JavaScript. Ensure that the `entry` point in `AntiCheatsBP/manifest.json` correctly points to the JavaScript main file.
+- **Guidance for Now:** Please write all new Behavior Pack scripts in plain JavaScript. Ensure that the `entry` point in `AddonExeBP/manifest.json` correctly points to the JavaScript main file.
 
 ## Important Workflow Notes for AI Assistants
 

@@ -1,6 +1,6 @@
-# AntiCheats Addon: Features Overview
+# AddonExe: Features Overview
 
-This document provides a detailed breakdown of the features available in the AntiCheats Addon. For in-depth configuration of these features, please refer to the [Configuration Guide](ConfigurationGuide.md) and for command usage, see the [Commands List](Commands.md).
+This document provides a detailed breakdown of the features available in the AddonExe. For in-depth configuration of these features, please refer to the [Configuration Guide](ConfigurationGuide.md) and for command usage, see the [Commands List](Commands.md).
 
 > [!NOTE]
 > **This addon is currently a powerful moderation and server utility tool.**
@@ -63,7 +63,7 @@ This document provides a detailed breakdown of the features available in the Ant
 - Allows players to claim predefined kits of items.
 - **Commands:** `!kit`.
 - **Cooldowns:** Kits can have cooldowns to prevent them from being claimed too frequently.
-- **Customizable:** Kits are defined in `AntiCheatsBP/scripts/core/kitsConfig.js`.
+- **Customizable:** Kits are defined in `AddonExeBP/scripts/core/kitsConfig.js`.
 - *Key Configs: `config.js` (under the `kits` section)*
 
 ### E. Server Rules Display

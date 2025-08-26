@@ -111,7 +111,7 @@ function addPanelBody(form, panelId, context) {
         const { targetPlayer } = context;
         const targetPData = getPlayer(targetPlayer.id);
         const rank = getPlayerRank(targetPlayer, getConfig());
-        form.body([`§fName: §e${targetPlayer.name}`, `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`, `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`, `§fBounty: §e$${targetPData?.bounty?.toFixed(2) ?? '0.00'}`].join('\n\n'));
+        form.body([`§fName: §e${targetPlayer.name}`, `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`, `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`, `§fBounty: §e$${targetPData?.bounty?.toFixed(2) ?? '0.00'}`].join('[AddonExe][AddonExe]'));
     } else if (panelId === 'publicPlayerActionsPanel' && context.targetPlayer) {
         const targetPData = getPlayer(context.targetPlayer.id);
         const bounty = targetPData?.bounty?.toFixed(2) ?? '0.00';
@@ -143,7 +143,7 @@ function buildBountyListForm(title) {
     } else {
         playersWithBounty.sort((a, b) => b.data.bounty - a.data.bounty);
         for (const { player, data } of playersWithBounty) {
-            form.button(`${player.name}\n§c$${data.bounty.toFixed(2)}`);
+            form.button(`${player.name}[AddonExe]§c$${data.bounty.toFixed(2)}`);
         }
     }
     return form;

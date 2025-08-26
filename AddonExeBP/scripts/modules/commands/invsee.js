@@ -44,8 +44,8 @@ commandManager.register({
         const startIndex = page * ITEMS_PER_PAGE;
         const pageItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-        let message = `§6Inv: ${targetPlayer.name} (Page ${page + 1}/${totalPages})§r\n`;
-        message += pageItems.join('\n');
+        let message = `§6Inv: ${targetPlayer.name} (Page ${page + 1}/${totalPages})§r[AddonExe]`;
+        message += pageItems.join('[AddonExe]');
 
         player.sendMessage(message);
     }

@@ -1,6 +1,6 @@
-# Agent Instructions for AntiCheats Addon Development
+# Agent Instructions for AddonExe Development
 
-Welcome, AI Assistant (Jules)! This document provides specific guidelines and tips for working effectively on the AntiCheats Addon codebase. Please adhere to these instructions in addition to your general knowledge and the user's direct requests.
+Welcome, AI Assistant (Jules)! This document provides specific guidelines and tips for working effectively on the AddonExe codebase. Please adhere to these instructions in addition to your general knowledge and the user's direct requests.
 
 ## 1. Core Objective
 
@@ -10,11 +10,11 @@ Your primary goal is to assist users by completing coding tasks, such as solving
 
 Before implementing changes, strive to understand the relevant parts of the codebase. Key architectural information can be found in `Dev/README.md`. Pay attention to:
 
-- **Core Managers (`AntiCheatsBP/scripts/core/`):** Understand how modules like `playerDataManager.js`, `rankManager.js`, `punishmentManager.js`, and `cooldownManager.js` interact. The `commandManager.js` in `AntiCheatsBP/scripts/modules/commands/` is also critical.
+- **Core Managers (`AddonExeBP/scripts/core/`):** Understand how modules like `playerDataManager.js`, `rankManager.js`, `punishmentManager.js`, and `cooldownManager.js` interact. The `commandManager.js` in `AddonExeBP/scripts/modules/commands/` is also critical.
 - **Configuration Files:**
-  - `AntiCheatsBP/scripts/config.js`: Main settings, feature toggles, owner/admin setup.
-  - `AntiCheatsBP/scripts/core/ranksConfig.js`: Defines all ranks and their visual styles.
-  - `AntiCheatsBP/scripts/core/panelLayoutConfig.js`: Defines the layout and content of the UI panels.
+  - `AddonExeBP/scripts/config.js`: Main settings, feature toggles, owner/admin setup.
+  - `AddonExeBP/scripts/core/ranksConfig.js`: Defines all ranks and their visual styles.
+  - `AddonExeBP/scripts/core/panelLayoutConfig.js`: Defines the layout and content of the UI panels.
 - **Coding Conventions:** Strictly follow guidelines in `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
 - **Naming Conventions:**
   - The general rule for all project-specific JavaScript identifiers is that **any code style is allowed, but not snake_case**.
@@ -53,7 +53,7 @@ This project uses a simple task management system in the `Dev/tasks/` directory.
 - **Plain JavaScript:** All Behavior Pack scripts are written in plain JavaScript. Do not use TypeScript syntax.
 - **Error Handling:** Implement robust error handling (e.g., `try...catch` blocks for risky operations, validation of inputs). Refer to `Dev/StandardizationGuidelines.md` (Section 6) for detailed error logging standards.
 - **Logging:** Utilize the `debugLog()` function from `core/logger.js` for development messages. This is conditional on `config.debug` being true.
-  - **User-Facing Text:** Most user-facing text is hardcoded directly in the command or UI files where it is used. Configurable messages (like the welcome message or rules) are in `config.js`. Button texts for dynamically generated panels are defined in `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
+  - **User-Facing Text:** Most user-facing text is hardcoded directly in the command or UI files where it is used. Configurable messages (like the welcome message or rules) are in `config.js`. Button texts for dynamically generated panels are defined in `AddonExeBP/scripts/core/panelLayoutConfig.js`.
 - **Linting with ESLint:** This project uses ESLint to enforce code style and catch potential errors.
   - The configuration (`eslint.config.js`) is based on `eslint:recommended` rules plus specific project style guidelines from `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
   - Run `npm run lint` to check for linting issues.
@@ -67,4 +67,4 @@ This project uses a simple task management system in the `Dev/tasks/` directory.
 - **Ask Questions:** If the user's request is ambiguous or if you encounter significant issues, use `request_user_input`.
 - **Report Progress:** Use `plan_step_complete()` after each step.
 
-By following these guidelines, you will help ensure the continued quality, consistency, and maintainability of the AntiCheats Addon. Thank you!
+By following these guidelines, you will help ensure the continued quality, consistency, and maintainability of the AddonExe. Thank you!

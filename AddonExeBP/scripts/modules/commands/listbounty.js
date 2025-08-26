@@ -23,13 +23,13 @@ commandManager.register({
             }
             player.sendMessage('§aBounty on ' + targetPlayer.name + ': §e$' + targetData.bounty.toFixed(2));
         } else {
-            let message = '§a--- Online Player Bounties ---\n';
+            let message = '§a--- Online Player Bounties ---[AddonExe]';
             const onlinePlayers = world.getAllPlayers();
             let foundBounty = false;
             onlinePlayers.forEach(p => {
                 const pData = getPlayer(p.id);
                 if (pData && pData.bounty > 0) {
-                    message += '§e' + p.name + '§r: $' + pData.bounty.toFixed(2) + '\n';
+                    message += '§e' + p.name + '§r: $' + pData.bounty.toFixed(2) + '[AddonExe]';
                     foundBounty = true;
                 }
             });

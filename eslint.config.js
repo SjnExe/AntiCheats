@@ -21,7 +21,7 @@ export default [
             'dist/',
             'package-lock.json',
             '.git/',
-            'AntiCheatsRP/font/',
+            'AddonExeRP/font/',
             '.github/',
             'Dev/',
             'Docs/',

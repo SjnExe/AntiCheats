@@ -2,18 +2,18 @@
     "format_version": "1.12",
     "minecraft:recipe_shapeless": {
         "description": {
-            "identifier": "ac:panel_recipe"
+            "identifier": "exe:stick_from_panel_recipe"
         },
         "tags": [
             "crafting_table"
         ],
         "ingredients": [
             {
-                "item": "minecraft:stick"
+                "item": "exe:panel"
             }
         ],
         "result": {
-            "item": "ac:panel",
+            "item": "minecraft:stick",
             "count": 1
         }
     }
