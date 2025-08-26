@@ -168,6 +168,7 @@ This project is made possible by the community and all the developers who dedica
 
 ---
 <div align="center">
+  
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 </div>
 Thank you for using the AddonExe!
