@@ -173,7 +173,7 @@ export const panelDefinitions = {
             {
                 id: 'setBounty',
                 text: 'Set Bounty',
-                icon: 'textures/items/gold_ingot.png',
+                icon: 'textures/items/iron_sword.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showBountyForm'
@@ -213,13 +213,13 @@ export const panelDefinitions = {
         ]
     },
     bountyActionsPanel: {
-        title: '§lBounty Actions for {playerName}§r',
+        title: '§lFor {playerName}§r',
         parentPanelId: 'bountyListPanel',
         items: [
             {
                 id: 'addBounty',
                 text: 'Add to Bounty',
-                icon: 'textures/items/gold_ingot.png',
+                icon: 'textures/items/iron_sword.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showBountyForm'
@@ -227,7 +227,7 @@ export const panelDefinitions = {
             {
                 id: 'reduceBountyFromList',
                 text: 'Reduce Bounty',
-                icon: 'textures/items/iron_sword.png',
+                icon: 'textures/items/gold_ingot.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
                 actionValue: 'showReduceBountyForm'
