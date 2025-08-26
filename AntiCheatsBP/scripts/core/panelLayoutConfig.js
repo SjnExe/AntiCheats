@@ -55,7 +55,7 @@ export const panelDefinitions = {
             {
                 id: 'bountyList',
                 text: 'Bounty List',
-                icon: 'textures/ui/WarningGlyph',
+                icon: 'textures/items/skull_wither.png',
                 permissionLevel: 1024,
                 actionType: 'openPanel',
                 actionValue: 'bountyListPanel'
