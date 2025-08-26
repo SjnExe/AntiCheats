@@ -10,7 +10,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
     const commandStructure = {
         '§aGeneral': {
             systemToggle: null,
-            commands: ['help', 'status', 'rules', 'version', 'spawn', 'report']
+            commands: ['help', 'status', 'rules', 'version', 'spawn', 'report', 'panel']
         },
         '§dTeleportation (TPA)': {
             systemToggle: 'tpa',
@@ -30,7 +30,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
         },
         '§cModeration': {
             systemToggle: null,
-            commands: ['panel', 'kick', 'mute', 'unmute', 'freeze', 'vanish', 'invsee', 'tp', 'ban', 'unban', 'clearchat', 'reports', 'xraynotify']
+            commands: ['kick', 'mute', 'unmute', 'freeze', 'vanish', 'invsee', 'tp', 'ban', 'unban', 'clearchat', 'reports', 'xraynotify']
         },
         '§9Administration': {
             systemToggle: null,

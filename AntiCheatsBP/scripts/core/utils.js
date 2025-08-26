@@ -49,22 +49,3 @@ export function playSound(player, soundId) {
         console.error(`Failed to play sound "${soundId}" for player ${player.name}: ${e}`);
     }
 }
-
-import { system } from '@minecraft/server';
-
-/**
- * A more reliable way to show a form to a player, avoiding cancellation issues by retrying if the player is busy.
- * @param {import('@minecraft/server').Player} player The player to show the form to.
- * @param {import('@minecraft/server-ui').ActionFormData | import('@minecraft/server-ui').ModalFormData | import('@minecraft/server-ui').MessageFormData} form The form to show.
- * @returns {Promise<any>} A promise that resolves with the form response, or undefined if it times out.
- */
-export async function forceShow(player, form) {
-    const startTick = system.currentTick;
-    while ((system.currentTick - startTick) < 1200) { // 1 minute timeout (1200 ticks)
-        const response = await form.show(player);
-        if (response.cancelationReason !== 'UserBusy') {
-            return response;
-        }
-    }
-    return undefined; // Timeout
-}
