@@ -16,7 +16,7 @@
 > [!IMPORTANT]
 > **CURRENT PROJECT STATUS: BETA RELEASE**
 >
-> This AddonExe is now in **Beta**.
+> AddonExe is now in **Beta**.
 >
 > **Please be aware:**
 >
@@ -37,7 +37,7 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 
 ---
 
-## ✨ Why Choose This AddonExe?
+## ✨ Why Choose AddonExe?
 
 - **Scripting Power:** Built entirely with the Minecraft Scripting API, offering flexibility and complex detection logic not always possible with traditional methods.
 - **Comprehensive Detection (Coming Soon):** While currently a powerful moderation tool, a full suite of cheat detections is in active development.
@@ -91,7 +91,7 @@ Get up and running in minutes!
 3. **Enable Beta APIs (CRITICAL!):**
    - In your world settings, go to the "Experiments" section.
    - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function correctly without this setting enabled.
-4. **Prioritize:** Ensure `AddonExeBP` is at the **TOP** of your behavior pack list. This is crucial for the AddonExe to function correctly.
+4. **Prioritize:** Ensure `AddonExeBP` is at the **TOP** of your behavior pack list. This is crucial for AddonExe to function correctly.
 5. **👑 Set Owner(s) (CRUCIAL!):**
    - After applying the packs, open `AddonExeBP/scripts/config.js` in a text editor. (You may need to extract the `.mcaddon` file to access its contents).
    - Find the `ownerPlayerNames` setting.
@@ -171,5 +171,5 @@ This project is made possible by the community and all the developers who dedica
   
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
 </div>
-Thank you for using the AddonExe!
+Thank you for using AddonExe!
 We hope it helps create a fairer and more enjoyable Minecraft experience for your community.

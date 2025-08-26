@@ -140,7 +140,7 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Description:** Shows your current status (rank, money, etc.).
 - **`!version`** (Alias: `!v`)
   - **Syntax:** `!version`
-  - **Description:** Displays the AddonExe version.
+  - **Description:** Displays the current version of AddonExe.
 
 ### TPA System Commands
 - **`!tpa <playerName>`**
