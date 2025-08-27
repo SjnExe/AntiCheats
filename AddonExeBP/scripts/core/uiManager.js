@@ -242,6 +242,43 @@ uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
+uiActionFunctions['showMyStats'] = async (player, context) => {
+    const pData = getPlayer(player.id);
+    const rank = getPlayerRank(player, getConfig());
+    if (!pData || !rank) {
+        return player.sendMessage('§cCould not retrieve your stats.');
+    }
+
+    const statsBody = [
+        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+        `§fBalance: §a$${pData.balance.toFixed(2)}`,
+        `§fBounty on you: §e$${pData.bounty.toFixed(2)}`
+    ].join('\n');
+
+    const form = new ActionFormData()
+        .title('§l§3Your Stats')
+        .body(statsBody)
+        .button('§l§8Close');
+
+    await uiWait(player, form);
+};
+
+uiActionFunctions['showHelpfulLinks'] = async (player, context) => {
+    const config = getConfig();
+    const linksBody = [
+        '§fHere are some helpful links:',
+        `§9Discord: §r${config.serverInfo.discordLink}`,
+        `§1Website: §r${config.serverInfo.websiteLink}`
+    ].join('\n\n');
+
+    const form = new ActionFormData()
+        .title('§l§9Helpful Links')
+        .body(linksBody)
+        .button('§l§8Close');
+
+    await uiWait(player, form);
+};
+
 uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const targetData = getPlayer(targetPlayer.id);
     if (!targetData || targetData.bounty === 0) return player.sendMessage('§cThis player has no bounty.');
