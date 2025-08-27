@@ -6,6 +6,7 @@ import { commandManager } from '../modules/commands/commandManager.js';
 import { getPunishment, loadPunishments } from './punishmentManager.js';
 import { loadReports } from './reportManager.js';
 import { loadCooldowns } from './cooldownManager.js';
+import { initializeCustomUi } from './customUiManager.js';
 import { clearExpiredPayments } from './economyManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
@@ -57,6 +58,7 @@ system.run(() => {
     loadPunishments();
     loadReports();
     loadCooldowns();
+    initializeCustomUi();
     rankManager.initialize();
 
     const config = getConfig();

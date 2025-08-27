@@ -1,6 +1,6 @@
 import { getPlayer, savePlayerData } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
-import { world } from '@minecraft/server';
+import { world, system } from '@minecraft/server';
 
 /**
  * @typedef {object} PendingPayment
@@ -50,6 +50,9 @@ export function clearExpiredPayments() {
     }
 }
 
+// Periodically clear expired pending payments
+system.runInterval(clearExpiredPayments, 6000); // Every 5 minutes
+
 
 // --- Balance Management ---
 
@@ -91,6 +94,9 @@ export function removeBalance(playerId, amount) {
 }
 
 export function transfer(sourcePlayerId, targetPlayerId, amount) {
+    if (sourcePlayerId === targetPlayerId) {
+        return { success: false, message: 'You cannot pay yourself.' };
+    }
     if (amount <= 0) {
         return { success: false, message: 'Transfer amount must be positive.' };
     }

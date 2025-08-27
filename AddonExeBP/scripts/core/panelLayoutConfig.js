@@ -277,7 +277,8 @@ export const panelDefinitions = {
     myStatsPanel: {
         title: '§l§3Your Stats§r',
         parentPanelId: 'mainPanel',
-        items: [] // Body is dynamically generated
+        uiFile: 'ui/my_stats_panel.json',
+        items: [] // This will use the custom UI file
     },
     helpfulLinksPanel: {
         title: '§l§9Helpful Links§r',

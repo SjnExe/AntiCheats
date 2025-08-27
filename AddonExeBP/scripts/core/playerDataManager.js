@@ -14,7 +14,7 @@
  * @property {number} balance
  * @property {Object.<string, number>} kitCooldowns
  * @property {number} bounty
- * @property {Object.<string, number>} bounties
+ * @property {Object.<string, number>} bounties - A map of targetPlayerId to the amount of bounty placed by this player.
  * @property {boolean} xrayNotifications
  */
 

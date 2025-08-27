@@ -1,5 +1,6 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
+import { merge, isEqual, set } from 'lodash-es';
 
 let loadedConfig = null;
 
@@ -17,10 +18,14 @@ export function loadConfig() {
     } else {
         try {
             const savedConfig = JSON.parse(configStr);
-            // Merge default config with saved to ensure new properties are added
-            loadedConfig = { ...defaultConfig, ...savedConfig };
-            // Save the potentially updated config back to the world
-            world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
+            // Create a deep clone of defaultConfig to avoid modifying it
+            const newConfig = merge({}, defaultConfig, savedConfig);
+
+            // Only save back if the merged config is different from the saved one
+            if (!isEqual(newConfig, savedConfig)) {
+                world.setDynamicProperty('addonexe:config', JSON.stringify(newConfig));
+            }
+            loadedConfig = newConfig;
         } catch (error) {
             console.error('[ConfigManager] Failed to parse saved config. Loading default config instead.', error);
             loadedConfig = defaultConfig;
@@ -39,6 +44,7 @@ export function getConfig() {
 
 /**
  * Updates a specific key in the configuration and saves it.
+ * Supports nested keys using dot notation (e.g., "tpa.enabled").
  * @param {string} key The configuration key to update.
  * @param {*} value The new value for the key.
  */
@@ -47,6 +53,6 @@ export function updateConfig(key, value) {
         // This case should ideally not be hit if init order is correct
         loadConfig();
     }
-    loadedConfig[key] = value;
+    set(loadedConfig, key, value);
     world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
 }
