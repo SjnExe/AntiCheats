@@ -1,6 +1,6 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
-import { merge, isEqual, set } from 'lodash-es';
+import './lib/lodash.js';
 
 let loadedConfig = null;
 
@@ -19,10 +19,10 @@ export function loadConfig() {
         try {
             const savedConfig = JSON.parse(configStr);
             // Create a deep clone of defaultConfig to avoid modifying it
-            const newConfig = merge({}, defaultConfig, savedConfig);
+            const newConfig = _.merge({}, defaultConfig, savedConfig);
 
             // Only save back if the merged config is different from the saved one
-            if (!isEqual(newConfig, savedConfig)) {
+            if (!_.isEqual(newConfig, savedConfig)) {
                 world.setDynamicProperty('addonexe:config', JSON.stringify(newConfig));
             }
             loadedConfig = newConfig;
@@ -53,6 +53,6 @@ export function updateConfig(key, value) {
         // This case should ideally not be hit if init order is correct
         loadConfig();
     }
-    set(loadedConfig, key, value);
+    _.set(loadedConfig, key, value);
     world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
 }
