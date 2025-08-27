@@ -14,14 +14,14 @@ function showCategorizedHelp(player, userPermissionLevel) {
         const cmdSetting = config.commandSettings?.[cmd.name];
         if (cmdSetting && cmdSetting.enabled === false) continue;
 
-        const category = cmd.category || 'General';
+        const category = cmd.category || '§aGeneral';
         if (!categorizedCommands[category]) {
             categorizedCommands[category] = [];
         }
         categorizedCommands[category].push(cmd);
     }
 
-    let helpMessage = '§a--- Available Commands ---[AddonExe]';
+    let helpMessage = '§a--- Available Commands ---';
     let commandsShown = false;
 
     // Get sorted list of categories
@@ -29,14 +29,12 @@ function showCategorizedHelp(player, userPermissionLevel) {
 
     for (const categoryName of sortedCategories) {
         const commands = categorizedCommands[categoryName];
-        // Sort commands alphabetically within the category
-        const sortedCommands = commands.sort((a, b) => a.name.localeCompare(b.name));
 
-        if (sortedCommands.length > 0) {
+        if (commands.length > 0) {
             commandsShown = true;
-            helpMessage += `§l§e${categoryName}§r[AddonExe]`;
-            for (const cmd of sortedCommands) {
-                helpMessage += ` §b!${cmd.name}§r: ${cmd.description}[AddonExe]`;
+            helpMessage += `\n\n§l${categoryName}§r`;
+            for (const cmd of commands) {
+                helpMessage += `\n §b!${cmd.name}§r: ${cmd.description}`;
             }
         }
     }
@@ -46,7 +44,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
         return;
     }
 
-    player.sendMessage(helpMessage.trim());
+    player.sendMessage(helpMessage);
 }
 
 function showSpecificHelp(player, commandName) {

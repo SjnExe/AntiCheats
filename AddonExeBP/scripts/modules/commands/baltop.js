@@ -7,7 +7,7 @@ commandManager.register({
     name: 'baltop',
     aliases: ['topbal'],
     description: 'Shows the players with the highest balances on the server.',
-    category: '§bPlayer Utilities',
+    category: '§eEconomy System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();
@@ -38,9 +38,9 @@ commandManager.register({
             return;
         }
 
-        let message = '§l§b--- Top Balances ---§r[AddonExe]';
+        let message = '§l§b--- Top Balances ---\n';
         leaderboard.forEach((entry, index) => {
-            message += `§e#${index + 1}§r ${entry.name}: §a$${entry.balance.toFixed(2)}[AddonExe]`;
+            message += `§e#${index + 1}§r ${entry.name}: §a$${entry.balance.toFixed(2)}\n`;
         });
 
         player.sendMessage(message.trim());

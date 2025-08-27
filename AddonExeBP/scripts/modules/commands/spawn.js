@@ -6,7 +6,7 @@ import { world } from '@minecraft/server';
 commandManager.register({
     name: 'spawn',
     description: 'Teleports you to the server spawn point.',
-    category: 'General',
+    category: '§bHome System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

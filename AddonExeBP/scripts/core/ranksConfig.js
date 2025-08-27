@@ -22,13 +22,13 @@
 
 /** @type {Required<ChatFormatting>} */
 export const defaultChatFormatting = {
-    prefixText: '§8[§fMember§8] ',
-    nameColor: '§f',
-    messageColor: '§7'
+    prefixText: '§8[§7Member§8] ',
+    nameColor: '§7',
+    messageColor: '§f'
 };
 
 /** @type {string} */
-export const defaultNametagPrefix = '§fMember §f[AddonExe]';
+export const defaultNametagPrefix = '§7Member §f[AddonExe]';
 
 /** @type {number} */
 export const defaultPermissionLevel = 1024;
@@ -42,7 +42,7 @@ export const rankDefinitions = [
         chatFormatting: {
             prefixText: '§8[§4Owner§8] ',
             nameColor: '§4',
-            messageColor: '§6'
+            messageColor: '§f'
         },
         nametagPrefix: '§4Owner §f[AddonExe]',
         conditions: [

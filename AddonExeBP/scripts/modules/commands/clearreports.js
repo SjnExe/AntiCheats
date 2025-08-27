@@ -4,7 +4,7 @@ import { clearAllReports } from '../../core/reportManager.js';
 commandManager.register({
     name: 'clearreports',
     description: 'Clears all active reports.',
-    category: '§cAdministration',
+    category: '§cModeration',
     permissionLevel: 0, // Owner only
     execute: (player, args) => {
         clearAllReports();

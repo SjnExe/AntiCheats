@@ -5,7 +5,7 @@ import { playSound } from '../../core/utils.js';
 commandManager.register({
     name: 'copyinv',
     description: "Copies a player's inventory, replacing your own.",
-    category: '§6Moderation',
+    category: '§cModeration',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {

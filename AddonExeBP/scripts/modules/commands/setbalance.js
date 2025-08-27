@@ -7,7 +7,7 @@ commandManager.register({
     name: 'setbalance',
     aliases: ['setbal'],
     description: 'Sets a player\'s balance to a specific amount. (Owner only)',
-    category: '§dServer Management',
+    category: '§eEconomy System',
     permissionLevel: 0, // Owner-only, will be checked manually
     execute: (player, args) => {
         const config = getConfig();

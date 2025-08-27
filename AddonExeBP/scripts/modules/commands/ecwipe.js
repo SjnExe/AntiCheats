@@ -5,7 +5,7 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 commandManager.register({
     name: 'ecwipe',
     description: "Clears a player's Ender Chest.",
-    category: '§6Moderation',
+    category: '§cModeration',
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {

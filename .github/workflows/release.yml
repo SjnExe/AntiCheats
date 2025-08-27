@@ -87,19 +87,19 @@ jobs:
           FULL_TAG_NAME: ${{ env.FULL_TAG_NAME }}
         run: |
           # Create main .mcaddon
-          (cd staging && zip -r "../EXE.${FULL_TAG_NAME}.mcaddon" ./*)
+          (cd staging && zip -r "../AddonExe.${FULL_TAG_NAME}.mcaddon" ./*)
 
           # Create BP .mcpack
-          (cd staging/AddonExeBP && zip -r "../../EXE.BP${FULL_TAG_NAME}.mcpack" ./*)
+          (cd staging/AddonExeBP && zip -r "../../AddonExe.BP${FULL_TAG_NAME}.mcpack" ./*)
 
           # Create RP .mcpack
-          (cd staging/AddonExeRP && zip -r "../../EXE.RP${FULL_TAG_NAME}.mcpack" ./*)
+          (cd staging/AddonExeRP && zip -r "../../AddonExe.RP${FULL_TAG_NAME}.mcpack" ./*)
           echo "Created release archives."
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ./EXE.${{ env.FULL_TAG_NAME }}.mcaddon
-            ./EXE.BP${{ env.FULL_TAG_NAME }}.mcpack
-            ./EXE.RP${{ env.FULL_TAG_NAME }}.mcpack
+            ./AddonExe.${{ env.FULL_TAG_NAME }}.mcaddon
+            ./AddonExe.BP${{ env.FULL_TAG_NAME }}.mcpack
+            ./AddonExe.RP${{ env.FULL_TAG_NAME }}.mcpack

@@ -4,7 +4,7 @@ import { getConfig, updateConfig } from '../../core/configManager.js';
 commandManager.register({
     name: 'debug',
     description: 'Toggles the debug logging mode.',
-    category: '§dServer Management',
+    category: '§4Administration',
     permissionLevel: 0, // Owner only
     execute: (player, args) => {
         const config = getConfig();
