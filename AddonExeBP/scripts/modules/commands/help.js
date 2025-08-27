@@ -24,8 +24,25 @@ function showCategorizedHelp(player, userPermissionLevel) {
     let helpMessage = '§a--- Available Commands ---';
     let commandsShown = false;
 
-    // Get sorted list of categories
-    const sortedCategories = Object.keys(categorizedCommands).sort();
+    const categorySortOrder = [
+        '§4Administration',
+        '§cModeration',
+        '§aGeneral',
+        '§eEconomy System',
+        '§bTPA System',
+        '§2Home System'
+    ];
+
+    const sortedCategories = Object.keys(categorizedCommands).sort((a, b) => {
+        const indexA = categorySortOrder.indexOf(a);
+        const indexB = categorySortOrder.indexOf(b);
+        if (indexA !== -1 && indexB !== -1) {
+            return indexA - indexB;
+        }
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return a.localeCompare(b);
+    });
 
     for (const categoryName of sortedCategories) {
         const commands = categorizedCommands[categoryName];

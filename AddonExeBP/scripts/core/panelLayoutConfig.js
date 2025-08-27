@@ -73,16 +73,16 @@ export const panelDefinitions = {
                 text: '§3My Stats',
                 icon: 'textures/ui/profile_glyph_color.png',
                 permissionLevel: 1024,
-                actionType: 'openPanel',
-                actionValue: 'myStatsPanel'
+                actionType: 'functionCall',
+                actionValue: 'showMyStats'
             },
             {
                 id: 'helpfulLinks',
                 text: '§9Helpful Links',
                 icon: 'textures/items/chain',
                 permissionLevel: 1024,
-                actionType: 'openPanel',
-                actionValue: 'helpfulLinksPanel'
+                actionType: 'functionCall',
+                actionValue: 'showHelpfulLinks'
             }
         ]
     },
@@ -273,16 +273,5 @@ export const panelDefinitions = {
         title: '§l§cBounty List§r',
         parentPanelId: 'mainPanel',
         items: [] // This will be populated dynamically by uiManager
-    },
-    myStatsPanel: {
-        title: '§l§3Your Stats§r',
-        parentPanelId: 'mainPanel',
-        uiFile: 'ui/my_stats_panel.json',
-        items: [] // This will use the custom UI file
-    },
-    helpfulLinksPanel: {
-        title: '§l§9Helpful Links§r',
-        parentPanelId: 'mainPanel',
-        items: [] // Body is dynamically generated
     }
 };

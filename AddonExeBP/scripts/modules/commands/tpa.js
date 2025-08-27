@@ -7,7 +7,7 @@ import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 commandManager.register({
     name: 'tpa',
     description: 'Sends a request to teleport to another player.',
-    category: '§3TPA System',
+    category: '§bTPA System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

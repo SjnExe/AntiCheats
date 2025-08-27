@@ -5,7 +5,7 @@ import { world } from '@minecraft/server';
 commandManager.register({
     name: 'payconfirm',
     description: 'Confirms a pending payment.',
-    category: '§bPlayer Utilities',
+    category: '§eEconomy System',
     permissionLevel: 1024,
     execute: (player, args) => {
         const pendingPayment = economyManager.getPendingPayment(player.id);

@@ -11,7 +11,6 @@ import * as punishmentManager from './punishmentManager.js';
 import * as tpaManager from './tpaManager.js';
 import * as reportManager from './reportManager.js';
 import { world } from '@minecraft/server';
-import { showMyStatsPanel } from './customUiManager.js';
 
 const uiActionFunctions = {};
 
@@ -19,16 +18,6 @@ const uiActionFunctions = {};
 export async function showPanel(player, panelId, context = {}) {
     try {
         debugLog(`[UIManager] Showing panel '${panelId}' to ${player.name}`);
-        const panelDef = panelDefinitions[panelId];
-        if (!panelDef) return;
-
-        if (panelDef.uiFile) {
-            if (panelId === 'myStatsPanel') {
-                return showMyStatsPanel(player);
-            }
-            return showCustomForm(player, panelId, context);
-        }
-
         const form = await buildPanelForm(player, panelId, context);
         if (!form) return;
 
@@ -41,15 +30,10 @@ export async function showPanel(player, panelId, context = {}) {
     }
 }
 
-async function showCustomForm(player, panelId, context) {
-    // TODO: Implement custom form logic
-    player.sendMessage(`§cCustom UI for panel '${panelId}' is not yet implemented.`);
-}
-
 // Builds and returns a form object based on a panel definition.
 async function buildPanelForm(player, panelId, context) {
     const panelDef = panelDefinitions[panelId];
-    if (!panelDef || panelDef.uiFile) return null;
+    if (!panelDef) return null;
     const pData = getPlayer(player.id);
     if (!pData) return null;
     let title = panelDef.title.replace('{playerName}', context.targetPlayer?.name ?? '');
@@ -161,27 +145,6 @@ function addPanelBody(form, player, panelId, context) {
         const targetPData = getPlayer(context.targetPlayer.id);
         const bounty = targetPData?.bounty?.toFixed(2) ?? '0.00';
         form.body(`§eBounty on this player: $${bounty}`);
-    } else if (panelId === 'myStatsPanel') {
-        const pData = getPlayer(player.id);
-        const rank = getPlayerRank(player, getConfig());
-        if (!pData || !rank) {
-            form.body('§cCould not retrieve your stats.');
-        } else {
-            const statsBody = [
-                `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
-                `§fBalance: §a$${pData.balance.toFixed(2)}`,
-                `§fBounty on you: §e$${pData.bounty.toFixed(2)}`
-            ].join('\n');
-            form.body(statsBody);
-        }
-    } else if (panelId === 'helpfulLinksPanel') {
-        const config = getConfig();
-        const linksBody = [
-            '§fHere are some helpful links:',
-            `§9Discord: §r${config.serverInfo.discordLink}`,
-            `§1Website: §r${config.serverInfo.websiteLink}`
-        ].join('\n\n');
-        form.body(linksBody);
     }
 }
 
@@ -323,6 +286,49 @@ uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
+uiActionFunctions['showMyStats'] = async (player, context) => {
+    const pData = getPlayer(player.id);
+    const rank = getPlayerRank(player, getConfig());
+    if (!pData || !rank) {
+        return player.sendMessage('§cCould not retrieve your stats.');
+    }
+
+    const statsBody = [
+        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+        `§fBalance: §a$${pData.balance.toFixed(2)}`,
+        `§fBounty on you: §e$${pData.bounty.toFixed(2)}`
+    ].join('\n');
+
+    const form = new ActionFormData()
+        .title('§l§3Your Stats')
+        .body(statsBody)
+        .button('§l§8< Back');
+
+    const response = await uiWait(player, form);
+    if (response && !response.canceled) {
+        showPanel(player, 'mainPanel');
+    }
+};
+
+uiActionFunctions['showHelpfulLinks'] = async (player, context) => {
+    const config = getConfig();
+    const linksBody = [
+        '§fHere are some helpful links:',
+        `§9Discord: §r${config.serverInfo.discordLink}`,
+        `§1Website: §r${config.serverInfo.websiteLink}`
+    ].join('\n\n');
+
+    const form = new ActionFormData()
+        .title('§l§9Helpful Links')
+        .body(linksBody)
+        .button('§l§8< Back');
+
+    const response = await uiWait(player, form);
+    if (response && !response.canceled) {
+        showPanel(player, 'mainPanel');
+    }
+};
+
 uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const targetData = getPlayer(targetPlayer.id);
     if (!targetData || targetData.bounty === 0) return player.sendMessage('§cThis player has no bounty.');
@@ -371,6 +377,49 @@ uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) =>
     player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
+
+uiActionFunctions['showMyStats'] = async (player, context) => {
+    const pData = getPlayer(player.id);
+    const rank = getPlayerRank(player, getConfig());
+    if (!pData || !rank) {
+        return player.sendMessage('§cCould not retrieve your stats.');
+    }
+
+    const statsBody = [
+        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+        `§fBalance: §a$${pData.balance.toFixed(2)}`,
+        `§fBounty on you: §e$${pData.bounty.toFixed(2)}`
+    ].join('\n');
+
+    const form = new ActionFormData()
+        .title('§l§3Your Stats')
+        .body(statsBody)
+        .button('§l§8< Back');
+
+    const response = await uiWait(player, form);
+    if (response && !response.canceled) {
+        showPanel(player, 'mainPanel');
+    }
+};
+
+uiActionFunctions['showHelpfulLinks'] = async (player, context) => {
+    const config = getConfig();
+    const linksBody = [
+        '§fHere are some helpful links:',
+        `§9Discord: §r${config.serverInfo.discordLink}`,
+        `§1Website: §r${config.serverInfo.websiteLink}`
+    ].join('\n\n');
+
+    const form = new ActionFormData()
+        .title('§l§9Helpful Links')
+        .body(linksBody)
+        .button('§l§8< Back');
+
+    const response = await uiWait(player, form);
+    if (response && !response.canceled) {
+        showPanel(player, 'mainPanel');
+    }
+};
 
 uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Ban ${targetPlayer.name}`)
