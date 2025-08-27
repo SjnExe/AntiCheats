@@ -7,7 +7,7 @@ commandManager.register({
     name: 'baltop',
     aliases: ['topbal'],
     description: 'Shows the players with the highest balances on the server.',
-    category: '§eEconomy & Kits',
+    category: '§eEconomy System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

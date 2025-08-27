@@ -7,7 +7,7 @@ commandManager.register({
     name: 'balance',
     aliases: ['bal', 'money'],
     description: 'Checks your or another player\'s balance.',
-    category: '§eEconomy & Kits',
+    category: '§eEconomy System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

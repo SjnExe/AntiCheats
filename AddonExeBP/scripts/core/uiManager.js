@@ -258,9 +258,12 @@ uiActionFunctions['showMyStats'] = async (player, context) => {
     const form = new ActionFormData()
         .title('§l§3Your Stats')
         .body(statsBody)
-        .button('§l§8Close');
+        .button('§l§8< Back');
 
-    await uiWait(player, form);
+    const response = await uiWait(player, form);
+    if (response && !response.canceled) {
+        showPanel(player, 'mainPanel');
+    }
 };
 
 uiActionFunctions['showHelpfulLinks'] = async (player, context) => {
@@ -274,9 +277,12 @@ uiActionFunctions['showHelpfulLinks'] = async (player, context) => {
     const form = new ActionFormData()
         .title('§l§9Helpful Links')
         .body(linksBody)
-        .button('§l§8Close');
+        .button('§l§8< Back');
 
-    await uiWait(player, form);
+    const response = await uiWait(player, form);
+    if (response && !response.canceled) {
+        showPanel(player, 'mainPanel');
+    }
 };
 
 uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
