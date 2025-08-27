@@ -8,6 +8,8 @@ import { getPlayerRank } from './rankManager.js';
 import { uiWait, parseDuration, playSoundFromConfig } from './utils.js';
 import * as economyManager from './economyManager.js';
 import * as punishmentManager from './punishmentManager.js';
+import * as tpaManager from './tpaManager.js';
+import * as reportManager from './reportManager.js';
 import { world } from '@minecraft/server';
 
 const uiActionFunctions = {};
@@ -42,14 +44,14 @@ async function buildPanelForm(player, panelId, context) {
     }
 
     if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel') {
-        return buildPlayerListForm(title, player, panelId);
+        return buildPlayerListForm(title, player, panelId, context);
     }
     if (panelId === 'bountyListPanel') {
         return buildBountyListForm(title);
     }
 
     const form = new ActionFormData().title(title);
-    addPanelBody(form, panelId, context);
+    addPanelBody(form, player, panelId, context);
     const menuItems = getMenuItems(panelDef, pData.permissionLevel);
     for (const item of menuItems) {
         form.button(item.text, item.icon);
@@ -63,12 +65,37 @@ async function handleFormResponse(player, panelId, response, context) {
     if (!pData) return;
 
     if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel') {
-        if (response.selection === 0) return showPanel(player, 'mainPanel', context);
-        const playerList = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
-        const selectedPlayer = playerList[response.selection - 1];
-        if (selectedPlayer) {
-            const nextPanel = panelId === 'playerListPanel' ? 'playerManagementPanel' : 'publicPlayerActionsPanel';
-            return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
+        const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
+        const ITEMS_PER_PAGE = 8;
+        const page = context.page || 0;
+        const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
+        let selection = response.selection;
+
+        if (selection === 0) { // Back button
+            return showPanel(player, 'mainPanel', context);
+        }
+        selection--; // Adjust selection index because of the back button
+
+        if (page > 0) {
+            if (selection === 0) { // Previous Page button
+                return showPanel(player, panelId, { ...context, page: page - 1 });
+            }
+            selection--; // Adjust selection index because of the previous button
+        }
+
+        const startIndex = page * ITEMS_PER_PAGE;
+        const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+        if (selection < pagePlayers.length) {
+            const selectedPlayer = pagePlayers[selection];
+            if (selectedPlayer) {
+                const nextPanel = panelId === 'playerListPanel' ? 'playerManagementPanel' : 'publicPlayerActionsPanel';
+                return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
+            }
+        } else { // Next Page button
+            if (page < totalPages - 1) {
+                return showPanel(player, panelId, { ...context, page: page + 1 });
+            }
         }
         return;
     }
@@ -108,7 +135,7 @@ function getMenuItems(panelDef, permissionLevel) {
     return items;
 }
 
-function addPanelBody(form, panelId, context) {
+function addPanelBody(form, player, panelId, context) {
     if (panelId === 'playerManagementPanel' && context.targetPlayer) {
         const { targetPlayer } = context;
         const targetPData = getPlayer(targetPlayer.id);
@@ -118,14 +145,46 @@ function addPanelBody(form, panelId, context) {
         const targetPData = getPlayer(context.targetPlayer.id);
         const bounty = targetPData?.bounty?.toFixed(2) ?? '0.00';
         form.body(`§eBounty on this player: $${bounty}`);
+    } else if (panelId === 'myStatsPanel') {
+        const pData = getPlayer(player.id);
+        const rank = getPlayerRank(player, getConfig());
+        if (!pData || !rank) {
+            form.body('§cCould not retrieve your stats.');
+        } else {
+            const statsBody = [
+                `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+                `§fBalance: §a$${pData.balance.toFixed(2)}`,
+                `§fBounty on you: §e$${pData.bounty.toFixed(2)}`
+            ].join('\n');
+            form.body(statsBody);
+        }
+    } else if (panelId === 'helpfulLinksPanel') {
+        const config = getConfig();
+        const linksBody = [
+            '§fHere are some helpful links:',
+            `§9Discord: §r${config.serverInfo.discordLink}`,
+            `§1Website: §r${config.serverInfo.websiteLink}`
+        ].join('\n\n');
+        form.body(linksBody);
     }
 }
 
-function buildPlayerListForm(title, player, panelId) {
+function buildPlayerListForm(title, player, panelId, context) {
     const form = new ActionFormData().title(title);
     const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
+    const ITEMS_PER_PAGE = 8;
+    const page = context.page || 0;
+    const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
+    const startIndex = page * ITEMS_PER_PAGE;
+    const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
     form.button('§l§8< Back', 'textures/gui/controls/left.png');
-    for (const p of onlinePlayers) {
+
+    if (page > 0) {
+        form.button('§l§8< Previous Page', 'textures/gui/controls/left.png');
+    }
+
+    for (const p of pagePlayers) {
         const rank = getPlayerRank(p, getConfig());
         let displayName = `${rank.chatFormatting?.prefixText ?? ''}${p.name}§r`;
         let icon;
@@ -133,6 +192,12 @@ function buildPlayerListForm(title, player, panelId) {
         if (p.id === player.id) displayName += ' §7(You)§r';
         form.button(displayName, icon);
     }
+
+    if (page < totalPages - 1) {
+        form.button('§l§2Next Page >', 'textures/gui/controls/right.png');
+    }
+
+    form.body(`Page ${page + 1} of ${totalPages}`);
     return form;
 }
 
@@ -242,49 +307,6 @@ uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showMyStats'] = async (player, context) => {
-    const pData = getPlayer(player.id);
-    const rank = getPlayerRank(player, getConfig());
-    if (!pData || !rank) {
-        return player.sendMessage('§cCould not retrieve your stats.');
-    }
-
-    const statsBody = [
-        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
-        `§fBalance: §a$${pData.balance.toFixed(2)}`,
-        `§fBounty on you: §e$${pData.bounty.toFixed(2)}`
-    ].join('\n');
-
-    const form = new ActionFormData()
-        .title('§l§3Your Stats')
-        .body(statsBody)
-        .button('§l§8< Back');
-
-    const response = await uiWait(player, form);
-    if (response && !response.canceled) {
-        showPanel(player, 'mainPanel');
-    }
-};
-
-uiActionFunctions['showHelpfulLinks'] = async (player, context) => {
-    const config = getConfig();
-    const linksBody = [
-        '§fHere are some helpful links:',
-        `§9Discord: §r${config.serverInfo.discordLink}`,
-        `§1Website: §r${config.serverInfo.websiteLink}`
-    ].join('\n\n');
-
-    const form = new ActionFormData()
-        .title('§l§9Helpful Links')
-        .body(linksBody)
-        .button('§l§8< Back');
-
-    const response = await uiWait(player, form);
-    if (response && !response.canceled) {
-        showPanel(player, 'mainPanel');
-    }
-};
-
 uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const targetData = getPlayer(targetPlayer.id);
     if (!targetData || targetData.bounty === 0) return player.sendMessage('§cThis player has no bounty.');
@@ -354,4 +376,40 @@ uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer)
     player.sendMessage(`§aBanned ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${banReason}`);
+});
+
+uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) => {
+    const result = tpaManager.createRequest(player, targetPlayer, 'tpa');
+    if (result.success) {
+        player.sendMessage(`§aTPA request sent to ${targetPlayer.name}.`);
+        targetPlayer.sendMessage(`§a${player.name} has sent you a TPA request. Use !tpaccept or !tpadeny.`);
+    } else {
+        player.sendMessage(`§c${result.message}`);
+    }
+});
+
+uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer) => {
+    const form = new ModalFormData().title(`Pay ${targetPlayer.name}`).textField('Amount', 'Enter amount to pay');
+    const response = await uiWait(player, form);
+    if (!response || response.canceled) return;
+    const [amountStr] = response.formValues;
+    const amount = parseInt(amountStr);
+    if (isNaN(amount) || amount <= 0) return player.sendMessage('§cInvalid amount.');
+    const result = economyManager.transfer(player.id, targetPlayer.id, amount);
+    if (result.success) {
+        player.sendMessage(`§aYou paid ${targetPlayer.name} §e$${amount.toFixed(2)}.`);
+        targetPlayer.sendMessage(`§aYou received §e$${amount.toFixed(2)}§a from ${player.name}.`);
+    } else {
+        player.sendMessage(`§c${result.message}`);
+    }
+});
+
+uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlayer) => {
+    const form = new ModalFormData().title(`Report ${targetPlayer.name}`).textField('Reason', 'Enter reason for report');
+    const response = await uiWait(player, form);
+    if (!response || response.canceled) return;
+    const [reason] = response.formValues;
+    if (!reason) return player.sendMessage('§cYou must provide a reason for the report.');
+    reportManager.createReport(player, targetPlayer, reason);
+    player.sendMessage('§aThank you for your report. An admin will review it shortly.');
 });

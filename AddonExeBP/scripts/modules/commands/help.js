@@ -32,7 +32,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
 
         if (commands.length > 0) {
             commandsShown = true;
-            helpMessage += `\n\n§l${categoryName}§r`;
+            helpMessage += `\n§l${categoryName}§r`;
             for (const cmd of commands) {
                 helpMessage += `\n §b!${cmd.name}§r: ${cmd.description}`;
             }
