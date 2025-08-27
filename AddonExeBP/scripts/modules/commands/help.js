@@ -29,7 +29,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
         '§cModeration',
         '§aGeneral',
         '§eEconomy System',
-        '§bTPA System',
+        '§dTPA System',
         '§2Home System'
     ];
 

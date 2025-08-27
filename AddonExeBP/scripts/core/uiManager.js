@@ -18,13 +18,16 @@ const uiActionFunctions = {};
 export async function showPanel(player, panelId, context = {}) {
     try {
         debugLog(`[UIManager] Showing panel '${panelId}' to ${player.name}`);
-        const form = await buildPanelForm(player, panelId, context);
-        if (!form) return;
+        const result = await buildPanelForm(player, panelId, context);
+        if (!result) return;
+
+        const form = result.form || result;
+        const pageItems = result.pageItems;
 
         const response = await uiWait(player, form);
         if (!response || response.canceled) return;
 
-        await handleFormResponse(player, panelId, response, context);
+        await handleFormResponse(player, panelId, response, context, pageItems);
     } catch (e) {
         console.error(`[UIManager] showPanel failed for panel '${panelId}': ${e.stack}`);
     }
@@ -60,44 +63,30 @@ async function buildPanelForm(player, panelId, context) {
 }
 
 // Processes the response from a submitted form.
-async function handleFormResponse(player, panelId, response, context) {
+async function handleFormResponse(player, panelId, response, context, pageItems) {
     const pData = getPlayer(player.id);
     if (!pData) return;
 
     if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel') {
-        const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
-        const ITEMS_PER_PAGE = 8;
         const page = context.page || 0;
-        const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
-        let selection = response.selection;
+        const selectedItem = pageItems[response.selection];
 
-        if (selection === 0) { // Back button
+        if (!selectedItem) return;
+
+        if (selectedItem.id === '__back__') {
             return showPanel(player, 'mainPanel', context);
         }
-        selection--; // Adjust selection index because of the back button
-
-        if (page > 0) {
-            if (selection === 0) { // Previous Page button
-                return showPanel(player, panelId, { ...context, page: page - 1 });
-            }
-            selection--; // Adjust selection index because of the previous button
+        if (selectedItem.id === '__prev__') {
+            return showPanel(player, panelId, { ...context, page: page - 1 });
+        }
+        if (selectedItem.id === '__next__') {
+            return showPanel(player, panelId, { ...context, page: page + 1 });
         }
 
-        const startIndex = page * ITEMS_PER_PAGE;
-        const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-        if (selection < pagePlayers.length) {
-            const selectedPlayer = pagePlayers[selection];
-            if (selectedPlayer) {
-                const nextPanel = panelId === 'playerListPanel' ? 'playerManagementPanel' : 'publicPlayerActionsPanel';
-                return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
-            }
-        } else { // Next Page button
-            if (page < totalPages - 1) {
-                return showPanel(player, panelId, { ...context, page: page + 1 });
-            }
-        }
-        return;
+        // If it's not a navigation button, it must be a player
+        const selectedPlayer = selectedItem;
+        const nextPanel = panelId === 'playerListPanel' ? 'playerManagementPanel' : 'publicPlayerActionsPanel';
+        return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
     }
 
     if (panelId === 'bountyListPanel') {
@@ -157,10 +146,16 @@ function buildPlayerListForm(title, player, panelId, context) {
     const startIndex = page * ITEMS_PER_PAGE;
     const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-    form.button('§l§8< Back', 'textures/gui/controls/left.png');
+    const pageItems = [];
+
+    const backButton = { id: '__back__', text: '§l§8< Back', icon: 'textures/gui/controls/left.png' };
+    form.button(backButton.text, backButton.icon);
+    pageItems.push(backButton);
 
     if (page > 0) {
-        form.button('§l§8< Previous Page', 'textures/gui/controls/left.png');
+        const prevButton = { id: '__prev__', text: '§l§8< Previous Page', icon: 'textures/gui/controls/left.png' };
+        form.button(prevButton.text, prevButton.icon);
+        pageItems.push(prevButton);
     }
 
     for (const p of pagePlayers) {
@@ -170,14 +165,17 @@ function buildPlayerListForm(title, player, panelId, context) {
         if (panelId === 'playerListPanel' && rank.name === 'Owner') icon = 'textures/ui/crown_glyph_color';
         if (p.id === player.id) displayName += ' §7(You)§r';
         form.button(displayName, icon);
+        pageItems.push(p);
     }
 
     if (page < totalPages - 1) {
-        form.button('§l§2Next Page >', 'textures/gui/controls/right.png');
+        const nextButton = { id: '__next__', text: '§l§2Next Page >', icon: 'textures/gui/controls/right.png' };
+        form.button(nextButton.text, nextButton.icon);
+        pageItems.push(nextButton);
     }
 
     form.body(`Page ${page + 1} of ${totalPages}`);
-    return form;
+    return { form, pageItems };
 }
 
 function buildBountyListForm(title) {
@@ -378,49 +376,6 @@ uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) =>
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showMyStats'] = async (player, context) => {
-    const pData = getPlayer(player.id);
-    const rank = getPlayerRank(player, getConfig());
-    if (!pData || !rank) {
-        return player.sendMessage('§cCould not retrieve your stats.');
-    }
-
-    const statsBody = [
-        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
-        `§fBalance: §a$${pData.balance.toFixed(2)}`,
-        `§fBounty on you: §e$${pData.bounty.toFixed(2)}`
-    ].join('\n');
-
-    const form = new ActionFormData()
-        .title('§l§3Your Stats')
-        .body(statsBody)
-        .button('§l§8< Back');
-
-    const response = await uiWait(player, form);
-    if (response && !response.canceled) {
-        showPanel(player, 'mainPanel');
-    }
-};
-
-uiActionFunctions['showHelpfulLinks'] = async (player, context) => {
-    const config = getConfig();
-    const linksBody = [
-        '§fHere are some helpful links:',
-        `§9Discord: §r${config.serverInfo.discordLink}`,
-        `§1Website: §r${config.serverInfo.websiteLink}`
-    ].join('\n\n');
-
-    const form = new ActionFormData()
-        .title('§l§9Helpful Links')
-        .body(linksBody)
-        .button('§l§8< Back');
-
-    const response = await uiWait(player, form);
-    if (response && !response.canceled) {
-        showPanel(player, 'mainPanel');
-    }
-};
-
 uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Ban ${targetPlayer.name}`)
         .textField('Duration', 'e.g., 30m, 2h, 7d, perm', 'perm')
@@ -444,6 +399,10 @@ uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer)
 });
 
 uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) => {
+    if (player.id === targetPlayer.id) {
+        player.sendMessage('§cYou cannot send a TPA request to yourself.');
+        return;
+    }
     const result = tpaManager.createRequest(player, targetPlayer, 'tpa');
     if (result.success) {
         player.sendMessage(`§aTPA request sent to ${targetPlayer.name}.`);
@@ -455,7 +414,7 @@ uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) =>
 
 uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer) => {
     if (player.id === targetPlayer.id) {
-        // Silently do nothing as requested
+        player.sendMessage('§cYou cannot pay yourself.');
         return;
     }
     const form = new ModalFormData().title(`Pay ${targetPlayer.name}`).textField('Amount', 'Enter amount to pay');

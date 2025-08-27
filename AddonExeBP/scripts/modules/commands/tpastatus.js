@@ -5,7 +5,7 @@ import { playSound } from '../../core/utils.js';
 commandManager.register({
     name: 'tpastatus',
     description: 'Checks the status of your outgoing and incoming TPA requests.',
-    category: '§bTPA System',
+    category: '§dTPA System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const outgoing = getOutgoingRequest(player);
