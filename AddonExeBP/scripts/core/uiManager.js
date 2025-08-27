@@ -197,8 +197,13 @@ function buildBountyListForm(title) {
 
 function withTargetPlayer(action) {
     return (player, context) => {
+        if (!context || !context.targetPlayer) {
+            player.sendMessage('§cAn error occurred: target player context is missing.');
+            playSoundFromConfig(player, 'commandError');
+            return;
+        }
         const { targetPlayer } = context;
-        if (!targetPlayer || !targetPlayer.isValid()) {
+        if (!targetPlayer.isValid()) {
             player.sendMessage('§cTarget player not found or has logged off.');
             playSoundFromConfig(player, 'commandError');
             return;
