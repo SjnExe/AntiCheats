@@ -5,7 +5,7 @@ import { getConfig } from '../../core/configManager.js';
 commandManager.register({
     name: 'kit',
     description: 'Lists available kits or claims a specific kit.',
-    category: '§bPlayer Utilities',
+    category: '§eEconomy & Kits',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

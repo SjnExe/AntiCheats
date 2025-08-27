@@ -7,7 +7,7 @@ import { playSound } from '../../core/utils.js';
 commandManager.register({
     name: 'kick',
     description: 'Kicks a player from the server.',
-    category: '§6Moderation',
+    category: '§cModeration',
     permissionLevel: 1, // Admins only
     execute: async (player, args) => {
         if (args.length < 1) {

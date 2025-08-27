@@ -6,7 +6,7 @@ import { rankDefinitions } from '../../core/ranksConfig.js';
 commandManager.register({
     name: 'rank',
     description: 'Sets a player\'s rank by adding or removing the associated tag.',
-    category: '§cAdministration',
+    category: '§4Administration',
     permissionLevel: 0, // Owner only for now, for safety.
     execute: (player, args) => {
         const subcommands = ['set', 'remove'];

@@ -6,7 +6,7 @@ commandManager.register({
     name: 'delhome',
     aliases: ['remhome', 'deletehome'],
     description: 'Deletes one of your set homes.',
-    category: '§bPlayer Utilities',
+    category: '§bHomes & TPA',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

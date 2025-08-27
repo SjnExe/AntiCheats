@@ -7,7 +7,7 @@ import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 commandManager.register({
     name: 'home',
     description: 'Teleports you to one of your set homes.',
-    category: '§bPlayer Utilities',
+    category: '§bHomes & TPA',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

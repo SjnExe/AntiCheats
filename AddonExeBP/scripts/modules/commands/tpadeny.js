@@ -6,7 +6,7 @@ commandManager.register({
     name: 'tpadeny',
     aliases: ['tpno'],
     description: 'Denies an incoming TPA request.',
-    category: '§bPlayer Utilities',
+    category: '§bHomes & TPA',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

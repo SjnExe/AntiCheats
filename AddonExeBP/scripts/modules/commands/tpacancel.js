@@ -5,7 +5,7 @@ import { getConfig } from '../../core/configManager.js';
 commandManager.register({
     name: 'tpacancel',
     description: 'Cancels your outgoing TPA request.',
-    category: '§bPlayer Utilities',
+    category: '§bHomes & TPA',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

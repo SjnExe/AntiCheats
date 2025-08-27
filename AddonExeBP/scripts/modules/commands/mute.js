@@ -7,7 +7,7 @@ import { parseDuration, playSound } from '../../core/utils.js';
 commandManager.register({
     name: 'mute',
     description: 'Mutes a player for a specified duration with a reason.',
-    category: '§6Moderation',
+    category: '§cModeration',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {
@@ -82,7 +82,7 @@ commandManager.register({
 commandManager.register({
     name: 'unmute',
     description: 'Unmutes a player.',
-    category: '§6Moderation',
+    category: '§cModeration',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {

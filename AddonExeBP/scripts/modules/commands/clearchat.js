@@ -5,7 +5,7 @@ commandManager.register({
     name: 'clearchat',
     aliases: ['cc'],
     description: 'Clears the chat for all players.',
-    category: 'Admin',
+    category: '§cModeration',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         try {

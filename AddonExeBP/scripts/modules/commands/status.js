@@ -12,7 +12,7 @@ commandManager.register({
             '§l§b--- Server Status ---§r',
             `§eOnline Players: §f${onlinePlayers}`,
             `§eCurrent Tick: §f${system.currentTick}`
-        ].join('[AddonExe]');
+        ].join('\n');
 
         player.sendMessage(statusText);
     }
