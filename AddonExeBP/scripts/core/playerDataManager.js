@@ -22,7 +22,7 @@ import { getConfig } from './configManager.js';
 import { world } from '@minecraft/server';
 import { debugLog } from './logger.js';
 
-const PLAYER_PROPERTY_PREFIX = 'player_';
+const playerPropertyPrefix = 'addonexe:player.';
 
 /**
  * @type {Map<string, PlayerData>}
@@ -41,7 +41,7 @@ export function savePlayerData(playerId) {
     try {
         const playerData = activePlayerData.get(playerId);
         const dataString = JSON.stringify(playerData);
-        world.setDynamicProperty(`${PLAYER_PROPERTY_PREFIX}${playerId}`, dataString);
+        world.setDynamicProperty(`${playerPropertyPrefix}${playerId}`, dataString);
     } catch (e) {
         console.error(`[PlayerDataManager] Failed to save data for player ${playerId}: ${e.stack}`);
     }
@@ -54,7 +54,7 @@ export function savePlayerData(playerId) {
  */
 export function loadPlayerData(playerId) {
     try {
-        const dataString = world.getDynamicProperty(`${PLAYER_PROPERTY_PREFIX}${playerId}`);
+        const dataString = world.getDynamicProperty(`${playerPropertyPrefix}${playerId}`);
         if (dataString && typeof dataString === 'string') {
             const playerData = JSON.parse(dataString);
             activePlayerData.set(playerId, playerData);

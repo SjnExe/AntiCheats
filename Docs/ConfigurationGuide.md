@@ -1,6 +1,6 @@
 # AddonExe: Configuration Guide
 
-This guide provides an overview of how to configure the AddonExe. Proper configuration is key to tailoring the addon's behavior to your server's specific needs.
+This guide provides an overview of how to configure AddonExe. Proper configuration is key to tailoring the addon's behavior to your server's specific needs.
 
 ## ⚙️ Configuration Philosophy
 
@@ -18,7 +18,7 @@ The addon's configuration is split across several files, each with a specific pu
 
 ## 🛠️ Initial Setup & Permissions (CRITICAL)
 
-These are the first crucial steps after installing the addon.
+These are the first crucial steps after installing AddonExe.
 
 ### 1. Set the Server Owner(s)
 This is the most important step for gaining control over the addon.

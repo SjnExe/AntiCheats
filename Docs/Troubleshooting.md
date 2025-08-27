@@ -1,6 +1,6 @@
 # Troubleshooting Guide - AddonExe
 
-This guide helps you resolve common issues you might encounter with the AddonExe. If your issue isn't listed here, or the steps don't help, please consider [reporting an issue](https://github.com/SjnExe/AddonExe/issues) with as much detail as possible.
+This guide helps you resolve common issues you might encounter with AddonExe. If your issue isn't listed here, or the steps don't help, please consider [reporting an issue](https://github.com/SjnExe/AddonExe/issues) with as much detail as possible.
 
 ---
 
@@ -24,7 +24,7 @@ This guide helps you resolve common issues you might encounter with the AddonExe
 - **"Beta APIs" Enabled:** In your World Settings under "Experiments", ensure the **"Beta APIs"** toggle is turned ON. The addon will not work without it.
 - **Correct Files:** Double-check you've downloaded the latest `.mcaddon` file from the official [GitHub Releases](https://github.com/SjnExe/AddonExe/releases) and applied both packs from it.
 
-**Problem: World fails to load or crashes on load after adding the addon.**
+**Problem: World fails to load or crashes on load after adding AddonExe.**
 
 - **Pack Order:** Again, verify `AddonExeBP` is at the top.
 - **Corrupted Download:** Try re-downloading and reapplying the addon.
@@ -99,8 +99,8 @@ This is the most common setup issue. Follow these steps carefully:
 
 - **Restart:** Sometimes, simply restarting your Minecraft client, server, or world can resolve temporary glitches.
 - **Check Minecraft Version:** Ensure your AddonExe version is designed for your current Minecraft Bedrock Edition version. Check the [GitHub Releases](https://github.com/SjnExe/AddonExe/releases) page.
-- **Test with No Other Addons:** To rule out addon conflicts, try running the AddonExe on a test world with *no other Behavior Packs or Resource Packs* applied. If it works fine, then another addon is likely causing the issue. You can then add your other addons back one by one to find the culprit.
-- **Check for Updates:** Make sure you are using the latest version of the AddonExe.
+- **Test with No Other Addons:** To rule out addon conflicts, try running AddonExe on a test world with *no other Behavior Packs or Resource Packs* applied. If it works fine, then another addon is likely causing the issue. You can then add your other addons back one by one to find the culprit.
+- **Check for Updates:** Make sure you are using the latest version of AddonExe.
 
 ---
 
@@ -108,7 +108,7 @@ This is the most common setup issue. Follow these steps carefully:
 
 If you've tried these steps and are still facing issues, please help us by reporting the bug. The more information you provide, the faster we can help.
 
-- **AntiCheat Addon Version:** Specify the version you are using (e.g., v1.2.0).
+- **AddonExe Version:** Specify the version you are using (e.g., v1.2.0).
 - **Minecraft Version:** Specify your Minecraft Bedrock version (e.g., 1.20.80).
 - **Clear Description:** What is the problem? What did you expect to happen?
 - **Steps to Reproduce:** Provide a clear, step-by-step list of actions to trigger the bug.
@@ -121,4 +121,4 @@ If you've tried these steps and are still facing issues, please help us by repor
 
 ---
 
-Thank you for using the AddonExe!
+Thank you for using AddonExe!
