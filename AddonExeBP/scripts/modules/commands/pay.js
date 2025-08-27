@@ -23,7 +23,7 @@ commandManager.register({
             return player.sendMessage(`§cPlayer '${args[0]}' not found.`);
         }
         if (targetPlayer.id === player.id) {
-            return player.sendMessage('§cYou cannot pay yourself.');
+            return;
         }
 
         const amount = parseFloat(args[1]);
