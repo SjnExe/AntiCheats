@@ -1,4 +1,5 @@
 import { system } from '@minecraft/server';
+import { getConfig } from './configManager.js';
 
 /**
  * Parses a duration string (e.g., "10m", "2h", "7d") and returns the duration in milliseconds.
@@ -75,4 +76,24 @@ export async function uiWait(player, form) {
     }
 
     return undefined; // Timeout
+}
+
+/**
+ * Plays a configured sound for a player if it's enabled in the config.
+ * @param {import('@minecraft/server').Player} player The player to play the sound for.
+ * @param {keyof import('../config.js').config.soundEvents} soundEventKey The key of the sound event in the config.
+ */
+export function playSoundFromConfig(player, soundEventKey) {
+    try {
+        const config = getConfig();
+        const soundEvent = config.soundEvents?.[soundEventKey];
+        if (soundEvent && soundEvent.enabled) {
+            player.playSound(soundEvent.soundId, {
+                volume: soundEvent.volume,
+                pitch: soundEvent.pitch
+            });
+        }
+    } catch (e) {
+        console.error(`Failed to play sound from config for key "${soundEventKey}": ${e}`);
+    }
 }

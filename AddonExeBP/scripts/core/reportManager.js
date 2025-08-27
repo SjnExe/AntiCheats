@@ -1,3 +1,9 @@
+import { world, system } from '@minecraft/server';
+import { debugLog } from './logger.js';
+
+const reportsDbKey = 'addonexe:reports';
+const saveIntervalTicks = 6000; // Every 5 minutes
+
 /**
  * @typedef {object} Report
  * @property {string} id - A unique ID for the report.
@@ -11,10 +17,40 @@
  * @property {number} timestamp - The timestamp when the report was created.
  */
 
+/** @type {Report[]} */
+let reports = [];
+let needsSave = false;
+
 /**
- * @type {Report[]}
+ * Loads reports from world dynamic properties.
  */
-const reports = [];
+export function loadReports() {
+    debugLog('[ReportManager] Loading reports...');
+    const dataStr = world.getDynamicProperty(reportsDbKey);
+    if (dataStr) {
+        try {
+            reports = JSON.parse(dataStr);
+            debugLog(`[ReportManager] Loaded ${reports.length} reports.`);
+        } catch (e) {
+            console.error('[ReportManager] Failed to parse report data from world property.', e);
+            reports = [];
+        }
+    }
+}
+
+/**
+ * Saves reports to world dynamic properties if a change has occurred.
+ */
+function saveReports() {
+    if (!needsSave) return;
+    try {
+        world.setDynamicProperty(reportsDbKey, JSON.stringify(reports));
+        needsSave = false;
+        debugLog('[ReportManager] Saved reports to world properties.');
+    } catch (e) {
+        console.error('[ReportManager] Failed to save reports.', e);
+    }
+}
 
 /**
  * Creates a new report and adds it to the list.
@@ -35,6 +71,7 @@ export function createReport(reporter, reportedPlayer, reason) {
         timestamp: Date.now()
     };
     reports.push(report);
+    needsSave = true;
 }
 
 /**
@@ -55,6 +92,7 @@ export function assignReport(reportId, adminId) {
     if (report) {
         report.status = 'assigned';
         report.assignedAdminId = adminId;
+        needsSave = true;
     }
 }
 
@@ -66,6 +104,7 @@ export function resolveReport(reportId) {
     const report = reports.find(r => r.id === reportId);
     if (report) {
         report.status = 'resolved';
+        needsSave = true;
     }
 }
 
@@ -77,6 +116,7 @@ export function clearReport(reportId) {
     const index = reports.findIndex(r => r.id === reportId);
     if (index !== -1) {
         reports.splice(index, 1);
+        needsSave = true;
     }
 }
 
@@ -84,5 +124,11 @@ export function clearReport(reportId) {
  * Clears all reports from the list.
  */
 export function clearAllReports() {
-    reports.length = 0;
+    if (reports.length > 0) {
+        reports.length = 0;
+        needsSave = true;
+    }
 }
+
+// Periodically save reports to the world
+system.runInterval(saveReports, saveIntervalTicks);

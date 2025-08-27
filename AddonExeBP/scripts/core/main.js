@@ -4,9 +4,12 @@ import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
 import { getPunishment, loadPunishments } from './punishmentManager.js';
+import { loadReports } from './reportManager.js';
+import { loadCooldowns } from './cooldownManager.js';
 import { clearExpiredPayments } from './economyManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
+import * as playerCache from './playerCache.js';
 
 /**
  * Checks a player's gamemode and corrects it if they are in creative without permission.
@@ -27,7 +30,7 @@ function checkPlayerGamemode(player) {
 // This function will contain the main logic of the addon that runs continuously.
 function mainTick() {
     // Rank update check
-    for (const player of world.getAllPlayers()) {
+    for (const player of playerCache.getAllPlayersFromCache()) {
         const pData = playerDataManager.getPlayer(player.id);
         if (!pData) continue;
 
@@ -45,9 +48,15 @@ function mainTick() {
 // Run the initialization logic on the next tick after the script is loaded.
 system.run(() => {
     loadConfig();
+    // Initial population of the player cache
+    for (const player of world.getAllPlayers()) {
+        playerCache.addPlayerToCache(player);
+    }
     playerDataManager.loadAllOnlinePlayerData();
     debugLog('[AddonExe] Initializing addon...');
     loadPunishments();
+    loadReports();
+    loadCooldowns();
     rankManager.initialize();
 
     const config = getConfig();
@@ -70,7 +79,7 @@ system.run(() => {
             // Run periodic check
             if (config.creativeDetection.periodicCheck.enabled) {
                 system.runInterval(() => {
-                    for (const player of world.getAllPlayers()) {
+                    for (const player of playerCache.getAllPlayersFromCache()) {
                         checkPlayerGamemode(player);
                     }
                 }, config.creativeDetection.periodicCheck.intervalSeconds * 20);
@@ -125,6 +134,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
 
 world.afterEvents.playerSpawn.subscribe(async (event) => {
     const { player, initialSpawn } = event;
+    playerCache.addPlayerToCache(player);
 
     // Ban check
     const punishment = getPunishment(player.id);
@@ -158,6 +168,7 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
 
 world.afterEvents.playerLeave.subscribe((event) => {
     playerDataManager.handlePlayerLeave(event.playerId);
+    playerCache.removePlayerFromCache(event.playerId);
     debugLog(`[AddonExe] Player ${event.playerName} left.`);
 });
 
@@ -185,7 +196,7 @@ world.afterEvents.blockBreak?.subscribe((event) => {
         const pData = playerDataManager.getPlayer(player.id);
         if (!pData) return;
 
-        const onlineAdmins = world.getAllPlayers().filter(p => {
+        const onlineAdmins = playerCache.getAllPlayersFromCache().filter(p => {
             const adminPData = playerDataManager.getPlayer(p.id);
             return adminPData && adminPData.permissionLevel <= 1 && adminPData.xrayNotifications;
         });
