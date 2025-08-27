@@ -25,7 +25,7 @@
  */
 export const panelDefinitions = {
     mainPanel: {
-        title: '§l§bPanel§r',
+        title: '§l§3Panel§r',
         parentPanelId: null,
         items: [
             {
@@ -38,7 +38,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'publicPlayerList',
-                text: '§aView Players',
+                text: '§2View Players',
                 icon: 'textures/ui/icon_multiplayer',
                 permissionLevel: 1024,
                 actionType: 'openPanel',
@@ -54,8 +54,8 @@ export const panelDefinitions = {
             },
             {
                 id: 'bountyList',
-                text: '§6Bounty List',
-                icon: 'textures/items/skull_wither.png',
+                text: '§cBounty List',
+                icon: 'textures/items/netherite_sword.png',
                 permissionLevel: 1024,
                 actionType: 'openPanel',
                 actionValue: 'bountyListPanel'
@@ -70,7 +70,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'myStats',
-                text: '§bMy Stats',
+                text: '§3My Stats',
                 icon: 'textures/ui/profile_glyph_color.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
@@ -87,7 +87,7 @@ export const panelDefinitions = {
         ]
     },
     publicPlayerListPanel: {
-        title: '§l§aOnline Players§r',
+        title: '§l§2Online Players§r',
         parentPanelId: 'mainPanel',
         items: [] // This will be populated dynamically by uiManager
     },
@@ -102,7 +102,7 @@ export const panelDefinitions = {
         items: [
             {
                 id: 'teleportToPlayer',
-                text: '§aTeleport to Player',
+                text: '§7Teleport to Player',
                 icon: 'textures/ui/flyingascend.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
@@ -110,7 +110,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'teleportPlayerHere',
-                text: '§aTeleport Player Here',
+                text: '§7Teleport Player Here',
                 icon: 'textures/ui/flyingdescend.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
@@ -134,7 +134,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'unmutePlayer',
-                text: '§aUnmute Player',
+                text: '§2Unmute Player',
                 icon: 'textures/ui/mute_off.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
@@ -142,7 +142,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'kickPlayer',
-                text: '§6Kick Player',
+                text: '§cKick Player',
                 icon: 'textures/ui/icon_import.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
@@ -167,12 +167,12 @@ export const panelDefinitions = {
         ]
     },
     publicPlayerActionsPanel: {
-        title: '§l§aActions for {playerName}§r',
+        title: '§l§2Actions for {playerName}§r',
         parentPanelId: 'publicPlayerListPanel',
         items: [
             {
                 id: 'sendTpaRequest',
-                text: '§bSend TPA Request',
+                text: '§3Send TPA Request',
                 icon: 'textures/ui/upload_glyph_color',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
@@ -180,7 +180,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'payPlayer',
-                text: '§aPay Player',
+                text: '§2Pay Player',
                 icon: 'textures/items/emerald.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
@@ -188,7 +188,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'setBounty',
-                text: '§6Set Bounty',
+                text: '§cSet Bounty',
                 icon: 'textures/items/iron_sword.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
@@ -196,7 +196,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'reduceBounty',
-                text: '§6Reduce Bounty',
+                text: '§cReduce Bounty',
                 icon: 'textures/items/gold_ingot.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
@@ -213,12 +213,12 @@ export const panelDefinitions = {
         ]
     },
     bountyActionsPanel: {
-        title: '§l§6Bounty Actions for {playerName}§r',
+        title: '§l§cBounty Actions for {playerName}§r',
         parentPanelId: 'bountyListPanel',
         items: [
             {
                 id: 'addBounty',
-                text: '§6Add to Bounty',
+                text: '§cAdd to Bounty',
                 icon: 'textures/items/iron_sword.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
@@ -226,7 +226,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'reduceBountyFromList',
-                text: '§6Reduce Bounty',
+                text: '§cReduce Bounty',
                 icon: 'textures/items/gold_ingot.png',
                 permissionLevel: 1024,
                 actionType: 'functionCall',
@@ -253,7 +253,7 @@ export const panelDefinitions = {
             },
             {
                 id: 'resolveReport',
-                text: '§aMark as Resolved',
+                text: '§2Mark as Resolved',
                 icon: 'textures/ui/check.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
@@ -270,7 +270,7 @@ export const panelDefinitions = {
         ]
     },
     bountyListPanel: {
-        title: '§l§6Bounty List§r',
+        title: '§l§cBounty List§r',
         parentPanelId: 'mainPanel',
         items: [] // This will be populated dynamically by uiManager
     }

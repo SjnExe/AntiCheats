@@ -1,6 +1,6 @@
 # AddonExe: Features Overview
 
-This document provides a detailed breakdown of the features available in the AddonExe. For in-depth configuration of these features, please refer to the [Configuration Guide](ConfigurationGuide.md) and for command usage, see the [Commands List](Commands.md).
+This document provides a detailed breakdown of the features available in AddonExe. For in-depth configuration of these features, please refer to the [Configuration Guide](ConfigurationGuide.md) and for command usage, see the [Commands List](Commands.md).
 
 > [!NOTE]
 > **This addon is currently a powerful moderation and server utility tool.**

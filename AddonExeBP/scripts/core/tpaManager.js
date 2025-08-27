@@ -1,5 +1,6 @@
-import { system, world } from '@minecraft/server';
+import { system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
+import { getPlayerFromCache } from './playerCache.js';
 
 /**
  * @typedef {'tpa' | 'tpahere'} TpaRequestType
@@ -106,10 +107,8 @@ export function acceptRequest(player) {
         return;
     }
 
-    // This is a bit of a hack to get the player objects back from the IDs
-    // In a real scenario, you'd want to handle players logging off.
-    const sourcePlayer = [...world.getPlayers()].find(p => p.id === request.sourcePlayerId);
-    const targetPlayer = [...world.getPlayers()].find(p => p.id === request.targetPlayerId);
+    const sourcePlayer = getPlayerFromCache(request.sourcePlayerId);
+    const targetPlayer = getPlayerFromCache(request.targetPlayerId);
 
     if (!sourcePlayer || !targetPlayer) {
         player.sendMessage('§cThe other player could not be found. They may have logged off.');
@@ -119,11 +118,13 @@ export function acceptRequest(player) {
 
     const config = getConfig();
     const warmupSeconds = config.tpa.teleportWarmupSeconds;
+    const initialSourceLoc = sourcePlayer.location;
+    const initialTargetLoc = targetPlayer.location;
 
     const teleportLogic = () => {
         // Re-fetch players in case they logged off during warmup
-        const freshSource = [...world.getPlayers()].find(p => p.id === request.sourcePlayerId);
-        const freshTarget = [...world.getPlayers()].find(p => p.id === request.targetPlayerId);
+        const freshSource = getPlayerFromCache(request.sourcePlayerId);
+        const freshTarget = getPlayerFromCache(request.targetPlayerId);
 
         if (!freshSource || !freshTarget) {
             player.sendMessage('§cThe other player logged off during the teleport warmup.');
@@ -131,6 +132,26 @@ export function acceptRequest(player) {
             if (freshTarget) freshTarget.sendMessage('§cThe other player logged off during the teleport warmup.');
             return; // Don't clear the request, it will expire naturally
         }
+
+        // Check if either player moved
+        const sourceMoved = Math.sqrt(
+            Math.pow(freshSource.location.x - initialSourceLoc.x, 2) +
+            Math.pow(freshSource.location.y - initialSourceLoc.y, 2) +
+            Math.pow(freshSource.location.z - initialSourceLoc.z, 2)
+        ) > 1;
+        const targetMoved = Math.sqrt(
+            Math.pow(freshTarget.location.x - initialTargetLoc.x, 2) +
+            Math.pow(freshTarget.location.y - initialTargetLoc.y, 2) +
+            Math.pow(freshTarget.location.z - initialTargetLoc.z, 2)
+        ) > 1;
+
+        if (sourceMoved || targetMoved) {
+            freshSource.sendMessage('§cTeleport canceled because one of you moved.');
+            freshTarget.sendMessage('§cTeleport canceled because one of you moved.');
+            clearRequest(request);
+            return;
+        }
+
 
         if (request.type === 'tpa') {
             // Source teleports to Target
@@ -165,7 +186,7 @@ export function denyRequest(player) {
         player.sendMessage('§cYou have no incoming TPA requests.');
         return;
     }
-    const sourcePlayer = [...world.getPlayers()].find(p => p.id === request.sourcePlayerId);
+    const sourcePlayer = getPlayerFromCache(request.sourcePlayerId);
     if (sourcePlayer) {
         sourcePlayer.sendMessage(`§c${player.name} has denied your TPA request.`);
     }
@@ -183,7 +204,7 @@ export function cancelRequest(player) {
         player.sendMessage('§cYou have no outgoing TPA requests.');
         return;
     }
-    const targetPlayer = [...world.getPlayers()].find(p => p.id === request.targetPlayerId);
+    const targetPlayer = getPlayerFromCache(request.targetPlayerId);
     if (targetPlayer) {
         targetPlayer.sendMessage(`§c${player.name} has canceled their TPA request.`);
     }

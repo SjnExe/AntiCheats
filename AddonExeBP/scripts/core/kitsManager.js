@@ -1,5 +1,5 @@
 import { ItemStack } from '@minecraft/server';
-import { getPlayer } from './playerDataManager.js';
+import { getPlayer, savePlayerData } from './playerDataManager.js';
 import { kits } from './kitsConfig.js';
 
 /**
@@ -90,6 +90,7 @@ export function giveKit(player, kitName) {
         // Set the new cooldown
         const now = Date.now();
         pData.kitCooldowns[lowerCaseKitName] = now + kit.cooldownSeconds * 1000;
+        savePlayerData(player.id);
 
         return { success: true, message: `You have received the '${kitName}' kit.` };
     } catch (e) {

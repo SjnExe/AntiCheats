@@ -1,12 +1,14 @@
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer, savePlayerData } from './playerDataManager.js';
-import { world } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
+import { getAllPlayersFromCache } from './playerCache.js';
 import { getPlayerRank } from './rankManager.js';
-import { uiWait } from './utils.js';
+import { uiWait, parseDuration, playSoundFromConfig } from './utils.js';
 import * as economyManager from './economyManager.js';
+import * as punishmentManager from './punishmentManager.js';
+import { world } from '@minecraft/server';
 
 const uiActionFunctions = {};
 
@@ -62,7 +64,7 @@ async function handleFormResponse(player, panelId, response, context) {
 
     if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel') {
         if (response.selection === 0) return showPanel(player, 'mainPanel', context);
-        const playerList = world.getAllPlayers().sort((a, b) => a.name.localeCompare(b.name));
+        const playerList = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
         const selectedPlayer = playerList[response.selection - 1];
         if (selectedPlayer) {
             const nextPanel = panelId === 'playerListPanel' ? 'playerManagementPanel' : 'publicPlayerActionsPanel';
@@ -73,7 +75,7 @@ async function handleFormResponse(player, panelId, response, context) {
 
     if (panelId === 'bountyListPanel') {
         if (response.selection === 0) return showPanel(player, 'mainPanel');
-        const playersWithBounty = world.getAllPlayers().map(p => ({ player: p, data: getPlayer(p.id) })).filter(pInfo => pInfo.data && pInfo.data.bounty > 0).sort((a, b) => b.data.bounty - a.data.bounty);
+        const playersWithBounty = getAllPlayersFromCache().map(p => ({ player: p, data: getPlayer(p.id) })).filter(pInfo => pInfo.data && pInfo.data.bounty > 0).sort((a, b) => b.data.bounty - a.data.bounty);
         const selectedBountyPlayer = playersWithBounty[response.selection - 1]?.player;
         if (selectedBountyPlayer) {
             return showPanel(player, 'bountyActionsPanel', { ...context, targetPlayer: selectedBountyPlayer });
@@ -121,7 +123,7 @@ function addPanelBody(form, panelId, context) {
 
 function buildPlayerListForm(title, player, panelId) {
     const form = new ActionFormData().title(title);
-    const onlinePlayers = world.getAllPlayers().sort((a, b) => a.name.localeCompare(b.name));
+    const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
     form.button('§l§8< Back', 'textures/gui/controls/left.png');
     for (const p of onlinePlayers) {
         const rank = getPlayerRank(p, getConfig());
@@ -136,7 +138,7 @@ function buildPlayerListForm(title, player, panelId) {
 
 function buildBountyListForm(title) {
     const form = new ActionFormData().title(title);
-    const playersWithBounty = world.getAllPlayers().map(p => ({ player: p, data: getPlayer(p.id) })).filter(pInfo => pInfo.data && pInfo.data.bounty > 0);
+    const playersWithBounty = getAllPlayersFromCache().map(p => ({ player: p, data: getPlayer(p.id) })).filter(pInfo => pInfo.data && pInfo.data.bounty > 0);
     form.button('§l§8< Back', 'textures/gui/controls/left.png');
     if (playersWithBounty.length === 0) {
         form.body('§cThere are no active bounties.');
@@ -150,9 +152,41 @@ function buildBountyListForm(title) {
 }
 
 // --- UI Action Functions ---
-uiActionFunctions['showBountyForm'] = async (player, context) => {
-    const targetPlayer = context.targetPlayer;
-    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+
+function withTargetPlayer(action) {
+    return (player, context) => {
+        const { targetPlayer } = context;
+        if (!targetPlayer || !targetPlayer.isValid()) {
+            player.sendMessage('§cTarget player not found or has logged off.');
+            playSoundFromConfig(player, 'commandError');
+            return;
+        }
+        return action(player, targetPlayer, context);
+    };
+}
+
+uiActionFunctions['showRules'] = async (player, context) => {
+    const config = getConfig();
+    const rulesForm = new ActionFormData()
+        .title('§l§eServer Rules')
+        .body(config.serverInfo.rules.join('\n'))
+        .button('§l§8Close');
+    await uiWait(player, rulesForm);
+};
+
+uiActionFunctions['teleportTo'] = withTargetPlayer((player, targetPlayer) => {
+    player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
+    player.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
+    playSoundFromConfig(player, 'adminNotificationReceived');
+});
+
+uiActionFunctions['teleportHere'] = withTargetPlayer((player, targetPlayer) => {
+    targetPlayer.teleport(player.location, { dimension: player.dimension });
+    player.sendMessage(`§aTeleported ${targetPlayer.name} to you.`);
+    playSoundFromConfig(player, 'adminNotificationReceived');
+});
+
+uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlayer, context) => {
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
@@ -174,12 +208,41 @@ uiActionFunctions['showBountyForm'] = async (player, context) => {
         world.sendMessage(`§cSomeone has placed a bounty of §e$${amount.toFixed(2)}§c on ${targetPlayer.name}!`);
     } else {
         player.sendMessage('§cFailed to place bounty.');
+        playSoundFromConfig(player, 'commandError');
     }
-};
+});
 
-uiActionFunctions['showReduceBountyForm'] = async (player, context) => {
-    const targetPlayer = context.targetPlayer;
-    if (!targetPlayer) return player.sendMessage('§cTarget player not found.');
+uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
+    const config = getConfig();
+    const frozenTag = config.playerTags.frozen;
+    if (targetPlayer.hasTag(frozenTag)) {
+        targetPlayer.removeTag(frozenTag);
+        player.sendMessage(`§aUnfroze ${targetPlayer.name}.`);
+    } else {
+        targetPlayer.addTag(frozenTag);
+        player.sendMessage(`§eFroze ${targetPlayer.name}.`);
+    }
+    playSoundFromConfig(player, 'adminNotificationReceived');
+});
+
+uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) => {
+    const inventory = targetPlayer.getComponent('minecraft:inventory').container;
+    inventory.clearAll();
+    player.sendMessage(`§aCleared inventory for ${targetPlayer.name}.`);
+    playSoundFromConfig(player, 'adminNotificationReceived');
+});
+
+uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer) => {
+    const form = new ModalFormData().title(`Kick ${targetPlayer.name}`).textField('Reason', 'Enter kick reason (optional)');
+    const response = await uiWait(player, form);
+    if (!response || response.canceled) return;
+    const [reason] = response.formValues;
+    targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${reason || 'Kicked by an admin.'}`);
+    player.sendMessage(`§aKicked ${targetPlayer.name}.`);
+    playSoundFromConfig(player, 'adminNotificationReceived');
+});
+
+uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const targetData = getPlayer(targetPlayer.id);
     if (!targetData || targetData.bounty === 0) return player.sendMessage('§cThis player has no bounty.');
     const form = new ModalFormData().title(`Reduce Bounty on ${targetPlayer.name}`).textField('Amount', `Max: $${targetData.bounty.toFixed(2)}`);
@@ -198,5 +261,54 @@ uiActionFunctions['showReduceBountyForm'] = async (player, context) => {
         player.sendMessage(`§aYou reduced the bounty on ${targetPlayer.name} by §e$${amount.toFixed(2)}.`);
     } else {
         player.sendMessage('§cFailed to reduce bounty.');
+        playSoundFromConfig(player, 'commandError');
     }
-};
+});
+
+uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
+    const form = new ModalFormData().title(`Mute ${targetPlayer.name}`)
+        .textField('Duration', 'e.g., 30m, 2h, 7d, perm', 'perm')
+        .textField('Reason', 'Enter mute reason (optional)');
+    const response = await uiWait(player, form);
+    if (!response || response.canceled) return;
+    const [durationStr, reason] = response.formValues;
+    const durationMs = durationStr === 'perm' ? Infinity : parseDuration(durationStr);
+    if (durationMs === 0 && durationStr !== 'perm') return player.sendMessage('§cInvalid duration format.');
+
+    punishmentManager.addPunishment(targetPlayer.id, {
+        type: 'mute',
+        expires: durationMs === Infinity ? Infinity : Date.now() + durationMs,
+        reason: reason || 'Muted by an admin.'
+    });
+
+    player.sendMessage(`§aMuted ${targetPlayer.name}.`);
+    playSoundFromConfig(player, 'adminNotificationReceived');
+});
+
+uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) => {
+    punishmentManager.removePunishment(targetPlayer.id);
+    player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
+    playSoundFromConfig(player, 'adminNotificationReceived');
+});
+
+uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
+    const form = new ModalFormData().title(`Ban ${targetPlayer.name}`)
+        .textField('Duration', 'e.g., 30m, 2h, 7d, perm', 'perm')
+        .textField('Reason', 'Enter ban reason (optional)');
+    const response = await uiWait(player, form);
+    if (!response || response.canceled) return;
+    const [durationStr, reason] = response.formValues;
+    const durationMs = durationStr === 'perm' ? Infinity : parseDuration(durationStr);
+    if (durationMs === 0 && durationStr !== 'perm') return player.sendMessage('§cInvalid duration format.');
+
+    const banReason = reason || 'Banned by an admin.';
+    punishmentManager.addPunishment(targetPlayer.id, {
+        type: 'ban',
+        expires: durationMs === Infinity ? Infinity : Date.now() + durationMs,
+        reason: banReason
+    });
+
+    player.sendMessage(`§aBanned ${targetPlayer.name}.`);
+    playSoundFromConfig(player, 'adminNotificationReceived');
+    targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${banReason}`);
+});

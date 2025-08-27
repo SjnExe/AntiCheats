@@ -1,4 +1,4 @@
-import { getPlayer } from './playerDataManager.js';
+import { getPlayer, savePlayerData } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 
 /**
@@ -31,6 +31,7 @@ export function setHome(player, homeName) {
         dimensionId: player.dimension.id
     };
 
+    savePlayerData(player.id);
     return { success: true, message: `Home '${homeName}' has been set.` };
 }
 
@@ -63,6 +64,7 @@ export function deleteHome(player, homeName) {
     }
 
     delete pData.homes[homeName.toLowerCase()];
+    savePlayerData(player.id);
     return { success: true, message: `Home '${homeName}' has been deleted.` };
 }
 
