@@ -113,7 +113,7 @@ function addPanelBody(form, panelId, context) {
         const { targetPlayer } = context;
         const targetPData = getPlayer(targetPlayer.id);
         const rank = getPlayerRank(targetPlayer, getConfig());
-        form.body([`§fName: §e${targetPlayer.name}`, `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`, `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`, `§fBounty: §e$${targetPData?.bounty?.toFixed(2) ?? '0.00'}`].join('[AddonExe][AddonExe]'));
+        form.body([`§fName: §e${targetPlayer.name}`, `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`, `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`, `§fBounty: §e$${targetPData?.bounty?.toFixed(2) ?? '0.00'}`].join('\n'));
     } else if (panelId === 'publicPlayerActionsPanel' && context.targetPlayer) {
         const targetPData = getPlayer(context.targetPlayer.id);
         const bounty = targetPData?.bounty?.toFixed(2) ?? '0.00';
@@ -145,7 +145,7 @@ function buildBountyListForm(title) {
     } else {
         playersWithBounty.sort((a, b) => b.data.bounty - a.data.bounty);
         for (const { player, data } of playersWithBounty) {
-            form.button(`${player.name}[AddonExe]§c$${data.bounty.toFixed(2)}`);
+            form.button(`${player.name}\n§c$${data.bounty.toFixed(2)}`);
         }
     }
     return form;
@@ -241,6 +241,49 @@ uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer
     player.sendMessage(`§aKicked ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
+
+uiActionFunctions['showMyStats'] = async (player, context) => {
+    const pData = getPlayer(player.id);
+    const rank = getPlayerRank(player, getConfig());
+    if (!pData || !rank) {
+        return player.sendMessage('§cCould not retrieve your stats.');
+    }
+
+    const statsBody = [
+        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
+        `§fBalance: §a$${pData.balance.toFixed(2)}`,
+        `§fBounty on you: §e$${pData.bounty.toFixed(2)}`
+    ].join('\n');
+
+    const form = new ActionFormData()
+        .title('§l§3Your Stats')
+        .body(statsBody)
+        .button('§l§8< Back');
+
+    const response = await uiWait(player, form);
+    if (response && !response.canceled) {
+        showPanel(player, 'mainPanel');
+    }
+};
+
+uiActionFunctions['showHelpfulLinks'] = async (player, context) => {
+    const config = getConfig();
+    const linksBody = [
+        '§fHere are some helpful links:',
+        `§9Discord: §r${config.serverInfo.discordLink}`,
+        `§1Website: §r${config.serverInfo.websiteLink}`
+    ].join('\n\n');
+
+    const form = new ActionFormData()
+        .title('§l§9Helpful Links')
+        .body(linksBody)
+        .button('§l§8< Back');
+
+    const response = await uiWait(player, form);
+    if (response && !response.canceled) {
+        showPanel(player, 'mainPanel');
+    }
+};
 
 uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const targetData = getPlayer(targetPlayer.id);
