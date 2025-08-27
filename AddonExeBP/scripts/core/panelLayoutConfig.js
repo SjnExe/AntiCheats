@@ -55,7 +55,7 @@ export const panelDefinitions = {
             {
                 id: 'bountyList',
                 text: '§cBounty List',
-                icon: 'textures/items/netherite_sword.png',
+                icon: 'textures/items/iron_sword.png',
                 permissionLevel: 1024,
                 actionType: 'openPanel',
                 actionValue: 'bountyListPanel'
