@@ -72,6 +72,7 @@ export function createReport(reporter, reportedPlayer, reason) {
     };
     reports.push(report);
     needsSave = true;
+    saveReports(); // Save immediately
 }
 
 /**

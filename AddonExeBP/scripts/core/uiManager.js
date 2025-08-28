@@ -58,11 +58,11 @@ async function buildPanelForm(player, panelId, context) {
         title = config.serverName || panelDef.title;
     }
 
-    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'bountyListPanel') {
+    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'bountyListPanel' || panelId === 'reportListPanel') {
         debugLog(`[UIManager] Building dynamic list form for panel '${panelId}'.`);
-        // These are special cases that build their own forms
         if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel') return buildPlayerListForm(title, player, panelId, context);
         if (panelId === 'bountyListPanel') return buildBountyListForm(title);
+        if (panelId === 'reportListPanel') return buildReportListForm(title);
     }
 
     const form = new ActionFormData().title(title);
@@ -91,14 +91,14 @@ async function handleFormResponse(player, panelId, response, context) {
         const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
         let selection = response.selection;
 
-        if (selection === 0) { // Back button
+        if (selection === 0) {
             debugLog(`[UIManager] Player ${player.name} selected 'Back' from player list.`);
             return showPanel(player, 'mainPanel', context);
         }
         selection--;
 
         if (page > 0) {
-            if (selection === 0) { // Previous Page button
+            if (selection === 0) {
                 debugLog(`[UIManager] Player ${player.name} selected 'Previous Page' from player list.`);
                 return showPanel(player, panelId, { ...context, page: page - 1 });
             }
@@ -131,6 +131,17 @@ async function handleFormResponse(player, panelId, response, context) {
         if (selectedBountyPlayer) {
             debugLog(`[UIManager] Player ${player.name} selected bounty player ${selectedBountyPlayer.name}.`);
             return showPanel(player, 'bountyActionsPanel', { ...context, targetPlayer: selectedBountyPlayer });
+        }
+        return;
+    }
+
+    if (panelId === 'reportListPanel') {
+        if (response.selection === 0) return showPanel(player, 'mainPanel');
+        const reports = reportManager.getAllReports().filter(r => r.status === 'open' || r.status === 'assigned').sort((a, b) => a.timestamp - b.timestamp);
+        const selectedReport = reports[response.selection - 1];
+        if (selectedReport) {
+            debugLog(`[UIManager] Player ${player.name} selected report ${selectedReport.id}.`);
+            return showPanel(player, 'reportActionsPanel', { ...context, targetReport: selectedReport });
         }
         return;
     }
@@ -208,6 +219,18 @@ function addPanelBody(form, player, panelId, context) {
             `§1Website: §r${config.serverInfo.websiteLink}`
         ].join('\n\n');
         form.body(linksBody);
+    } else if (panelId === 'reportActionsPanel' && context.targetReport) {
+        const { targetReport } = context;
+        const reportDate = new Date(targetReport.timestamp).toLocaleString();
+        const body = [
+            `§fReport ID: §e${targetReport.id}`,
+            `§fReported Player: §e${targetReport.reportedPlayerName}`,
+            `§fReporter: §e${targetReport.reporterName}`,
+            `§fReason: §e${targetReport.reason}`,
+            `§fStatus: §e${targetReport.status}`,
+            `§fDate: §e${reportDate}`
+        ].join('\n');
+        form.body(body);
     }
 }
 
@@ -258,6 +281,22 @@ function buildBountyListForm(title) {
     return form;
 }
 
+function buildReportListForm(title) {
+    const form = new ActionFormData().title(title);
+    const reports = reportManager.getAllReports().filter(r => r.status === 'open' || r.status === 'assigned');
+    form.button('§l§8< Back', 'textures/gui/controls/left.png');
+    if (reports.length === 0) {
+        form.body('§aThere are no active reports.');
+    } else {
+        reports.sort((a, b) => a.timestamp - b.timestamp);
+        for (const report of reports) {
+            const statusColor = report.status === 'assigned' ? '§6' : '§c';
+            form.button(`[${statusColor}${report.status.toUpperCase()}§r] ${report.reportedPlayerName}\n§7Reported by: ${report.reporterName}`);
+        }
+    }
+    return form;
+}
+
 // --- UI Action Functions ---
 
 function withTargetPlayer(action) {
@@ -284,14 +323,14 @@ uiActionFunctions['showRules'] = async (player, context) => {
     await uiWait(player, rulesForm);
 };
 
-uiActionFunctions['teleportTo'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['teleportTo'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'teleportTo' called by ${player.name} on ${targetPlayer.name}.`);
     player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
     player.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['teleportHere'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['teleportHere'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'teleportHere' called by ${player.name} on ${targetPlayer.name}.`);
     targetPlayer.teleport(player.location, { dimension: player.dimension });
     player.sendMessage(`§aTeleported ${targetPlayer.name} to you.`);
@@ -325,7 +364,7 @@ uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlay
     }
 });
 
-uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['toggleFreeze'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'toggleFreeze' called by ${player.name} on ${targetPlayer.name}.`);
 
     const executorData = getPlayer(player.id);
@@ -349,7 +388,7 @@ uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['clearInventory'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'clearInventory' called by ${player.name} on ${targetPlayer.name}.`);
     const inventory = targetPlayer.getComponent('minecraft:inventory').container;
     inventory.clearAll();
@@ -433,7 +472,7 @@ uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['showUnmuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showUnmuteForm' called by ${player.name} on ${targetPlayer.name}.`);
     punishmentManager.removePunishment(targetPlayer.id);
     player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
@@ -473,7 +512,7 @@ uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer)
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${banReason}`);
 });
 
-uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['sendTpaRequest'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'sendTpaRequest' called by ${player.name} on ${targetPlayer.name}.`);
     const result = tpaManager.createRequest(player, targetPlayer, 'tpa');
     if (result.success) {
@@ -511,3 +550,35 @@ uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlay
     reportManager.createReport(player, targetPlayer, reason);
     player.sendMessage('§aThank you for your report. An admin will review it shortly.');
 });
+
+// There are no actions for this panel, it's just for viewing details
+// The actions are handled in the reportActionsPanel
+uiActionFunctions['assignReport'] = (player, context) => {
+    const { targetReport } = context;
+    if (!targetReport) return;
+    debugLog(`[UIManager] Action 'assignReport' called by ${player.name} for report ${targetReport.id}.`);
+    reportManager.assignReport(targetReport.id, player.id);
+    player.sendMessage(`§aReport ${targetReport.id} has been assigned to you.`);
+    // Re-show the panel to reflect the change
+    showPanel(player, 'reportActionsPanel', context);
+};
+
+uiActionFunctions['resolveReport'] = (player, context) => {
+    const { targetReport } = context;
+    if (!targetReport) return;
+    debugLog(`[UIManager] Action 'resolveReport' called by ${player.name} for report ${targetReport.id}.`);
+    reportManager.resolveReport(targetReport.id);
+    player.sendMessage(`§aReport ${targetReport.id} has been marked as resolved.`);
+    // Go back to the list
+    showPanel(player, 'reportListPanel');
+};
+
+uiActionFunctions['clearReport'] = (player, context) => {
+    const { targetReport } = context;
+    if (!targetReport) return;
+    debugLog(`[UIManager] Action 'clearReport' called by ${player.name} for report ${targetReport.id}.`);
+    reportManager.clearReport(targetReport.id);
+    player.sendMessage(`§aReport ${targetReport.id} has been cleared.`);
+    // Go back to the list
+    showPanel(player, 'reportListPanel');
+};

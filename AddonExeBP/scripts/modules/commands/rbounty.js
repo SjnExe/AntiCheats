@@ -4,10 +4,9 @@ import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({
-    name: 'rbounty',
-    aliases: ['removebounty'],
+    name: 'removebounty',
+    aliases: ['rbounty', 'delbounty'],
     description: 'Removes a bounty from a player using your money.',
-    aliases: ['removebounty', 'delbounty'],
     category: 'Economy',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
