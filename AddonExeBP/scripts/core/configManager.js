@@ -1,6 +1,5 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
-import _ from './lib/lodash.js';
 
 let loadedConfig = null;
 
