@@ -3,7 +3,7 @@ import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer, savePlayerData } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
-import { getAllPlayersFromCache, getPlayerFromCache, findPlayerByName } from './playerCache.js';
+import { getAllPlayersFromCache, getPlayerFromCache } from './playerCache.js';
 import { getPlayerRank } from './rankManager.js';
 import { uiWait, parseDuration, playSoundFromConfig } from './utils.js';
 import * as economyManager from './economyManager.js';
@@ -17,17 +17,20 @@ const uiActionFunctions = {};
 // Main entry point for showing a panel.
 export async function showPanel(player, panelId, context = {}) {
     try {
-        debugLog(`[UIManager] Showing panel '${panelId}' to ${player.name} (ID: ${player.id})`);
-        const result = await buildPanelForm(player, panelId, context);
+        const freshPlayer = getPlayerFromCache(player.id);
+        if (!freshPlayer) return; // Player has left, can't show panel.
+
+        debugLog(`[UIManager] Showing panel '${panelId}' to ${freshPlayer.name}`);
+        const result = await buildPanelForm(freshPlayer, panelId, context);
         if (!result) return;
 
         const form = result.form || result;
         const pageItems = result.pageItems;
 
-        const response = await uiWait(player, form);
+        const response = await uiWait(freshPlayer, form);
         if (!response || response.canceled) return;
 
-        await handleFormResponse(player, panelId, response, context, pageItems);
+        await handleFormResponse(freshPlayer, panelId, response, context, pageItems);
     } catch (e) {
         console.error(`[UIManager] showPanel failed for panel '${panelId}': ${e.stack}`);
     }
@@ -64,13 +67,16 @@ async function buildPanelForm(player, panelId, context) {
 }
 
 async function handleFormResponse(player, panelId, response, context, pageItems) {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+
     if (pageItems) {
         const selectedItem = pageItems[response.selection];
         if (!selectedItem) return;
 
-        if (selectedItem.id === '__back__') return showPanel(player, 'mainPanel');
-        if (selectedItem.id === '__prev__') return showPanel(player, panelId, { ...context, page: (context.page || 0) - 1 });
-        if (selectedItem.id === '__next__') return showPanel(player, panelId, { ...context, page: (context.page || 0) + 1 });
+        if (selectedItem.id === '__back__') return showPanel(freshPlayer, 'mainPanel');
+        if (selectedItem.id === '__prev__') return showPanel(freshPlayer, panelId, { ...context, page: (context.page || 0) - 1 });
+        if (selectedItem.id === '__next__') return showPanel(freshPlayer, panelId, { ...context, page: (context.page || 0) + 1 });
 
         let nextPanelId;
         switch (panelId) {
@@ -82,10 +88,10 @@ async function handleFormResponse(player, panelId, response, context, pageItems)
         }
 
         const newContext = { ...context, targetPlayerId: selectedItem.id, report: panelId === 'reportListPanel' ? selectedItem : null };
-        return showPanel(player, nextPanelId, newContext);
+        return showPanel(freshPlayer, nextPanelId, newContext);
     }
 
-    const pData = getPlayer(player.id);
+    const pData = getPlayer(freshPlayer.id);
     if (!pData) return;
 
     const panelDef = panelDefinitions[panelId];
@@ -94,12 +100,12 @@ async function handleFormResponse(player, panelId, response, context, pageItems)
     if (!selectedItem) return;
 
     if (selectedItem.id === '__back__') {
-        return showPanel(player, selectedItem.actionValue, context);
+        return showPanel(freshPlayer, selectedItem.actionValue, context);
     }
 
     const actionFunction = uiActionFunctions[selectedItem.actionValue];
     if (actionFunction) {
-        return actionFunction(player, context);
+        return actionFunction(freshPlayer, context);
     }
 }
 
@@ -202,179 +208,235 @@ function buildPaginatedListForm(player, panelId, context) {
     return { form, pageItems: pageItemsForForm };
 }
 
-// --- Action Wrappers ---
-
-function withFreshPlayer(action) {
-    return (player, context) => {
-        const freshPlayer = getPlayerFromCache(player.id);
-        if (!freshPlayer || !freshPlayer.isValid()) {
-            return console.error(`[UIManager] Stale player object detected for ID ${player.id}. Aborting UI action.`);
-        }
-        try {
-            return action(freshPlayer, context);
-        } catch (e) {
-            console.error(`[UIManager] CRITICAL ERROR in action for player ${freshPlayer.name}: ${e.message}\n${e.stack}`);
-        }
-    };
-}
-
-function withTargetPlayer(action) {
-    return (player, context) => { // Expects a fresh player from withFreshPlayer
-        if (!context || !context.targetPlayerId) {
-            return player.sendMessage('§cAn error occurred: target player context is missing.');
-        }
-        const targetPlayer = getPlayerFromCache(context.targetPlayerId);
-        if (!targetPlayer || !targetPlayer.isValid()) {
-            return player.sendMessage('§cTarget player not found or has logged off.');
-        }
-        return action(player, targetPlayer, context);
-    };
-}
-
-const withAdminAction = (action) => withFreshPlayer(withTargetPlayer(action));
 
 // --- UI Action Functions ---
 
-uiActionFunctions['showRules'] = withFreshPlayer(async (player) => {
+uiActionFunctions['showRules'] = async (player) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
     const config = getConfig();
     const rulesForm = new ActionFormData().title('§l§eServer Rules').body(config.serverInfo.rules.join('\n')).button('§l§8Close');
-    await uiWait(player, rulesForm);
-});
+    await uiWait(freshPlayer, rulesForm);
+};
 
-uiActionFunctions['teleportTo'] = withAdminAction((player, targetPlayer) => {
-    player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
-});
+uiActionFunctions['teleportTo'] = (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
 
-uiActionFunctions['teleportHere'] = withAdminAction((player, targetPlayer) => {
-    targetPlayer.teleport(player.location, { dimension: player.dimension });
-});
+    freshPlayer.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
+};
 
-uiActionFunctions['toggleFreeze'] = withAdminAction((player, targetPlayer) => {
+uiActionFunctions['teleportHere'] = (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
+    targetPlayer.teleport(freshPlayer.location, { dimension: freshPlayer.dimension });
+};
+
+uiActionFunctions['toggleFreeze'] = (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
     const frozenTag = getConfig().playerTags.frozen;
     if (targetPlayer.hasTag(frozenTag)) {
         targetPlayer.removeTag(frozenTag);
-        player.sendMessage(`§aUnfroze ${targetPlayer.name}.`);
+        freshPlayer.sendMessage(`§aUnfroze ${targetPlayer.name}.`);
     } else {
         targetPlayer.addTag(frozenTag);
-        player.sendMessage(`§eFroze ${targetPlayer.name}.`);
+        freshPlayer.sendMessage(`§eFroze ${targetPlayer.name}.`);
     }
-});
+};
 
-uiActionFunctions['clearInventory'] = withAdminAction((player, targetPlayer) => {
+uiActionFunctions['clearInventory'] = (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
     const inventory = targetPlayer.getComponent('minecraft:inventory').container;
     inventory.clearAll();
-    player.sendMessage(`§aCleared inventory for ${targetPlayer.name}.`);
-});
+    freshPlayer.sendMessage(`§aCleared inventory for ${targetPlayer.name}.`);
+};
 
-uiActionFunctions['showKickForm'] = withAdminAction(async (player, targetPlayer) => {
+uiActionFunctions['showKickForm'] = async (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
     const form = new ModalFormData().title(`Kick ${targetPlayer.name}`).textField('Reason', 'Enter kick reason (optional)');
-    const response = await uiWait(player, form);
+    const response = await uiWait(freshPlayer, form);
     if (!response || response.canceled) return;
     const [reason] = response.formValues;
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${reason || 'Kicked by an admin.'}`);
-});
+};
 
-uiActionFunctions['showMuteForm'] = withAdminAction(async (player, targetPlayer) => {
+uiActionFunctions['showMuteForm'] = async (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
     const form = new ModalFormData().title(`Mute ${targetPlayer.name}`).textField('Duration (e.g., 30m, 2h, 7d, perm)', 'perm').textField('Reason', 'Mute reason');
-    const response = await uiWait(player, form);
+    const response = await uiWait(freshPlayer, form);
     if (!response || response.canceled) return;
     const [durationStr, reason] = response.formValues;
     const durationMs = durationStr === 'perm' ? Infinity : parseDuration(durationStr);
-    if (durationMs === 0) return player.sendMessage('§cInvalid duration format.');
+    if (durationMs === 0) return freshPlayer.sendMessage('§cInvalid duration format.');
     punishmentManager.addPunishment(targetPlayer.id, { type: 'mute', expires: Date.now() + durationMs, reason });
-    player.sendMessage(`§aMuted ${targetPlayer.name}.`);
-});
+    freshPlayer.sendMessage(`§aMuted ${targetPlayer.name}.`);
+};
 
-uiActionFunctions['showUnmuteForm'] = withAdminAction((player, targetPlayer) => {
+uiActionFunctions['showUnmuteForm'] = (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
     punishmentManager.removePunishment(targetPlayer.id, 'mute');
-    player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
-});
+    freshPlayer.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
+};
 
-uiActionFunctions['showBanForm'] = withAdminAction(async (player, targetPlayer) => {
+uiActionFunctions['showBanForm'] = async (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
     const form = new ModalFormData().title(`Ban ${targetPlayer.name}`).textField('Duration (e.g., 30m, 2h, 7d, perm)', 'perm').textField('Reason', 'Ban reason');
-    const response = await uiWait(player, form);
+    const response = await uiWait(freshPlayer, form);
     if (!response || response.canceled) return;
     const [durationStr, reason] = response.formValues;
     const durationMs = durationStr === 'perm' ? Infinity : parseDuration(durationStr);
-    if (durationMs === 0) return player.sendMessage('§cInvalid duration format.');
+    if (durationMs === 0) return freshPlayer.sendMessage('§cInvalid duration format.');
     const banReason = reason || 'Banned by an admin.';
     punishmentManager.addPunishment(targetPlayer.id, { type: 'ban', expires: Date.now() + durationMs, reason: banReason });
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${banReason}`);
-});
+};
 
-uiActionFunctions['sendTpaRequest'] = withAdminAction((player, targetPlayer) => {
-    if (player.id === targetPlayer.id) return player.sendMessage('§cYou cannot send a TPA request to yourself.');
-    const result = tpaManager.createRequest(player, targetPlayer, 'tpa');
-    player.sendMessage(result.success ? `§aTPA request sent to ${targetPlayer.name}.` : `§c${result.message}`);
-});
+uiActionFunctions['sendTpaRequest'] = (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
 
-uiActionFunctions['showPayForm'] = withAdminAction(async (player, targetPlayer) => {
-    if (player.id === targetPlayer.id) return player.sendMessage('§cYou cannot pay yourself.');
+    if (freshPlayer.id === targetPlayer.id) return freshPlayer.sendMessage('§cYou cannot send a TPA request to yourself.');
+    const result = tpaManager.createRequest(freshPlayer, targetPlayer, 'tpa');
+    freshPlayer.sendMessage(result.success ? `§aTPA request sent to ${targetPlayer.name}.` : `§c${result.message}`);
+};
+
+uiActionFunctions['showPayForm'] = async (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
+    if (freshPlayer.id === targetPlayer.id) return freshPlayer.sendMessage('§cYou cannot pay yourself.');
     const form = new ModalFormData().title(`Pay ${targetPlayer.name}`).textField('Amount', 'Enter amount to pay');
-    const response = await uiWait(player, form);
+    const response = await uiWait(freshPlayer, form);
     if (!response || response.canceled) return;
     const [amountStr] = response.formValues;
     const amount = parseInt(amountStr);
-    if (isNaN(amount) || amount <= 0) return player.sendMessage('§cInvalid amount.');
-    const result = economyManager.transfer(player.id, targetPlayer.id, amount);
-    player.sendMessage(result.success ? `§aYou paid ${targetPlayer.name} §e$${amount.toFixed(2)}.` : `§c${result.message}`);
-});
+    if (isNaN(amount) || amount <= 0) return freshPlayer.sendMessage('§cInvalid amount.');
+    const result = economyManager.transfer(freshPlayer.id, targetPlayer.id, amount);
+    freshPlayer.sendMessage(result.success ? `§aYou paid ${targetPlayer.name} §e$${amount.toFixed(2)}.` : `§c${result.message}`);
+};
 
-uiActionFunctions['showBountyForm'] = withAdminAction(async (player, targetPlayer) => {
+uiActionFunctions['showBountyForm'] = async (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
-    const response = await uiWait(player, form);
+    const response = await uiWait(freshPlayer, form);
     if (!response || response.canceled) return;
     const [amountStr] = response.formValues;
     const amount = parseInt(amountStr);
-    if (isNaN(amount) || amount < getConfig().economy.minimumBounty) return player.sendMessage(`§cMinimum bounty is $${getConfig().economy.minimumBounty}.`);
-    if (economyManager.getBalance(player.id) < amount) return player.sendMessage('§cYou do not have enough money.');
-    const result = economyManager.addBounty(player.id, targetPlayer.id, amount);
-    player.sendMessage(result.success ? `§aYou placed a bounty of §e$${amount.toFixed(2)}§a on ${targetPlayer.name}.` : `§c${result.message}`);
-});
+    if (isNaN(amount) || amount < getConfig().economy.minimumBounty) return freshPlayer.sendMessage(`§cMinimum bounty is $${getConfig().economy.minimumBounty}.`);
+    if (economyManager.getBalance(freshPlayer.id) < amount) return freshPlayer.sendMessage('§cYou do not have enough money.');
+    const result = economyManager.addBounty(freshPlayer.id, targetPlayer.id, amount);
+    freshPlayer.sendMessage(result.success ? `§aYou placed a bounty of §e$${amount.toFixed(2)}§a on ${targetPlayer.name}.` : `§c${result.message}`);
+};
 
-uiActionFunctions['showReportForm'] = withAdminAction(async (player, targetPlayer) => {
+uiActionFunctions['showReportForm'] = async (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context?.targetPlayerId) return freshPlayer.sendMessage("§cTarget player context missing.");
+    const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+    if (!targetPlayer) return freshPlayer.sendMessage("§cTarget player not found.");
+
     const form = new ModalFormData().title(`Report ${targetPlayer.name}`).textField('Reason', 'Enter reason for report');
-    const response = await uiWait(player, form);
+    const response = await uiWait(freshPlayer, form);
     if (!response || response.canceled) return;
     const [reason] = response.formValues;
-    if (!reason) return player.sendMessage('§cYou must provide a reason for the report.');
-    reportManager.createReport(player, targetPlayer, reason);
-    player.sendMessage('§aThank you for your report. An admin will review it shortly.');
-});
+    if (!reason) return freshPlayer.sendMessage('§cYou must provide a reason for the report.');
+    reportManager.createReport(freshPlayer, targetPlayer, reason);
+    freshPlayer.sendMessage('§aThank you for your report. An admin will review it shortly.');
+};
 
-uiActionFunctions['showMyStats'] = withFreshPlayer(async (player) => {
-    const pData = getPlayer(player.id);
-    const rank = getPlayerRank(player, getConfig());
+uiActionFunctions['showMyStats'] = async (player) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+
+    const pData = getPlayer(freshPlayer.id);
+    const rank = getPlayerRank(freshPlayer, getConfig());
     const statsBody = `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}\n§fBalance: §a$${pData.balance.toFixed(2)}\n§fBounty on you: §e$${pData.bounty.toFixed(2)}`;
     const form = new ActionFormData().title('§l§3Your Stats').body(statsBody).button('§l§8< Back');
-    const response = await uiWait(player, form);
+    const response = await uiWait(freshPlayer, form);
     if (response && !response.canceled) {
-        showPanel(player, 'mainPanel');
+        showPanel(freshPlayer, 'mainPanel');
     }
-});
+};
 
-uiActionFunctions['showHelpfulLinks'] = withFreshPlayer(async (player) => {
+uiActionFunctions['showHelpfulLinks'] = async (player) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+
     const config = getConfig();
     const linksBody = `§9Discord: §r${config.serverInfo.discordLink}\n§1Website: §r${config.serverInfo.websiteLink}`;
     const form = new ActionFormData().title('§l§9Helpful Links').body(linksBody).button('§l§8< Back');
-    await uiWait(player, form);
-});
+    await uiWait(freshPlayer, form);
+};
 
-// Report-specific actions (don't need target player wrapper)
-uiActionFunctions['assignReport'] = withFreshPlayer((player, context) => {
-    if (!context.report) return player.sendMessage("§cReport context missing.");
-    reportManager.assignReport(context.report.id, player.id);
-    player.sendMessage("§aReport assigned to you.");
-});
+// Report-specific actions
+uiActionFunctions['assignReport'] = (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context.report) return freshPlayer.sendMessage("§cReport context missing.");
+    reportManager.assignReport(context.report.id, freshPlayer.id);
+    freshPlayer.sendMessage("§aReport assigned to you.");
+};
 
-uiActionFunctions['resolveReport'] = withFreshPlayer((player, context) => {
-    if (!context.report) return player.sendMessage("§cReport context missing.");
+uiActionFunctions['resolveReport'] = (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context.report) return freshPlayer.sendMessage("§cReport context missing.");
     reportManager.resolveReport(context.report.id);
-    player.sendMessage("§aReport marked as resolved.");
-});
+    freshPlayer.sendMessage("§aReport marked as resolved.");
+};
 
-uiActionFunctions['clearReport'] = withFreshPlayer((player, context) => {
-    if (!context.report) return player.sendMessage("§cReport context missing.");
+uiActionFunctions['clearReport'] = (player, context) => {
+    const freshPlayer = getPlayerFromCache(player.id);
+    if (!freshPlayer) return;
+    if (!context.report) return freshPlayer.sendMessage("§cReport context missing.");
     reportManager.clearReport(context.report.id);
-    player.sendMessage("§aReport cleared.");
-});
+    freshPlayer.sendMessage("§aReport cleared.");
+};
