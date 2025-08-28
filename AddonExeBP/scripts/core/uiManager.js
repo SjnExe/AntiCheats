@@ -300,7 +300,8 @@ function buildReportListForm(title) {
 // --- UI Action Functions ---
 
 function withTargetPlayer(action) {
-    return (player, context) => {
+    // This wrapper now returns an async function to ensure it's always await-able
+    return async (player, context) => {
         const { targetPlayer } = context;
         if (!targetPlayer || !targetPlayer.isValid()) {
             player.sendMessage('§cTarget player not found or has logged off.');
@@ -309,7 +310,8 @@ function withTargetPlayer(action) {
             return;
         }
         debugLog(`[UIManager] Executing targeted action for ${player.name} on target ${targetPlayer.name}.`);
-        return action(player, targetPlayer, context);
+        // We await the action, which works for both sync and async actions.
+        await action(player, targetPlayer, context);
     };
 }
 
@@ -323,21 +325,21 @@ uiActionFunctions['showRules'] = async (player, context) => {
     await uiWait(player, rulesForm);
 };
 
-uiActionFunctions['teleportTo'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['teleportTo'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'teleportTo' called by ${player.name} on ${targetPlayer.name}.`);
     player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
     player.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['teleportHere'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['teleportHere'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'teleportHere' called by ${player.name} on ${targetPlayer.name}.`);
     targetPlayer.teleport(player.location, { dimension: player.dimension });
     player.sendMessage(`§aTeleported ${targetPlayer.name} to you.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlayer, context) => {
+uiActionFunctions['showBountyForm'] = withTargetPlayer((player, targetPlayer, context) => {
     debugLog(`[UIManager] Action 'showBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
     const response = await uiWait(player, form);
@@ -364,7 +366,7 @@ uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlay
     }
 });
 
-uiActionFunctions['toggleFreeze'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'toggleFreeze' called by ${player.name} on ${targetPlayer.name}.`);
 
     const executorData = getPlayer(player.id);
@@ -388,7 +390,7 @@ uiActionFunctions['toggleFreeze'] = withTargetPlayer(async (player, targetPlayer
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['clearInventory'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'clearInventory' called by ${player.name} on ${targetPlayer.name}.`);
     const inventory = targetPlayer.getComponent('minecraft:inventory').container;
     inventory.clearAll();
@@ -396,7 +398,7 @@ uiActionFunctions['clearInventory'] = withTargetPlayer(async (player, targetPlay
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showKickForm'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showKickForm' called by ${player.name} on ${targetPlayer.name}.`);
 
     const executorData = getPlayer(player.id);
@@ -417,7 +419,7 @@ uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showReduceBountyForm'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showReduceBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const targetData = getPlayer(targetPlayer.id);
     if (!targetData || targetData.bounty === 0) return player.sendMessage('§cThis player has no bounty.');
@@ -441,7 +443,7 @@ uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targ
     }
 });
 
-uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showMuteForm'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showMuteForm' called by ${player.name} on ${targetPlayer.name}.`);
 
     const executorData = getPlayer(player.id);
@@ -472,14 +474,14 @@ uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showUnmuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showUnmuteForm' called by ${player.name} on ${targetPlayer.name}.`);
     punishmentManager.removePunishment(targetPlayer.id);
     player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showBanForm'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showBanForm' called by ${player.name} on ${targetPlayer.name}.`);
 
     const executorData = getPlayer(player.id);
@@ -512,7 +514,7 @@ uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer)
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${banReason}`);
 });
 
-uiActionFunctions['sendTpaRequest'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'sendTpaRequest' called by ${player.name} on ${targetPlayer.name}.`);
     const result = tpaManager.createRequest(player, targetPlayer, 'tpa');
     if (result.success) {
@@ -523,7 +525,7 @@ uiActionFunctions['sendTpaRequest'] = withTargetPlayer(async (player, targetPlay
     }
 });
 
-uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showPayForm'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showPayForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Pay ${targetPlayer.name}`).textField('Amount', 'Enter amount to pay');
     const response = await uiWait(player, form);
@@ -540,7 +542,7 @@ uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer)
     }
 });
 
-uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showReportForm'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showReportForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Report ${targetPlayer.name}`).textField('Reason', 'Enter reason for report');
     const response = await uiWait(player, form);
