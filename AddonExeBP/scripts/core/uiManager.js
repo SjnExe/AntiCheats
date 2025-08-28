@@ -17,7 +17,7 @@ const uiActionFunctions = {};
 // Main entry point for showing a panel.
 export async function showPanel(player, panelId, context = {}) {
     try {
-        debugLog(`[UIManager] Showing panel '${panelId}' to ${player.name}`);
+        debugLog(`[UIManager] Showing panel '${panelId}' to ${player.name} (ID: ${player.id})`);
         const result = await buildPanelForm(player, panelId, context);
         if (!result) return;
 
@@ -33,7 +33,6 @@ export async function showPanel(player, panelId, context = {}) {
     }
 }
 
-// Builds and returns a form object based on a panel definition.
 async function buildPanelForm(player, panelId, context) {
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) return null;
@@ -51,7 +50,7 @@ async function buildPanelForm(player, panelId, context) {
         title = config.serverName || panelDef.title;
     }
 
-    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'bountyListPanel' || panelId === 'reportListPanel') {
+    if (['playerListPanel', 'publicPlayerListPanel', 'bountyListPanel', 'reportListPanel'].includes(panelId)) {
         return buildPaginatedListForm(player, panelId, context);
     }
 
@@ -64,10 +63,8 @@ async function buildPanelForm(player, panelId, context) {
     return form;
 }
 
-// Processes the response from a submitted form.
 async function handleFormResponse(player, panelId, response, context, pageItems) {
     if (pageItems) {
-        // This block is for paginated forms like player lists
         const selectedItem = pageItems[response.selection];
         if (!selectedItem) return;
 
@@ -81,15 +78,13 @@ async function handleFormResponse(player, panelId, response, context, pageItems)
             case 'publicPlayerListPanel': nextPanelId = 'publicPlayerActionsPanel'; break;
             case 'bountyListPanel': nextPanelId = 'bountyActionsPanel'; break;
             case 'reportListPanel': nextPanelId = 'reportActionsPanel'; break;
-            default: return; // Should not happen
+            default: return;
         }
 
-        // The selected item from a list is a player or a report object
         const newContext = { ...context, targetPlayerId: selectedItem.id, report: panelId === 'reportListPanel' ? selectedItem : null };
         return showPanel(player, nextPanelId, newContext);
     }
 
-    // This block is for non-paginated forms (action panels)
     const pData = getPlayer(player.id);
     if (!pData) return;
 
@@ -101,15 +96,12 @@ async function handleFormResponse(player, panelId, response, context, pageItems)
     if (selectedItem.id === '__back__') {
         return showPanel(player, selectedItem.actionValue, context);
     }
-    if (selectedItem.actionType === 'openPanel') {
-        return showPanel(player, selectedItem.actionValue, context);
-    } else if (selectedItem.actionType === 'functionCall') {
-        const actionFunction = uiActionFunctions[selectedItem.actionValue];
-        if (actionFunction) return actionFunction(player, context);
+
+    const actionFunction = uiActionFunctions[selectedItem.actionValue];
+    if (actionFunction) {
+        return actionFunction(player, context);
     }
 }
-
-// --- Helper & Builder Functions ---
 
 function getMenuItems(panelDef, permissionLevel) {
     const items = (panelDef.items || []).filter(item => permissionLevel <= item.permissionLevel).sort((a, b) => (a.sortId || 0) - (b.sortId || 0));
@@ -120,7 +112,7 @@ function getMenuItems(panelDef, permissionLevel) {
 }
 
 function addPanelBody(form, player, panelId, context) {
-    if ((panelId === 'playerManagementPanel' || panelId === 'publicPlayerActionsPanel' || panelId === 'bountyActionsPanel') && context.targetPlayerId) {
+    if (['playerManagementPanel', 'publicPlayerActionsPanel', 'bountyActionsPanel'].includes(panelId) && context.targetPlayerId) {
         const targetPlayer = getPlayerFromCache(context.targetPlayerId);
         if (!targetPlayer) return form.body("Player not found.");
 
@@ -141,11 +133,9 @@ function addPanelBody(form, player, panelId, context) {
         }
     } else if (panelId === 'reportActionsPanel' && context.report) {
         const { report } = context;
-        const reporter = getPlayerFromCache(report.reporterId)?.name ?? 'Unknown';
-        const reported = getPlayerFromCache(report.reportedId)?.name ?? 'Unknown';
         form.body([
-            `§fReporter: §e${reporter}`,
-            `§fReported: §e${reported}`,
+            `§fReporter: §e${report.reporterName}`,
+            `§fReported: §e${report.reportedPlayerName}`,
             `§fReason: §7${report.reason}`,
             `§fStatus: §e${report.status}`
         ].join('\n'));
@@ -159,7 +149,7 @@ function buildPaginatedListForm(player, panelId, context) {
     const ITEMS_PER_PAGE = 8;
 
     let sourceItems = [];
-    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel') {
+    if (['playerListPanel', 'publicPlayerListPanel'].includes(panelId)) {
         sourceItems = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
     } else if (panelId === 'bountyListPanel') {
         sourceItems = getAllPlayersFromCache()
@@ -180,107 +170,86 @@ function buildPaginatedListForm(player, panelId, context) {
     const totalPages = Math.ceil(sourceItems.length / ITEMS_PER_PAGE);
     const startIndex = page * ITEMS_PER_PAGE;
     const pageItemsData = sourceItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-    const pageItems = [];
+    const pageItemsForForm = [{ id: '__back__' }];
 
     form.button('§l§8< Back');
-    pageItems.push({ id: '__back__' });
-
     if (page > 0) {
         form.button('§l§8< Previous Page');
-        pageItems.push({ id: '__prev__' });
+        pageItemsForForm.push({ id: '__prev__' });
     }
 
     for (const item of pageItemsData) {
-        if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel') {
+        if (['playerListPanel', 'publicPlayerListPanel'].includes(panelId)) {
             const rank = getPlayerRank(item, getConfig());
             let displayName = `${rank.chatFormatting?.prefixText ?? ''}${item.name}§r`;
             if (item.id === player.id) displayName += ' §7(You)§r';
-            form.button(displayName);
+            form.button(displayName, rank.name === 'Owner' ? 'textures/ui/crown_glyph_color' : undefined);
         } else if (panelId === 'bountyListPanel') {
             const pData = getPlayer(item.id);
             form.button(`${item.name}\n§c$${pData.bounty.toFixed(2)}`);
         } else if (panelId === 'reportListPanel') {
-            form.button(`Report against ${getPlayerFromCache(item.reportedPlayerId)?.name ?? 'Unknown'}\n§7Reason: ${item.reason}`);
+            form.button(`Report against ${item.reportedPlayerName}\n§7Reason: ${item.reason}`);
         }
-        pageItems.push(item);
+        pageItemsForForm.push(item);
     }
 
     if (page < totalPages - 1) {
         form.button('§l§2Next Page >');
-        pageItems.push({ id: '__next__' });
+        pageItemsForForm.push({ id: '__next__' });
     }
 
     form.body(`Page ${page + 1} of ${totalPages}`);
-    return { form, pageItems };
+    return { form, pageItems: pageItemsForForm };
 }
 
-// --- UI Action Functions ---
+// --- Action Wrappers ---
 
-/**
- * A higher-order function to safely wrap actions that require a target player.
- * It retrieves the player from cache using targetPlayerId from the context.
- * It also includes detailed logging and a try-catch block for robust error handling.
- * @param {(player: import('@minecraft/server').Player, targetPlayer: import('@minecraft/server').Player, context: object) => void} action The action to perform.
- * @returns {(player: import('@minecraft/server').Player, context: object) => void}
- */
-function withTargetPlayer(action) {
+function withFreshPlayer(action) {
     return (player, context) => {
+        const freshPlayer = getPlayerFromCache(player.id);
+        if (!freshPlayer || !freshPlayer.isValid()) {
+            return console.error(`[UIManager] Stale player object detected for ID ${player.id}. Aborting UI action.`);
+        }
         try {
-            debugLog(`[withTargetPlayer] Type of action: ${typeof action}`);
-            if (typeof action !== 'function') {
-                console.error(`[withTargetPlayer] FATAL: The provided action is not a function.`);
-                return;
-            }
-
-            if (!context || !context.targetPlayerId) {
-                player.sendMessage('§cAn error occurred: target player context is missing.');
-                playSoundFromConfig(player, 'commandError');
-                debugLog(`[withTargetPlayer] Failed: Context or targetPlayerId missing. Context: ${JSON.stringify(context)}`);
-                return;
-            }
-
-            const targetPlayer = getPlayerFromCache(context.targetPlayerId);
-            if (!targetPlayer) {
-                player.sendMessage('§cTarget player not found or has logged off.');
-                playSoundFromConfig(player, 'commandError');
-                debugLog(`[withTargetPlayer] Failed: Player with ID ${context.targetPlayerId} not found in cache.`);
-                return;
-            }
-
-            if (!targetPlayer.isValid()) {
-                player.sendMessage('§cTarget player is no longer valid (may have disconnected).');
-                playSoundFromConfig(player, 'commandError');
-                debugLog(`[withTargetPlayer] Failed: Player ${targetPlayer.name} is no longer valid.`);
-                return;
-            }
-
-            debugLog(`[withTargetPlayer] Executing action for ${player.name} -> ${targetPlayer.name}`);
-            return action(player, targetPlayer, context);
+            return action(freshPlayer, context);
         } catch (e) {
-            console.error(`[withTargetPlayer] CRITICAL ERROR in action for player ${player.name}: ${e.message}\n${e.stack}`);
-            player.sendMessage("§cAn unexpected critical error occurred. Please check the console.");
+            console.error(`[UIManager] CRITICAL ERROR in action for player ${freshPlayer.name}: ${e.message}\n${e.stack}`);
         }
     };
 }
 
-// The rest of the functions are the same as before...
-uiActionFunctions['showRules'] = async (player) => {
+function withTargetPlayer(action) {
+    return (player, context) => { // Expects a fresh player from withFreshPlayer
+        if (!context || !context.targetPlayerId) {
+            return player.sendMessage('§cAn error occurred: target player context is missing.');
+        }
+        const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+        if (!targetPlayer || !targetPlayer.isValid()) {
+            return player.sendMessage('§cTarget player not found or has logged off.');
+        }
+        return action(player, targetPlayer, context);
+    };
+}
+
+const withAdminAction = (action) => withFreshPlayer(withTargetPlayer(action));
+
+// --- UI Action Functions ---
+
+uiActionFunctions['showRules'] = withFreshPlayer(async (player) => {
     const config = getConfig();
     const rulesForm = new ActionFormData().title('§l§eServer Rules').body(config.serverInfo.rules.join('\n')).button('§l§8Close');
     await uiWait(player, rulesForm);
-};
+});
 
-uiActionFunctions['teleportTo'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['teleportTo'] = withAdminAction((player, targetPlayer) => {
     player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
-    player.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
 });
 
-uiActionFunctions['teleportHere'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['teleportHere'] = withAdminAction((player, targetPlayer) => {
     targetPlayer.teleport(player.location, { dimension: player.dimension });
-    player.sendMessage(`§aTeleported ${targetPlayer.name} to you.`);
 });
 
-uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['toggleFreeze'] = withAdminAction((player, targetPlayer) => {
     const frozenTag = getConfig().playerTags.frozen;
     if (targetPlayer.hasTag(frozenTag)) {
         targetPlayer.removeTag(frozenTag);
@@ -291,13 +260,13 @@ uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
     }
 });
 
-uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['clearInventory'] = withAdminAction((player, targetPlayer) => {
     const inventory = targetPlayer.getComponent('minecraft:inventory').container;
     inventory.clearAll();
     player.sendMessage(`§aCleared inventory for ${targetPlayer.name}.`);
 });
 
-uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showKickForm'] = withAdminAction(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Kick ${targetPlayer.name}`).textField('Reason', 'Enter kick reason (optional)');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
@@ -305,7 +274,7 @@ uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${reason || 'Kicked by an admin.'}`);
 });
 
-uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showMuteForm'] = withAdminAction(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Mute ${targetPlayer.name}`).textField('Duration (e.g., 30m, 2h, 7d, perm)', 'perm').textField('Reason', 'Mute reason');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
@@ -316,12 +285,12 @@ uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer
     player.sendMessage(`§aMuted ${targetPlayer.name}.`);
 });
 
-uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['showUnmuteForm'] = withAdminAction((player, targetPlayer) => {
     punishmentManager.removePunishment(targetPlayer.id, 'mute');
     player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
 });
 
-uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showBanForm'] = withAdminAction(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Ban ${targetPlayer.name}`).textField('Duration (e.g., 30m, 2h, 7d, perm)', 'perm').textField('Reason', 'Ban reason');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
@@ -333,13 +302,13 @@ uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer)
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${banReason}`);
 });
 
-uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['sendTpaRequest'] = withAdminAction((player, targetPlayer) => {
     if (player.id === targetPlayer.id) return player.sendMessage('§cYou cannot send a TPA request to yourself.');
     const result = tpaManager.createRequest(player, targetPlayer, 'tpa');
     player.sendMessage(result.success ? `§aTPA request sent to ${targetPlayer.name}.` : `§c${result.message}`);
 });
 
-uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showPayForm'] = withAdminAction(async (player, targetPlayer) => {
     if (player.id === targetPlayer.id) return player.sendMessage('§cYou cannot pay yourself.');
     const form = new ModalFormData().title(`Pay ${targetPlayer.name}`).textField('Amount', 'Enter amount to pay');
     const response = await uiWait(player, form);
@@ -351,7 +320,7 @@ uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer)
     player.sendMessage(result.success ? `§aYou paid ${targetPlayer.name} §e$${amount.toFixed(2)}.` : `§c${result.message}`);
 });
 
-uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showBountyForm'] = withAdminAction(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
@@ -363,7 +332,7 @@ uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlay
     player.sendMessage(result.success ? `§aYou placed a bounty of §e$${amount.toFixed(2)}§a on ${targetPlayer.name}.` : `§c${result.message}`);
 });
 
-uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showReportForm'] = withAdminAction(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Report ${targetPlayer.name}`).textField('Reason', 'Enter reason for report');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
@@ -373,21 +342,39 @@ uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlay
     player.sendMessage('§aThank you for your report. An admin will review it shortly.');
 });
 
-uiActionFunctions['showMyStats'] = async (player) => {
+uiActionFunctions['showMyStats'] = withFreshPlayer(async (player) => {
     const pData = getPlayer(player.id);
     const rank = getPlayerRank(player, getConfig());
-    const statsBody = [
-        `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`,
-        `§fBalance: §a$${pData.balance.toFixed(2)}`,
-        `§fBounty on you: §e$${pData.bounty.toFixed(2)}`
-    ].join('\n');
+    const statsBody = `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}\n§fBalance: §a$${pData.balance.toFixed(2)}\n§fBounty on you: §e$${pData.bounty.toFixed(2)}`;
     const form = new ActionFormData().title('§l§3Your Stats').body(statsBody).button('§l§8< Back');
-    await uiWait(player, form);
-};
+    const response = await uiWait(player, form);
+    if (response && !response.canceled) {
+        showPanel(player, 'mainPanel');
+    }
+});
 
-uiActionFunctions['showHelpfulLinks'] = async (player) => {
+uiActionFunctions['showHelpfulLinks'] = withFreshPlayer(async (player) => {
     const config = getConfig();
     const linksBody = `§9Discord: §r${config.serverInfo.discordLink}\n§1Website: §r${config.serverInfo.websiteLink}`;
     const form = new ActionFormData().title('§l§9Helpful Links').body(linksBody).button('§l§8< Back');
     await uiWait(player, form);
-};
+});
+
+// Report-specific actions (don't need target player wrapper)
+uiActionFunctions['assignReport'] = withFreshPlayer((player, context) => {
+    if (!context.report) return player.sendMessage("§cReport context missing.");
+    reportManager.assignReport(context.report.id, player.id);
+    player.sendMessage("§aReport assigned to you.");
+});
+
+uiActionFunctions['resolveReport'] = withFreshPlayer((player, context) => {
+    if (!context.report) return player.sendMessage("§cReport context missing.");
+    reportManager.resolveReport(context.report.id);
+    player.sendMessage("§aReport marked as resolved.");
+});
+
+uiActionFunctions['clearReport'] = withFreshPlayer((player, context) => {
+    if (!context.report) return player.sendMessage("§cReport context missing.");
+    reportManager.clearReport(context.report.id);
+    player.sendMessage("§aReport cleared.");
+});
