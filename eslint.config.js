@@ -29,6 +29,7 @@ export default [
             'OldAntiCheatsRP/',
             'eslint.config.js',
             'package.json',
+            'AddonExeBP/scripts/core/lib/lodash.js'
         ],
     },
     // Base JS configuration

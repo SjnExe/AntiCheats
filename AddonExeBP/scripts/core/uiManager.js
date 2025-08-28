@@ -67,7 +67,8 @@ async function handleFormResponse(player, panelId, response, context, pageItems)
     const pData = getPlayer(player.id);
     if (!pData) return;
 
-    if (pageItems) { // This check ensures this block only runs for paginated forms
+    if (pageItems) {
+        // This block is for paginated forms like player lists
         const page = context.page || 0;
         const selectedItem = pageItems[response.selection];
 
@@ -196,6 +197,23 @@ function buildBountyListForm(title) {
 
 // --- UI Action Functions ---
 
+function withTargetPlayer(action) {
+    return (player, context) => {
+        if (!context || !context.targetPlayer) {
+            player.sendMessage('§cAn error occurred: target player context is missing.');
+            playSoundFromConfig(player, 'commandError');
+            return;
+        }
+        const { targetPlayer } = context;
+        if (!targetPlayer.isValid()) {
+            player.sendMessage('§cTarget player not found or has logged off.');
+            playSoundFromConfig(player, 'commandError');
+            return;
+        }
+        return action(player, targetPlayer, context);
+    };
+}
+
 uiActionFunctions['showRules'] = async (player, context) => {
     const config = getConfig();
     const rulesForm = new ActionFormData()
@@ -205,52 +223,19 @@ uiActionFunctions['showRules'] = async (player, context) => {
     await uiWait(player, rulesForm);
 };
 
-uiActionFunctions['teleportTo'] = (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['teleportTo'] = withTargetPlayer((player, targetPlayer) => {
     player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
     player.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-};
+});
 
-uiActionFunctions['teleportHere'] = (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['teleportHere'] = withTargetPlayer((player, targetPlayer) => {
     targetPlayer.teleport(player.location, { dimension: player.dimension });
     player.sendMessage(`§aTeleported ${targetPlayer.name} to you.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-};
+});
 
-uiActionFunctions['showBountyForm'] = async (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlayer, context) => {
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
@@ -276,18 +261,7 @@ uiActionFunctions['showBountyForm'] = async (player, context) => {
     }
 });
 
-uiActionFunctions['toggleFreeze'] = (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
     const config = getConfig();
     const frozenTag = config.playerTags.frozen;
     if (targetPlayer.hasTag(frozenTag)) {
@@ -300,36 +274,14 @@ uiActionFunctions['toggleFreeze'] = (player, context) => {
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['clearInventory'] = (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) => {
     const inventory = targetPlayer.getComponent('minecraft:inventory').container;
     inventory.clearAll();
     player.sendMessage(`§aCleared inventory for ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showKickForm'] = async (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Kick ${targetPlayer.name}`).textField('Reason', 'Enter kick reason (optional)');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
@@ -382,18 +334,7 @@ uiActionFunctions['showHelpfulLinks'] = async (player, context) => {
     }
 };
 
-uiActionFunctions['showReduceBountyForm'] = async (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const targetData = getPlayer(targetPlayer.id);
     if (!targetData || targetData.bounty === 0) return player.sendMessage('§cThis player has no bounty.');
     const form = new ModalFormData().title(`Reduce Bounty on ${targetPlayer.name}`).textField('Amount', `Max: $${targetData.bounty.toFixed(2)}`);
@@ -416,18 +357,7 @@ uiActionFunctions['showReduceBountyForm'] = async (player, context) => {
     }
 });
 
-uiActionFunctions['showMuteForm'] = async (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Mute ${targetPlayer.name}`)
         .textField('Duration', 'e.g., 30m, 2h, 7d, perm', 'perm')
         .textField('Reason', 'Enter mute reason (optional)');
@@ -447,35 +377,13 @@ uiActionFunctions['showMuteForm'] = async (player, context) => {
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showUnmuteForm'] = (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) => {
     punishmentManager.removePunishment(targetPlayer.id);
     player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-};
+});
 
-uiActionFunctions['showBanForm'] = async (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Ban ${targetPlayer.name}`)
         .textField('Duration', 'e.g., 30m, 2h, 7d, perm', 'perm')
         .textField('Reason', 'Enter ban reason (optional)');
@@ -497,18 +405,7 @@ uiActionFunctions['showBanForm'] = async (player, context) => {
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${banReason}`);
 });
 
-uiActionFunctions['sendTpaRequest'] = (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) => {
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot send a TPA request to yourself.');
         return;
@@ -520,20 +417,9 @@ uiActionFunctions['sendTpaRequest'] = (player, context) => {
     } else {
         player.sendMessage(`§c${result.message}`);
     }
-};
+});
 
-uiActionFunctions['showPayForm'] = async (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer) => {
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot pay yourself.');
         return;
@@ -553,18 +439,7 @@ uiActionFunctions['showPayForm'] = async (player, context) => {
     }
 });
 
-uiActionFunctions['showReportForm'] = async (player, context) => {
-    if (!context || !context.targetPlayer) {
-        player.sendMessage('§cAn error occurred: target player context is missing.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    const { targetPlayer } = context;
-    if (!targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
+uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlayer) => {
     const form = new ModalFormData().title(`Report ${targetPlayer.name}`).textField('Reason', 'Enter reason for report');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
