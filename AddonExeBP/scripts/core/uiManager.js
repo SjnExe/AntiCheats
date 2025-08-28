@@ -67,7 +67,7 @@ async function handleFormResponse(player, panelId, response, context, pageItems)
     const pData = getPlayer(player.id);
     if (!pData) return;
 
-    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel') {
+    if (pageItems) { // This check ensures this block only runs for paginated forms
         const page = context.page || 0;
         const selectedItem = pageItems[response.selection];
 
