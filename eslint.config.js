@@ -52,7 +52,6 @@ export default [
                 'mojang-minecraft-ui': 'readonly',
                 'mojang-server-admin': 'readonly',
                 'mojang-net': 'readonly',
-                '_': 'readonly',
             },
         },
         linterOptions: {

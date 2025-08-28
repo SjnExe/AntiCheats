@@ -3,6 +3,82 @@ import { config as defaultConfig } from '../config.js';
 
 let loadedConfig = null;
 
+// --- Helper functions to replace lodash ---
+
+function isObject(item) {
+    return (item && typeof item === 'object' && !Array.isArray(item));
+}
+
+/**
+ * Merges new default properties into a saved configuration object without overwriting existing values.
+ * @param {object} defaults The default configuration object.
+ * @param {object} saved The saved configuration object.
+ * @returns {object} The merged configuration object.
+ */
+function deepMerge(defaults, saved) {
+    const merged = { ...saved };
+    for (const key in defaults) {
+        if (isObject(defaults[key])) {
+            if (!(key in saved) || !isObject(saved[key])) {
+                merged[key] = defaults[key];
+            } else {
+                merged[key] = deepMerge(defaults[key], saved[key]);
+            }
+        } else if (!(key in saved)) {
+            merged[key] = defaults[key];
+        }
+    }
+    return merged;
+}
+
+/**
+ * Performs a deep comparison between two objects to see if they are equal.
+ * @param {*} obj1 The first object.
+ * @param {*} obj2 The second object.
+ * @returns {boolean} True if the objects are equal.
+ */
+function deepEqual(obj1, obj2) {
+    if (obj1 === obj2) return true;
+
+    if (!isObject(obj1) || !isObject(obj2) || obj1 === null || obj2 === null) {
+        return false;
+    }
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    if (keys1.length !== keys2.length) return false;
+
+    for (const key of keys1) {
+        if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
+ * Sets a value on a nested object using a dot-notation path.
+ * @param {object} obj The object to modify.
+ * @param {string} path The dot-notation path.
+ * @param {*} value The value to set.
+ * @returns {object} The modified object.
+ */
+function deepSet(obj, path, value) {
+    const keys = Array.isArray(path) ? path : path.split('.');
+    let current = obj;
+    for (let i = 0; i < keys.length - 1; i++) {
+        const key = keys[i];
+        if (!isObject(current[key])) {
+            current[key] = {};
+        }
+        current = current[key];
+    }
+    current[keys[keys.length - 1]] = value;
+    return obj;
+}
+
+
 /**
  * Loads the addon's configuration from world dynamic properties.
  * It merges the saved config with the default config to handle new additions.
@@ -17,11 +93,9 @@ export function loadConfig() {
     } else {
         try {
             const savedConfig = JSON.parse(configStr);
-            // Create a deep clone of defaultConfig to avoid modifying it
-            const newConfig = _.merge({}, defaultConfig, savedConfig);
+            const newConfig = deepMerge(defaultConfig, savedConfig);
 
-            // Only save back if the merged config is different from the saved one
-            if (!_.isEqual(newConfig, savedConfig)) {
+            if (!deepEqual(newConfig, savedConfig)) {
                 world.setDynamicProperty('addonexe:config', JSON.stringify(newConfig));
             }
             loadedConfig = newConfig;
@@ -49,9 +123,8 @@ export function getConfig() {
  */
 export function updateConfig(key, value) {
     if (!loadedConfig) {
-        // This case should ideally not be hit if init order is correct
         loadConfig();
     }
-    _.set(loadedConfig, key, value);
+    deepSet(loadedConfig, key, value);
     world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
 }
