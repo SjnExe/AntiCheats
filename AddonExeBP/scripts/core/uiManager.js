@@ -143,8 +143,12 @@ function addPanelBody(form, player, panelId, context) {
         form.body([`§fName: §e${targetPlayer.name}`, `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`, `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`, `§fBounty: §e$${targetPData?.bounty?.toFixed(2) ?? '0.00'}`].join('\n'));
     } else if (panelId === 'publicPlayerActionsPanel' && context.targetPlayer) {
         const targetPData = getPlayer(context.targetPlayer.id);
-        const bounty = targetPData?.bounty?.toFixed(2) ?? '0.00';
-        form.body(`§eBounty on this player: $${bounty}`);
+        if (!targetPData) {
+            form.body('§cCould not retrieve player data.');
+        } else {
+            const bounty = targetPData.bounty?.toFixed(2) ?? '0.00';
+            form.body(`§eBounty on this player: $${bounty}`);
+        }
     } else if (panelId === 'myStatsPanel') {
         const pData = getPlayer(player.id);
         const rank = getPlayerRank(player, getConfig());
