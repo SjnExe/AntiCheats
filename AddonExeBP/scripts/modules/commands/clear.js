@@ -6,7 +6,8 @@ import { getPlayer } from '../../core/playerDataManager.js';
 commandManager.register({
     name: 'clear',
     description: 'Clears the inventory of a player or yourself.',
-    category: '§cModeration',
+    aliases: ['ci', 'clearinv'],
+    category: 'General',
     permissionLevel: 0, // Default permission for self-clearing
     execute: (player, args) => {
         if (args.length > 0) {

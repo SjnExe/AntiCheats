@@ -5,9 +5,9 @@ import { getPlayer } from '../../core/playerDataManager.js';
 
 commandManager.register({
     name: 'gms',
-    aliases: ['s'],
+    aliases: ['s', 'survival'],
     description: 'Sets your or another player\'s gamemode to Survival.',
-    category: '§4Administration',
+    category: 'General',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         let targetPlayer = player;

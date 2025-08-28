@@ -5,9 +5,9 @@ import { getPlayer } from '../../core/playerDataManager.js';
 
 commandManager.register({
     name: 'gma',
-    aliases: ['a'],
+    aliases: ['a', 'adventure'],
     description: 'Sets your or another player\'s gamemode to Adventure.',
-    category: '§4Administration',
+    category: 'General',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         let targetPlayer = player;

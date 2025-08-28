@@ -5,7 +5,8 @@ import { getConfig } from '../../core/configManager.js';
 commandManager.register({
     name: 'homes',
     description: 'Lists all of your set homes.',
-    category: '§bHome System',
+    aliases: ['homelist'],
+    category: 'Home System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

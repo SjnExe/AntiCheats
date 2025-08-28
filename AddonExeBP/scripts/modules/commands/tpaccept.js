@@ -6,7 +6,8 @@ commandManager.register({
     name: 'tpaccept',
     aliases: ['tpyes'],
     description: 'Accepts an incoming TPA request.',
-    category: '§3TPA System',
+    aliases: ['tpyes', 'tpac'],
+    category: 'TPA System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

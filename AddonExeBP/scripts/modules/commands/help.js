@@ -6,34 +6,40 @@ function showCategorizedHelp(player, userPermissionLevel) {
     const config = getConfig();
     const categorizedCommands = {};
 
-    // Dynamically categorize all registered commands
+    // Dynamically categorize all registered commands that the player has access to
     for (const cmd of commandManager.commands.values()) {
-        // Permission level check
         if (userPermissionLevel > cmd.permissionLevel) continue;
-        // Individual command toggle check
         const cmdSetting = config.commandSettings?.[cmd.name];
         if (cmdSetting && cmdSetting.enabled === false) continue;
 
-        const category = cmd.category || '§aGeneral';
+        const category = cmd.category || 'General';
         if (!categorizedCommands[category]) {
             categorizedCommands[category] = [];
         }
         categorizedCommands[category].push(cmd);
     }
 
+    // Define the order in which categories should appear
+    const categoryOrder = [
+        'Administration',
+        'Moderation',
+        'Economy',
+        'Home System',
+        'TPA System',
+        'General'
+    ];
+
     let helpMessage = '§a--- Available Commands ---';
     let commandsShown = false;
 
-    // Get sorted list of categories
-    const sortedCategories = Object.keys(categorizedCommands).sort();
-
-    for (const categoryName of sortedCategories) {
+    for (const categoryName of categoryOrder) {
         const commands = categorizedCommands[categoryName];
 
-        if (commands.length > 0) {
+        if (commands && commands.length > 0) {
             commandsShown = true;
-            helpMessage += `\n§l${categoryName}§r`;
-            for (const cmd of commands) {
+            // Use a distinct color for the category headers
+            helpMessage += `\n§l§e--- ${categoryName} ---§r`;
+            for (const cmd of commands.sort((a, b) => a.name.localeCompare(b.name))) {
                 helpMessage += `\n §b!${cmd.name}§r: ${cmd.description}`;
             }
         }
@@ -70,7 +76,7 @@ commandManager.register({
     name: 'help',
     aliases: ['?', 'h'],
     description: 'Displays a list of available commands or help for a specific command.',
-    category: '§aGeneral',
+    category: 'General',
     permissionLevel: 1024, // Available to everyone
     execute: (player, args) => {
         const pData = getPlayer(player.id);

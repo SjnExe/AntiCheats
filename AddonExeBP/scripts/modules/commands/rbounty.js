@@ -7,7 +7,8 @@ commandManager.register({
     name: 'rbounty',
     aliases: ['removebounty'],
     description: 'Removes a bounty from a player using your money.',
-    category: '§eEconomy System',
+    aliases: ['removebounty', 'delbounty'],
+    category: 'Economy',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         let targetPlayer;
