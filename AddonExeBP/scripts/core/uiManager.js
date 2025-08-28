@@ -3,7 +3,7 @@ import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer, savePlayerData } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
-import { getAllPlayersFromCache } from './playerCache.js';
+import { getAllPlayersFromCache, getPlayerFromCache } from './playerCache.js';
 import { getPlayerRank } from './rankManager.js';
 import { uiWait, parseDuration, playSoundFromConfig } from './utils.js';
 import * as economyManager from './economyManager.js';
@@ -87,7 +87,7 @@ async function handleFormResponse(player, panelId, response, context, pageItems)
         // If it's not a navigation button, it must be a player
         const selectedPlayer = selectedItem;
         const nextPanel = panelId === 'playerListPanel' ? 'playerManagementPanel' : 'publicPlayerActionsPanel';
-        return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
+        return showPanel(player, nextPanel, { ...context, targetPlayerId: selectedPlayer.id });
     }
 
     // This block is for non-paginated forms
@@ -96,7 +96,7 @@ async function handleFormResponse(player, panelId, response, context, pageItems)
         const playersWithBounty = getAllPlayersFromCache().map(p => ({ player: p, data: getPlayer(p.id) })).filter(pInfo => pInfo.data && pInfo.data.bounty > 0).sort((a, b) => b.data.bounty - a.data.bounty);
         const selectedBountyPlayer = playersWithBounty[response.selection - 1]?.player;
         if (selectedBountyPlayer) {
-            return showPanel(player, 'bountyActionsPanel', { ...context, targetPlayer: selectedBountyPlayer });
+            return showPanel(player, 'bountyActionsPanel', { ...context, targetPlayerId: selectedBountyPlayer.id });
         }
         return;
     }
@@ -127,13 +127,16 @@ function getMenuItems(panelDef, permissionLevel) {
 }
 
 function addPanelBody(form, player, panelId, context) {
-    if (panelId === 'playerManagementPanel' && context.targetPlayer) {
-        const { targetPlayer } = context;
+    if (panelId === 'playerManagementPanel' && context.targetPlayerId) {
+        const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+        if (!targetPlayer) return; // Player might have logged off
         const targetPData = getPlayer(targetPlayer.id);
         const rank = getPlayerRank(targetPlayer, getConfig());
         form.body([`§fName: §e${targetPlayer.name}`, `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`, `§fBalance: §a$${targetPData?.balance?.toFixed(2) ?? '0.00'}`, `§fBounty: §e$${targetPData?.bounty?.toFixed(2) ?? '0.00'}`].join('\n'));
-    } else if (panelId === 'publicPlayerActionsPanel' && context.targetPlayer) {
-        const targetPData = getPlayer(context.targetPlayer.id);
+    } else if (panelId === 'publicPlayerActionsPanel' && context.targetPlayerId) {
+        const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+        if (!targetPlayer) return; // Player might have logged off
+        const targetPData = getPlayer(targetPlayer.id);
         const bounty = targetPData?.bounty?.toFixed(2) ?? '0.00';
         form.body(`§eBounty on this player: $${bounty}`);
     }
@@ -199,13 +202,13 @@ function buildBountyListForm(title) {
 
 function withTargetPlayer(action) {
     return (player, context) => {
-        if (!context || !context.targetPlayer) {
+        if (!context || !context.targetPlayerId) {
             player.sendMessage('§cAn error occurred: target player context is missing.');
             playSoundFromConfig(player, 'commandError');
             return;
         }
-        const { targetPlayer } = context;
-        if (!targetPlayer.isValid()) {
+        const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+        if (!targetPlayer || !targetPlayer.isValid()) {
             player.sendMessage('§cTarget player not found or has logged off.');
             playSoundFromConfig(player, 'commandError');
             return;
