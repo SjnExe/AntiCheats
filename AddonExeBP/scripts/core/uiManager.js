@@ -339,7 +339,7 @@ uiActionFunctions['teleportHere'] = withTargetPlayer((player, targetPlayer) => {
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showBountyForm'] = withTargetPlayer((player, targetPlayer, context) => {
+uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlayer, context) => {
     debugLog(`[UIManager] Action 'showBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
     const response = await uiWait(player, form);
@@ -398,7 +398,7 @@ uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) =>
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showKickForm'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showKickForm' called by ${player.name} on ${targetPlayer.name}.`);
 
     const executorData = getPlayer(player.id);
@@ -419,7 +419,7 @@ uiActionFunctions['showKickForm'] = withTargetPlayer((player, targetPlayer) => {
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showReduceBountyForm'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showReduceBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const targetData = getPlayer(targetPlayer.id);
     if (!targetData || targetData.bounty === 0) return player.sendMessage('§cThis player has no bounty.');
@@ -443,7 +443,7 @@ uiActionFunctions['showReduceBountyForm'] = withTargetPlayer((player, targetPlay
     }
 });
 
-uiActionFunctions['showMuteForm'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showMuteForm' called by ${player.name} on ${targetPlayer.name}.`);
 
     const executorData = getPlayer(player.id);
@@ -481,7 +481,7 @@ uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) =>
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
-uiActionFunctions['showBanForm'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showBanForm' called by ${player.name} on ${targetPlayer.name}.`);
 
     const executorData = getPlayer(player.id);
@@ -525,7 +525,7 @@ uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) =>
     }
 });
 
-uiActionFunctions['showPayForm'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showPayForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Pay ${targetPlayer.name}`).textField('Amount', 'Enter amount to pay');
     const response = await uiWait(player, form);
@@ -542,7 +542,7 @@ uiActionFunctions['showPayForm'] = withTargetPlayer((player, targetPlayer) => {
     }
 });
 
-uiActionFunctions['showReportForm'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showReportForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Report ${targetPlayer.name}`).textField('Reason', 'Enter reason for report');
     const response = await uiWait(player, form);
