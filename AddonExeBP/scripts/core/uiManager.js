@@ -168,7 +168,7 @@ function buildPaginatedListForm(player, panelId, context) {
             .sort((a, b) => b.data.bounty - a.data.bounty)
             .map(pInfo => pInfo.player);
     } else if (panelId === 'reportListPanel') {
-        sourceItems = reportManager.getReports();
+        sourceItems = reportManager.getAllReports();
     }
 
     if (sourceItems.length === 0) {
@@ -200,7 +200,7 @@ function buildPaginatedListForm(player, panelId, context) {
             const pData = getPlayer(item.id);
             form.button(`${item.name}\n§c$${pData.bounty.toFixed(2)}`);
         } else if (panelId === 'reportListPanel') {
-            form.button(`Report against ${getPlayerFromCache(item.reportedId)?.name ?? 'Unknown'}\n§7Reason: ${item.reason}`);
+            form.button(`Report against ${getPlayerFromCache(item.reportedPlayerId)?.name ?? 'Unknown'}\n§7Reason: ${item.reason}`);
         }
         pageItems.push(item);
     }
@@ -226,6 +226,12 @@ function buildPaginatedListForm(player, panelId, context) {
 function withTargetPlayer(action) {
     return (player, context) => {
         try {
+            debugLog(`[withTargetPlayer] Type of action: ${typeof action}`);
+            if (typeof action !== 'function') {
+                console.error(`[withTargetPlayer] FATAL: The provided action is not a function.`);
+                return;
+            }
+
             if (!context || !context.targetPlayerId) {
                 player.sendMessage('§cAn error occurred: target player context is missing.');
                 playSoundFromConfig(player, 'commandError');
