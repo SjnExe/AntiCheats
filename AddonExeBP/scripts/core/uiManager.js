@@ -301,20 +301,6 @@ function buildReportListForm(title) {
 
 // --- UI Action Functions ---
 
-function withTargetPlayer(action) {
-    return async (player, context) => {
-        const { targetPlayer } = context;
-        if (!targetPlayer || !targetPlayer.isValid()) {
-            player.sendMessage('§cTarget player not found or has logged off.');
-            playSoundFromConfig(player, 'commandError');
-            debugLog(`[UIManager] Action blocked for ${player.name}: Target player invalid. Context: ${JSON.stringify(context)}`);
-            return;
-        }
-        debugLog(`[UIManager] Executing targeted action for ${player.name} on target ${targetPlayer.name}.`);
-        await action(player, targetPlayer, context);
-    };
-}
-
 uiActionFunctions['showRules'] = async (player, context) => {
     debugLog(`[UIManager] Action 'showRules' called by ${player.name}.`);
     const config = getConfig();
@@ -325,21 +311,39 @@ uiActionFunctions['showRules'] = async (player, context) => {
     await uiWait(player, rulesForm);
 };
 
-uiActionFunctions['teleportTo'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['teleportTo'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'teleportTo' called by ${player.name} on ${targetPlayer.name}.`);
     player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
     player.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-});
+};
 
-uiActionFunctions['teleportHere'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['teleportHere'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'teleportHere' called by ${player.name} on ${targetPlayer.name}.`);
     targetPlayer.teleport(player.location, { dimension: player.dimension });
     player.sendMessage(`§aTeleported ${targetPlayer.name} to you.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-});
+};
 
-uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlayer, context) => {
+uiActionFunctions['showBountyForm'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'showBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
     const response = await uiWait(player, form);
@@ -364,9 +368,15 @@ uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlay
         player.sendMessage('§cFailed to place bounty.');
         playSoundFromConfig(player, 'commandError');
     }
-});
+};
 
-uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['toggleFreeze'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'toggleFreeze' called by ${player.name} on ${targetPlayer.name}.`);
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot use this action on yourself.');
@@ -394,9 +404,15 @@ uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
         targetPlayer.sendMessage('§cYou have been frozen by an admin.');
     }
     playSoundFromConfig(player, 'adminNotificationReceived');
-});
+};
 
-uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['clearInventory'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'clearInventory' called by ${player.name} on ${targetPlayer.name}.`);
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
@@ -413,9 +429,15 @@ uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) =>
     targetPlayer.sendMessage('§eYour inventory has been cleared by an admin.');
     playSoundFromConfig(player, 'adminNotificationReceived');
     playSoundFromConfig(targetPlayer, 'adminNotificationReceived');
-});
+};
 
-uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showKickForm'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'showKickForm' called by ${player.name} on ${targetPlayer.name}.`);
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot use this action on yourself.');
@@ -442,9 +464,15 @@ uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer
         playSoundFromConfig(player, 'commandError');
         console.error(`[UIManager] Kick failed: ${error.stack}`);
     }
-});
+};
 
-uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showReduceBountyForm'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'showReduceBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const targetData = getPlayer(targetPlayer.id);
     if (!targetData || targetData.bounty === 0) return player.sendMessage('§cThis player has no bounty.');
@@ -466,9 +494,15 @@ uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targ
         player.sendMessage('§cFailed to reduce bounty.');
         playSoundFromConfig(player, 'commandError');
     }
-});
+};
 
-uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showMuteForm'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'showMuteForm' called by ${player.name} on ${targetPlayer.name}.`);
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot use this action on yourself.');
@@ -499,9 +533,15 @@ uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer
     player.sendMessage(`§aSuccessfully muted ${targetPlayer.name} ${durationText}. Reason: ${reason || 'Muted by an admin.'}`);
     targetPlayer.sendMessage(`§cYou have been muted ${durationText}. Reason: ${reason || 'Muted by an admin.'}`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-});
+};
 
-uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['showUnmuteForm'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'showUnmuteForm' called by ${player.name} on ${targetPlayer.name}.`);
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
@@ -513,9 +553,15 @@ uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) =>
     punishmentManager.removePunishment(targetPlayer.id);
     player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-});
+};
 
-uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showBanForm'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'showBanForm' called by ${player.name} on ${targetPlayer.name}.`);
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot use this action on yourself.');
@@ -547,9 +593,15 @@ uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer)
     player.sendMessage(`§aSuccessfully banned ${targetPlayer.name} ${durationText}. Reason: ${banReason}`);
     playSoundFromConfig(player, 'adminNotificationReceived');
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${banReason}`);
-});
+};
 
-uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) => {
+uiActionFunctions['sendTpaRequest'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'sendTpaRequest' called by ${player.name} on ${targetPlayer.name}.`);
     const config = getConfig();
     if (!config.tpa.enabled) {
@@ -569,9 +621,15 @@ uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) =>
     } else {
         player.sendMessage(`§c${result.message}`);
     }
-});
+};
 
-uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showPayForm'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'showPayForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Pay ${targetPlayer.name}`).textField('Amount', 'Enter amount to pay');
     const response = await uiWait(player, form);
@@ -604,9 +662,15 @@ uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer)
             player.sendMessage(`§c${result.message}`);
         }
     }
-});
+};
 
-uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlayer) => {
+uiActionFunctions['showReportForm'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     debugLog(`[UIManager] Action 'showReportForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Report ${targetPlayer.name}`).textField('Reason', 'Enter reason for report');
     const response = await uiWait(player, form);
@@ -615,7 +679,7 @@ uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlay
     if (!reason) return player.sendMessage('§cYou must provide a reason for the report.');
     reportManager.createReport(player, targetPlayer, reason);
     player.sendMessage('§aThank you for your report. An admin will review it shortly.');
-});
+};
 
 uiActionFunctions['assignReport'] = (player, context) => {
     const { targetReport } = context;
