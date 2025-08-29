@@ -99,22 +99,6 @@ export const panelDefinitions = {
                 permissionLevel: 1024,
                 actionType: 'openPanel',
                 actionValue: 'helpfulLinksPanel'
-            },
-            {
-                id: 'testPlayerList',
-                text: '§bTest Player List',
-                icon: 'textures/ui/icon_multiplayer',
-                permissionLevel: 1,
-                actionType: 'openPanel',
-                actionValue: 'testPlayerListPanel'
-            },
-            {
-                id: 'testAction',
-                text: '§dTest Action',
-                icon: 'textures/ui/check',
-                permissionLevel: 1,
-                actionType: 'functionCall',
-                actionValue: 'showTestSuccessMessage'
             }
         ]
     },
@@ -374,10 +358,8 @@ export const panelDefinitions = {
         items: [
             {
                 id: 'subPanelMessage',
-                text: '§3This is a sub-panel!',
-                permissionLevel: 1,
-                actionType: 'openPanel', // No action, just a label
-                actionValue: 'testSubPanel'
+                text: '§3This is a sub-panel! (No Action)',
+                permissionLevel: 1
             }
         ]
     },

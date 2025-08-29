@@ -172,16 +172,7 @@ async function handleFormResponse(player, panelId, response, context) {
         const actionFunction = uiActionFunctions[selectedItem.actionValue];
         if (actionFunction) {
             debugLog(`[UIManager] Calling UI action function: ${selectedItem.actionValue}`);
-            const result = await actionFunction(player, context);
-
-            if (result === 'RELOAD') {
-                debugLog(`[UIManager] Action requested reload. Reloading panel '${panelId}'.`);
-                // Use a clean context, but keep targetPlayer/targetReport if it exists, as it's needed to rebuild the panel body.
-                const reloadContext = {};
-                if (context.targetPlayer) reloadContext.targetPlayer = context.targetPlayer;
-                if (context.targetReport) reloadContext.targetReport = context.targetReport;
-                return showPanel(player, panelId, reloadContext);
-            }
+            await actionFunction(player, context);
         } else {
             debugLog(`[UIManager] ERROR: UI action function '${selectedItem.actionValue}' not found.`);
         }
@@ -325,7 +316,6 @@ uiActionFunctions['showRules'] = async (player, context) => {
         .body(config.serverInfo.rules.join('\n'))
         .button('§l§8Close');
     await uiWait(player, rulesForm);
-    return 'RELOAD';
 };
 
 uiActionFunctions['teleportTo'] = async (player, context) => {
@@ -339,27 +329,6 @@ uiActionFunctions['teleportTo'] = async (player, context) => {
     player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
     player.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-    return 'RELOAD';
-};
-
-uiActionFunctions['showTestMessage'] = async (player, context) => {
-    debugLog(`[UIManager] Action 'showTestMessage' called by ${player.name}.`);
-    const form = new ActionFormData()
-        .title('Test Message')
-        .body('This is a test message from a UI action function.')
-        .button('OK');
-    await uiWait(player, form);
-    return 'RELOAD';
-};
-
-uiActionFunctions['showTestSuccessMessage'] = async (player, context) => {
-    debugLog(`[UIManager] Action 'showTestSuccessMessage' called by ${player.name}.`);
-    const form = new ActionFormData()
-        .title('Test Success')
-        .body('The UI action was called successfully and the panel was reloaded.')
-        .button('OK');
-    await uiWait(player, form);
-    return 'RELOAD';
 };
 
 uiActionFunctions['teleportHere'] = async (player, context) => {
@@ -373,7 +342,6 @@ uiActionFunctions['teleportHere'] = async (player, context) => {
     targetPlayer.teleport(player.location, { dimension: player.dimension });
     player.sendMessage(`§aTeleported ${targetPlayer.name} to you.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-    return 'RELOAD';
 };
 
 uiActionFunctions['showBountyForm'] = async (player, context) => {
@@ -407,7 +375,6 @@ uiActionFunctions['showBountyForm'] = async (player, context) => {
         player.sendMessage('§cFailed to place bounty.');
         playSoundFromConfig(player, 'commandError');
     }
-    return 'RELOAD';
 };
 
 uiActionFunctions['toggleFreeze'] = async (player, context) => {
@@ -444,7 +411,6 @@ uiActionFunctions['toggleFreeze'] = async (player, context) => {
         targetPlayer.sendMessage('§cYou have been frozen by an admin.');
     }
     playSoundFromConfig(player, 'adminNotificationReceived');
-    return 'RELOAD';
 };
 
 uiActionFunctions['clearInventory'] = async (player, context) => {
@@ -470,7 +436,6 @@ uiActionFunctions['clearInventory'] = async (player, context) => {
     targetPlayer.sendMessage('§eYour inventory has been cleared by an admin.');
     playSoundFromConfig(player, 'adminNotificationReceived');
     playSoundFromConfig(targetPlayer, 'adminNotificationReceived');
-    return 'RELOAD';
 };
 
 uiActionFunctions['showKickForm'] = async (player, context) => {
@@ -506,7 +471,6 @@ uiActionFunctions['showKickForm'] = async (player, context) => {
         playSoundFromConfig(player, 'commandError');
         console.error(`[UIManager] Kick failed: ${error.stack}`);
     }
-    return 'RELOAD';
 };
 
 uiActionFunctions['showReduceBountyForm'] = async (player, context) => {
@@ -537,7 +501,6 @@ uiActionFunctions['showReduceBountyForm'] = async (player, context) => {
         player.sendMessage('§cFailed to reduce bounty.');
         playSoundFromConfig(player, 'commandError');
     }
-    return 'RELOAD';
 };
 
 uiActionFunctions['showMuteForm'] = async (player, context) => {
@@ -577,7 +540,6 @@ uiActionFunctions['showMuteForm'] = async (player, context) => {
     player.sendMessage(`§aSuccessfully muted ${targetPlayer.name} ${durationText}. Reason: ${reason || 'Muted by an admin.'}`);
     targetPlayer.sendMessage(`§cYou have been muted ${durationText}. Reason: ${reason || 'Muted by an admin.'}`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-    return 'RELOAD';
 };
 
 uiActionFunctions['showUnmuteForm'] = async (player, context) => {
@@ -598,7 +560,6 @@ uiActionFunctions['showUnmuteForm'] = async (player, context) => {
     punishmentManager.removePunishment(targetPlayer.id);
     player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-    return 'RELOAD';
 };
 
 uiActionFunctions['showBanForm'] = async (player, context) => {
@@ -639,7 +600,6 @@ uiActionFunctions['showBanForm'] = async (player, context) => {
     player.sendMessage(`§aSuccessfully banned ${targetPlayer.name} ${durationText}. Reason: ${banReason}`);
     playSoundFromConfig(player, 'adminNotificationReceived');
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${banReason}`);
-    return 'RELOAD';
 };
 
 uiActionFunctions['sendTpaRequest'] = async (player, context) => {
@@ -709,7 +669,6 @@ uiActionFunctions['showPayForm'] = async (player, context) => {
             player.sendMessage(`§c${result.message}`);
         }
     }
-    return 'RELOAD';
 };
 
 uiActionFunctions['showReportForm'] = async (player, context) => {
@@ -727,7 +686,6 @@ uiActionFunctions['showReportForm'] = async (player, context) => {
     if (!reason) return player.sendMessage('§cYou must provide a reason for the report.');
     reportManager.createReport(player, targetPlayer, reason);
     player.sendMessage('§aThank you for your report. An admin will review it shortly.');
-    return 'RELOAD';
 };
 
 uiActionFunctions['assignReport'] = (player, context) => {
@@ -796,7 +754,6 @@ uiActionFunctions['showUnbanForm'] = async (player, context) => {
     punishmentManager.removePunishment(targetId);
     player.sendMessage(`§aSuccessfully unbanned ${targetName}. They can now rejoin the server.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-    return 'RELOAD';
 };
 
 uiActionFunctions['showTestMessage'] = async (player, context) => {
@@ -806,15 +763,13 @@ uiActionFunctions['showTestMessage'] = async (player, context) => {
         .body('This is a test message from a UI action function.')
         .button('OK');
     await uiWait(player, form);
-    return 'RELOAD';
 };
 
 uiActionFunctions['showTestSuccessMessage'] = async (player, context) => {
     debugLog(`[UIManager] Action 'showTestSuccessMessage' called by ${player.name}.`);
     const form = new ActionFormData()
         .title('Test Success')
-        .body('The UI action was called successfully and the panel was reloaded.')
+        .body('The UI action was called successfully.')
         .button('OK');
     await uiWait(player, form);
-    return 'RELOAD';
 };
