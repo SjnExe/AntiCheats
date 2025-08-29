@@ -5,7 +5,7 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 commandManager.register({
     name: 'ecwipe',
     description: "Clears a player's Ender Chest.",
-    category: '§cModeration',
+    category: 'Administration',
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {
@@ -23,7 +23,7 @@ commandManager.register({
             return;
         }
 
-        const enderChestContainer = targetPlayer.enderChest;
+        const enderChestContainer = targetPlayer.getComponent('minecraft:ender_chest')?.container;
         if (!enderChestContainer) {
             player.sendMessage(`§cCould not access the Ender Chest for ${targetPlayer.name}.`);
             playSound(player, 'note.bass');

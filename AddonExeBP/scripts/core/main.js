@@ -49,10 +49,7 @@ function mainTick() {
 system.run(() => {
     loadConfig();
     // Initial population of the player cache
-    for (const player of world.getAllPlayers()) {
-        playerCache.addPlayerToCache(player);
-    }
-    playerDataManager.loadAllOnlinePlayerData();
+    // Player data is loaded on the playerSpawn event, no need to do it here.
     debugLog('[AddonExe] Initializing addon...');
     loadPunishments();
     loadReports();

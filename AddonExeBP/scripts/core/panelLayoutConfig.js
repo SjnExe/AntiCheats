@@ -53,6 +53,22 @@ export const panelDefinitions = {
                 actionValue: 'reportListPanel'
             },
             {
+                id: 'moderation',
+                text: '§cModeration',
+                icon: 'textures/ui/hammer_l.png',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'moderationPanel'
+            },
+            {
+                id: 'testPanel',
+                text: '§eTest Panel',
+                icon: 'textures/ui/icon_setting',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'testPanel'
+            },
+            {
                 id: 'bountyList',
                 text: '§cBounty List',
                 icon: 'textures/items/netherite_sword.png',
@@ -73,16 +89,16 @@ export const panelDefinitions = {
                 text: '§3My Stats',
                 icon: 'textures/ui/profile_glyph_color.png',
                 permissionLevel: 1024,
-                actionType: 'functionCall',
-                actionValue: 'showMyStats'
+                actionType: 'openPanel',
+                actionValue: 'myStatsPanel'
             },
             {
                 id: 'helpfulLinks',
                 text: '§9Helpful Links',
                 icon: 'textures/items/chain',
                 permissionLevel: 1024,
-                actionType: 'functionCall',
-                actionValue: 'showHelpfulLinks'
+                actionType: 'openPanel',
+                actionValue: 'helpfulLinksPanel'
             }
         ]
     },
@@ -273,5 +289,64 @@ export const panelDefinitions = {
         title: '§l§cBounty List§r',
         parentPanelId: 'mainPanel',
         items: [] // This will be populated dynamically by uiManager
+    },
+    myStatsPanel: {
+        title: '§l§3Your Stats§r',
+        parentPanelId: 'mainPanel',
+        items: [] // Body is dynamically generated
+    },
+    helpfulLinksPanel: {
+        title: '§l§9Helpful Links§r',
+        parentPanelId: 'mainPanel',
+        items: [] // Body is dynamically generated
+    },
+    moderationPanel: {
+        title: '§l§cModeration Tools§r',
+        parentPanelId: 'mainPanel',
+        items: [
+            {
+                id: 'unbanPlayer',
+                text: '§2Unban Player',
+                icon: 'textures/ui/check.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'showUnbanForm'
+            }
+        ]
+    },
+    testPanel: {
+        title: '§l§eTest Panel§r',
+        parentPanelId: 'mainPanel',
+        items: [
+            {
+                id: 'testMessage',
+                text: '§aShow a Test Message',
+                icon: 'textures/ui/chat_send.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'showTestMessage'
+            },
+            {
+                id: 'openSubPanel',
+                text: '§6Open Sub-Panel',
+                icon: 'textures/ui/icon_multiplayer',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'testSubPanel'
+            }
+        ]
+    },
+    testSubPanel: {
+        title: '§l§6Test Sub-Panel§r',
+        parentPanelId: 'testPanel',
+        items: [
+            {
+                id: 'subPanelMessage',
+                text: '§3This is a sub-panel!',
+                permissionLevel: 1,
+                actionType: 'openPanel', // No action, just a label
+                actionValue: 'testSubPanel'
+            }
+        ]
     }
 };

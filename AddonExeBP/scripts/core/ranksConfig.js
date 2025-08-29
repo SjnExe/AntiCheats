@@ -28,7 +28,7 @@ export const defaultChatFormatting = {
 };
 
 /** @type {string} */
-export const defaultNametagPrefix = '§7Member §f[AddonExe]';
+export const defaultNametagPrefix = '§7Member';
 
 /** @type {number} */
 export const defaultPermissionLevel = 1024;
@@ -44,7 +44,7 @@ export const rankDefinitions = [
             nameColor: '§4',
             messageColor: '§f'
         },
-        nametagPrefix: '§4Owner §f[AddonExe]',
+        nametagPrefix: '§4Owner',
         conditions: [
             { type: 'ownerName' }
         ]
@@ -58,7 +58,7 @@ export const rankDefinitions = [
             nameColor: '§c',
             messageColor: '§f'
         },
-        nametagPrefix: '§cAdmin §f[AddonExe]',
+        nametagPrefix: '§cAdmin',
         conditions: [
             { type: 'adminTag' }
         ]

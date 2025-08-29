@@ -7,7 +7,7 @@ import { parseDuration, playSoundFromConfig } from '../../core/utils.js';
 commandManager.register({
     name: 'ban',
     description: 'Bans a player for a specified duration with a reason.',
-    category: '§cModeration',
+    category: 'Moderation',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {
@@ -84,7 +84,7 @@ commandManager.register({
 commandManager.register({
     name: 'unban',
     description: 'Unbans a player.',
-    category: '§cModeration',
+    category: 'Moderation',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         if (args.length < 1) {

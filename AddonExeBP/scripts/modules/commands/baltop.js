@@ -5,9 +5,9 @@ import { getConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'baltop',
-    aliases: ['topbal'],
+    aliases: ['topbal', 'rich'],
     description: 'Shows the players with the highest balances on the server.',
-    category: '§eEconomy System',
+    category: 'Economy',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

@@ -23,11 +23,45 @@ import { world } from '@minecraft/server';
 import { debugLog } from './logger.js';
 
 const playerPropertyPrefix = 'addonexe:player.';
+const playerNameIdMapKey = 'addonexe:playerNameIdMap';
 
 /**
  * @type {Map<string, PlayerData>}
  */
 const activePlayerData = new Map();
+
+/**
+ * @type {Map<string, string>}
+ */
+let playerNameIdMap = new Map();
+
+/**
+ * Saves the player name-to-ID map to a dynamic property.
+ */
+function saveNameIdMap() {
+    try {
+        const dataToSave = Array.from(playerNameIdMap.entries());
+        world.setDynamicProperty(playerNameIdMapKey, JSON.stringify(dataToSave));
+    } catch (e) {
+        console.error(`[PlayerDataManager] Failed to save name-to-ID map: ${e.stack}`);
+    }
+}
+
+/**
+ * Loads the player name-to-ID map from a dynamic property.
+ */
+function loadNameIdMap() {
+    try {
+        const dataString = world.getDynamicProperty(playerNameIdMapKey);
+        if (dataString && typeof dataString === 'string') {
+            const parsedData = JSON.parse(dataString);
+            playerNameIdMap = new Map(parsedData);
+            debugLog(`[PlayerDataManager] Loaded ${playerNameIdMap.size} entries into name-to-ID map.`);
+        }
+    } catch (e) {
+        console.error(`[PlayerDataManager] Failed to load name-to-ID map: ${e.stack}`);
+    }
+}
 
 /**
  * Saves a single player's data to a unique dynamic property.
@@ -71,6 +105,7 @@ export function loadPlayerData(playerId) {
  */
 export function loadAllOnlinePlayerData() {
     debugLog('[PlayerDataManager] Loading data for all online players...');
+    loadNameIdMap(); // Load the name map first
     for (const player of world.getAllPlayers()) {
         getOrCreatePlayer(player);
     }
@@ -84,6 +119,12 @@ export function loadAllOnlinePlayerData() {
  * @returns {PlayerData}
  */
 export function getOrCreatePlayer(player) {
+    // Update the name-to-ID map every time a player is processed.
+    if (playerNameIdMap.get(player.name.toLowerCase()) !== player.id) {
+        playerNameIdMap.set(player.name.toLowerCase(), player.id);
+        saveNameIdMap();
+    }
+
     if (activePlayerData.has(player.id)) {
         return activePlayerData.get(player.id);
     }
@@ -109,6 +150,15 @@ export function getOrCreatePlayer(player) {
     activePlayerData.set(player.id, newPlayerData);
     savePlayerData(player.id); // Save the new player's data immediately
     return newPlayerData;
+}
+
+/**
+ * Gets a player's ID from their name via the lookup map.
+ * @param {string} playerName The name of the player.
+ * @returns {string | undefined} The player's ID, or undefined if not found.
+ */
+export function getPlayerIdByName(playerName) {
+    return playerNameIdMap.get(playerName.toLowerCase());
 }
 
 /**

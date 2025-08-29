@@ -6,7 +6,8 @@ commandManager.register({
     name: 'tpadeny',
     aliases: ['tpno'],
     description: 'Denies an incoming TPA request.',
-    category: '§3TPA System',
+    aliases: ['tpno', 'tpdeny'],
+    category: 'TPA System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

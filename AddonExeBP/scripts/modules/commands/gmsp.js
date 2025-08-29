@@ -5,9 +5,9 @@ import { getPlayer } from '../../core/playerDataManager.js';
 
 commandManager.register({
     name: 'gmsp',
-    aliases: ['sp'],
+    aliases: ['sp', 'spectator'],
     description: 'Sets your or another player\'s gamemode to Spectator.',
-    category: '§4Administration',
+    category: 'General',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         let targetPlayer = player;

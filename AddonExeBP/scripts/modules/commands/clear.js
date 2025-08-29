@@ -6,13 +6,14 @@ import { getPlayer } from '../../core/playerDataManager.js';
 commandManager.register({
     name: 'clear',
     description: 'Clears the inventory of a player or yourself.',
-    category: '§cModeration',
+    aliases: ['ci', 'clearinv'],
+    category: 'General',
     permissionLevel: 0, // Default permission for self-clearing
     execute: (player, args) => {
         if (args.length > 0) {
             // Clearing another player's inventory (requires admin)
-            const pData = getPlayer(player.id);
-            if (pData.permissionLevel > 1) { // Assuming 0=owner, 1=admin
+            const executorData = getPlayer(player.id);
+            if (executorData.permissionLevel > 1) { // Assuming 0=owner, 1=admin
                 player.sendMessage("§cYou do not have permission to clear another player's inventory.");
                 playSound(player, 'note.bass');
                 return;
@@ -23,6 +24,13 @@ commandManager.register({
 
             if (!targetPlayer) {
                 player.sendMessage(`§cPlayer "${targetName}" not found.`);
+                playSound(player, 'note.bass');
+                return;
+            }
+
+            const targetData = getPlayer(targetPlayer.id);
+            if (executorData.permissionLevel >= targetData.permissionLevel) {
+                player.sendMessage("§cYou cannot clear the inventory of a player with the same or higher rank than you.");
                 playSound(player, 'note.bass');
                 return;
             }

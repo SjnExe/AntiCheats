@@ -1,10 +1,11 @@
 import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
+import { getPlayer } from '../../core/playerDataManager.js';
 
 commandManager.register({
     name: 'freeze',
     description: 'Freezes or unfreezes a player.',
-    category: '§cModeration',
+    category: 'Moderation',
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {
@@ -22,6 +23,19 @@ commandManager.register({
 
         if (player.id === targetPlayer.id) {
             player.sendMessage('§cYou cannot freeze yourself.');
+            return;
+        }
+
+        const executorData = getPlayer(player.id);
+        const targetData = getPlayer(targetPlayer.id);
+
+        if (!executorData || !targetData) {
+            player.sendMessage('§cCould not retrieve player data for permission check.');
+            return;
+        }
+
+        if (executorData.permissionLevel >= targetData.permissionLevel) {
+            player.sendMessage('§cYou cannot freeze a player with the same or higher rank than you.');
             return;
         }
 
