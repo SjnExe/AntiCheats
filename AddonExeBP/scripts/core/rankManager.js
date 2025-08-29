@@ -1,5 +1,6 @@
 import { rankDefinitions, defaultPermissionLevel } from './ranksConfig.js';
 import { debugLog } from './logger.js';
+import { getConfig } from './configManager.js';
 
 let sortedRanks = [];
 
@@ -14,10 +15,10 @@ export function initialize() {
 /**
  * Gets the rank for a given player.
  * @param {import('@minecraft/server').Player} player
- * @param {object} config The addon's configuration object.
  * @returns {import('./ranksConfig.js').RankDefinition}
  */
-export function getPlayerRank(player, config) {
+export function getPlayerRank(player) {
+    const config = getConfig();
     const ownerNames = (config.ownerPlayerNames || []).map(name => name.toLowerCase());
     const adminTag = config.adminTag;
 
