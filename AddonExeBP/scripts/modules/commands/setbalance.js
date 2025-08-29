@@ -5,9 +5,8 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({
     name: 'setbalance',
-    aliases: ['setbal'],
-    description: 'Sets a player\'s balance to a specific amount. (Owner only)',
     aliases: ['setbal', 'setmoney'],
+    description: 'Sets a player\'s balance to a specific amount. (Owner only)',
     category: 'Economy',
     permissionLevel: 0, // Owner-only, will be checked manually
     execute: (player, args) => {

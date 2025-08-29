@@ -30,7 +30,7 @@ commandManager.register({
 
             const targetData = getPlayer(targetPlayer.id);
             if (executorData.permissionLevel >= targetData.permissionLevel) {
-                player.sendMessage("§cYou cannot clear the inventory of a player with the same or higher rank than you.");
+                player.sendMessage('§cYou cannot clear the inventory of a player with the same or higher rank than you.');
                 playSound(player, 'note.bass');
                 return;
             }

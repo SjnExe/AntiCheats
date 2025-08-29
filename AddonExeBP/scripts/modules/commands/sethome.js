@@ -4,9 +4,8 @@ import { getConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'sethome',
-    aliases: ['addhome'],
+    aliases: ['addhome', 'createhome'],
     description: 'Sets a home at your current location.',
-    aliases: ['createhome'],
     category: 'Home System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
