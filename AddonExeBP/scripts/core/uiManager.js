@@ -13,7 +13,7 @@ import * as reportManager from './reportManager.js';
 import { getCooldown, setCooldown } from './cooldownManager.js';
 import { world } from '@minecraft/server';
 
-const uiActionFunctions = {};
+export const uiActionFunctions = {};
 
 // Main entry point for showing a panel.
 export async function showPanel(player, panelId, context = {}) {
@@ -165,10 +165,15 @@ async function handleFormResponse(player, panelId, response, context) {
         const actionFunction = uiActionFunctions[selectedItem.actionValue];
         if (actionFunction) {
             debugLog(`[UIManager] Calling UI action function: ${selectedItem.actionValue}`);
-            return actionFunction(player, context);
+            // We call the function but do not return its result.
+            // Returning the result (which is often a promise that resolves to undefined)
+            // seems to cause the "not a function" error in the native UI handler.
+            actionFunction(player, context);
         } else {
             debugLog(`[UIManager] ERROR: UI action function '${selectedItem.actionValue}' not found.`);
         }
+        // We explicitly return here to break the promise chain for function calls.
+        return;
     }
 }
 
@@ -301,7 +306,7 @@ function buildReportListForm(title) {
 // --- UI Action Functions ---
 
 function withTargetPlayer(action) {
-    return async (player, context) => {
+    return (player, context) => {
         const { targetPlayer } = context;
         if (!targetPlayer || !targetPlayer.isValid()) {
             player.sendMessage('§cTarget player not found or has logged off.');
@@ -310,7 +315,7 @@ function withTargetPlayer(action) {
             return;
         }
         debugLog(`[UIManager] Executing targeted action for ${player.name} on target ${targetPlayer.name}.`);
-        await action(player, targetPlayer, context);
+        action(player, targetPlayer, context);
     };
 }
 

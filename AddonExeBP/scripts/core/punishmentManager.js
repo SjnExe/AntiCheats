@@ -65,7 +65,6 @@ export function addPunishment(playerId, punishment) {
     punishments.set(playerId, punishment);
     needsSave = true;
     debugLog(`[PunishmentManager] Added ${punishment.type} for player ${playerId}. Expires: ${new Date(punishment.expires).toLocaleString()}`);
-    savePunishments(); // Save immediately
 }
 
 /**
@@ -97,10 +96,8 @@ export function removePunishment(playerId) {
     if (punishments.delete(playerId)) {
         needsSave = true;
         debugLog(`[PunishmentManager] Removed punishment for player ${playerId}.`);
-        savePunishments(); // Save immediately
     }
 }
 
-// Punishments are now saved immediately, so the periodic save is not strictly necessary,
-// but can be kept as a fallback. For now, we will disable it to avoid redundant saves.
-// system.runInterval(savePunishments, saveIntervalTicks);
+// Periodically save punishments
+system.runInterval(savePunishments, saveIntervalTicks);

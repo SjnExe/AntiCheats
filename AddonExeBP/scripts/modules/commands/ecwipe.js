@@ -23,7 +23,7 @@ commandManager.register({
             return;
         }
 
-        const enderChestContainer = targetPlayer.enderChest;
+        const enderChestContainer = targetPlayer.getComponent('minecraft:ender_chest')?.container;
         if (!enderChestContainer) {
             player.sendMessage(`§cCould not access the Ender Chest for ${targetPlayer.name}.`);
             playSound(player, 'note.bass');
