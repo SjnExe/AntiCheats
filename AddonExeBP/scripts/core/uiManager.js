@@ -87,47 +87,26 @@ async function handleFormResponse(player, panelId, response, context) {
 
     if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'testPlayerListPanel') {
         const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
-        const ITEMS_PER_PAGE = 8;
-        const page = context.page || 0;
-        const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
         let selection = response.selection;
 
-        if (selection === 0) {
+        if (selection === 0) { // Back button
             debugLog(`[UIManager] Player ${player.name} selected 'Back' from player list.`);
-            return showPanel(player, 'mainPanel', context);
+            // Correctly go back to the defined parent panel
+            const parentPanel = panelDefinitions[panelId]?.parentPanelId || 'mainPanel';
+            return showPanel(player, parentPanel, context);
         }
-        selection--;
+        selection--; // Adjust for the back button
 
-        if (page > 0) {
-            if (selection === 0) {
-                debugLog(`[UIManager] Player ${player.name} selected 'Previous Page' from player list.`);
-                return showPanel(player, panelId, { ...context, page: page - 1 });
+        const selectedPlayer = onlinePlayers[selection];
+        if (selectedPlayer) {
+            let nextPanel;
+            if (panelId === 'playerListPanel' || panelId === 'testPlayerListPanel') {
+                nextPanel = 'playerManagementPanel';
+            } else { // publicPlayerListPanel
+                nextPanel = 'publicPlayerActionsPanel';
             }
-            selection--;
-        }
-
-        const startIndex = page * ITEMS_PER_PAGE;
-        const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-        if (selection < pagePlayers.length) {
-            const selectedPlayer = pagePlayers[selection];
-            if (selectedPlayer) {
-                let nextPanel;
-                if (panelId === 'playerListPanel') {
-                    nextPanel = 'playerManagementPanel';
-                } else if (panelId === 'publicPlayerListPanel') {
-                    nextPanel = 'publicPlayerActionsPanel';
-                } else { // testPlayerListPanel
-                    nextPanel = 'playerManagementPanel'; // Reuse for testing actions
-                }
-                debugLog(`[UIManager] Player ${player.name} selected player ${selectedPlayer.name}. Opening '${nextPanel}'.`);
-                return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
-            }
-        } else {
-            if (page < totalPages - 1) {
-                debugLog(`[UIManager] Player ${player.name} selected 'Next Page' from player list.`);
-                return showPanel(player, panelId, { ...context, page: page + 1 });
-            }
+            debugLog(`[UIManager] Player ${player.name} selected player ${selectedPlayer.name}. Opening '${nextPanel}'.`);
+            return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
         }
         return;
     }
@@ -245,20 +224,11 @@ function addPanelBody(form, player, panelId, context) {
 function buildPlayerListForm(title, player, panelId, context) {
     const form = new ActionFormData().title(title);
     const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
-    const ITEMS_PER_PAGE = 8;
-    const page = context.page || 0;
-    const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
-    const startIndex = page * ITEMS_PER_PAGE;
-    const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     form.button('§l§8< Back', 'textures/gui/controls/left.png');
 
-    if (page > 0) {
-        form.button('§l§8< Previous Page', 'textures/gui/controls/left.png');
-    }
-
     const config = getConfig();
-    for (const p of pagePlayers) {
+    for (const p of onlinePlayers) {
         const rank = getPlayerRank(p, config);
         let displayName = `${rank.chatFormatting?.prefixText ?? ''}${p.name}§r`;
         let icon;
@@ -267,11 +237,7 @@ function buildPlayerListForm(title, player, panelId, context) {
         form.button(displayName, icon);
     }
 
-    if (page < totalPages - 1) {
-        form.button('§l§2Next Page >', 'textures/gui/controls/right.png');
-    }
-
-    form.body(`Page ${page + 1} of ${totalPages}`);
+    form.body(`Total Players: ${onlinePlayers.length}`);
     return form;
 }
 
