@@ -1,6 +1,5 @@
 import { system } from '@minecraft/server';
 import { getPlayer } from '../../core/playerDataManager.js';
-import { getConfig } from '../../core/configManager.js';
 
 class CommandManager {
     constructor() {
@@ -25,7 +24,7 @@ class CommandManager {
             return;
         }
 
-        const commandData = { category: 'General', permissionLevel: 1024, ...commandOptions };
+        const commandData = { category: 'General', ...commandOptions };
         this.commands.set(name, commandData);
 
         if (commandOptions.aliases) {
@@ -41,15 +40,15 @@ class CommandManager {
     }
 
     /**
-     * Handles an incoming chat message and executes it if it's a valid command.
+     * Handles an incoming chat message and schedules it for execution if it's a valid command.
      * @param {import('@minecraft/server').BeforeChatSendEvent} eventData The chat event data.
+     * @param {object} config The addon's configuration object.
+     * @returns {boolean} `true` if the message was a command, otherwise `false`.
      */
-    handleCommand(eventData) {
-        const config = getConfig();
+    handleCommand(eventData, config) {
         const { sender: player, message } = eventData;
-
         if (!message.startsWith(config.commandPrefix)) {
-            return; // Not a command, do nothing. Let another system handle chat formatting.
+            return false; // Not a command, let chat formatting handle it.
         }
 
         eventData.cancel = true; // It's a command, so don't send it to public chat.
@@ -57,6 +56,7 @@ class CommandManager {
         const args = message.slice(config.commandPrefix.length).trim().split(/ +/);
         let commandName = args.shift().toLowerCase();
 
+        // Check if the command name is an alias
         if (this.aliases.has(commandName)) {
             commandName = this.aliases.get(commandName);
         }
@@ -65,16 +65,23 @@ class CommandManager {
 
         if (!command) {
             player.sendMessage(`§cUnknown command. Type §a${config.commandPrefix}help§c for a list of commands.`);
-            return;
+            return true;
+        }
+
+        // Check if the command is disabled in the config
+        const commandSetting = config.commandSettings?.[commandName];
+        if (commandSetting && commandSetting.enabled === false) {
+            player.sendMessage('§cThis command is currently disabled by the server administrator.');
+            return true;
         }
 
         const pData = getPlayer(player.id);
-        // pData should always exist here because of the playerSpawn event handler, but a check is good practice.
         if (!pData || pData.permissionLevel > command.permissionLevel) {
             player.sendMessage('§cYou do not have permission to use this command.');
-            return;
+            return true;
         }
 
+        // Schedule the command to run on the next tick to escape the read-only event context.
         system.run(() => {
             try {
                 command.execute(player, args);
@@ -83,6 +90,8 @@ class CommandManager {
                 player.sendMessage('§cAn unexpected error occurred while running this command.');
             }
         });
+
+        return true;
     }
 }
 

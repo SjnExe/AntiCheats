@@ -1,7 +1,3 @@
-import { world } from '@minecraft/server';
-import { getConfig } from './configManager.js';
-import { debugLog } from './logger.js'; // I'll need to create logger.js next
-
 /**
  * @typedef {object} HomeLocation
  * @property {number} x
@@ -22,9 +18,15 @@ import { debugLog } from './logger.js'; // I'll need to create logger.js next
  * @property {boolean} xrayNotifications
  */
 
+import { getConfig } from './configManager.js';
+import { world } from '@minecraft/server';
+import { debugLog } from './logger.js';
+
 const playerPropertyPrefix = 'addonexe:player.';
 
-/** @type {Map<string, PlayerData>} */
+/**
+ * @type {Map<string, PlayerData>}
+ */
 const activePlayerData = new Map();
 
 /**
@@ -40,7 +42,6 @@ export function savePlayerData(playerId) {
         const playerData = activePlayerData.get(playerId);
         const dataString = JSON.stringify(playerData);
         world.setDynamicProperty(`${playerPropertyPrefix}${playerId}`, dataString);
-        debugLog(`[PlayerDataManager] Saved data for player ${playerId}.`);
     } catch (e) {
         console.error(`[PlayerDataManager] Failed to save data for player ${playerId}: ${e.stack}`);
     }
@@ -51,13 +52,12 @@ export function savePlayerData(playerId) {
  * @param {string} playerId The ID of the player to load.
  * @returns {PlayerData | null} The loaded player data, or null if not found.
  */
-function loadPlayerData(playerId) {
+export function loadPlayerData(playerId) {
     try {
         const dataString = world.getDynamicProperty(`${playerPropertyPrefix}${playerId}`);
         if (dataString && typeof dataString === 'string') {
             const playerData = JSON.parse(dataString);
             activePlayerData.set(playerId, playerData);
-            debugLog(`[PlayerDataManager] Loaded data for player ${playerId} from properties.`);
             return playerData;
         }
     } catch (e) {
@@ -67,8 +67,19 @@ function loadPlayerData(playerId) {
 }
 
 /**
+ * Loads data for all currently online players. Typically run on startup.
+ */
+export function loadAllOnlinePlayerData() {
+    debugLog('[PlayerDataManager] Loading data for all online players...');
+    for (const player of world.getAllPlayers()) {
+        getOrCreatePlayer(player);
+    }
+    debugLog(`[PlayerDataManager] Player data cache initialized for ${activePlayerData.size} players.`);
+}
+
+
+/**
  * Gets a player's data from the cache, or loads/creates it if it doesn't exist.
- * This should be the primary way to access player data for a player who has just joined.
  * @param {import('@minecraft/server').Player} player
  * @returns {PlayerData}
  */
@@ -84,7 +95,6 @@ export function getOrCreatePlayer(player) {
     }
 
     // If still not found, create new data
-    debugLog(`[PlayerDataManager] No data found for ${player.name}. Creating new data object.`);
     const config = getConfig();
     const newPlayerData = {
         rankId: 'member',
@@ -102,7 +112,7 @@ export function getOrCreatePlayer(player) {
 }
 
 /**
- * Gets a player's data from the in-memory cache. Returns undefined if not cached.
+ * Gets a player's data from the in-memory cache.
  * @param {string} playerId
  * @returns {PlayerData | undefined}
  */
@@ -116,9 +126,15 @@ export function getPlayer(playerId) {
  */
 export function handlePlayerLeave(playerId) {
     if (activePlayerData.has(playerId)) {
-        debugLog(`[PlayerDataManager] Player ${playerId} is leaving. Saving data...`);
         savePlayerData(playerId);
         activePlayerData.delete(playerId);
-        debugLog(`[PlayerDataManager] Player ${playerId} removed from active cache.`);
     }
+}
+
+/**
+ * Gets all active (online) player data from the cache.
+ * @returns {Map<string, PlayerData>}
+ */
+export function getAllPlayerData() {
+    return activePlayerData;
 }

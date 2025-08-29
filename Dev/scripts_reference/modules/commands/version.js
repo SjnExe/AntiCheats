@@ -9,6 +9,6 @@ commandManager.register({
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();
-        player.sendMessage(`§aAddonExe Version: §e${config.version}`);
+        player.sendMessage(`§7AddonExe Version: §e${config.version}`);
     }
 });
