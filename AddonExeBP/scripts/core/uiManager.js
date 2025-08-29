@@ -748,3 +748,12 @@ uiActionFunctions['showUnbanForm'] = async (player, context) => {
     player.sendMessage(`§aSuccessfully unbanned ${targetName}. They can now rejoin the server.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 };
+
+uiActionFunctions['showTestMessage'] = async (player, context) => {
+    debugLog(`[UIManager] Action 'showTestMessage' called by ${player.name}.`);
+    const form = new ActionFormData()
+        .title('Test Message')
+        .body('This is a test message from a UI action function.')
+        .button('OK');
+    await uiWait(player, form);
+};

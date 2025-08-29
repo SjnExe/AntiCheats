@@ -61,6 +61,14 @@ export const panelDefinitions = {
                 actionValue: 'moderationPanel'
             },
             {
+                id: 'testPanel',
+                text: '§eTest Panel',
+                icon: 'textures/ui/icon_setting',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'testPanel'
+            },
+            {
                 id: 'bountyList',
                 text: '§cBounty List',
                 icon: 'textures/items/netherite_sword.png',
@@ -303,6 +311,41 @@ export const panelDefinitions = {
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showUnbanForm'
+            }
+        ]
+    },
+    testPanel: {
+        title: '§l§eTest Panel§r',
+        parentPanelId: 'mainPanel',
+        items: [
+            {
+                id: 'testMessage',
+                text: '§aShow a Test Message',
+                icon: 'textures/ui/chat_send.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'showTestMessage'
+            },
+            {
+                id: 'openSubPanel',
+                text: '§6Open Sub-Panel',
+                icon: 'textures/ui/icon_multiplayer',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'testSubPanel'
+            }
+        ]
+    },
+    testSubPanel: {
+        title: '§l§6Test Sub-Panel§r',
+        parentPanelId: 'testPanel',
+        items: [
+            {
+                id: 'subPanelMessage',
+                text: '§3This is a sub-panel!',
+                permissionLevel: 1,
+                actionType: 'openPanel', // No action, just a label
+                actionValue: 'testSubPanel'
             }
         ]
     }
