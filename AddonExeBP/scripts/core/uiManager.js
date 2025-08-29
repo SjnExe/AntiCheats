@@ -59,9 +59,9 @@ async function buildPanelForm(player, panelId, context) {
         title = config.serverName || panelDef.title;
     }
 
-    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'bountyListPanel' || panelId === 'reportListPanel' || panelId === 'testPlayerListPanel') {
+    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'bountyListPanel' || panelId === 'reportListPanel' || panelId === 'testPlayerListPanel' || panelId === 'testPlayerListDirect' || panelId === 'testPlayerListCommand') {
         debugLog(`[UIManager] Building dynamic list form for panel '${panelId}'.`);
-        if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'testPlayerListPanel') return buildPlayerListForm(title, player, panelId, context);
+        if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'testPlayerListPanel' || panelId === 'testPlayerListDirect' || panelId === 'testPlayerListCommand') return buildPlayerListForm(title, player, panelId, context);
         if (panelId === 'bountyListPanel') return buildBountyListForm(title);
         if (panelId === 'reportListPanel') return buildReportListForm(title);
     }
@@ -85,28 +85,54 @@ async function handleFormResponse(player, panelId, response, context) {
         return;
     }
 
-    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'testPlayerListPanel') {
+    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'testPlayerListPanel' || panelId === 'testPlayerListDirect' || panelId === 'testPlayerListCommand') {
         const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
+        const ITEMS_PER_PAGE = 100;
+        const page = context.page || 0;
+        const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
         let selection = response.selection;
 
-        if (selection === 0) { // Back button
+        if (selection === 0) {
             debugLog(`[UIManager] Player ${player.name} selected 'Back' from player list.`);
-            // Correctly go back to the defined parent panel
             const parentPanel = panelDefinitions[panelId]?.parentPanelId || 'mainPanel';
             return showPanel(player, parentPanel, context);
         }
-        selection--; // Adjust for the back button
+        selection--;
 
-        const selectedPlayer = onlinePlayers[selection];
-        if (selectedPlayer) {
-            let nextPanel;
-            if (panelId === 'playerListPanel' || panelId === 'testPlayerListPanel') {
-                nextPanel = 'playerManagementPanel';
-            } else { // publicPlayerListPanel
-                nextPanel = 'publicPlayerActionsPanel';
+        if (page > 0) {
+            if (selection === 0) {
+                debugLog(`[UIManager] Player ${player.name} selected 'Previous Page' from player list.`);
+                return showPanel(player, panelId, { ...context, page: page - 1 });
             }
-            debugLog(`[UIManager] Player ${player.name} selected player ${selectedPlayer.name}. Opening '${nextPanel}'.`);
-            return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
+            selection--;
+        }
+
+        const startIndex = page * ITEMS_PER_PAGE;
+        const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+        if (selection < pagePlayers.length) {
+            const selectedPlayer = pagePlayers[selection];
+            if (selectedPlayer) {
+                let nextPanel;
+                if (panelId === 'playerListPanel' || panelId === 'testPlayerListPanel') {
+                    nextPanel = 'playerManagementPanel';
+                } else if (panelId === 'publicPlayerListPanel') {
+                    nextPanel = 'publicPlayerActionsPanel';
+                } else if (panelId === 'testPlayerListDirect') {
+                    debugLog('[UIManager] Routing testPlayerListDirect to testActionPanelDirect');
+                    nextPanel = 'testActionPanelDirect';
+                } else if (panelId === 'testPlayerListCommand') {
+                    debugLog('[UIManager] Routing testPlayerListCommand to testActionPanelCommand');
+                    nextPanel = 'testActionPanelCommand';
+                }
+                debugLog(`[UIManager] Player ${player.name} selected player ${selectedPlayer.name}. Opening '${nextPanel}'.`);
+                return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
+            }
+        } else {
+            if (page < totalPages - 1) {
+                debugLog(`[UIManager] Player ${player.name} selected 'Next Page' from player list.`);
+                return showPanel(player, panelId, { ...context, page: page + 1 });
+            }
         }
         return;
     }
@@ -224,11 +250,20 @@ function addPanelBody(form, player, panelId, context) {
 function buildPlayerListForm(title, player, panelId, context) {
     const form = new ActionFormData().title(title);
     const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
+    const ITEMS_PER_PAGE = 100;
+    const page = context.page || 0;
+    const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
+    const startIndex = page * ITEMS_PER_PAGE;
+    const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     form.button('§l§8< Back', 'textures/gui/controls/left.png');
 
+    if (page > 0) {
+        form.button('§l§8< Previous Page', 'textures/gui/controls/left.png');
+    }
+
     const config = getConfig();
-    for (const p of onlinePlayers) {
+    for (const p of pagePlayers) {
         const rank = getPlayerRank(p, config);
         let displayName = `${rank.chatFormatting?.prefixText ?? ''}${p.name}§r`;
         let icon;
@@ -237,7 +272,11 @@ function buildPlayerListForm(title, player, panelId, context) {
         form.button(displayName, icon);
     }
 
-    form.body(`Total Players: ${onlinePlayers.length}`);
+    if (page < totalPages - 1) {
+        form.button('§l§2Next Page >', 'textures/gui/controls/right.png');
+    }
+
+    form.body(`Page ${page + 1} of ${totalPages}`);
     return form;
 }
 
@@ -729,6 +768,26 @@ uiActionFunctions['showTestMessage'] = async (player, context) => {
         .body('This is a test message from a UI action function.')
         .button('OK');
     await uiWait(player, form);
+};
+
+uiActionFunctions['clearInventory_command'] = async (player, context) => {
+    const { targetPlayer } = context;
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        player.sendMessage('§cTarget player not found or has logged off.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
+    debugLog(`[UIManager] Action 'clearInventory_command' called by ${player.name} on ${targetPlayer.name}.`);
+    try {
+        // Execute the command as the admin player on the target player
+        await player.runCommandAsync(`!clear "${targetPlayer.name}"`);
+        player.sendMessage(`§aSuccessfully executed !clear on ${targetPlayer.name}.`);
+        playSoundFromConfig(player, 'adminNotificationReceived');
+    } catch (e) {
+        player.sendMessage(`§cFailed to execute !clear on ${targetPlayer.name}. See console for details.`);
+        playSoundFromConfig(player, 'commandError');
+        console.error(`[UIManager] clearInventory_command failed: ${e}`);
+    }
 };
 
 uiActionFunctions['showTestSuccessMessage'] = async (player, context) => {
