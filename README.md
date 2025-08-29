@@ -26,6 +26,11 @@
 >
 > We appreciate your understanding and encourage testers to [report any issues on GitHub](https://github.com/SjnExe/AddonExe/issues). Your feedback is vital for the final release!
 
+> [!WARNING]
+> **Do not use pre-release versions for public servers.**
+>
+> Pre-releases are intended for development and testing purposes only. They may be unstable, contain bugs, or cause unintended issues. For the best experience, please use the [latest stable release](https://github.com/SjnExe/AddonExe/releases/latest).
+
 ---
 
 <div align="center">
