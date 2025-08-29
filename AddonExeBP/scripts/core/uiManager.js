@@ -182,6 +182,7 @@ function getMenuItems(panelDef, permissionLevel) {
 }
 
 function addPanelBody(form, player, panelId, context) {
+    const config = getConfig();
     if (panelId === 'playerManagementPanel' && context.targetPlayer) {
         const { targetPlayer } = context;
         const targetPData = getPlayer(targetPlayer.id);
@@ -189,7 +190,7 @@ function addPanelBody(form, player, panelId, context) {
             form.body('§cCould not retrieve player data.');
             return;
         }
-        const rank = getPlayerRank(targetPlayer);
+        const rank = getPlayerRank(targetPlayer, config);
         form.body([`§fName: §e${targetPlayer.name}`, `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`, `§fBalance: §a$${targetPData.balance?.toFixed(2) ?? '0.00'}`, `§fBounty: §e$${targetPData.bounty?.toFixed(2) ?? '0.00'}`].join('\n'));
     } else if (panelId === 'publicPlayerActionsPanel' && context.targetPlayer) {
         const targetPData = getPlayer(context.targetPlayer.id);
@@ -201,7 +202,7 @@ function addPanelBody(form, player, panelId, context) {
         }
     } else if (panelId === 'myStatsPanel') {
         const pData = getPlayer(player.id);
-        const rank = getPlayerRank(player);
+        const rank = getPlayerRank(player, config);
         if (!pData || !rank) {
             form.body('§cCould not retrieve your stats.');
         } else {
@@ -213,7 +214,6 @@ function addPanelBody(form, player, panelId, context) {
             form.body(statsBody);
         }
     } else if (panelId === 'helpfulLinksPanel') {
-        const config = getConfig();
         const linksBody = [
             '§fHere are some helpful links:',
             `§9Discord: §r${config.serverInfo.discordLink}`,
@@ -250,8 +250,9 @@ function buildPlayerListForm(title, player, panelId, context) {
         form.button('§l§8< Previous Page', 'textures/gui/controls/left.png');
     }
 
+    const config = getConfig();
     for (const p of pagePlayers) {
-        const rank = getPlayerRank(p);
+        const rank = getPlayerRank(p, config);
         let displayName = `${rank.chatFormatting?.prefixText ?? ''}${p.name}§r`;
         let icon;
         if (panelId === 'playerListPanel' && rank.name === 'Owner') icon = 'textures/ui/crown_glyph_color';
