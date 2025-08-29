@@ -333,6 +333,22 @@ export const panelDefinitions = {
                 permissionLevel: 1,
                 actionType: 'openPanel',
                 actionValue: 'testSubPanel'
+            },
+            {
+                id: 'testPlayerList',
+                text: '§bTest Player List',
+                icon: 'textures/ui/icon_multiplayer',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'testPlayerListPanel'
+            },
+            {
+                id: 'testAction',
+                text: '§dTest Action',
+                icon: 'textures/ui/check',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'showTestSuccessMessage'
             }
         ]
     },
@@ -348,5 +364,10 @@ export const panelDefinitions = {
                 actionValue: 'testSubPanel'
             }
         ]
+    },
+    testPlayerListPanel: {
+        title: '§l§bTest Player List§r',
+        parentPanelId: 'testPanel',
+        items: [] // This will be populated dynamically by uiManager
     }
 };
