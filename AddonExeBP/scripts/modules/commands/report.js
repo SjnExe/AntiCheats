@@ -5,7 +5,7 @@ import { createReport } from '../../core/reportManager.js';
 commandManager.register({
     name: 'report',
     description: 'Reports a player for misconduct.',
-    category: '§cModeration',
+    category: 'General',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         if (args.length < 2) {

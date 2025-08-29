@@ -8,7 +8,8 @@ import { world } from '@minecraft/server';
 commandManager.register({
     name: 'bounty',
     description: 'Place a bounty on a player.',
-    category: '§eEconomy System',
+    aliases: ['setbounty'],
+    category: 'Economy',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         const config = getConfig();

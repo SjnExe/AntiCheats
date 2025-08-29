@@ -5,12 +5,12 @@ commandManager.register({
     name: 'clearchat',
     aliases: ['cc'],
     description: 'Clears the chat for all players.',
-    category: '§cModeration',
+    category: 'Moderation',
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         try {
             // Send 100 empty lines to effectively clear the chat history for all players.
-            const emptyLines = '[AddonExe]'.repeat(100);
+            const emptyLines = '\n'.repeat(100);
             world.sendMessage(emptyLines);
             world.sendMessage(`§aChat has been cleared by ${player.name}.`);
         } catch (error) {

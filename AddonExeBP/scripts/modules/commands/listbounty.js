@@ -7,7 +7,8 @@ commandManager.register({
     name: 'listbounty',
     aliases: ['lbounty'],
     description: 'Lists the bounties on online players.',
-    category: '§eEconomy System',
+    aliases: ['bounties', 'bountylist'],
+    category: 'Economy',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
         if (args.length > 0) {

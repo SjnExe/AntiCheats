@@ -4,7 +4,7 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 commandManager.register({
     name: 'invsee',
     description: "Views a player's inventory in chat.",
-    category: '§cModeration',
+    category: 'Moderation',
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {
@@ -44,8 +44,8 @@ commandManager.register({
         const startIndex = page * ITEMS_PER_PAGE;
         const pageItems = items.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-        let message = `§6Inv: ${targetPlayer.name} (Page ${page + 1}/${totalPages})§r[AddonExe]`;
-        message += pageItems.join('[AddonExe]');
+        let message = `§6Inv: ${targetPlayer.name} (Page ${page + 1}/${totalPages})§r\n`;
+        message += pageItems.join('\n');
 
         player.sendMessage(message);
     }

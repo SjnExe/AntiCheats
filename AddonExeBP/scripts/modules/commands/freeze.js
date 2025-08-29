@@ -4,7 +4,7 @@ import { commandManager } from './commandManager.js';
 commandManager.register({
     name: 'freeze',
     description: 'Freezes or unfreezes a player.',
-    category: '§cModeration',
+    category: 'Moderation',
     permissionLevel: 1, // Admin only
     execute: (player, args) => {
         if (args.length < 1) {
