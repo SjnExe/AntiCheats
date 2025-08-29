@@ -10,6 +10,7 @@ import * as economyManager from './economyManager.js';
 import * as punishmentManager from './punishmentManager.js';
 import * as tpaManager from './tpaManager.js';
 import * as reportManager from './reportManager.js';
+import { getCooldown, setCooldown } from './cooldownManager.js';
 import { world } from '@minecraft/server';
 
 const uiActionFunctions = {};
@@ -300,7 +301,6 @@ function buildReportListForm(title) {
 // --- UI Action Functions ---
 
 function withTargetPlayer(action) {
-    // This wrapper now returns an async function to ensure it's always await-able
     return async (player, context) => {
         const { targetPlayer } = context;
         if (!targetPlayer || !targetPlayer.isValid()) {
@@ -310,7 +310,6 @@ function withTargetPlayer(action) {
             return;
         }
         debugLog(`[UIManager] Executing targeted action for ${player.name} on target ${targetPlayer.name}.`);
-        // We await the action, which works for both sync and async actions.
         await action(player, targetPlayer, context);
     };
 }
@@ -368,48 +367,49 @@ uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlay
 
 uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'toggleFreeze' called by ${player.name} on ${targetPlayer.name}.`);
-
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
-
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot freeze a player with the same or higher rank than you.');
         playSoundFromConfig(player, 'commandError');
         return;
     }
-
     const config = getConfig();
     const frozenTag = config.playerTags.frozen;
     if (targetPlayer.hasTag(frozenTag)) {
         targetPlayer.removeTag(frozenTag);
+        targetPlayer.removeEffect('slowness');
         player.sendMessage(`§aUnfroze ${targetPlayer.name}.`);
+        targetPlayer.sendMessage('§aYou have been unfrozen.');
     } else {
         targetPlayer.addTag(frozenTag);
+        targetPlayer.addEffect('slowness', 2000000, { amplifier: 255, showParticles: false });
         player.sendMessage(`§eFroze ${targetPlayer.name}.`);
+        targetPlayer.sendMessage('§cYou have been frozen by an admin.');
     }
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
 uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'clearInventory' called by ${player.name} on ${targetPlayer.name}.`);
-    const inventory = targetPlayer.getComponent('minecraft:inventory').container;
-    inventory.clearAll();
+    const inventory = targetPlayer.getComponent('inventory').container;
+    for (let i = 0; i < inventory.size; i++) {
+        inventory.setItem(i);
+    }
     player.sendMessage(`§aCleared inventory for ${targetPlayer.name}.`);
+    targetPlayer.sendMessage('§eYour inventory has been cleared by an admin.');
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
 uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showKickForm' called by ${player.name} on ${targetPlayer.name}.`);
-
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
-
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot kick a player with the same or higher rank than you.');
         playSoundFromConfig(player, 'commandError');
         return;
     }
-
     const form = new ModalFormData().title(`Kick ${targetPlayer.name}`).textField('Reason', 'Enter kick reason (optional)');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
@@ -445,16 +445,13 @@ uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targ
 
 uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showMuteForm' called by ${player.name} on ${targetPlayer.name}.`);
-
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
-
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot mute a player with the same or higher rank than you.');
         playSoundFromConfig(player, 'commandError');
         return;
     }
-
     const form = new ModalFormData().title(`Mute ${targetPlayer.name}`)
         .textField('Duration', 'e.g., 30m, 2h, 7d, perm', 'perm')
         .textField('Reason', 'Enter mute reason (optional)');
@@ -463,13 +460,11 @@ uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer
     const [durationStr, reason] = response.formValues;
     const durationMs = durationStr === 'perm' ? Infinity : parseDuration(durationStr);
     if (durationMs === 0 && durationStr !== 'perm') return player.sendMessage('§cInvalid duration format.');
-
     punishmentManager.addPunishment(targetPlayer.id, {
         type: 'mute',
         expires: durationMs === Infinity ? Infinity : Date.now() + durationMs,
         reason: reason || 'Muted by an admin.'
     });
-
     player.sendMessage(`§aMuted ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
@@ -483,16 +478,13 @@ uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) =>
 
 uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showBanForm' called by ${player.name} on ${targetPlayer.name}.`);
-
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
-
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot ban a player with the same or higher rank than you.');
         playSoundFromConfig(player, 'commandError');
         return;
     }
-
     const form = new ModalFormData().title(`Ban ${targetPlayer.name}`)
         .textField('Duration', 'e.g., 30m, 2h, 7d, perm', 'perm')
         .textField('Reason', 'Enter ban reason (optional)');
@@ -501,14 +493,12 @@ uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer)
     const [durationStr, reason] = response.formValues;
     const durationMs = durationStr === 'perm' ? Infinity : parseDuration(durationStr);
     if (durationMs === 0 && durationStr !== 'perm') return player.sendMessage('§cInvalid duration format.');
-
     const banReason = reason || 'Banned by an admin.';
     punishmentManager.addPunishment(targetPlayer.id, {
         type: 'ban',
         expires: durationMs === Infinity ? Infinity : Date.now() + durationMs,
         reason: banReason
     });
-
     player.sendMessage(`§aBanned ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${banReason}`);
@@ -516,10 +506,21 @@ uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer)
 
 uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'sendTpaRequest' called by ${player.name} on ${targetPlayer.name}.`);
+    const config = getConfig();
+    if (!config.tpa.enabled) {
+        player.sendMessage('§cThe TPA system is currently disabled.');
+        return;
+    }
+    const cooldown = getCooldown(player, 'tpa');
+    if (cooldown > 0) {
+        player.sendMessage(`§cYou must wait ${cooldown} more seconds before sending another TPA request.`);
+        return;
+    }
     const result = tpaManager.createRequest(player, targetPlayer, 'tpa');
     if (result.success) {
-        player.sendMessage(`§aTPA request sent to ${targetPlayer.name}.`);
-        targetPlayer.sendMessage(`§a${player.name} has sent you a TPA request. Use !tpaccept or !tpadeny.`);
+        setCooldown(player, 'tpa');
+        player.sendMessage(`§aTPA request sent to ${targetPlayer.name}. They have ${config.tpa.requestTimeoutSeconds} seconds to accept.`);
+        targetPlayer.sendMessage(`§a${player.name} has requested to teleport to you. Type §e!tpaccept§a to accept or §e!tpadeny§a to deny.`);
     } else {
         player.sendMessage(`§c${result.message}`);
     }
@@ -553,15 +554,12 @@ uiActionFunctions['showReportForm'] = withTargetPlayer(async (player, targetPlay
     player.sendMessage('§aThank you for your report. An admin will review it shortly.');
 });
 
-// There are no actions for this panel, it's just for viewing details
-// The actions are handled in the reportActionsPanel
 uiActionFunctions['assignReport'] = (player, context) => {
     const { targetReport } = context;
     if (!targetReport) return;
     debugLog(`[UIManager] Action 'assignReport' called by ${player.name} for report ${targetReport.id}.`);
     reportManager.assignReport(targetReport.id, player.id);
     player.sendMessage(`§aReport ${targetReport.id} has been assigned to you.`);
-    // Re-show the panel to reflect the change
     showPanel(player, 'reportActionsPanel', context);
 };
 
@@ -571,7 +569,6 @@ uiActionFunctions['resolveReport'] = (player, context) => {
     debugLog(`[UIManager] Action 'resolveReport' called by ${player.name} for report ${targetReport.id}.`);
     reportManager.resolveReport(targetReport.id);
     player.sendMessage(`§aReport ${targetReport.id} has been marked as resolved.`);
-    // Go back to the list
     showPanel(player, 'reportListPanel');
 };
 
@@ -581,6 +578,5 @@ uiActionFunctions['clearReport'] = (player, context) => {
     debugLog(`[UIManager] Action 'clearReport' called by ${player.name} for report ${targetReport.id}.`);
     reportManager.clearReport(targetReport.id);
     player.sendMessage(`§aReport ${targetReport.id} has been cleared.`);
-    // Go back to the list
     showPanel(player, 'reportListPanel');
 };
