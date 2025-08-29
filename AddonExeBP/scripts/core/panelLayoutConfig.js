@@ -53,6 +53,14 @@ export const panelDefinitions = {
                 actionValue: 'reportListPanel'
             },
             {
+                id: 'moderation',
+                text: '§cModeration',
+                icon: 'textures/ui/hammer_l.png',
+                permissionLevel: 1,
+                actionType: 'openPanel',
+                actionValue: 'moderationPanel'
+            },
+            {
                 id: 'bountyList',
                 text: '§cBounty List',
                 icon: 'textures/items/netherite_sword.png',
@@ -283,5 +291,19 @@ export const panelDefinitions = {
         title: '§l§9Helpful Links§r',
         parentPanelId: 'mainPanel',
         items: [] // Body is dynamically generated
+    },
+    moderationPanel: {
+        title: '§l§cModeration Tools§r',
+        parentPanelId: 'mainPanel',
+        items: [
+            {
+                id: 'unbanPlayer',
+                text: '§2Unban Player',
+                icon: 'textures/ui/check.png',
+                permissionLevel: 1,
+                actionType: 'functionCall',
+                actionValue: 'showUnbanForm'
+            }
+        ]
     }
 };

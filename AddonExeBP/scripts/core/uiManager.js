@@ -1,6 +1,6 @@
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
-import { getPlayer, savePlayerData } from './playerDataManager.js';
+import { getPlayer, savePlayerData, getPlayerIdByName, loadPlayerData } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 import { getAllPlayersFromCache } from './playerCache.js';
@@ -368,6 +368,11 @@ uiActionFunctions['showBountyForm'] = withTargetPlayer(async (player, targetPlay
 
 uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'toggleFreeze' called by ${player.name} on ${targetPlayer.name}.`);
+    if (player.id === targetPlayer.id) {
+        player.sendMessage('§cYou cannot use this action on yourself.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
@@ -393,6 +398,13 @@ uiActionFunctions['toggleFreeze'] = withTargetPlayer((player, targetPlayer) => {
 
 uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'clearInventory' called by ${player.name} on ${targetPlayer.name}.`);
+    const executorData = getPlayer(player.id);
+    const targetData = getPlayer(targetPlayer.id);
+    if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
+        player.sendMessage('§cYou cannot clear the inventory of a player with the same or higher rank than you.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     const inventory = targetPlayer.getComponent('inventory').container;
     for (let i = 0; i < inventory.size; i++) {
         inventory.setItem(i);
@@ -400,10 +412,16 @@ uiActionFunctions['clearInventory'] = withTargetPlayer((player, targetPlayer) =>
     player.sendMessage(`§aCleared inventory for ${targetPlayer.name}.`);
     targetPlayer.sendMessage('§eYour inventory has been cleared by an admin.');
     playSoundFromConfig(player, 'adminNotificationReceived');
+    playSoundFromConfig(targetPlayer, 'adminNotificationReceived');
 });
 
 uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showKickForm' called by ${player.name} on ${targetPlayer.name}.`);
+    if (player.id === targetPlayer.id) {
+        player.sendMessage('§cYou cannot use this action on yourself.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
@@ -415,9 +433,15 @@ uiActionFunctions['showKickForm'] = withTargetPlayer(async (player, targetPlayer
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
     const [reason] = response.formValues;
-    targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${reason || 'Kicked by an admin.'}`);
-    player.sendMessage(`§aKicked ${targetPlayer.name}.`);
-    playSoundFromConfig(player, 'adminNotificationReceived');
+    try {
+        await targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${reason || 'Kicked by an admin.'}`);
+        player.sendMessage(`§aKicked ${targetPlayer.name}.`);
+        playSoundFromConfig(player, 'adminNotificationReceived');
+    } catch (error) {
+        player.sendMessage(`§cFailed to kick ${targetPlayer.name}.`);
+        playSoundFromConfig(player, 'commandError');
+        console.error(`[UIManager] Kick failed: ${error.stack}`);
+    }
 });
 
 uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targetPlayer) => {
@@ -446,6 +470,11 @@ uiActionFunctions['showReduceBountyForm'] = withTargetPlayer(async (player, targ
 
 uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showMuteForm' called by ${player.name} on ${targetPlayer.name}.`);
+    if (player.id === targetPlayer.id) {
+        player.sendMessage('§cYou cannot use this action on yourself.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
@@ -466,12 +495,21 @@ uiActionFunctions['showMuteForm'] = withTargetPlayer(async (player, targetPlayer
         expires: durationMs === Infinity ? Infinity : Date.now() + durationMs,
         reason: reason || 'Muted by an admin.'
     });
-    player.sendMessage(`§aMuted ${targetPlayer.name}.`);
+    const durationText = durationMs === Infinity ? 'permanently' : `for ${durationStr}`;
+    player.sendMessage(`§aSuccessfully muted ${targetPlayer.name} ${durationText}. Reason: ${reason || 'Muted by an admin.'}`);
+    targetPlayer.sendMessage(`§cYou have been muted ${durationText}. Reason: ${reason || 'Muted by an admin.'}`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 });
 
 uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showUnmuteForm' called by ${player.name} on ${targetPlayer.name}.`);
+    const executorData = getPlayer(player.id);
+    const targetData = getPlayer(targetPlayer.id);
+    if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
+        player.sendMessage('§cYou cannot unmute a player with the same or higher rank than you.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     punishmentManager.removePunishment(targetPlayer.id);
     player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
     playSoundFromConfig(player, 'adminNotificationReceived');
@@ -479,6 +517,11 @@ uiActionFunctions['showUnmuteForm'] = withTargetPlayer((player, targetPlayer) =>
 
 uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer) => {
     debugLog(`[UIManager] Action 'showBanForm' called by ${player.name} on ${targetPlayer.name}.`);
+    if (player.id === targetPlayer.id) {
+        player.sendMessage('§cYou cannot use this action on yourself.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
@@ -500,9 +543,10 @@ uiActionFunctions['showBanForm'] = withTargetPlayer(async (player, targetPlayer)
         expires: durationMs === Infinity ? Infinity : Date.now() + durationMs,
         reason: banReason
     });
-    player.sendMessage(`§aBanned ${targetPlayer.name}.`);
+    const durationText = durationMs === Infinity ? 'permanently' : `for ${durationStr}`;
+    player.sendMessage(`§aSuccessfully banned ${targetPlayer.name} ${durationText}. Reason: ${banReason}`);
     playSoundFromConfig(player, 'adminNotificationReceived');
-    targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${banReason}`);
+    targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${banReason}`);
 });
 
 uiActionFunctions['sendTpaRequest'] = withTargetPlayer((player, targetPlayer) => {
@@ -532,15 +576,33 @@ uiActionFunctions['showPayForm'] = withTargetPlayer(async (player, targetPlayer)
     const form = new ModalFormData().title(`Pay ${targetPlayer.name}`).textField('Amount', 'Enter amount to pay');
     const response = await uiWait(player, form);
     if (!response || response.canceled) return;
+
     const [amountStr] = response.formValues;
     const amount = parseInt(amountStr);
-    if (isNaN(amount) || amount <= 0) return player.sendMessage('§cInvalid amount.');
-    const result = economyManager.transfer(player.id, targetPlayer.id, amount);
-    if (result.success) {
-        player.sendMessage(`§aYou paid ${targetPlayer.name} §e$${amount.toFixed(2)}.`);
-        targetPlayer.sendMessage(`§aYou received §e$${amount.toFixed(2)}§a from ${player.name}.`);
+    if (isNaN(amount) || amount <= 0) {
+        player.sendMessage('§cInvalid amount.');
+        return;
+    }
+
+    const config = getConfig();
+    const sourceData = getPlayer(player.id);
+    if (!sourceData || sourceData.balance < amount) {
+        player.sendMessage('§cYou do not have enough money for this payment.');
+        return;
+    }
+
+    if (amount > config.economy.paymentConfirmationThreshold) {
+        economyManager.createPendingPayment(player.id, targetPlayer.id, amount);
+        player.sendMessage(`§ePayment of $${amount.toFixed(2)} to ${targetPlayer.name} is pending.`);
+        player.sendMessage(`§eType §a!payconfirm§e within ${config.economy.paymentConfirmationTimeout} seconds to complete the transaction.`);
     } else {
-        player.sendMessage(`§c${result.message}`);
+        const result = economyManager.transfer(player.id, targetPlayer.id, amount);
+        if (result.success) {
+            player.sendMessage(`§aYou paid ${targetPlayer.name} §e$${amount.toFixed(2)}.`);
+            targetPlayer.sendMessage(`§aYou received §e$${amount.toFixed(2)}§a from ${player.name}.`);
+        } else {
+            player.sendMessage(`§c${result.message}`);
+        }
     }
 });
 
@@ -580,4 +642,45 @@ uiActionFunctions['clearReport'] = (player, context) => {
     reportManager.clearReport(targetReport.id);
     player.sendMessage(`§aReport ${targetReport.id} has been cleared.`);
     showPanel(player, 'reportListPanel');
+};
+
+uiActionFunctions['showUnbanForm'] = async (player, context) => {
+    debugLog(`[UIManager] Action 'showUnbanForm' called by ${player.name}.`);
+    const form = new ModalFormData().title('Unban Player').textField('Player Name', 'Enter the name of the player to unban');
+    const response = await uiWait(player, form);
+    if (!response || response.canceled) return;
+
+    const [targetName] = response.formValues;
+    if (!targetName) {
+        player.sendMessage('§cYou must enter a player name.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
+
+    const targetId = getPlayerIdByName(targetName);
+
+    if (!targetId) {
+        player.sendMessage(`§cPlayer "${targetName}" has never joined the server or name is misspelled.`);
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
+
+    if (targetId === player.id) {
+        player.sendMessage('§cYou cannot unban yourself.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
+
+    const executorData = getPlayer(player.id);
+    const targetData = loadPlayerData(targetId); // Load offline player's data for the check
+
+    if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
+        player.sendMessage('§cYou cannot unban a player with the same or higher rank than you.');
+        playSoundFromConfig(player, 'commandError');
+        return;
+    }
+
+    punishmentManager.removePunishment(targetId);
+    player.sendMessage(`§aSuccessfully unbanned ${targetName}. They can now rejoin the server.`);
+    playSoundFromConfig(player, 'adminNotificationReceived');
 };

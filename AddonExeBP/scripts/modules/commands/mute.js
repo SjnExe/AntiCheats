@@ -1,6 +1,6 @@
 import { commandManager } from './commandManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
-import { getPlayer } from '../../core/playerDataManager.js';
+import { getPlayer, getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSound } from '../../core/utils.js';
 
@@ -96,18 +96,38 @@ commandManager.register({
         const targetName = args[0];
         // For unmuting, we need to handle offline players.
         // This simplified version assumes the player is online.
-        // A more robust solution would require a way to get a player's ID from their name, even if offline.
-        const targetPlayer = findPlayerByName(targetName);
+        const targetId = getPlayerIdByName(targetName);
 
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found or is offline.`);
+        if (!targetId) {
+            player.sendMessage(`§cPlayer "${targetName}" has never joined the server or name is misspelled.`);
             playSound(player, 'note.bass');
             return;
         }
 
-        removePunishment(targetPlayer.id);
-        player.sendMessage(`§aSuccessfully unmuted ${targetPlayer.name}.`);
-        targetPlayer.sendMessage('§aYou have been unmuted.');
+        if (targetId === player.id) {
+            player.sendMessage('§cYou cannot unmute yourself.');
+            playSound(player, 'note.bass');
+            return;
+        }
+
+        const executorData = getPlayer(player.id);
+        const targetData = loadPlayerData(targetId);
+
+        if (!executorData || !targetData) {
+            player.sendMessage('§cCould not retrieve player data for permission check.');
+            playSound(player, 'note.bass');
+            return;
+        }
+
+        if (executorData.permissionLevel >= targetData.permissionLevel) {
+            player.sendMessage('§cYou cannot unmute a player with the same or higher rank than you.');
+            playSound(player, 'note.bass');
+            return;
+        }
+
+        removePunishment(targetId);
+        player.sendMessage(`§aSuccessfully unmuted ${targetName}.`);
+        // Cannot send message to target if they are offline.
         playSound(player, 'random.orb');
     }
 });
