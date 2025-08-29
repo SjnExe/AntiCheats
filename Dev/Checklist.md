@@ -1,3 +1,19 @@
+# Checklist of Missing Features from Old Addon
+
+This document lists all the features, files, and assets that were present in `OldAntiCheatsBP` and `OldAntiCheatsRP` but are missing from the new `AddonExeBP` and `AddonExeRP`.
+
+## Behavior Pack (`OldAntiCheatsBP`)
+
+### 1. Core Systems
+
+The entire automated punishment, action handling, and logging systems are missing.
+
+#### 1.1. `automodManager.js`
+
+This file was responsible for the tiered punishment system. It would automatically warn, kick, or ban players based on the number of flags they accumulated.
+
+```javascript
+// OldAntiCheatsBP/scripts/core/automodManager.js
 const secondsPerMinute = 60;
 const minutesPerHour = 60;
 const hoursPerDay = 24;
@@ -441,3 +457,565 @@ export async function processAutoModActions(player, pData, checkType, dependenci
         }
     }
 }
+```
+
+#### 1.2. `actionManager.js`
+
+This file handled the immediate consequences of a cheat detection, such as flagging the player, logging the event, and notifying admins. It was the entry point for the `automodManager`.
+
+```javascript
+// OldAntiCheatsBP/scripts/core/actionManager.js
+const decimalPlacesForViolationDetails = 3;
+/**
+ * @param {import('../types.js').ViolationDetails | undefined} violationDetails - An object containing details of the violation.
+ * @returns {string} A comma-separated string of key-value pairs, or 'N/A'.
+ */
+function formatViolationDetails(violationDetails) {
+    if (!violationDetails || typeof violationDetails !== 'object' || Object.keys(violationDetails).length === 0) {
+        return 'N/A';
+    }
+    return Object.entries(violationDetails)
+        .map(([key, value]) => {
+            if (typeof value === 'number' && !Number.isInteger(value)) {
+                return `${key}: ${value.toFixed(decimalPlacesForViolationDetails)}`;
+            }
+            return `${key}: ${String(value)}`;
+        })
+        .join(', ');
+}
+
+/**
+ * @param {string | undefined} template
+ * @param {string} playerName
+ * @param {string} checkType
+ * @param {import('../types.js').ViolationDetails | undefined} violationDetails
+ * @returns {string} The formatted message.
+ */
+function formatActionMessage(template, playerName, checkType, violationDetails) {
+    if (!template) {
+        return '';
+    }
+
+    const detailsString = formatViolationDetails(violationDetails);
+
+    const replacements = {
+        playerName,
+        checkType,
+        detailsString,
+        ...violationDetails,
+    };
+
+    const performReplacement = (text) => {
+        if (typeof text !== 'string') return text;
+        return text.replace(/{(\w+)}/g, (placeholder, placeholderKey) => {
+            const replacementValue = replacements[placeholderKey];
+            if (replacementValue !== undefined) {
+                if (typeof replacementValue === 'number' && !Number.isInteger(replacementValue)) {
+                    return replacementValue.toFixed(decimalPlacesForViolationDetails);
+                }
+                return String(replacementValue);
+            }
+            return placeholder;
+        });
+    };
+
+    const deepFormat = (data) => {
+        if (typeof data === 'string') {
+            return performReplacement(data);
+        }
+        if (Array.isArray(data)) {
+            return data.map(item => deepFormat(item));
+        }
+        if (typeof data === 'object' && data !== null) {
+            const newObj = {};
+            for (const key in data) {
+                if (Object.prototype.hasOwnProperty.call(data, key)) {
+                    newObj[key] = deepFormat(data[key]);
+                }
+            }
+            return newObj;
+        }
+        return data; // Return numbers, booleans, null, etc. as is
+    };
+
+    return deepFormat(template);
+}
+
+/**
+ * @param {import('@minecraft/server').Player | null} player
+ * @param {import('../types.js').ActionProfileEntry} profile
+ * @param {string} flagReasonMessage
+ * @param {string} checkType
+ * @param {import('../types.js').Dependencies} dependencies
+ * @param {import('../types.js').ViolationDetails | undefined} [violationDetails]
+ * @returns {Promise<void>}
+ */
+async function _handleFlagging(player, profile, flagReasonMessage, checkType, dependencies, violationDetails) {
+    if (!player || !profile.flag) {
+        if (!player && profile.flag) {
+            dependencies.playerUtils?.debugLog(`[ActionManager] Skipping flagging for checkType '${checkType}' (player is null).`, null, dependencies);
+        }
+        return;
+    }
+
+    const flagType = profile.flag.type || checkType;
+    const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
+
+    await dependencies.playerDataManager?.addFlag(player, flagType, dependencies, violationDetails, increment);
+
+    dependencies.playerUtils?.debugLog(`[ActionManager] Dispatched flag action for ${player.nameTag} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player.nameTag, dependencies);
+}
+
+function _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies) {
+    if (!profile.log) return;
+
+    const { logManager } = dependencies;
+    const playerNameForLog = player?.nameTag ?? 'System';
+    const logActionType = profile.log.actionType || `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
+    let logDetailsString = profile.log.detailsPrefix || '';
+    if (profile.log.includeViolationDetails !== false) {
+        logDetailsString += formatViolationDetails(violationDetails);
+    }
+
+    logManager?.addLog({
+        adminName: 'System',
+        actionType: logActionType,
+        targetName: playerNameForLog,
+        targetId: player?.id,
+        details: logDetailsString.trim() || 'N/A',
+        reason: flagReasonMessage,
+        checkType,
+        location: player?.location,
+        dimensionId: player?.dimension?.id,
+    }, dependencies);
+}
+
+function _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies) {
+    if (!player || !profile.notifyAdmins?.message) {
+        return;
+    }
+    if (!player.isValid()) {
+        return;
+    }
+
+    const { playerUtils, playerDataManager } = dependencies;
+    const notifyMsg = formatActionMessage(profile.notifyAdmins.message, player.nameTag, checkType, violationDetails);
+    const pData = playerDataManager?.getPlayerData(player.id);
+
+    playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
+}
+
+function _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies) {
+    if (!player || !violationDetails || Object.keys(violationDetails).length === 0) {
+        if (!player && violationDetails && Object.keys(violationDetails).length > 0) {
+            dependencies.playerUtils?.debugLog(`[ActionManager] Skipping violation details storage for '${checkType}' (player is null).`, null, dependencies);
+        }
+        return;
+    }
+
+    if (!player.isValid()) {
+        dependencies.playerUtils?.debugLog(`[ActionManager] Player became invalid before storing violation details. Skipping for check '${checkType}'.`, null, dependencies);
+        return;
+    }
+
+    const { playerDataManager, playerUtils } = dependencies;
+    const currentPData = playerDataManager?.getPlayerData(player.id);
+    if (currentPData) {
+        currentPData.lastViolationDetailsMap ??= {};
+        const detailsToStore = {
+            timestamp: Date.now(),
+            details: formatViolationDetails(violationDetails),
+            ...(violationDetails.itemTypeId && { itemTypeId: violationDetails.itemTypeId }),
+            ...(typeof violationDetails.quantityFound === 'number' && { quantityFound: violationDetails.quantityFound }),
+        };
+        currentPData.lastViolationDetailsMap[checkType] = detailsToStore;
+        currentPData.isDirtyForSave = true;
+        playerUtils?.debugLog(`[ActionManager] Stored violation details for check '${checkType}' for ${currentPData.playerNameTag}: ${JSON.stringify(detailsToStore)}`, currentPData.playerNameTag, dependencies);
+    } else {
+        playerUtils?.debugLog(`[ActionManager] Could not store violation details for '${checkType}' (pData not found for player).`, null, dependencies);
+    }
+}
+
+export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
+    const { playerUtils, checkActionProfiles } = dependencies;
+    const playerNameForLog = player?.name ?? 'System';
+
+    const profile = checkActionProfiles[checkType];
+    if (!profile) {
+        playerUtils?.debugLog(`[ActionManager] No action profile for checkType: '${checkType}'.`, null, dependencies);
+        return;
+    }
+
+    const baseReasonTemplate = profile.flag?.reason || `Triggered ${checkType}`;
+    const flagReasonMessage = formatActionMessage(baseReasonTemplate, playerNameForLog, checkType, violationDetails);
+
+    await _handleFlagging(player, profile, flagReasonMessage, checkType, dependencies, violationDetails);
+
+    // After any await, the player object might have become invalid. Check before proceeding.
+    if (player && !player.isValid()) {
+        playerUtils?.debugLog(`[ActionManager] Player ${playerNameForLog} became invalid after flagging. Aborting further actions for check '${checkType}'.`, null, dependencies);
+        return;
+    }
+
+    _handleLogging(player, profile, flagReasonMessage, checkType, violationDetails, dependencies);
+    _handleAdminNotifications(player, profile, checkType, violationDetails, dependencies);
+    _handleViolationDetailsStorage(player, checkType, violationDetails, dependencies);
+
+    // Deprecated Punishment System (2024-07-29): The punishment logic has been centralized in automodManager.
+    // The old system of defining `punishment` and `minVlbeforePunishment` directly in the `config.js` `checks` object
+    // is now obsolete. All automated actions should be configured in `automodConfig.js`.
+    // This ensures a single, consistent, and tiered response system.
+}
+```
+
+#### 1.3. Other Missing Core Scripts
+The following core script files are also missing, indicating a significant loss of functionality:
+- `automodConfig.js`
+- `chatProcessor.js`
+- `commandManager.js`
+- `configMigration.js`
+- `configValidator.js`
+- `dependencies.js`
+- `dynamicCommandLoader.js`
+- `eventHandlers.js`
+- `initializationManager.js`
+- `kits.js`
+- `logManager.js`
+- `offlineBanList.js`
+- `startupLogger.js`
+- `textDatabase.js`
+
+### 2. Cheat Detections
+
+The vast majority of cheat detection scripts have been removed. The `OldAntiCheatsBP/scripts/modules/detections/` directory contained over 40 detection files, while the new addon has only one.
+
+#### 2.1. Example: `flyCheck.js`
+
+This script detected players who were flying or hovering without legitimate means (e.g., creative mode, elytra).
+
+```javascript
+// OldAntiCheatsBP/scripts/modules/detections/movement/flyCheck.js
+/**
+ * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').Dependencies} Dependencies
+ */
+
+/**
+ * Checks for fly-related hacks by analyzing player's vertical movement, airborne state,
+ * and active effects (expected to be pre-processed into `pData`).
+ *
+ * It bypasses checks if the player is legitimately flying (Creative/Spectator mode) or gliding with elytra.
+ * Assumes `pData` contains fields like `jumpBoostAmplifier`, `hasSlowFalling`, `hasLevitation`,
+ * `lastUsedElytraTick`, `lastTookDamageTick`, which should be updated by `updateTransientPlayerData`
+ * or relevant event handlers.
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player instance to check.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {Dependencies} dependencies - Object containing shared dependencies.
+ * @returns {Promise<void>}
+ */
+export async function checkFly(player, pData, dependencies) {
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
+    const playerName = player?.name ?? 'UnknownPlayer';
+
+    if (!config?.enableFlyCheck && !config?.enableHighYVelocityCheck) {
+        return;
+    }
+    if (!pData) {
+        playerUtils?.debugLog(`[FlyCheck] Skipping for ${playerName}: pData is null.`, playerName, dependencies);
+        return;
+    }
+
+    const watchedPlayerName = pData.isWatched ? playerName : null;
+
+    if (player.isGliding) {
+        pData.lastUsedElytraTick = currentTick;
+        pData.isDirtyForSave = true;
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} is gliding. Standard fly checks bypassed.`, watchedPlayerName, dependencies);
+        return;
+    }
+    if (player.isFlying) {
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} is legitimately flying (isFlying=true). Standard fly checks bypassed.`, watchedPlayerName, dependencies);
+        return;
+    }
+
+    if (config?.enableHighYVelocityCheck && !pData.hasLevitation) {
+        const currentYVelocity = pData.transient.lastVelocity?.y ?? 0;
+        const jumpBoostAmplifierValue = pData.jumpBoostAmplifier ?? 0;
+        const jumpBoostBonus = jumpBoostAmplifierValue * (config?.jumpBoostYVelocityBonus ?? 0.2);
+        const baseYVelocityPositive = config?.maxYVelocityPositive ?? 0.42;
+        const effectiveMaxYVelocity = baseYVelocityPositive + jumpBoostBonus;
+
+        if (pData.isWatched) {
+            playerUtils?.debugLog(`[FlyCheck][Y-Velo] ${playerName}: CurrentYVelo: ${currentYVelocity.toFixed(3)}, BaseMax: ${baseYVelocityPositive.toFixed(3)}, JumpBoostLvl: ${jumpBoostAmplifierValue}, JumpBoostBonus: ${jumpBoostBonus.toFixed(3)}, EffectiveMax: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPlayerName, dependencies);
+        }
+
+        const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity);
+        const ticksSinceLastElytra = currentTick - (pData.lastUsedElytraTick ?? -Infinity);
+        const ticksSinceLastOnSlime = currentTick - (pData.lastOnSlimeBlockTick ?? -Infinity);
+        const ticksSinceLastLaunch = currentTick - (pData.transient?.lastLaunchTick ?? -Infinity);
+        const graceTicks = config?.yVelocityGraceTicks ?? 10;
+
+        const underGraceCondition = (
+            ticksSinceLastDamage <= graceTicks ||
+            ticksSinceLastElytra <= graceTicks ||
+            ticksSinceLastOnSlime <= graceTicks ||
+            ticksSinceLastLaunch <= graceTicks ||
+            player.isClimbing ||
+            (pData.hasSlowFalling && currentYVelocity < 0)
+        );
+
+        if (underGraceCondition && pData.isWatched) {
+            const graceReasons = [];
+            if (ticksSinceLastDamage <= graceTicks) {
+                graceReasons.push(`recent damage (${ticksSinceLastDamage}t)`);
+            }
+            if (ticksSinceLastElytra <= graceTicks) {
+                graceReasons.push(`recent elytra (${ticksSinceLastElytra}t)`);
+            }
+            if (ticksSinceLastOnSlime <= graceTicks) {
+                graceReasons.push(`recent slime block (${ticksSinceLastOnSlime}t)`);
+            }
+            if (ticksSinceLastLaunch <= graceTicks) {
+                graceReasons.push(`recent launch item (${ticksSinceLastLaunch}t)`);
+            }
+            if (player.isClimbing) {
+                graceReasons.push('climbing');
+            }
+            if (pData.hasSlowFalling && currentYVelocity < 0) {
+                graceReasons.push('slow falling downwards');
+            }
+            playerUtils?.debugLog(`[FlyCheck][Y-Velo] ${playerName}: Y-velocity check grace due to: ${graceReasons.join(', ')}.`, watchedPlayerName, dependencies);
+        }
+
+        if (currentYVelocity > effectiveMaxYVelocity && !underGraceCondition) {
+            const violationDetails = {
+                yVelocity: currentYVelocity.toFixed(3),
+                effectiveMaxYVelocity: effectiveMaxYVelocity.toFixed(3),
+                jumpBoostLevel: (pData.jumpBoostAmplifier ?? 0).toString(),
+                onGround: player.isOnGround.toString(),
+                gracePeriodActive: underGraceCondition.toString(),
+                ticksSinceDamage: ticksSinceLastDamage > graceTicks ? 'N/A' : ticksSinceLastDamage.toString(),
+                ticksSinceElytra: ticksSinceLastElytra > graceTicks ? 'N/A' : ticksSinceLastElytra.toString(),
+                isClimbing: player.isClimbing.toString(),
+                hasSlowFalling: (pData.hasSlowFalling ?? false).toString(),
+                hasLevitation: (pData.hasLevitation ?? false).toString(),
+            };
+            const highYVelocityActionProfileKey = config?.highYVelocityActionProfileName ?? 'movementHighYVelocity';
+            await actionManager?.executeCheckAction(player, highYVelocityActionProfileKey, violationDetails, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Y-Velo] Flagged ${playerName}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPlayerName, dependencies);
+        }
+    }
+
+    if (!config?.enableFlyCheck) {
+        return;
+    }
+
+    if (pData.hasLevitation && (pData.transient.lastVelocity?.y ?? 0) > 0) {
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} allowing upward movement due to levitation. VSpeed: ${(pData.transient.lastVelocity?.y ?? 0).toFixed(2)}`, watchedPlayerName, dependencies);
+        return;
+    }
+    if (pData.hasSlowFalling && (pData.transient.lastVelocity?.y ?? 0) < 0) {
+        playerUtils?.debugLog(`[FlyCheck] ${playerName} noting slow descent due to Slow Falling. VSpeed: ${(pData.transient.lastVelocity?.y ?? 0).toFixed(2)}. Hover/Sustained checks might still apply if not actually falling significantly.`, watchedPlayerName, dependencies);
+        // Don't return yet, as hovering with slow fall might still be an issue if not losing altitude.
+    }
+
+
+    const verticalSpeed = pData.transient.lastVelocity?.y ?? 0;
+    if (pData.isWatched) {
+        playerUtils?.debugLog(`[FlyCheck] Processing Sustained/Hover for ${playerName}. VSpeed=${verticalSpeed.toFixed(3)}, OffGroundTicks=${pData.transient.ticksSinceLastOnGround}, FallDist=${pData.fallDistance?.toFixed(2)}`, watchedPlayerName, dependencies);
+    }
+
+    const sustainedThreshold = config?.flySustainedVerticalSpeedThreshold ?? 0.45;
+    const sustainedTicks = config?.flySustainedOffGroundTicksThreshold ?? 10;
+
+    if (!player.isOnGround && verticalSpeed > sustainedThreshold && !player.isClimbing && !pData.hasLevitation && !player.isInWater) {
+        if (pData.transient.ticksSinceLastOnGround > sustainedTicks) {
+            const violationDetails = {
+                type: 'sustainedVertical',
+                verticalSpeed: verticalSpeed.toFixed(3),
+                offGroundTicks: (pData.transient.ticksSinceLastOnGround ?? 0).toString(),
+                isClimbing: player.isClimbing.toString(),
+                isInWater: player.isInWater.toString(),
+                hasLevitation: (pData.hasLevitation ?? false).toString(),
+            };
+            const sustainedFlyActionProfileKey = config?.sustainedFlyActionProfileName ?? 'movementSustainedFly';
+            await actionManager?.executeCheckAction(player, sustainedFlyActionProfileKey, violationDetails, dependencies);
+            playerUtils?.debugLog(`[FlyCheck][Sustained] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.transient.ticksSinceLastOnGround}t`, watchedPlayerName, dependencies);
+        }
+    }
+
+    const hoverVSpeedThreshold = config?.flyHoverVerticalSpeedThreshold ?? 0.08;
+    let hoverOffGroundTicks = config?.flyHoverOffGroundTicksThreshold ?? 20;
+    let hoverMaxFallDist = config?.flyHoverMaxFallDistanceThreshold ?? 1.0;
+
+    if (pData.hasSlowFalling) {
+        hoverMaxFallDist *= 1.5;
+        // Players with slow falling can hover very easily. We apply a stricter (lower) tick count to catch this.
+        hoverOffGroundTicks = config?.flyHoverOffGroundTicksSlowFalling ?? Math.floor(hoverOffGroundTicks / 2);
+    }
+
+    // Check for hover/low-gravity movement
+    const isHoverCandidate = !player.isOnGround &&
+        Math.abs(verticalSpeed) < hoverVSpeedThreshold &&
+        (pData.transient.ticksSinceLastOnGround ?? 0) > hoverOffGroundTicks &&
+        (pData.fallDistance ?? 0) < hoverMaxFallDist &&
+        !player.isClimbing &&
+        !player.isInWater &&
+        !pData.hasLevitation &&
+        !(pData.hasSlowFalling && verticalSpeed < (config.flyHoverSlowFallingMinVSpeed ?? -0.01));
+
+    if (isHoverCandidate) {
+        // The original height check was flawed as it didn't account for players walking off ledges.
+        // The isHoverCandidate conditions (especially ticksSinceLastOnGround) are robust enough to
+        // prevent false positives from normal jumping, making the height check redundant and buggy.
+        const violationDetails = {
+            type: 'flyHover',
+            verticalSpeed: verticalSpeed.toFixed(3),
+            offGroundTicks: (pData.transient.ticksSinceLastOnGround ?? 0).toString(),
+            fallDistance: (pData.fallDistance ?? 0).toFixed(2),
+            isClimbing: player.isClimbing.toString(),
+            isInWater: player.isInWater.toString(),
+            hasLevitation: (pData.hasLevitation ?? false).toString(),
+            hasSlowFalling: (pData.hasSlowFalling ?? false).toString(),
+        };
+        const hoverFlyActionProfileKey = config?.hoverFlyActionProfileName ?? 'movementFlyHover';
+        await actionManager?.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.transient.ticksSinceLastOnGround}t, FallDist: ${pData.fallDistance?.toFixed(2)}`, watchedPlayerName, dependencies);
+    }
+}
+```
+
+### 3. Functions
+
+The old addon used an `.mcfunction` file for initialization.
+
+#### 3.1. `ac.mcfunction`
+
+This file was likely called on world load to initialize the script events.
+
+```mcfunction
+# OldAntiCheatsBP/functions/ac.mcfunction
+scriptevent ac:init
+```
+
+## Resource Pack (`OldAntiCheatsRP`)
+
+### 1. UI Files
+
+The entire user interface for the anti-cheat system is missing.
+
+#### 1.1. `anticheat_panel.json`
+
+This file defined the main anti-cheat panel UI.
+
+```json
+// OldAntiCheatsRP/ui/anticheat_panel.json
+{
+    "namespace": "anticheat_panel",
+    "main_panel": {
+        "type": "panel",
+        "size": [
+            "100%",
+            "100%"
+        ],
+        "controls": [
+            {
+                "button@common.button": {
+                    "size": [
+                        100,
+                        20
+                    ],
+                    "offset": [
+                        0,
+                        0
+                    ],
+                    "$pressed_button_name": "button_1",
+                    "bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "(not @is_hover)",
+                            "target_property_name": "#visible"
+                        }
+                    ]
+                }
+            },
+            {
+                "hover_button@common.button": {
+                    "size": [
+                        100,
+                        20
+                    ],
+                    "offset": [
+                        0,
+                        0
+                    ],
+                    "$pressed_button_name": "button_1",
+                    "bindings": [
+                        {
+                            "binding_type": "view",
+                            "source_property_name": "@is_hover",
+                            "target_property_name": "#visible"
+                        }
+                    ],
+                    "anim_type": "color_cycle",
+                    "initial_color": [
+                        0.8,
+                        0.8,
+                        0.8
+                    ],
+                    "final_color": [
+                        1,
+                        1,
+                        1
+                    ],
+                    "duration": 0.5,
+                    "easing": "linear"
+                }
+            }
+        ]
+    }
+}
+```
+
+#### 1.2. `anticheat_section.json`
+
+This file defined the anti-cheat settings section in the world settings UI.
+
+```json
+// OldAntiCheatsRP/ui/settings_sections/anticheat_section.json
+{
+    "anticheat_section": {
+        "type": "panel",
+        "size": [
+            "100%",
+            "100%cm"
+        ],
+        "controls": [
+            {
+                "title@world_section.level_seed_selector": {
+                    "type": "label",
+                    "text": "AntiCheats Settings",
+                    "color": [
+                        0.6,
+                        0.6,
+                        0.6
+                    ],
+                    "anchor_from": "top_left",
+                    "anchor_to": "top_left",
+                    "offset": [
+                        0,
+                        0
+                    ]
+                }
+            }
+        ]
+    }
+}
+```
+
+### 2. Font Files
+
+The custom font used in the old UI is missing.
+- `font/Roboto-Regular.ttf`
+- `font/glyph_size.json`
