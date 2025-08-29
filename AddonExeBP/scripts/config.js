@@ -1,12 +1,12 @@
 export const config = {
     // --- System & Core Settings ---
     version: 'v__VERSION_STRING__',
-    ownerPlayerNames: ['Your•Name•Here'], // Default : ['Your•Name•Here']
+    ownerPlayerNames: ['SjnTechMlmYT'], // Default : ['Your•Name•Here']
     adminTag: 'admin',
     commandPrefix: '!',
     serverName: '§aServerExe',
     defaultGamemode: 'survival',
-    debug: false,
+    debug: true,
     exeGlobalNotificationsDefaultOn: true,
 
     // --- Player Tags ---
@@ -33,7 +33,7 @@ export const config = {
     },
     economy: {
         enabled: true,
-        startingBalance: 0,
+        startingBalance: 50,
         baltopLimit: 10,
         minimumBounty: 10,
         paymentConfirmationThreshold: 10000, // Payments over this amount require confirmation

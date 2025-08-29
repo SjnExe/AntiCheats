@@ -795,3 +795,12 @@ uiActionFunctions['showTestSuccessMessage'] = async (player, context) => {
     await uiWait(player, form);
     return showPanel(player, context.sourcePanel, context);
 };
+
+uiActionFunctions['showTestSuccessMessage'] = async (player, context) => {
+    debugLog(`[UIManager] Action 'showTestSuccessMessage' called by ${player.name}.`);
+    const form = new ActionFormData()
+        .title('Test Success')
+        .body('The UI action was called successfully.')
+        .button('OK');
+    await uiWait(player, form);
+};

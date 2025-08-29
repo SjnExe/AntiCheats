@@ -358,10 +358,8 @@ export const panelDefinitions = {
         items: [
             {
                 id: 'subPanelMessage',
-                text: '§3This is a sub-panel!',
-                permissionLevel: 1,
-                actionType: 'openPanel', // No action, just a label
-                actionValue: 'testSubPanel'
+                text: '§3This is a sub-panel! (No Action)',
+                permissionLevel: 1
             }
         ]
     },
