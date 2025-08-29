@@ -4,9 +4,8 @@ import { getConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'tpadeny',
-    aliases: ['tpno'],
-    description: 'Denies an incoming TPA request.',
     aliases: ['tpno', 'tpdeny'],
+    description: 'Denies an incoming TPA request.',
     category: 'TPA System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {

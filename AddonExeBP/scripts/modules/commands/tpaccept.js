@@ -4,9 +4,8 @@ import { getConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'tpaccept',
-    aliases: ['tpyes'],
-    description: 'Accepts an incoming TPA request.',
     aliases: ['tpyes', 'tpac'],
+    description: 'Accepts an incoming TPA request.',
     category: 'TPA System',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {

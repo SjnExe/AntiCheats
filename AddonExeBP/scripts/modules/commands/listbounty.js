@@ -5,9 +5,8 @@ import { world } from '@minecraft/server';
 
 commandManager.register({
     name: 'listbounty',
-    aliases: ['lbounty'],
+    aliases: ['lbounty', 'bounties', 'bountylist'],
     description: 'Lists the bounties on online players.',
-    aliases: ['bounties', 'bountylist'],
     category: 'Economy',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
