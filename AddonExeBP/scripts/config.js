@@ -1,12 +1,12 @@
 export const config = {
     // --- System & Core Settings ---
     version: 'v__VERSION_STRING__',
-    ownerPlayerNames: ['SjnTechMlmYT'], // Default : ['Your•Name•Here']
+    ownerPlayerNames: ['Your•Name•Here'], // Default : ['Your•Name•Here']
     adminTag: 'admin',
     commandPrefix: '!',
     serverName: '§aServerExe',
     defaultGamemode: 'survival',
-    debug: true,
+    debug: false,
     exeGlobalNotificationsDefaultOn: true,
 
     // --- Player Tags ---
@@ -35,7 +35,7 @@ export const config = {
         resolvedReportLifetimeDays: 7
     },
     spawn: {
-        cooldownSeconds: 300,
+        cooldownSeconds: 60,
         teleportWarmupSeconds: 5
     },
     economy: {
