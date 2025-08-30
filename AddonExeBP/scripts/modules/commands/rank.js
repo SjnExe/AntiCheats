@@ -2,6 +2,7 @@ import { commandManager } from './commandManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
 import { playSound } from '../../core/utils.js';
 import { rankDefinitions } from '../../core/ranksConfig.js';
+import { updatePlayerRank } from '../../core/main.js';
 
 commandManager.register({
     name: 'rank',
@@ -33,8 +34,8 @@ commandManager.register({
             return;
         }
 
-        const tagCondition = rankDef.conditions.find(c => c.type === 'tag');
-        if (!tagCondition || !tagCondition.tag) {
+        const tagCondition = rankDef.conditions.find(c => c.type === 'hasTag');
+        if (!tagCondition || !tagCondition.value) {
             player.sendMessage(`§cThe rank '${rankId}' is not configured to be assigned by a tag.`);
             playSound(player, 'note.bass');
             return;
@@ -46,18 +47,18 @@ commandManager.register({
             return;
         }
 
-        const rankTag = tagCondition.tag;
+        const rankTag = tagCondition.value;
 
         try {
             if (action === 'set') {
                 targetPlayer.addTag(rankTag);
                 player.sendMessage(`§aSuccessfully set ${targetPlayer.name}'s rank to ${rankDef.name} by adding tag '${rankTag}'.`);
-                targetPlayer.sendMessage(`§aYour rank has been updated to ${rankDef.name}.`);
             } else { // action === 'remove'
                 targetPlayer.removeTag(rankTag);
                 player.sendMessage(`§aSuccessfully removed the ${rankDef.name} rank from ${targetPlayer.name} by removing tag '${rankTag}'.`);
-                targetPlayer.sendMessage('§eYour rank has been updated.');
             }
+            // Re-evaluate the player's rank after changing their tag
+            updatePlayerRank(targetPlayer);
             playSound(player, 'random.orb');
         } catch (e) {
             player.sendMessage('§cFailed to update rank tag.');

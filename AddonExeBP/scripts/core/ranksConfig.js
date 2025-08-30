@@ -7,7 +7,8 @@
 
 /**
  * @typedef {object} RankCondition
- * @property {('ownerName'|'adminTag'|'default')} type
+ * @property {string} type The type of condition to check (e.g., 'isOwner', 'hasTag').
+ * @property {*} [value] The value to check against (e.g., the tag name).
  */
 
 /**
@@ -27,12 +28,6 @@ export const defaultChatFormatting = {
     messageColor: '§f'
 };
 
-/** @type {string} */
-export const defaultNametagPrefix = '§7Member';
-
-/** @type {number} */
-export const defaultPermissionLevel = 1024;
-
 /** @type {RankDefinition[]} */
 export const rankDefinitions = [
     {
@@ -46,7 +41,7 @@ export const rankDefinitions = [
         },
         nametagPrefix: '§4Owner',
         conditions: [
-            { type: 'ownerName' }
+            { type: 'isOwner' }
         ]
     },
     {
@@ -60,15 +55,15 @@ export const rankDefinitions = [
         },
         nametagPrefix: '§cAdmin',
         conditions: [
-            { type: 'adminTag' }
+            { type: 'hasTag', value: 'admin' }
         ]
     },
     {
         id: 'member',
         name: 'Member',
-        permissionLevel: defaultPermissionLevel,
+        permissionLevel: 1024, // Default permission level
         chatFormatting: defaultChatFormatting,
-        nametagPrefix: defaultNametagPrefix,
+        nametagPrefix: '§7Member',
         conditions: [
             { type: 'default' }
         ]

@@ -125,14 +125,14 @@ export function getOrCreatePlayer(player) {
     // If still not found, create new data
     const config = getConfig();
     const newPlayerData = {
-        rankId: 'member',
-        permissionLevel: 1024,
+        rankId: config.playerDefaults.rankId,
+        permissionLevel: config.playerDefaults.permissionLevel,
         homes: {},
         balance: config.economy.startingBalance,
         kitCooldowns: {},
-        bounty: 0,
+        bounty: config.playerDefaults.bounty,
         bounties: {},
-        xrayNotifications: true
+        xrayNotifications: config.playerDefaults.xrayNotifications
     };
     activePlayerData.set(player.id, newPlayerData);
     savePlayerData(player.id); // Save the new player's data immediately
