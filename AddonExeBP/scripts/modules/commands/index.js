@@ -42,7 +42,6 @@ const commandFiles = [
     'vanish.js',
     'clear.js',
     'invsee.js',
-    'ecwipe.js',
     'copyinv.js',
     'clearchat.js',
     'report.js',

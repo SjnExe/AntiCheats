@@ -1,17 +1,13 @@
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
-import { getPlayer, savePlayerData, getPlayerIdByName, loadPlayerData } from './playerDataManager.js';
+import { getPlayer, getPlayerIdByName, loadPlayerData } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
-import { getAllPlayersFromCache, getPlayerFromCache } from './playerCache.js';
+import { getAllPlayersFromCache } from './playerCache.js';
 import { getPlayerRank } from './rankManager.js';
 import * as utils from './utils.js';
-import * as economyManager from './economyManager.js';
 import * as punishmentManager from './punishmentManager.js';
-import * as tpaManager from './tpaManager.js';
 import * as reportManager from './reportManager.js';
-import { getCooldown, setCooldown } from './cooldownManager.js';
-import { world } from '@minecraft/server';
 
 export const uiActionFunctions = {};
 
