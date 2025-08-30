@@ -75,53 +75,6 @@ async function buildPanelForm(player, panelId, context) {
     return form;
 }
 
-async function buildBountyListForm(title) {
-    const form = new ActionFormData().title(title);
-    form.button('§l§8< Back', 'textures/gui/controls/left.png');
-
-    const playerNameIdMap = getAllPlayerNameIdMap();
-    const bounties = [];
-
-    // This could be slow if there are many players who have ever joined.
-    // A better implementation would be a dedicated bounty manager.
-    for (const [playerName, playerId] of playerNameIdMap.entries()) {
-        const pData = getPlayer(playerId) ?? loadPlayerData(playerId);
-        if (pData && pData.bounty > 0) {
-            // Find the original casing for the player name if possible
-            const onlinePlayer = getPlayerFromCache(playerId);
-            const displayName = onlinePlayer ? onlinePlayer.name : playerName;
-            bounties.push({ name: displayName, bounty: pData.bounty });
-        }
-    }
-
-    if (bounties.length === 0) {
-        form.body('§aThere are currently no active bounties.');
-    } else {
-        bounties.sort((a, b) => b.bounty - a.bounty); // Sort descending by bounty amount
-        for (const bounty of bounties) {
-            form.button(`${bounty.name}\n§e$${bounty.bounty.toFixed(2)}`);
-        }
-    }
-    return form;
-}
-
-
-function buildReportListForm(title) {
-    const form = new ActionFormData().title(title);
-    const reports = reportManager.getAllReports().filter(r => r.status === 'open' || r.status === 'assigned');
-    form.button('§l§8< Back', 'textures/gui/controls/left.png');
-    if (reports.length === 0) {
-        form.body('§aThere are no active reports.');
-    } else {
-        reports.sort((a, b) => a.timestamp - b.timestamp);
-        for (const report of reports) {
-            const statusColor = report.status === 'assigned' ? '§6' : '§c';
-            form.button(`[${statusColor}${report.status.toUpperCase()}§r] ${report.reportedPlayerName}\n§7Reported by: ${report.reporterName}`);
-        }
-    }
-    return form;
-}
-
 // Processes the response from a submitted form.
 async function handleFormResponse(player, panelId, response, context) {
     debugLog(`[UIManager] Handling form response for panel '${panelId}' from ${player.name}. Selection: ${response.selection}`);
@@ -225,6 +178,35 @@ function addPanelBody(form, player, panelId, context) {
     }
 }
 
+async function buildBountyListForm(title) {
+    const form = new ActionFormData().title(title);
+    form.button('§l§8< Back', 'textures/gui/controls/left.png');
+
+    const playerNameIdMap = getAllPlayerNameIdMap();
+    const bounties = [];
+
+    // This could be slow if there are many players who have ever joined.
+    // A better implementation would be a dedicated bounty manager.
+    for (const [playerName, playerId] of playerNameIdMap.entries()) {
+        const pData = getPlayer(playerId) ?? loadPlayerData(playerId);
+        if (pData && pData.bounty > 0) {
+            // Find the original casing for the player name if possible
+            const onlinePlayer = getPlayerFromCache(playerId);
+            const displayName = onlinePlayer ? onlinePlayer.name : playerName;
+            bounties.push({ name: displayName, bounty: pData.bounty });
+        }
+    }
+
+    if (bounties.length === 0) {
+        form.body('§aThere are currently no active bounties.');
+    } else {
+        bounties.sort((a, b) => b.bounty - a.bounty); // Sort descending by bounty amount
+        for (const bounty of bounties) {
+            form.button(`${bounty.name}\n§e$${bounty.bounty.toFixed(2)}`);
+        }
+    }
+    return form;
+}
 
 function buildReportListForm(title) {
     const form = new ActionFormData().title(title);
