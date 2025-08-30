@@ -55,39 +55,35 @@ export function clearExpiredPayments() {
 
 export function getBalance(playerId) {
     const pData = getPlayer(playerId);
-    return pData ? pData.balance : null;
+    return pData?.balance ?? null;
 }
 
 export function setBalance(playerId, amount) {
     const pData = getPlayer(playerId);
-    if (pData && amount >= 0) {
-        pData.balance = amount;
-        savePlayerData(playerId);
-        return true;
+    if (!pData || amount < 0) {
+        return false;
     }
-    return false;
+    pData.balance = amount;
+    savePlayerData(playerId);
+    return true;
 }
 
 export function addBalance(playerId, amount) {
     if (amount < 0) return false;
-    const pData = getPlayer(playerId);
-    if (pData) {
-        pData.balance += amount;
-        savePlayerData(playerId);
-        return true;
+    const currentBalance = getBalance(playerId);
+    if (currentBalance === null) {
+        return false;
     }
-    return false;
+    return setBalance(playerId, currentBalance + amount);
 }
 
 export function removeBalance(playerId, amount) {
     if (amount < 0) return false;
-    const pData = getPlayer(playerId);
-    if (pData && pData.balance >= amount) {
-        pData.balance -= amount;
-        savePlayerData(playerId);
-        return true;
+    const currentBalance = getBalance(playerId);
+    if (currentBalance === null || currentBalance < amount) {
+        return false;
     }
-    return false;
+    return setBalance(playerId, currentBalance - amount);
 }
 
 export function transfer(sourcePlayerId, targetPlayerId, amount) {

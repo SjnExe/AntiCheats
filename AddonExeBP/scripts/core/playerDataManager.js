@@ -50,7 +50,7 @@ function saveNameIdMap() {
 /**
  * Loads the player name-to-ID map from a dynamic property.
  */
-function loadNameIdMap() {
+export function loadNameIdMap() {
     try {
         const dataString = world.getDynamicProperty(playerNameIdMapKey);
         if (dataString && typeof dataString === 'string') {
