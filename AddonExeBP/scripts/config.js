@@ -42,19 +42,19 @@ export const config = {
         paymentConfirmationThreshold: 10000, // Payments over this amount require confirmation
         paymentConfirmationTimeout: 60 // Seconds to confirm a payment
     },
-    creativeDetection: {
-        enabled: true,
-        periodicCheck: {
-            enabled: true,
-            intervalSeconds: 300 // 5 minutes
-        }
-    },
     playerInfo: {
         enableWelcomer: true,
         welcomeMessage: 'Welcome, {playerName}, to our amazing server!',
         notifyAdminOnNewPlayer: true,
         enableDeathCoords: true,
         deathCoordsMessage: '§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.'
+    },
+
+    // --- Player Defaults ---
+    playerDefaults: {
+        rankId: 'member',
+        permissionLevel: 1024,
+        bounty: 0
     },
 
     // --- Server Information ---

@@ -9,6 +9,11 @@
 const playerCacheById = new Map();
 
 /**
+ * @type {Set<string>}
+ */
+const xrayNotificationAdmins = new Set();
+
+/**
  * Adds a player to the cache. Called on player join.
  * @param {import('@minecraft/server').Player} player The player to add.
  */
@@ -22,6 +27,8 @@ export function addPlayerToCache(player) {
  */
 export function removePlayerFromCache(playerId) {
     playerCacheById.delete(playerId);
+    // Also remove from xray admin cache if they are in it
+    removeAdminFromXrayCache(playerId);
 }
 
 /**
@@ -54,4 +61,35 @@ export function findPlayerByName(playerName) {
  */
 export function getAllPlayersFromCache() {
     return Array.from(playerCacheById.values());
+}
+
+/**
+ * Adds a player's ID to the X-ray admin cache.
+ * @param {string} playerId The ID of the player to add.
+ */
+export function addAdminToXrayCache(playerId) {
+    xrayNotificationAdmins.add(playerId);
+}
+
+/**
+ * Removes a player's ID from the X-ray admin cache.
+ * @param {string} playerId The ID of the player to remove.
+ */
+export function removeAdminFromXrayCache(playerId) {
+    xrayNotificationAdmins.delete(playerId);
+}
+
+/**
+ * Gets all online players who are subscribed to X-ray notifications.
+ * @returns {import('@minecraft/server').Player[]}
+ */
+export function getXrayAdmins() {
+    const admins = [];
+    for (const playerId of xrayNotificationAdmins) {
+        const player = getPlayerFromCache(playerId);
+        if (player) {
+            admins.push(player);
+        }
+    }
+    return admins;
 }

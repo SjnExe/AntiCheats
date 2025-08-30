@@ -12,96 +12,104 @@ import { debugLog } from './logger.js';
 import * as playerCache from './playerCache.js';
 
 /**
- * Checks a player's gamemode and corrects it if they are in creative without permission.
+ * Checks a player's rank and updates it if necessary.
  * @param {import('@minecraft/server').Player} player The player to check.
  */
-function checkPlayerGamemode(player) {
-    const config = getConfig();
+export function updatePlayerRank(player) {
     const pData = playerDataManager.getPlayer(player.id);
     if (!pData) return;
 
-    if (player.getGameMode() === GameMode.Creative && pData.permissionLevel > 1) {
-        player.setGameMode(config.defaultGamemode);
-        player.sendMessage('§cYou are not allowed to be in creative mode.');
-        debugLog(`[AddonExe] Detected ${player.name} in creative mode without permission. Switched to ${config.defaultGamemode}.`);
+    const config = getConfig();
+    const oldRankId = pData.rankId;
+    const newRank = rankManager.getPlayerRank(player, config);
+
+    if (oldRankId !== newRank.id) {
+        pData.rankId = newRank.id;
+        pData.permissionLevel = newRank.permissionLevel;
+        playerDataManager.savePlayerData(player.id); // Save the change immediately
+        debugLog(`[AddonExe] Player ${player.name}'s rank updated from ${oldRankId} to ${newRank.name}.`);
+        player.sendMessage(`§aYour rank has been updated to ${newRank.name}.`);
     }
 }
 
-// This function will contain the main logic of the addon that runs continuously.
-function mainTick() {
-    // Rank update check
+/**
+ * Iterates through all online players and updates their ranks.
+ */
+export function updateAllPlayerRanks() {
+    debugLog('[AddonExe] Force-updating ranks for all online players...');
     for (const player of playerCache.getAllPlayersFromCache()) {
-        const pData = playerDataManager.getPlayer(player.id);
-        if (!pData) continue;
-
-        const currentRank = rankManager.getPlayerRank(player, getConfig());
-        if (pData.rankId !== currentRank.id) {
-            pData.rankId = currentRank.id;
-            pData.permissionLevel = currentRank.permissionLevel;
-            playerDataManager.savePlayerData(player.id);
-            debugLog(`[AddonExe] Player ${player.name}'s rank updated to ${currentRank.name}.`);
-            player.sendMessage(`§aYour rank has been updated to ${currentRank.name}.`);
-        }
+        updatePlayerRank(player);
     }
 }
 
-// Run the initialization logic on the next tick after the script is loaded.
-system.run(() => {
-    loadConfig();
-    // Initial population of the player cache
-    // Player data is loaded on the playerSpawn event, no need to do it here.
-    debugLog('[AddonExe] Initializing addon...');
+/**
+ * Loads all persistent data from dynamic properties.
+ */
+function loadPersistentData() {
+    debugLog('[AddonExe] Loading persistent data...');
     playerDataManager.loadNameIdMap();
     loadPunishments();
-    clearExpiredPunishments(); // Explicitly clear on startup
     loadReports();
-    clearOldResolvedReports(); // Explicitly clear on startup
     loadCooldowns();
-    clearExpiredCooldowns(); // Explicitly clear on startup
-    clearExpiredPayments(); // Explicitly clear on startup
+}
+
+/**
+ * Initializes all core managers and performs startup data clearing.
+ */
+function initializeManagers() {
+    debugLog('[AddonExe] Initializing managers...');
     rankManager.initialize();
+    // Clear any expired data on startup
+    clearExpiredPunishments();
+    clearOldResolvedReports();
+    clearExpiredCooldowns();
+    clearExpiredPayments();
+}
 
+/**
+ * Checks for critical configuration issues.
+ */
+function checkConfiguration() {
     const config = getConfig();
-
-    // Owner configuration check
     if (!config.ownerPlayerNames || config.ownerPlayerNames.length === 0 || config.ownerPlayerNames[0] === 'Your•Name•Here') {
         const warningMessage = '§l§c[AddonExe] WARNING: No owner is configured. Please set `ownerPlayerNames` in `scripts/config.js` to gain access to admin commands.';
-        // Use a runTimeout to ensure the message is sent after the world is fully initialized.
-        system.runTimeout(() => {
-            world.sendMessage(warningMessage);
-        }, 20);
+        system.runTimeout(() => world.sendMessage(warningMessage), 20);
         console.warn('[AddonExe] No owner configured.');
     }
+}
 
-    // Setup Creative Detection
-    if (config.creativeDetection.enabled) {
-        if (config.defaultGamemode === 'creative') {
-            console.warn('[AddonExe] Creative detection is disabled because the default gamemode is set to creative, which would cause a loop.');
-        } else {
-            // Run periodic check
-            if (config.creativeDetection.periodicCheck.enabled) {
-                system.runInterval(() => {
-                    for (const player of playerCache.getAllPlayersFromCache()) {
-                        checkPlayerGamemode(player);
-                    }
-                }, config.creativeDetection.periodicCheck.intervalSeconds * 20);
-            }
-            // The on-join check is handled in the playerSpawn event
-        }
-    }
+/**
+ * Starts all recurring system timers.
+ */
+function startSystemTimers() {
+    // Periodically clear expired payment confirmations
+    system.runInterval(clearExpiredPayments, 6000); // 5 minutes
+    debugLog('[AddonExe] System timers started.');
+}
 
+/**
+ * Main entry point for addon initialization.
+ */
+function initializeAddon() {
+    debugLog('[AddonExe] Initializing addon...');
+    loadConfig();
+    loadPersistentData();
+    initializeManagers();
+    checkConfiguration();
 
+    // Dynamically load command modules
     import('../modules/commands/index.js').then(() => {
-        debugLog('[AddonExe] Commands loaded.');
+        debugLog('[AddonExe] Commands loaded successfully.');
     }).catch(error => {
         console.error(`[AddonExe] Failed to load commands: ${error.stack}`);
     });
 
-    system.runInterval(mainTick, 20);
-    // Periodically clear expired payment confirmations
-    system.runInterval(clearExpiredPayments, 6000); // 5 minutes
+    startSystemTimers();
     debugLog('[AddonExe] Addon initialized successfully.');
-});
+}
+
+// Run the initialization logic on the next tick after the script is loaded.
+system.run(initializeAddon);
 
 // Handle muted players, commands, and chat formatting
 world.beforeEvents.chatSend.subscribe((eventData) => {
@@ -151,20 +159,16 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
     }
 
     const pData = playerDataManager.getOrCreatePlayer(player);
-    const rank = rankManager.getPlayerRank(player, getConfig());
-    if (pData.rankId !== rank.id) {
-        pData.rankId = rank.id;
-        pData.permissionLevel = rank.permissionLevel;
-        debugLog(`[AddonExe] Player ${player.name}'s rank updated to ${rank.name}.`);
-        player.sendMessage(`§aYour rank has been updated to ${rank.name}.`);
-    } else if (initialSpawn) {
-        debugLog(`[AddonExe] Player ${player.name} joined with rank ${rank.name}.`);
+    updatePlayerRank(player); // Check and update rank on join
+
+    if (initialSpawn) {
+        const rank = rankManager.getRankById(pData.rankId);
+        debugLog(`[AddonExe] Player ${player.name} joined with rank ${rank?.name ?? 'unknown'}.`);
     }
 
-    // Creative detection on join (runs after player data is initialized)
-    const config = getConfig();
-    if (config.creativeDetection.enabled && config.defaultGamemode !== 'creative') {
-        checkPlayerGamemode(player);
+    // Update X-ray notification cache for admins
+    if (pData.permissionLevel <= 1 && pData.xrayNotifications) {
+        playerCache.addAdminToXrayCache(player.id);
     }
 });
 
@@ -195,19 +199,17 @@ world.afterEvents.blockBreak?.subscribe((event) => {
     ];
 
     if (valuableOres.includes(brokenBlock.typeId)) {
-        const pData = playerDataManager.getPlayer(player.id);
-        if (!pData) return;
-
-        const onlineAdmins = playerCache.getAllPlayersFromCache().filter(p => {
-            const adminPData = playerDataManager.getPlayer(p.id);
-            return adminPData && adminPData.permissionLevel <= 1 && adminPData.xrayNotifications;
-        });
+        const onlineAdmins = playerCache.getXrayAdmins();
+        if (onlineAdmins.length === 0) return;
 
         const location = brokenBlock.location;
-        const message = `§e${player.name}§r mined §e${brokenBlock.typeId.replace('minecraft:', '')}§r at §bX: ${location.x}, Y: ${location.y}, Z: ${location.z}`;
+        const message = `§e${player.name}§r mined §e${brokenBlock.typeId.replace('minecraft:', '')}§r at §bX: ${Math.floor(location.x)}, Y: ${Math.floor(location.y)}, Z: ${Math.floor(location.z)}`;
 
         onlineAdmins.forEach(admin => {
-            admin.sendMessage(message);
+            // Don't notify the admin if they are the one mining
+            if (admin.id !== player.id) {
+                admin.sendMessage(message);
+            }
         });
     }
 });
