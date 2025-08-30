@@ -34,6 +34,10 @@ export const config = {
     reports: {
         resolvedReportLifetimeDays: 7
     },
+    spawn: {
+        cooldownSeconds: 300,
+        teleportWarmupSeconds: 5
+    },
     economy: {
         enabled: true,
         startingBalance: 50,
