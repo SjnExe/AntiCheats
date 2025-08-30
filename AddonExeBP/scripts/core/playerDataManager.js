@@ -101,19 +101,6 @@ export function loadPlayerData(playerId) {
 }
 
 /**
- * Loads data for all currently online players. Typically run on startup.
- */
-export function loadAllOnlinePlayerData() {
-    debugLog('[PlayerDataManager] Loading data for all online players...');
-    loadNameIdMap(); // Load the name map first
-    for (const player of world.getAllPlayers()) {
-        getOrCreatePlayer(player);
-    }
-    debugLog(`[PlayerDataManager] Player data cache initialized for ${activePlayerData.size} players.`);
-}
-
-
-/**
  * Gets a player's data from the cache, or loads/creates it if it doesn't exist.
  * @param {import('@minecraft/server').Player} player
  * @returns {PlayerData}
