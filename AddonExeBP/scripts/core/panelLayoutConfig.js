@@ -349,60 +349,6 @@ export const panelDefinitions = {
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'showTestSuccessMessage'
-            },
-            {
-                id: 'testPlayerListDirect',
-                text: '§aTest List (Direct Call)',
-                icon: 'textures/ui/icon_multiplayer',
-                permissionLevel: 1,
-                actionType: 'openPanel',
-                actionValue: 'testPlayerList_Direct'
-            },
-            {
-                id: 'testPlayerListCommand',
-                text: '§bTest List (Command Call)',
-                icon: 'textures/ui/icon_multiplayer',
-                permissionLevel: 1,
-                actionType: 'openPanel',
-                actionValue: 'testPlayerList_Command'
-            }
-        ]
-    },
-    testPlayerListDirect: {
-        title: '§l§aTest List (Direct)§r',
-        parentPanelId: 'testPanel',
-        items: [] // Dynamic
-    },
-    testPlayerListCommand: {
-        title: '§l§bTest List (Command)§r',
-        parentPanelId: 'testPanel',
-        items: [] // Dynamic
-    },
-    testActionPanelDirect: {
-        title: '§l§aActions for {playerName}§r',
-        parentPanelId: 'testPlayerListDirect',
-        items: [
-            {
-                id: 'clearInventoryDirect',
-                text: '§cClear Inventory (Direct)',
-                icon: 'textures/ui/trash',
-                permissionLevel: 1,
-                actionType: 'functionCall',
-                actionValue: 'clearInventory'
-            }
-        ]
-    },
-    testActionPanelCommand: {
-        title: '§l§bActions for {playerName}§r',
-        parentPanelId: 'testPlayerListCommand',
-        items: [
-            {
-                id: 'clearInventoryCommand',
-                text: '§cClear Inventory (Command)',
-                icon: 'textures/ui/trash',
-                permissionLevel: 1,
-                actionType: 'functionCall',
-                actionValue: 'clearInventory_command'
             }
         ]
     },

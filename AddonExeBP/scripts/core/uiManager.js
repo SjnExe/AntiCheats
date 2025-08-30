@@ -3,9 +3,9 @@ import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer, savePlayerData, getPlayerIdByName, loadPlayerData } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
-import { getAllPlayersFromCache } from './playerCache.js';
+import { getAllPlayersFromCache, getPlayerFromCache } from './playerCache.js';
 import { getPlayerRank } from './rankManager.js';
-import { uiWait, parseDuration, playSoundFromConfig } from './utils.js';
+import * as utils from './utils.js';
 import * as economyManager from './economyManager.js';
 import * as punishmentManager from './punishmentManager.js';
 import * as tpaManager from './tpaManager.js';
@@ -25,7 +25,7 @@ export async function showPanel(player, panelId, context = {}) {
             return;
         }
 
-        const response = await uiWait(player, form);
+        const response = await utils.uiWait(player, form);
         if (!response || response.canceled) {
             debugLog(`[UIManager] Panel '${panelId}' was canceled by ${player.name}.`);
             return;
@@ -59,9 +59,9 @@ async function buildPanelForm(player, panelId, context) {
         title = config.serverName || panelDef.title;
     }
 
-    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'bountyListPanel' || panelId === 'reportListPanel' || panelId === 'testPlayerListPanel' || panelId === 'testPlayerListDirect' || panelId === 'testPlayerListCommand') {
+    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'bountyListPanel' || panelId === 'reportListPanel' || panelId === 'testPlayerListPanel') {
         debugLog(`[UIManager] Building dynamic list form for panel '${panelId}'.`);
-        if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'testPlayerListPanel' || panelId === 'testPlayerListDirect' || panelId === 'testPlayerListCommand') return buildPlayerListForm(title, player, panelId, context);
+        if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'testPlayerListPanel') return buildPlayerListForm(title, player, panelId, context);
         if (panelId === 'bountyListPanel') return buildBountyListForm(title);
         if (panelId === 'reportListPanel') return buildReportListForm(title);
     }
@@ -85,54 +85,27 @@ async function handleFormResponse(player, panelId, response, context) {
         return;
     }
 
-    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'testPlayerListPanel' || panelId === 'testPlayerListDirect' || panelId === 'testPlayerListCommand') {
+    if (panelId === 'playerListPanel' || panelId === 'publicPlayerListPanel' || panelId === 'testPlayerListPanel') {
         const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
-        const ITEMS_PER_PAGE = 100;
-        const page = context.page || 0;
-        const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
         let selection = response.selection;
 
-        if (selection === 0) {
+        if (selection === 0) { // Back button
             debugLog(`[UIManager] Player ${player.name} selected 'Back' from player list.`);
             const parentPanel = panelDefinitions[panelId]?.parentPanelId || 'mainPanel';
             return showPanel(player, parentPanel, context);
         }
-        selection--;
+        selection--; // Adjust for the back button
 
-        if (page > 0) {
-            if (selection === 0) {
-                debugLog(`[UIManager] Player ${player.name} selected 'Previous Page' from player list.`);
-                return showPanel(player, panelId, { ...context, page: page - 1 });
+        const selectedPlayer = onlinePlayers[selection];
+        if (selectedPlayer) {
+            let nextPanel;
+            if (panelId === 'playerListPanel' || panelId === 'testPlayerListPanel') {
+                nextPanel = 'playerManagementPanel';
+            } else if (panelId === 'publicPlayerListPanel') {
+                nextPanel = 'publicPlayerActionsPanel';
             }
-            selection--;
-        }
-
-        const startIndex = page * ITEMS_PER_PAGE;
-        const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-        if (selection < pagePlayers.length) {
-            const selectedPlayer = pagePlayers[selection];
-            if (selectedPlayer) {
-                let nextPanel;
-                if (panelId === 'playerListPanel' || panelId === 'testPlayerListPanel') {
-                    nextPanel = 'playerManagementPanel';
-                } else if (panelId === 'publicPlayerListPanel') {
-                    nextPanel = 'publicPlayerActionsPanel';
-                } else if (panelId === 'testPlayerListDirect') {
-                    debugLog('[UIManager] Routing testPlayerListDirect to testActionPanelDirect');
-                    nextPanel = 'testActionPanelDirect';
-                } else if (panelId === 'testPlayerListCommand') {
-                    debugLog('[UIManager] Routing testPlayerListCommand to testActionPanelCommand');
-                    nextPanel = 'testActionPanelCommand';
-                }
-                debugLog(`[UIManager] Player ${player.name} selected player ${selectedPlayer.name}. Opening '${nextPanel}'.`);
-                return showPanel(player, nextPanel, { ...context, targetPlayer: selectedPlayer });
-            }
-        } else {
-            if (page < totalPages - 1) {
-                debugLog(`[UIManager] Player ${player.name} selected 'Next Page' from player list.`);
-                return showPanel(player, panelId, { ...context, page: page + 1 });
-            }
+            debugLog(`[UIManager] Player ${player.name} selected player ${selectedPlayer.name}. Opening '${nextPanel}'.`);
+            return showPanel(player, nextPanel, { ...context, targetPlayerId: selectedPlayer.id });
         }
         return;
     }
@@ -143,7 +116,7 @@ async function handleFormResponse(player, panelId, response, context) {
         const selectedBountyPlayer = playersWithBounty[response.selection - 1]?.player;
         if (selectedBountyPlayer) {
             debugLog(`[UIManager] Player ${player.name} selected bounty player ${selectedBountyPlayer.name}.`);
-            return showPanel(player, 'bountyActionsPanel', { ...context, targetPlayer: selectedBountyPlayer });
+            return showPanel(player, 'bountyActionsPanel', { ...context, targetPlayerId: selectedBountyPlayer.id });
         }
         return;
     }
@@ -195,20 +168,22 @@ function getMenuItems(panelDef, permissionLevel) {
 
 function addPanelBody(form, player, panelId, context) {
     const config = getConfig();
-    if (panelId === 'playerManagementPanel' && context.targetPlayer) {
-        const { targetPlayer } = context;
+    if ((panelId === 'playerManagementPanel' || panelId === 'publicPlayerActionsPanel') && context.targetPlayerId) {
+        const targetPlayer = getPlayerFromCache(context.targetPlayerId);
+        if (!targetPlayer) {
+            form.body('§cTarget player is no longer online.');
+            return;
+        }
         const targetPData = getPlayer(targetPlayer.id);
         if (!targetPData) {
             form.body('§cCould not retrieve player data.');
             return;
         }
-        const rank = getPlayerRank(targetPlayer, config);
-        form.body([`§fName: §e${targetPlayer.name}`, `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`, `§fBalance: §a$${targetPData.balance?.toFixed(2) ?? '0.00'}`, `§fBounty: §e$${targetPData.bounty?.toFixed(2) ?? '0.00'}`].join('\n'));
-    } else if (panelId === 'publicPlayerActionsPanel' && context.targetPlayer) {
-        const targetPData = getPlayer(context.targetPlayer.id);
-        if (!targetPData) {
-            form.body('§cCould not retrieve player data.');
-        } else {
+
+        if (panelId === 'playerManagementPanel') {
+            const rank = getPlayerRank(targetPlayer, config);
+            form.body([`§fName: §e${targetPlayer.name}`, `§fRank: §r${rank.chatFormatting?.nameColor ?? '§7'}${rank.name}`, `§fBalance: §a$${targetPData.balance?.toFixed(2) ?? '0.00'}`, `§fBounty: §e$${targetPData.bounty?.toFixed(2) ?? '0.00'}`].join('\n'));
+        } else if (panelId === 'publicPlayerActionsPanel') {
             const bounty = targetPData.bounty?.toFixed(2) ?? '0.00';
             form.body(`§eBounty on this player: $${bounty}`);
         }
@@ -250,20 +225,11 @@ function addPanelBody(form, player, panelId, context) {
 function buildPlayerListForm(title, player, panelId, context) {
     const form = new ActionFormData().title(title);
     const onlinePlayers = getAllPlayersFromCache().sort((a, b) => a.name.localeCompare(b.name));
-    const ITEMS_PER_PAGE = 100;
-    const page = context.page || 0;
-    const totalPages = Math.ceil(onlinePlayers.length / ITEMS_PER_PAGE);
-    const startIndex = page * ITEMS_PER_PAGE;
-    const pagePlayers = onlinePlayers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     form.button('§l§8< Back', 'textures/gui/controls/left.png');
 
-    if (page > 0) {
-        form.button('§l§8< Previous Page', 'textures/gui/controls/left.png');
-    }
-
     const config = getConfig();
-    for (const p of pagePlayers) {
+    for (const p of onlinePlayers) {
         const rank = getPlayerRank(p, config);
         let displayName = `${rank.chatFormatting?.prefixText ?? ''}${p.name}§r`;
         let icon;
@@ -272,11 +238,7 @@ function buildPlayerListForm(title, player, panelId, context) {
         form.button(displayName, icon);
     }
 
-    if (page < totalPages - 1) {
-        form.button('§l§2Next Page >', 'textures/gui/controls/right.png');
-    }
-
-    form.body(`Page ${page + 1} of ${totalPages}`);
+    form.body(`Total Players: ${onlinePlayers.length}`);
     return form;
 }
 
@@ -320,45 +282,48 @@ uiActionFunctions['showRules'] = async (player, context) => {
         .title('§l§eServer Rules')
         .body(config.serverInfo.rules.join('\n'))
         .button('§l§8Close');
-    await uiWait(player, rulesForm);
+    await utils.uiWait(player, rulesForm);
 };
 
 uiActionFunctions['teleportTo'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'teleportTo' called by ${player.name} on ${targetPlayer.name}.`);
     player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
     player.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
-    playSoundFromConfig(player, 'adminNotificationReceived');
+    // utils.playSoundFromConfig(player, 'adminNotificationReceived');
 };
 
 uiActionFunctions['teleportHere'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'teleportHere' called by ${player.name} on ${targetPlayer.name}.`);
     targetPlayer.teleport(player.location, { dimension: player.dimension });
     player.sendMessage(`§aTeleported ${targetPlayer.name} to you.`);
-    playSoundFromConfig(player, 'adminNotificationReceived');
+    // utils.playSoundFromConfig(player, 'adminNotificationReceived');
 };
 
 uiActionFunctions['showBountyForm'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'showBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
-    const response = await uiWait(player, form);
+    const response = await utils.uiWait(player, form);
     if (!response || response.canceled) return;
     const [amountStr] = response.formValues;
     const amount = parseInt(amountStr);
@@ -378,28 +343,29 @@ uiActionFunctions['showBountyForm'] = async (player, context) => {
         world.sendMessage(`§cSomeone has placed a bounty of §e$${amount.toFixed(2)}§c on ${targetPlayer.name}!`);
     } else {
         player.sendMessage('§cFailed to place bounty.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
     }
 };
 
 uiActionFunctions['toggleFreeze'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'toggleFreeze' called by ${player.name} on ${targetPlayer.name}.`);
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot use this action on yourself.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot freeze a player with the same or higher rank than you.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     const config = getConfig();
@@ -415,14 +381,15 @@ uiActionFunctions['toggleFreeze'] = async (player, context) => {
         player.sendMessage(`§eFroze ${targetPlayer.name}.`);
         targetPlayer.sendMessage('§cYou have been frozen by an admin.');
     }
-    playSoundFromConfig(player, 'adminNotificationReceived');
+    // utils.playSoundFromConfig(player, 'adminNotificationReceived');
 };
 
 uiActionFunctions['clearInventory'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'clearInventory' called by ${player.name} on ${targetPlayer.name}.`);
@@ -430,7 +397,7 @@ uiActionFunctions['clearInventory'] = async (player, context) => {
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot clear the inventory of a player with the same or higher rank than you.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     const inventory = targetPlayer.getComponent('inventory').container;
@@ -439,57 +406,59 @@ uiActionFunctions['clearInventory'] = async (player, context) => {
     }
     player.sendMessage(`§aCleared inventory for ${targetPlayer.name}.`);
     targetPlayer.sendMessage('§eYour inventory has been cleared by an admin.');
-    playSoundFromConfig(player, 'adminNotificationReceived');
-    playSoundFromConfig(targetPlayer, 'adminNotificationReceived');
+    // utils.playSoundFromConfig(player, 'adminNotificationReceived');
+    // utils.playSoundFromConfig(targetPlayer, 'adminNotificationReceived');
 };
 
 uiActionFunctions['showKickForm'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'showKickForm' called by ${player.name} on ${targetPlayer.name}.`);
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot use this action on yourself.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot kick a player with the same or higher rank than you.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     const form = new ModalFormData().title(`Kick ${targetPlayer.name}`).textField('Reason', 'Enter kick reason (optional)');
-    const response = await uiWait(player, form);
+    const response = await utils.uiWait(player, form);
     if (!response || response.canceled) return;
     const [reason] = response.formValues;
     try {
         await targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" ${reason || 'Kicked by an admin.'}`);
         player.sendMessage(`§aKicked ${targetPlayer.name}.`);
-        playSoundFromConfig(player, 'adminNotificationReceived');
+        // utils.playSoundFromConfig(player, 'adminNotificationReceived');
     } catch (error) {
         player.sendMessage(`§cFailed to kick ${targetPlayer.name}.`);
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         console.error(`[UIManager] Kick failed: ${error.stack}`);
     }
 };
 
 uiActionFunctions['showReduceBountyForm'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'showReduceBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const targetData = getPlayer(targetPlayer.id);
     if (!targetData || targetData.bounty === 0) return player.sendMessage('§cThis player has no bounty.');
     const form = new ModalFormData().title(`Reduce Bounty on ${targetPlayer.name}`).textField('Amount', `Max: $${targetData.bounty.toFixed(2)}`);
-    const response = await uiWait(player, form);
+    const response = await utils.uiWait(player, form);
     if (!response || response.canceled) return;
     const [amountStr] = response.formValues;
     const amount = parseInt(amountStr);
@@ -504,37 +473,38 @@ uiActionFunctions['showReduceBountyForm'] = async (player, context) => {
         player.sendMessage(`§aYou reduced the bounty on ${targetPlayer.name} by §e$${amount.toFixed(2)}.`);
     } else {
         player.sendMessage('§cFailed to reduce bounty.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
     }
 };
 
 uiActionFunctions['showMuteForm'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'showMuteForm' called by ${player.name} on ${targetPlayer.name}.`);
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot use this action on yourself.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot mute a player with the same or higher rank than you.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     const form = new ModalFormData().title(`Mute ${targetPlayer.name}`)
         .textField('Duration', 'e.g., 30m, 2h, 7d, perm', 'perm')
         .textField('Reason', 'Enter mute reason (optional)');
-    const response = await uiWait(player, form);
+    const response = await utils.uiWait(player, form);
     if (!response || response.canceled) return;
     const [durationStr, reason] = response.formValues;
-    const durationMs = durationStr === 'perm' ? Infinity : parseDuration(durationStr);
+    const durationMs = durationStr === 'perm' ? Infinity : utils.parseDuration(durationStr);
     if (durationMs === 0 && durationStr !== 'perm') return player.sendMessage('§cInvalid duration format.');
     punishmentManager.addPunishment(targetPlayer.id, {
         type: 'mute',
@@ -544,14 +514,15 @@ uiActionFunctions['showMuteForm'] = async (player, context) => {
     const durationText = durationMs === Infinity ? 'permanently' : `for ${durationStr}`;
     player.sendMessage(`§aSuccessfully muted ${targetPlayer.name} ${durationText}. Reason: ${reason || 'Muted by an admin.'}`);
     targetPlayer.sendMessage(`§cYou have been muted ${durationText}. Reason: ${reason || 'Muted by an admin.'}`);
-    playSoundFromConfig(player, 'adminNotificationReceived');
+    // utils.playSoundFromConfig(player, 'adminNotificationReceived');
 };
 
 uiActionFunctions['showUnmuteForm'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'showUnmuteForm' called by ${player.name} on ${targetPlayer.name}.`);
@@ -559,41 +530,42 @@ uiActionFunctions['showUnmuteForm'] = async (player, context) => {
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot unmute a player with the same or higher rank than you.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     punishmentManager.removePunishment(targetPlayer.id);
     player.sendMessage(`§aUnmuted ${targetPlayer.name}.`);
-    playSoundFromConfig(player, 'adminNotificationReceived');
+    // utils.playSoundFromConfig(player, 'adminNotificationReceived');
 };
 
 uiActionFunctions['showBanForm'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'showBanForm' called by ${player.name} on ${targetPlayer.name}.`);
     if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot use this action on yourself.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     const executorData = getPlayer(player.id);
     const targetData = getPlayer(targetPlayer.id);
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot ban a player with the same or higher rank than you.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     const form = new ModalFormData().title(`Ban ${targetPlayer.name}`)
         .textField('Duration', 'e.g., 30m, 2h, 7d, perm', 'perm')
         .textField('Reason', 'Enter ban reason (optional)');
-    const response = await uiWait(player, form);
+    const response = await utils.uiWait(player, form);
     if (!response || response.canceled) return;
     const [durationStr, reason] = response.formValues;
-    const durationMs = durationStr === 'perm' ? Infinity : parseDuration(durationStr);
+    const durationMs = durationStr === 'perm' ? Infinity : utils.parseDuration(durationStr);
     if (durationMs === 0 && durationStr !== 'perm') return player.sendMessage('§cInvalid duration format.');
     const banReason = reason || 'Banned by an admin.';
     punishmentManager.addPunishment(targetPlayer.id, {
@@ -603,15 +575,16 @@ uiActionFunctions['showBanForm'] = async (player, context) => {
     });
     const durationText = durationMs === Infinity ? 'permanently' : `for ${durationStr}`;
     player.sendMessage(`§aSuccessfully banned ${targetPlayer.name} ${durationText}. Reason: ${banReason}`);
-    playSoundFromConfig(player, 'adminNotificationReceived');
+    // utils.playSoundFromConfig(player, 'adminNotificationReceived');
     targetPlayer.runCommandAsync(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${banReason}`);
 };
 
 uiActionFunctions['sendTpaRequest'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'sendTpaRequest' called by ${player.name} on ${targetPlayer.name}.`);
@@ -636,15 +609,16 @@ uiActionFunctions['sendTpaRequest'] = async (player, context) => {
 };
 
 uiActionFunctions['showPayForm'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'showPayForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Pay ${targetPlayer.name}`).textField('Amount', 'Enter amount to pay');
-    const response = await uiWait(player, form);
+    const response = await utils.uiWait(player, form);
     if (!response || response.canceled) return;
 
     const [amountStr] = response.formValues;
@@ -677,15 +651,16 @@ uiActionFunctions['showPayForm'] = async (player, context) => {
 };
 
 uiActionFunctions['showReportForm'] = async (player, context) => {
-    const { targetPlayer } = context;
+    const { targetPlayerId } = context;
+    const targetPlayer = getPlayerFromCache(targetPlayerId);
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
     debugLog(`[UIManager] Action 'showReportForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Report ${targetPlayer.name}`).textField('Reason', 'Enter reason for report');
-    const response = await uiWait(player, form);
+    const response = await utils.uiWait(player, form);
     if (!response || response.canceled) return;
     const [reason] = response.formValues;
     if (!reason) return player.sendMessage('§cYou must provide a reason for the report.');
@@ -723,13 +698,13 @@ uiActionFunctions['clearReport'] = (player, context) => {
 uiActionFunctions['showUnbanForm'] = async (player, context) => {
     debugLog(`[UIManager] Action 'showUnbanForm' called by ${player.name}.`);
     const form = new ModalFormData().title('Unban Player').textField('Player Name', 'Enter the name of the player to unban');
-    const response = await uiWait(player, form);
+    const response = await utils.uiWait(player, form);
     if (!response || response.canceled) return;
 
     const [targetName] = response.formValues;
     if (!targetName) {
         player.sendMessage('§cYou must enter a player name.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
 
@@ -737,13 +712,13 @@ uiActionFunctions['showUnbanForm'] = async (player, context) => {
 
     if (!targetId) {
         player.sendMessage(`§cPlayer "${targetName}" has never joined the server or name is misspelled.`);
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
 
     if (targetId === player.id) {
         player.sendMessage('§cYou cannot unban yourself.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
 
@@ -752,13 +727,13 @@ uiActionFunctions['showUnbanForm'] = async (player, context) => {
 
     if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
         player.sendMessage('§cYou cannot unban a player with the same or higher rank than you.');
-        playSoundFromConfig(player, 'commandError');
+        // utils.playSoundFromConfig(player, 'commandError');
         return;
     }
 
     punishmentManager.removePunishment(targetId);
     player.sendMessage(`§aSuccessfully unbanned ${targetName}. They can now rejoin the server.`);
-    playSoundFromConfig(player, 'adminNotificationReceived');
+    // utils.playSoundFromConfig(player, 'adminNotificationReceived');
 };
 
 uiActionFunctions['showTestMessage'] = async (player, context) => {
@@ -767,27 +742,7 @@ uiActionFunctions['showTestMessage'] = async (player, context) => {
         .title('Test Message')
         .body('This is a test message from a UI action function.')
         .button('OK');
-    await uiWait(player, form);
-};
-
-uiActionFunctions['clearInventory_command'] = async (player, context) => {
-    const { targetPlayer } = context;
-    if (!targetPlayer || !targetPlayer.isValid()) {
-        player.sendMessage('§cTarget player not found or has logged off.');
-        playSoundFromConfig(player, 'commandError');
-        return;
-    }
-    debugLog(`[UIManager] Action 'clearInventory_command' called by ${player.name} on ${targetPlayer.name}.`);
-    try {
-        // Execute the command as the admin player on the target player
-        await player.runCommandAsync(`!clear "${targetPlayer.name}"`);
-        player.sendMessage(`§aSuccessfully executed !clear on ${targetPlayer.name}.`);
-        playSoundFromConfig(player, 'adminNotificationReceived');
-    } catch (e) {
-        player.sendMessage(`§cFailed to execute !clear on ${targetPlayer.name}. See console for details.`);
-        playSoundFromConfig(player, 'commandError');
-        console.error(`[UIManager] clearInventory_command failed: ${e}`);
-    }
+    await utils.uiWait(player, form);
 };
 
 uiActionFunctions['showTestSuccessMessage'] = async (player, context) => {
@@ -796,5 +751,5 @@ uiActionFunctions['showTestSuccessMessage'] = async (player, context) => {
         .title('Test Success')
         .body('The UI action was called successfully.')
         .button('OK');
-    await uiWait(player, form);
+    await utils.uiWait(player, form);
 };
