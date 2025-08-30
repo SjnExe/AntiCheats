@@ -4,6 +4,18 @@ This document is an archive of completed tasks.
 
 ---
 
+## Removed `!ecwipe` Command (Jules)
+
+- **Date Completed:** 2025-08-30
+- **Summary:** Removed the `!ecwipe` command at the user's request.
+- **Details:**
+  - Deleted the command file `AddonExeBP/scripts/modules/commands/ecwipe.js`.
+  - Removed the command from the loader in `AddonExeBP/scripts/modules/commands/index.js`.
+  - Removed the command's entry from the documentation in `Docs/Commands.md`.
+- **Outcome:** The problematic and non-functional `!ecwipe` command has been completely removed from the addon. A task has been added to the `todo.md` file to re-implement it correctly in the future.
+
+---
+
 ## Full Addon Checkup and Lint Fixes (Jules)
 
 - **Date Completed:** 2025-08-29
