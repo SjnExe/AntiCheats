@@ -4,6 +4,18 @@ This document is an archive of completed tasks.
 
 ---
 
+## `!ecwipe` Command Fix and Documentation Update (Jules)
+
+- **Date Completed:** 2025-08-30
+- **Summary:** Addressed an issue where the `!ecwipe` command would fail without a clear explanation if the target player was offline.
+- **Details:**
+  - Modified `AddonExeBP/scripts/modules/commands/ecwipe.js` to provide a more descriptive error message, informing the user that the target must be online.
+  - Updated `Docs/Commands.md` to include a warning about this limitation, improving user documentation.
+  - Ensured all changes passed the project's linting requirements.
+- **Outcome:** The `!ecwipe` command is now more user-friendly, and its documentation is clearer, preventing future confusion for administrators.
+
+---
+
 ## Full Addon Checkup and Lint Fixes (Jules)
 
 - **Date Completed:** 2025-08-29

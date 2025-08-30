@@ -49,6 +49,8 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 - **`!ecwipe`**
   - **Syntax:** `!ecwipe <playerName>`
   - **Description:** Clears the Ender Chest of the specified player.
+  - > [!WARNING]
+  - > The target player must be online for this command to work.
   - **Permission:** Admin
 - **`!freeze`** (Alias: `!frz`)
   - **Syntax:** `!freeze <playerName>`

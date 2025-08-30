@@ -18,7 +18,7 @@ commandManager.register({
         const targetPlayer = findPlayerByName(targetName);
 
         if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found.`);
+            player.sendMessage(`§cPlayer "${targetName}" not found or is offline. The player must be online to wipe their Ender Chest.`);
             playSound(player, 'note.bass');
             return;
         }
