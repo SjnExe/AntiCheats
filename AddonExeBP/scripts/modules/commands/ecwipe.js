@@ -1,6 +1,8 @@
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { playSound } from '../../core/utils.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
+import { debugLog } from '../../core/logger.js';
 
 commandManager.register({
     name: 'ecwipe',
@@ -15,17 +17,38 @@ commandManager.register({
         }
 
         const targetName = args[0];
-        const targetPlayer = findPlayerByName(targetName);
+        const initialTargetPlayer = findPlayerByName(targetName);
 
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found or is offline. The player must be online to wipe their Ender Chest.`);
+        if (!initialTargetPlayer) {
+            player.sendMessage(`§cPlayer "${targetName}" not found or is offline.`);
             playSound(player, 'note.bass');
             return;
         }
 
-        const enderChestContainer = targetPlayer.getComponent('minecraft:ender_chest')?.container;
+        // Attempt to get a fresh player object from the world, as the cached one might be stale
+        const targetPlayer = world.getPlayer(initialTargetPlayer.id);
+        if (!targetPlayer) {
+            debugLog(`[ecwipe] Failed to get fresh player object for ${targetName} from world.getPlayer().`);
+            player.sendMessage(`§cCould not get a valid player reference for "${targetName}".`);
+            playSound(player, 'note.bass');
+            return;
+        }
+        debugLog(`[ecwipe] Successfully found target player ${targetPlayer.name}.`);
+
+        const enderChestComponent = targetPlayer.getComponent('minecraft:ender_chest');
+        debugLog(`[ecwipe] Ender Chest component for ${targetPlayer.name}: ${enderChestComponent ? 'Found' : 'Not Found'}`);
+
+        if (!enderChestComponent) {
+            player.sendMessage(`§cCould not access the Ender Chest component for ${targetPlayer.name}. This might be a temporary API issue.`);
+            playSound(player, 'note.bass');
+            return;
+        }
+
+        const enderChestContainer = enderChestComponent.container;
+        debugLog(`[ecwipe] Ender Chest container for ${targetPlayer.name}: ${enderChestContainer ? 'Found' : 'Not Found'}`);
+
         if (!enderChestContainer) {
-            player.sendMessage(`§cCould not access the Ender Chest for ${targetPlayer.name}.`);
+            player.sendMessage(`§cCould not access the Ender Chest container for ${targetPlayer.name}.`);
             playSound(player, 'note.bass');
             return;
         }

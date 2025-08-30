@@ -141,5 +141,5 @@ export const panelDefinitions = {
                 actionValue: 'showUnbanForm'
             }
         ]
-    }
+    },
 };
