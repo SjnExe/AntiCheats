@@ -175,3 +175,11 @@ export function handlePlayerLeave(playerId) {
 export function getAllPlayerData() {
     return activePlayerData;
 }
+
+/**
+ * Gets the map of all known player names and their corresponding IDs.
+ * @returns {Map<string, string>}
+ */
+export function getAllPlayerNameIdMap() {
+    return playerNameIdMap;
+}
