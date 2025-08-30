@@ -321,7 +321,8 @@ uiActionFunctions['showBountyForm'] = async (player, context, panelId) => {
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
         // utils.playSoundFromConfig(player, 'commandError');
-        return showPanel(player, panelId, context);
+        showPanel(player, panelId, context);
+        return;
     }
     debugLog(`[UIManager] Action 'showBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
@@ -352,7 +353,7 @@ uiActionFunctions['showBountyForm'] = async (player, context, panelId) => {
             }
         }
     }
-    return showPanel(player, panelId, context);
+    showPanel(player, panelId, context);
 };
 
 uiActionFunctions['toggleFreeze'] = async (player, context, panelId) => {
@@ -460,7 +461,8 @@ uiActionFunctions['showReduceBountyForm'] = async (player, context, panelId) => 
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
         // utils.playSoundFromConfig(player, 'commandError');
-        return showPanel(player, panelId, context);
+        showPanel(player, panelId, context);
+        return;
     }
     debugLog(`[UIManager] Action 'showReduceBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const targetData = getPlayer(targetPlayer.id);
@@ -492,7 +494,7 @@ uiActionFunctions['showReduceBountyForm'] = async (player, context, panelId) => 
             }
         }
     }
-    return showPanel(player, panelId, context);
+    showPanel(player, panelId, context);
 };
 
 uiActionFunctions['showMuteForm'] = async (player, context, panelId) => {
