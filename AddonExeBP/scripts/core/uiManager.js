@@ -1,9 +1,10 @@
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
-import { getPlayer, getPlayerIdByName, loadPlayerData } from './playerDataManager.js';
+import { getPlayer, getPlayerIdByName, loadPlayerData, getAllPlayerNameIdMap } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 import { getPlayerRank } from './rankManager.js';
+import { getPlayerFromCache } from './playerCache.js';
 import * as utils from './utils.js';
 import * as punishmentManager from './punishmentManager.js';
 import * as reportManager from './reportManager.js';
@@ -54,6 +55,11 @@ async function buildPanelForm(player, panelId, context) {
         title = config.serverName || panelDef.title;
     }
 
+    if (panelId === 'bountyListPanel') {
+        debugLog(`[UIManager] Building dynamic list form for panel '${panelId}'.`);
+        return buildBountyListForm(title);
+    }
+
     if (panelId === 'reportListPanel') {
         debugLog(`[UIManager] Building dynamic list form for panel '${panelId}'.`);
         return buildReportListForm(title);
@@ -80,7 +86,8 @@ async function handleFormResponse(player, panelId, response, context) {
 
 
     if (panelId === 'bountyListPanel') {
-        // Per user request, this panel now just returns to the main menu.
+        // The first button (selection 0) is 'Back'. For now, clicking a bounty
+        // also just returns to the main menu as there is no action defined.
         return showPanel(player, 'mainPanel');
     }
 
@@ -171,6 +178,35 @@ function addPanelBody(form, player, panelId, context) {
     }
 }
 
+async function buildBountyListForm(title) {
+    const form = new ActionFormData().title(title);
+    form.button('§l§8< Back', 'textures/gui/controls/left.png');
+
+    const playerNameIdMap = getAllPlayerNameIdMap();
+    const bounties = [];
+
+    // This could be slow if there are many players who have ever joined.
+    // A better implementation would be a dedicated bounty manager.
+    for (const [playerName, playerId] of playerNameIdMap.entries()) {
+        const pData = getPlayer(playerId) ?? loadPlayerData(playerId);
+        if (pData && pData.bounty > 0) {
+            // Find the original casing for the player name if possible
+            const onlinePlayer = getPlayerFromCache(playerId);
+            const displayName = onlinePlayer ? onlinePlayer.name : playerName;
+            bounties.push({ name: displayName, bounty: pData.bounty });
+        }
+    }
+
+    if (bounties.length === 0) {
+        form.body('§aThere are currently no active bounties.');
+    } else {
+        bounties.sort((a, b) => b.bounty - a.bounty); // Sort descending by bounty amount
+        for (const bounty of bounties) {
+            form.button(`${bounty.name}\n§e$${bounty.bounty.toFixed(2)}`);
+        }
+    }
+    return form;
+}
 
 function buildReportListForm(title) {
     const form = new ActionFormData().title(title);

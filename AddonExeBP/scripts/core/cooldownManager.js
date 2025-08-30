@@ -70,7 +70,7 @@ function getCooldownKey(playerId, commandName) {
 /**
  * Sets a cooldown for a player for a specific command.
  * @param {import('@minecraft/server').Player} player
- * @param {'tpa' | 'home'} commandName
+ * @param {'tpa' | 'home' | 'spawn'} commandName
  */
 export function setCooldown(player, commandName) {
     const config = getConfig();
@@ -86,7 +86,7 @@ export function setCooldown(player, commandName) {
 /**
  * Gets the remaining cooldown for a player for a specific command.
  * @param {import('@minecraft/server').Player} player
- * @param {'tpa' | 'home'} commandName
+ * @param {'tpa' | 'home' | 'spawn'} commandName
  * @returns {number} Remaining cooldown in seconds, or 0 if available.
  */
 export function getCooldown(player, commandName) {

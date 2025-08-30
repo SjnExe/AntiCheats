@@ -1,12 +1,12 @@
 import { commandManager } from './commandManager.js';
-import { getPlayer } from '../../core/playerDataManager.js';
+import { getPlayer, getAllPlayerNameIdMap, loadPlayerData } from '../../core/playerDataManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
-import { world } from '@minecraft/server';
+import { getPlayerFromCache } from '../../core/playerCache.js';
 
 commandManager.register({
     name: 'listbounty',
     aliases: ['lbounty', 'bounties', 'bountylist'],
-    description: 'Lists the bounties on online players.',
+    description: 'Lists all active bounties.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone
     execute: (player, args) => {
@@ -23,18 +23,26 @@ commandManager.register({
             }
             player.sendMessage('§aBounty on ' + targetPlayer.name + ': §e$' + targetData.bounty.toFixed(2));
         } else {
-            let message = '§a--- Online Player Bounties ---\n';
-            const onlinePlayers = world.getAllPlayers();
-            let foundBounty = false;
-            onlinePlayers.forEach(p => {
-                const pData = getPlayer(p.id);
+            let message = '§a--- All Player Bounties ---\n';
+            const playerNameIdMap = getAllPlayerNameIdMap();
+            const bounties = [];
+
+            for (const [playerName, playerId] of playerNameIdMap.entries()) {
+                const pData = getPlayer(playerId) ?? loadPlayerData(playerId);
                 if (pData && pData.bounty > 0) {
-                    message += '§e' + p.name + '§r: $' + pData.bounty.toFixed(2) + '\n';
-                    foundBounty = true;
+                    const onlinePlayer = getPlayerFromCache(playerId);
+                    const displayName = onlinePlayer ? onlinePlayer.name : playerName;
+                    bounties.push({ name: displayName, bounty: pData.bounty });
                 }
-            });
-            if (!foundBounty) {
+            }
+
+            if (bounties.length === 0) {
                 message += '§7No active bounties.';
+            } else {
+                bounties.sort((a, b) => b.bounty - a.bounty);
+                for (const bounty of bounties) {
+                    message += `§e${bounty.name}§r: $${bounty.bounty.toFixed(2)}\n`;
+                }
             }
             player.sendMessage(message.trim());
         }
