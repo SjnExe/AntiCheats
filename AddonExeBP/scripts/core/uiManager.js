@@ -3,7 +3,6 @@ import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer, getPlayerIdByName, loadPlayerData } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
-import { getAllPlayersFromCache } from './playerCache.js';
 import { getPlayerRank } from './rankManager.js';
 import * as utils from './utils.js';
 import * as punishmentManager from './punishmentManager.js';
@@ -55,10 +54,9 @@ async function buildPanelForm(player, panelId, context) {
         title = config.serverName || panelDef.title;
     }
 
-    if (panelId === 'bountyListPanel' || panelId === 'reportListPanel') {
+    if (panelId === 'reportListPanel') {
         debugLog(`[UIManager] Building dynamic list form for panel '${panelId}'.`);
-        if (panelId === 'bountyListPanel') return buildBountyListForm(title);
-        if (panelId === 'reportListPanel') return buildReportListForm(title);
+        return buildReportListForm(title);
     }
 
     const form = new ActionFormData().title(title);
@@ -115,12 +113,12 @@ async function handleFormResponse(player, panelId, response, context) {
         const actionFunction = uiActionFunctions[selectedItem.actionValue];
         if (actionFunction) {
             debugLog(`[UIManager] Calling UI action function: ${selectedItem.actionValue}`);
-        const shouldReload = await actionFunction(player, context, panelId);
-        if (shouldReload) {
+            const shouldReload = await actionFunction(player, context, panelId);
+            if (shouldReload) {
             // If the action function returns true, it signals that the panel should be re-shown.
             // This is to avoid a nested showPanel call which seems to cause issues.
-            showPanel(player, panelId, context);
-        }
+                showPanel(player, panelId, context);
+            }
         } else {
             debugLog(`[UIManager] ERROR: UI action function '${selectedItem.actionValue}' not found.`);
         }
@@ -173,21 +171,6 @@ function addPanelBody(form, player, panelId, context) {
     }
 }
 
-
-function buildBountyListForm(title) {
-    const form = new ActionFormData().title(title);
-    const playersWithBounty = getAllPlayersFromCache().map(p => ({ player: p, data: getPlayer(p.id) })).filter(pInfo => pInfo.data && pInfo.data.bounty > 0);
-    form.button('§l§8< Back', 'textures/gui/controls/left.png');
-    if (playersWithBounty.length === 0) {
-        form.body('§cThere are no active bounties.');
-    } else {
-        playersWithBounty.sort((a, b) => b.data.bounty - a.data.bounty);
-        for (const { player, data } of playersWithBounty) {
-            form.button(`${player.name}\n§c$${data.bounty.toFixed(2)}`);
-        }
-    }
-    return form;
-}
 
 function buildReportListForm(title) {
     const form = new ActionFormData().title(title);
@@ -253,27 +236,22 @@ uiActionFunctions['showUnbanForm'] = async (player, context, panelId) => {
         const [targetName] = response.formValues;
         if (!targetName) {
             player.sendMessage('§cYou must enter a player name.');
-            // utils.playSoundFromConfig(player, 'commandError');
         } else {
             const targetId = getPlayerIdByName(targetName);
 
             if (!targetId) {
                 player.sendMessage(`§cPlayer "${targetName}" has never joined the server or name is misspelled.`);
-                // utils.playSoundFromConfig(player, 'commandError');
             } else if (targetId === player.id) {
                 player.sendMessage('§cYou cannot unban yourself.');
-                // utils.playSoundFromConfig(player, 'commandError');
             } else {
                 const executorData = getPlayer(player.id);
                 const targetData = loadPlayerData(targetId); // Load offline player's data for the check
 
                 if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel) {
                     player.sendMessage('§cYou cannot unban a player with the same or higher rank than you.');
-                    // utils.playSoundFromConfig(player, 'commandError');
                 } else {
                     punishmentManager.removePunishment(targetId);
                     player.sendMessage(`§aSuccessfully unbanned ${targetName}. They can now rejoin the server.`);
-                    // utils.playSoundFromConfig(player, 'adminNotificationReceived');
                 }
             }
         }

@@ -1,5 +1,6 @@
 import { world, system } from '@minecraft/server';
 import { debugLog } from './logger.js';
+import { getConfig } from './configManager.js';
 
 const reportsDbKey = 'addonexe:reports';
 const saveIntervalTicks = 6000; // Every 5 minutes
@@ -130,5 +131,37 @@ export function clearAllReports() {
     }
 }
 
-// Periodically save reports to the world
-system.runInterval(saveReports, saveIntervalTicks);
+/**
+ * Clears old, resolved reports from the system to prevent data bloat.
+ */
+export function clearOldResolvedReports() {
+    const config = getConfig();
+    const lifetimeDays = config.reports?.resolvedReportLifetimeDays;
+
+    if (typeof lifetimeDays !== 'number' || lifetimeDays <= 0) {
+        return; // Feature is disabled or misconfigured
+    }
+
+    const lifetimeMs = lifetimeDays * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const originalCount = reports.length;
+
+    reports = reports.filter(report => {
+        if (report.status === 'resolved') {
+            return (now - report.timestamp) < lifetimeMs;
+        }
+        return true; // Keep all non-resolved reports
+    });
+
+    const clearedCount = originalCount - reports.length;
+    if (clearedCount > 0) {
+        needsSave = true;
+        debugLog(`[ReportManager] Cleared ${clearedCount} old resolved reports.`);
+    }
+}
+
+// Periodically save reports and clean up old ones
+system.runInterval(() => {
+    clearOldResolvedReports();
+    saveReports();
+}, saveIntervalTicks);

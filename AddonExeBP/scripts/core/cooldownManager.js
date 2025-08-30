@@ -44,6 +44,25 @@ function saveCooldowns() {
     }
 }
 
+/**
+ * Iterates through all cooldowns and removes any that have expired.
+ * This is for proactive cleanup to prevent the cooldown map from growing indefinitely.
+ */
+export function clearExpiredCooldowns() {
+    const now = Date.now();
+    let clearedCount = 0;
+    for (const [key, expiry] of cooldowns.entries()) {
+        if (now >= expiry) {
+            cooldowns.delete(key);
+            clearedCount++;
+        }
+    }
+    if (clearedCount > 0) {
+        needsSave = true;
+        debugLog(`[CooldownManager] Cleared ${clearedCount} expired cooldowns.`);
+    }
+}
+
 function getCooldownKey(playerId, commandName) {
     return `${playerId}:${commandName}`;
 }
@@ -86,5 +105,8 @@ export function getCooldown(player, commandName) {
     return Math.ceil((expiry - now) / 1000);
 }
 
-// Periodically save cooldowns to the world
-system.runInterval(saveCooldowns, saveIntervalTicks);
+// Periodically clear expired cooldowns and save to the world
+system.runInterval(() => {
+    clearExpiredCooldowns();
+    saveCooldowns();
+}, saveIntervalTicks);

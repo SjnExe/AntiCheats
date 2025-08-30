@@ -3,9 +3,9 @@ import { loadConfig, getConfig } from './configManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
-import { getPunishment, loadPunishments } from './punishmentManager.js';
-import { loadReports } from './reportManager.js';
-import { loadCooldowns } from './cooldownManager.js';
+import { getPunishment, loadPunishments, clearExpiredPunishments } from './punishmentManager.js';
+import { loadReports, clearOldResolvedReports } from './reportManager.js';
+import { loadCooldowns, clearExpiredCooldowns } from './cooldownManager.js';
 import { clearExpiredPayments } from './economyManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
@@ -51,9 +51,14 @@ system.run(() => {
     // Initial population of the player cache
     // Player data is loaded on the playerSpawn event, no need to do it here.
     debugLog('[AddonExe] Initializing addon...');
+    playerDataManager.loadNameIdMap();
     loadPunishments();
+    clearExpiredPunishments(); // Explicitly clear on startup
     loadReports();
+    clearOldResolvedReports(); // Explicitly clear on startup
     loadCooldowns();
+    clearExpiredCooldowns(); // Explicitly clear on startup
+    clearExpiredPayments(); // Explicitly clear on startup
     rankManager.initialize();
 
     const config = getConfig();
@@ -94,7 +99,7 @@ system.run(() => {
 
     system.runInterval(mainTick, 20);
     // Periodically clear expired payment confirmations
-    system.runInterval(clearExpiredPayments, 1200);
+    system.runInterval(clearExpiredPayments, 6000); // 5 minutes
     debugLog('[AddonExe] Addon initialized successfully.');
 });
 

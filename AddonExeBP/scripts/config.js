@@ -31,6 +31,9 @@ export const config = {
     kits: {
         enabled: false
     },
+    reports: {
+        resolvedReportLifetimeDays: 7
+    },
     economy: {
         enabled: true,
         startingBalance: 50,
