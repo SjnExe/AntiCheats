@@ -61,14 +61,6 @@ export const panelDefinitions = {
                 actionValue: 'moderationPanel'
             },
             {
-                id: 'testPanel',
-                text: '§eTest Panel',
-                icon: 'textures/ui/icon_setting',
-                permissionLevel: 1,
-                actionType: 'openPanel',
-                actionValue: 'testPanel'
-            },
-            {
                 id: 'bountyList',
                 text: '§cBounty List',
                 icon: 'textures/items/netherite_sword.png',
@@ -314,58 +306,4 @@ export const panelDefinitions = {
             }
         ]
     },
-    testPanel: {
-        title: '§l§eTest Panel§r',
-        parentPanelId: 'mainPanel',
-        items: [
-            {
-                id: 'testMessage',
-                text: '§aShow a Test Message',
-                icon: 'textures/ui/chat_send.png',
-                permissionLevel: 1,
-                actionType: 'functionCall',
-                actionValue: 'showTestMessage'
-            },
-            {
-                id: 'openSubPanel',
-                text: '§6Open Sub-Panel',
-                icon: 'textures/ui/icon_multiplayer',
-                permissionLevel: 1,
-                actionType: 'openPanel',
-                actionValue: 'testSubPanel'
-            },
-            {
-                id: 'testPlayerList',
-                text: '§bTest Player List',
-                icon: 'textures/ui/icon_multiplayer',
-                permissionLevel: 1,
-                actionType: 'openPanel',
-                actionValue: 'testPlayerListPanel'
-            },
-            {
-                id: 'testAction',
-                text: '§dTest Action',
-                icon: 'textures/ui/check',
-                permissionLevel: 1,
-                actionType: 'functionCall',
-                actionValue: 'showTestSuccessMessage'
-            }
-        ]
-    },
-    testSubPanel: {
-        title: '§l§6Test Sub-Panel§r',
-        parentPanelId: 'testPanel',
-        items: [
-            {
-                id: 'subPanelMessage',
-                text: '§3This is a sub-panel! (No Action)',
-                permissionLevel: 1
-            }
-        ]
-    },
-    testPlayerListPanel: {
-        title: '§l§bTest Player List§r',
-        parentPanelId: 'testPanel',
-        items: [] // This will be populated dynamically by uiManager
-    }
 };
