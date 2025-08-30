@@ -50,3 +50,30 @@ export function updateConfig(key, value) {
     loadedConfig[key] = value;
     world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
 }
+
+/**
+ * Reloads the configuration, ensuring ownerPlayerNames is updated from the config file
+ * as it was read on server startup.
+ */
+export function forceReloadOwnerNameFromFile() {
+    const configStr = world.getDynamicProperty('addonexe:config');
+    let savedConfig = {};
+
+    if (configStr !== undefined) {
+        try {
+            savedConfig = JSON.parse(configStr);
+        } catch (error) {
+            console.error('[ConfigManager] Failed to parse saved config during reload. Using default config as base.', error);
+            savedConfig = defaultConfig;
+        }
+    } else {
+        savedConfig = defaultConfig;
+    }
+
+    // Merge defaults with saved, then explicitly set owner names from the file's startup state
+    loadedConfig = { ...defaultConfig, ...savedConfig };
+    loadedConfig.ownerPlayerNames = defaultConfig.ownerPlayerNames;
+
+    // Save the reloaded and corrected config back to the world
+    world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
+}

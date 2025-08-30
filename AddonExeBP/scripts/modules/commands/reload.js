@@ -1,5 +1,5 @@
 import { commandManager } from './commandManager.js';
-import { loadConfig } from '../../core/configManager.js';
+import { forceReloadOwnerNameFromFile } from '../../core/configManager.js';
 import { updateAllPlayerRanks } from '../../core/main.js';
 
 commandManager.register({
@@ -9,8 +9,8 @@ commandManager.register({
     permissionLevel: 1, // Admins only
     execute: (player, args) => {
         try {
-            loadConfig();
-            player.sendMessage('§aConfiguration reloaded successfully.');
+            forceReloadOwnerNameFromFile();
+            player.sendMessage('§aConfiguration reloaded successfully. Owner name has been updated from config file.');
 
             // Update ranks for all online players
             updateAllPlayerRanks();
