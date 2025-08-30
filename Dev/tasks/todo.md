@@ -6,7 +6,9 @@ This document outlines planned tasks for improving the addon.
 
 ### High Priority
 
-*(No high priority tasks currently planned)*
+- **Implement `!ecwipe` command**
+  - **Description:** Add a command to allow administrators to clear a player's Ender Chest.
+  - **Requirement:** The command must be able to reliably clear the Ender Chest of an online player.
 
 ---
 

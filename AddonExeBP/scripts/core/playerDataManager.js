@@ -50,7 +50,7 @@ function saveNameIdMap() {
 /**
  * Loads the player name-to-ID map from a dynamic property.
  */
-function loadNameIdMap() {
+export function loadNameIdMap() {
     try {
         const dataString = world.getDynamicProperty(playerNameIdMapKey);
         if (dataString && typeof dataString === 'string') {
@@ -101,19 +101,6 @@ export function loadPlayerData(playerId) {
 }
 
 /**
- * Loads data for all currently online players. Typically run on startup.
- */
-export function loadAllOnlinePlayerData() {
-    debugLog('[PlayerDataManager] Loading data for all online players...');
-    loadNameIdMap(); // Load the name map first
-    for (const player of world.getAllPlayers()) {
-        getOrCreatePlayer(player);
-    }
-    debugLog(`[PlayerDataManager] Player data cache initialized for ${activePlayerData.size} players.`);
-}
-
-
-/**
  * Gets a player's data from the cache, or loads/creates it if it doesn't exist.
  * @param {import('@minecraft/server').Player} player
  * @returns {PlayerData}
@@ -138,14 +125,14 @@ export function getOrCreatePlayer(player) {
     // If still not found, create new data
     const config = getConfig();
     const newPlayerData = {
-        rankId: 'member',
-        permissionLevel: 1024,
+        rankId: config.playerDefaults.rankId,
+        permissionLevel: config.playerDefaults.permissionLevel,
         homes: {},
         balance: config.economy.startingBalance,
         kitCooldowns: {},
-        bounty: 0,
+        bounty: config.playerDefaults.bounty,
         bounties: {},
-        xrayNotifications: true
+        xrayNotifications: config.playerDefaults.xrayNotifications
     };
     activePlayerData.set(player.id, newPlayerData);
     savePlayerData(player.id); // Save the new player's data immediately
@@ -187,4 +174,12 @@ export function handlePlayerLeave(playerId) {
  */
 export function getAllPlayerData() {
     return activePlayerData;
+}
+
+/**
+ * Gets the map of all known player names and their corresponding IDs.
+ * @returns {Map<string, string>}
+ */
+export function getAllPlayerNameIdMap() {
+    return playerNameIdMap;
 }

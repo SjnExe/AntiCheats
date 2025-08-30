@@ -41,6 +41,24 @@ export function loadPunishments() {
 }
 
 /**
+ * Iterates through all punishments and removes any that have expired.
+ */
+export function clearExpiredPunishments() {
+    const now = Date.now();
+    let clearedCount = 0;
+    for (const [playerId, punishment] of punishments.entries()) {
+        if (now > punishment.expires) {
+            punishments.delete(playerId);
+            clearedCount++;
+        }
+    }
+    if (clearedCount > 0) {
+        needsSave = true;
+        debugLog(`[PunishmentManager] Cleared ${clearedCount} expired punishments.`);
+    }
+}
+
+/**
  * Saves punishment data to world dynamic properties if a change has occurred.
  */
 function savePunishments() {
@@ -99,5 +117,8 @@ export function removePunishment(playerId) {
     }
 }
 
-// Periodically save punishments
-system.runInterval(savePunishments, saveIntervalTicks);
+// Periodically clear expired punishments and save to the world
+system.runInterval(() => {
+    clearExpiredPunishments();
+    savePunishments();
+}, saveIntervalTicks);

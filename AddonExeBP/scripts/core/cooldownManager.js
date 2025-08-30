@@ -44,6 +44,25 @@ function saveCooldowns() {
     }
 }
 
+/**
+ * Iterates through all cooldowns and removes any that have expired.
+ * This is for proactive cleanup to prevent the cooldown map from growing indefinitely.
+ */
+export function clearExpiredCooldowns() {
+    const now = Date.now();
+    let clearedCount = 0;
+    for (const [key, expiry] of cooldowns.entries()) {
+        if (now >= expiry) {
+            cooldowns.delete(key);
+            clearedCount++;
+        }
+    }
+    if (clearedCount > 0) {
+        needsSave = true;
+        debugLog(`[CooldownManager] Cleared ${clearedCount} expired cooldowns.`);
+    }
+}
+
 function getCooldownKey(playerId, commandName) {
     return `${playerId}:${commandName}`;
 }
@@ -51,7 +70,7 @@ function getCooldownKey(playerId, commandName) {
 /**
  * Sets a cooldown for a player for a specific command.
  * @param {import('@minecraft/server').Player} player
- * @param {'tpa' | 'home'} commandName
+ * @param {'tpa' | 'home' | 'spawn'} commandName
  */
 export function setCooldown(player, commandName) {
     const config = getConfig();
@@ -67,7 +86,7 @@ export function setCooldown(player, commandName) {
 /**
  * Gets the remaining cooldown for a player for a specific command.
  * @param {import('@minecraft/server').Player} player
- * @param {'tpa' | 'home'} commandName
+ * @param {'tpa' | 'home' | 'spawn'} commandName
  * @returns {number} Remaining cooldown in seconds, or 0 if available.
  */
 export function getCooldown(player, commandName) {
@@ -86,5 +105,8 @@ export function getCooldown(player, commandName) {
     return Math.ceil((expiry - now) / 1000);
 }
 
-// Periodically save cooldowns to the world
-system.runInterval(saveCooldowns, saveIntervalTicks);
+// Periodically clear expired cooldowns and save to the world
+system.runInterval(() => {
+    clearExpiredCooldowns();
+    saveCooldowns();
+}, saveIntervalTicks);

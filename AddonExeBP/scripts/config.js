@@ -31,20 +31,20 @@ export const config = {
     kits: {
         enabled: false
     },
+    reports: {
+        resolvedReportLifetimeDays: 7
+    },
+    spawn: {
+        cooldownSeconds: 60,
+        teleportWarmupSeconds: 5
+    },
     economy: {
         enabled: true,
-        startingBalance: 0,
+        startingBalance: 50,
         baltopLimit: 10,
         minimumBounty: 10,
         paymentConfirmationThreshold: 10000, // Payments over this amount require confirmation
         paymentConfirmationTimeout: 60 // Seconds to confirm a payment
-    },
-    creativeDetection: {
-        enabled: true,
-        periodicCheck: {
-            enabled: true,
-            intervalSeconds: 300 // 5 minutes
-        }
     },
     playerInfo: {
         enableWelcomer: true,
@@ -52,6 +52,13 @@ export const config = {
         notifyAdminOnNewPlayer: true,
         enableDeathCoords: true,
         deathCoordsMessage: '§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.'
+    },
+
+    // --- Player Defaults ---
+    playerDefaults: {
+        rankId: 'member',
+        permissionLevel: 1024,
+        bounty: 0
     },
 
     // --- Server Information ---
@@ -79,22 +86,53 @@ export const config = {
     // --- Command Enable/Disable ---
     // This section will be populated as commands are added.
     commandSettings: {
+        'admin': { enabled: true },
+        'balance': { enabled: true },
+        'baltop': { enabled: true },
+        'ban': { enabled: true },
+        'bounty': { enabled: true },
+        'clear': { enabled: true },
+        'clearchat': { enabled: true },
+        'clearreports': { enabled: true },
+        'copyinv': { enabled: true },
+        'debug': { enabled: true },
+        'delhome': { enabled: true },
+        'freeze': { enabled: true },
+        'gma': { enabled: true },
         'gmc': { enabled: true },
         'gms': { enabled: true },
-        'gma': { enabled: true },
         'gmsp': { enabled: true },
-        'sethome': { enabled: true },
+        'help': { enabled: true },
         'home': { enabled: true },
-        'delhome': { enabled: true },
         'homes': { enabled: true },
+        'invsee': { enabled: true },
+        'kick': { enabled: true },
+        'kit': { enabled: true },
+        'listbounty': { enabled: true },
+        'mute': { enabled: true },
+        'panel': { enabled: true },
+        'pay': { enabled: true },
+        'payconfirm': { enabled: true },
+        'rank': { enabled: true },
+        'rbounty': { enabled: true },
+        'reload': { enabled: true },
+        'report': { enabled: true },
+        'reports': { enabled: true },
+        'rules': { enabled: true },
+        'setbalance': { enabled: true },
+        'sethome': { enabled: true },
+        'setspawn': { enabled: true },
+        'spawn': { enabled: true },
+        'status': { enabled: true },
+        'tp': { enabled: true },
         'tpa': { enabled: true },
-        'tpahere': { enabled: true },
+        'tpacancel': { enabled: true },
         'tpaccept': { enabled: true },
         'tpadeny': { enabled: true },
-        'tpacancel': { enabled: true },
-        'balance': { enabled: true },
-        'pay': { enabled: true },
-        'baltop': { enabled: true },
-        'kit': { enabled: true }
+        'tpahere': { enabled: true },
+        'tpastatus': { enabled: true },
+        'vanish': { enabled: true },
+        'version': { enabled: true },
+        'xraynotify': { enabled: true }
     }
 };

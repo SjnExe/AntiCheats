@@ -1,6 +1,7 @@
 import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { getConfig } from '../../core/configManager.js';
+import { updatePlayerRank } from '../../core/main.js';
 
 commandManager.register({
     name: 'admin',
@@ -54,6 +55,8 @@ commandManager.register({
                 player.sendMessage(`§aSuccessfully removed the admin tag from ${targetPlayer.name}.`);
                 targetPlayer.sendMessage('§cYou have been demoted from Admin.');
             }
+            // Re-evaluate the player's rank after changing their tag
+            updatePlayerRank(targetPlayer);
         } catch (e) {
             player.sendMessage(`§cFailed to ${action} admin tag. Error: ${e.message}`);
             console.error(`[AdminCommand] Failed to ${action} tag: ${e.stack}`);
