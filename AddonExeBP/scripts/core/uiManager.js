@@ -150,7 +150,12 @@ async function handleFormResponse(player, panelId, response, context) {
         const actionFunction = uiActionFunctions[selectedItem.actionValue];
         if (actionFunction) {
             debugLog(`[UIManager] Calling UI action function: ${selectedItem.actionValue}`);
-        await actionFunction(player, context, panelId);
+        const shouldReload = await actionFunction(player, context, panelId);
+        if (shouldReload) {
+            // If the action function returns true, it signals that the panel should be re-shown.
+            // This is to avoid a nested showPanel call which seems to cause issues.
+            showPanel(player, panelId, context);
+        }
         } else {
             debugLog(`[UIManager] ERROR: UI action function '${selectedItem.actionValue}' not found.`);
         }
@@ -297,7 +302,7 @@ uiActionFunctions['teleportTo'] = async (player, context, panelId) => {
         player.sendMessage(`§aTeleported to ${targetPlayer.name}.`);
         // utils.playSoundFromConfig(player, 'adminNotificationReceived');
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['teleportHere'] = async (player, context, panelId) => {
@@ -312,7 +317,7 @@ uiActionFunctions['teleportHere'] = async (player, context, panelId) => {
         player.sendMessage(`§aTeleported ${targetPlayer.name} to you.`);
         // utils.playSoundFromConfig(player, 'adminNotificationReceived');
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['showBountyForm'] = async (player, context, panelId) => {
@@ -321,8 +326,7 @@ uiActionFunctions['showBountyForm'] = async (player, context, panelId) => {
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
         // utils.playSoundFromConfig(player, 'commandError');
-        showPanel(player, panelId, context);
-        return;
+        return true;
     }
     debugLog(`[UIManager] Action 'showBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const form = new ModalFormData().title(`Set Bounty on ${targetPlayer.name}`).textField('Amount', 'Enter bounty amount');
@@ -353,7 +357,7 @@ uiActionFunctions['showBountyForm'] = async (player, context, panelId) => {
             }
         }
     }
-    showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['toggleFreeze'] = async (player, context, panelId) => {
@@ -389,7 +393,7 @@ uiActionFunctions['toggleFreeze'] = async (player, context, panelId) => {
             // utils.playSoundFromConfig(player, 'adminNotificationReceived');
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['clearInventory'] = async (player, context, panelId) => {
@@ -416,7 +420,7 @@ uiActionFunctions['clearInventory'] = async (player, context, panelId) => {
             // utils.playSoundFromConfig(targetPlayer, 'adminNotificationReceived');
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['showKickForm'] = async (player, context, panelId) => {
@@ -452,7 +456,7 @@ uiActionFunctions['showKickForm'] = async (player, context, panelId) => {
             }
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['showReduceBountyForm'] = async (player, context, panelId) => {
@@ -461,8 +465,7 @@ uiActionFunctions['showReduceBountyForm'] = async (player, context, panelId) => 
     if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage('§cTarget player not found or has logged off.');
         // utils.playSoundFromConfig(player, 'commandError');
-        showPanel(player, panelId, context);
-        return;
+        return true;
     }
     debugLog(`[UIManager] Action 'showReduceBountyForm' called by ${player.name} on ${targetPlayer.name}.`);
     const targetData = getPlayer(targetPlayer.id);
@@ -494,7 +497,7 @@ uiActionFunctions['showReduceBountyForm'] = async (player, context, panelId) => 
             }
         }
     }
-    showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['showMuteForm'] = async (player, context, panelId) => {
@@ -537,7 +540,7 @@ uiActionFunctions['showMuteForm'] = async (player, context, panelId) => {
             }
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['showUnmuteForm'] = async (player, context, panelId) => {
@@ -559,7 +562,7 @@ uiActionFunctions['showUnmuteForm'] = async (player, context, panelId) => {
             // utils.playSoundFromConfig(player, 'adminNotificationReceived');
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['showBanForm'] = async (player, context, panelId) => {
@@ -603,7 +606,7 @@ uiActionFunctions['showBanForm'] = async (player, context, panelId) => {
             }
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['sendTpaRequest'] = async (player, context, panelId) => {
@@ -633,7 +636,7 @@ uiActionFunctions['sendTpaRequest'] = async (player, context, panelId) => {
             }
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['showPayForm'] = async (player, context, panelId) => {
@@ -675,7 +678,7 @@ uiActionFunctions['showPayForm'] = async (player, context, panelId) => {
             }
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['showReportForm'] = async (player, context, panelId) => {
@@ -698,7 +701,7 @@ uiActionFunctions['showReportForm'] = async (player, context, panelId) => {
             }
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
 
 uiActionFunctions['assignReport'] = (player, context, panelId) => {
@@ -761,5 +764,5 @@ uiActionFunctions['showUnbanForm'] = async (player, context, panelId) => {
             }
         }
     }
-    return showPanel(player, panelId, context);
+    return true;
 };
