@@ -6,50 +6,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Set up Node.js and cache npm dependencies
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20' # Specify a Node.js version
-          cache: 'npm'
-      - run: npm install # Install dependencies
-
-      - name: Create Changelog
-        uses: anothrNick/github-tag-action@1.75.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: true
-
       - name: Extract version from tag
         shell: bash
         run: |
+          set -e
           RAW_TAG_NAME="${{ github.ref_name }}"
           echo "FULL_TAG_NAME=$RAW_TAG_NAME" >> $GITHUB_ENV
-          # Remove 'v' or 'V' prefix for version string
-          if [[ "$RAW_TAG_NAME" == v* ]]; then
-            VERSION_STR="${RAW_TAG_NAME#v}"
-          elif [[ "$RAW_TAG_NAME" == V* ]]; then
-            VERSION_STR="${RAW_TAG_NAME#V}"
-          else
-            VERSION_STR="$RAW_TAG_NAME"
-          fi
+          VERSION_STR="${RAW_TAG_NAME#v}"
           echo "VERSION_STRING=$VERSION_STR" >> $GITHUB_ENV
-          echo "Extracted VERSION_STRING: $VERSION_STR"
-          # Convert version string "1.2.3" to array string "[1,2,3]"
-          if [ -z "$VERSION_STR" ]; then
-            echo "Warning: VERSION_STRING is empty. VERSION_ARRAY_STRING will be '[]'."
-            VERSION_ARR_STR="[]"
-          else
-            VERSION_ARR_STR="[$(echo "$VERSION_STR" | tr '.' ',')]"
-          fi
+          VERSION_ARR_STR="[$(echo "$VERSION_STR" | tr '.' ',')]"
           echo "VERSION_ARRAY_STRING=$VERSION_ARR_STR" >> $GITHUB_ENV
           echo "Full tag: $RAW_TAG_NAME, Extracted version string: $VERSION_STR, Resulting version array string: $VERSION_ARR_STR"
 
       - name: Create staging directory and copy addon folders
         run: |
+          set -e
           mkdir staging
           cp -r AddonExeBP staging/
           cp -r AddonExeRP staging/
@@ -60,6 +37,7 @@ jobs:
           VERSION_STRING: ${{ env.VERSION_STRING }}
           VERSION_ARRAY_STRING: ${{ env.VERSION_ARRAY_STRING }}
         run: |
+          set -e
           echo "--- Starting Placeholder Replacement ---"
           BP_MANIFEST="staging/AddonExeBP/manifest.json"
           RP_MANIFEST="staging/AddonExeRP/manifest.json"
@@ -86,6 +64,7 @@ jobs:
         env:
           FULL_TAG_NAME: ${{ env.FULL_TAG_NAME }}
         run: |
+          set -e
           # Create main .mcaddon
           (cd staging && zip -r "../AddonExe.${FULL_TAG_NAME}.mcaddon" ./*)
 
@@ -99,6 +78,7 @@ jobs:
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
+          generate_release_notes: true
           files: |
             ./AddonExe.${{ env.FULL_TAG_NAME }}.mcaddon
             ./AddonExe.BP${{ env.FULL_TAG_NAME }}.mcpack

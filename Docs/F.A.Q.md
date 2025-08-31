@@ -20,21 +20,19 @@ For more details, see the [Configuration Guide](ConfigurationGuide.md#1-set-the-
 
 ## How do I make myself an Admin?
 
-If you have console access or are an operator in-game, you can grant yourself or others the Admin rank. The Admin rank is assigned to any player who has the `admin` tag (this tag can be changed in `config.js`).
+If you have console access or are an operator in-game, you can grant a player the Admin rank. The Admin rank is assigned to any player who has the `admin` tag (this tag can be changed in `config.js`).
 
-Simply give the player the `admin` tag, and the addon will **automatically** update their rank and permissions.
+Simply give the player the `admin` tag. Their permissions will be granted **immediately**. There is no need to restart the server or use any `!reload` commands.
 
--   **From the Server Console:** The best way to make another player an admin is to use the tag command:
+-   **From the Server Console:**
     ```
     /tag "PlayerName" add admin
     ```
 
--   **From In-Game:** If you have operator permissions, you can give yourself the Admin rank by running:
+-   **From In-Game (as an Operator):**
     ```
     /function admin
     ```
-    You can also use the `/tag` command on yourself or others.
-
-There is no need to run any other commands. The rank update is instant and automatic.
+    (This command gives the `admin` tag to the player running it).
 
 For more details, see the [Rank System Guide](RankSystem.md#set-server-admins-optional).
