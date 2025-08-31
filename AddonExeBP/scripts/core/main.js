@@ -84,6 +84,8 @@ function checkConfiguration() {
 function startSystemTimers() {
     // Periodically clear expired payment confirmations
     system.runInterval(clearExpiredPayments, 6000); // 5 minutes
+    // Periodically update player ranks to catch any tag changes
+    system.runInterval(updateAllPlayerRanks, 100); // 100 ticks = 5 seconds
     debugLog('[AddonExe] System timers started.');
 }
 
@@ -211,19 +213,5 @@ world.afterEvents.blockBreak?.subscribe((event) => {
                 admin.sendMessage(message);
             }
         });
-    }
-});
-
-// Listen for tag changes on any entity
-world.afterEvents.entityTagChanged.subscribe((event) => {
-    const { entity } = event;
-    // Check if the entity is a player
-    if (entity.typeId === 'minecraft:player') {
-        const player = world.getPlayer(entity.id);
-        if (player) {
-            // A tag changed, so we re-evaluate the player's rank.
-            // This is efficient and ensures permissions are always up-to-date.
-            system.run(() => updatePlayerRank(player));
-        }
     }
 });
