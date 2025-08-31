@@ -64,7 +64,7 @@ function finalizeRestart() {
     system.runTimeout(() => {
         debugLog('[RestartManager] Kicking all players.');
         for (const player of world.getAllPlayers()) {
-            player.kick(kickMessage);
+            player.runCommandAsync(`kick "${player.name}" ${kickMessage}`);
         }
 
         // This is the final message to the console operator

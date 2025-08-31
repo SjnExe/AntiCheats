@@ -49,6 +49,9 @@ export const config = {
         cooldownSeconds: 60,
         teleportWarmupSeconds: 5
     },
+    chat: {
+        logToConsole: false
+    },
     economy: {
         enabled: true,
         startingBalance: 50,
