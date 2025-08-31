@@ -22,14 +22,14 @@ commandManager.register({
                 player.sendMessage('§cInvalid rule number. Use !rules to see all rules.');
                 return;
             }
-            player.sendMessage(`§l§a--- Rule ${ruleNumber} ---`);
-            player.sendMessage(`§e- ${rules[ruleNumber - 1]}`);
+            player.sendMessage('§l§a--- Server Rules ---');
+            player.sendMessage(rules[ruleNumber - 1]);
             player.sendMessage('§l§a------------------');
         } else {
             player.sendMessage('§l§a--- Server Rules ---');
-            rules.forEach((rule, index) => {
-                player.sendMessage(`§e${index + 1}: ${rule}`);
-            });
+            for (const rule of rules) {
+                player.sendMessage(rule);
+            }
             player.sendMessage('§l§a------------------');
         }
     }
