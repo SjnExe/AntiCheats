@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Automatic Rank Updates:** Player ranks are now updated automatically and immediately when their tags change. This provides a seamless experience for promoting new admins without requiring server restarts or manual reload commands.
 
 ### Changed
-- **Release Workflow:** The GitHub Actions release workflow has been significantly refactored for improved efficiency, reliability, and simplicity.
 - **Manifest Metadata:** The `name` and `description` fields in the addon's manifest files have been updated with a new color scheme and more informative text for better in-game clarity.
 
 ### Fixed
@@ -25,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Owner Name Reload:** Added a `!reload` command that allows server operators to apply changes to the `ownerPlayerNames` in `config.js` after a server restart.
 - **Admin Function:** Added a `/function admin` command that allows a player with function permissions to easily grant themselves the Admin rank via the `admin` tag.
-- **F.A.Q. Document:** Created a new `Docs/F.A.Q.md` to provide quick answers to common setup questions.
 
 ### Changed
 - **Command Permissions:** The following commands have been changed from Owner-only to Admin-level, making them more accessible to server administrators:
@@ -34,11 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `!setbalance`
   - `!clearreports`
 - **Reload Optimization:** The `!reload` command is now highly optimized and only re-evaluates the rank for players affected by an owner name change, instead of all online players.
-
-### Documentation
-- **Full Documentation Review:** Performed a comprehensive review and update of all documentation in the `Docs/` folder.
-- **Clarity and Compactness:** Improved the clarity, accuracy, and compactness of all guides, making them easier for users to read and understand.
-- **Enhanced Linking:** Added extensive cross-linking between guides and the new F.A.Q. to improve navigation and help users find information more easily.
 
 ## [v1.5.0] - 2025-08-30
 
