@@ -219,7 +219,7 @@ world.afterEvents.blockBreak?.subscribe((event) => {
     }
 });
 
-world.beforeEvents.scriptEventReceive.subscribe((event) => {
+system.afterEvents.scriptEventReceive.subscribe((event) => {
     const { id, sourceEntity } = event;
 
     if (id === 'addonexe:restart') {
