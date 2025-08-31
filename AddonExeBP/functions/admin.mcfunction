@@ -1,1 +1,1 @@
-tag @s add admin
+scriptevent addonexe:grant_admin_self

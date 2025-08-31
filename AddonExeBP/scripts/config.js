@@ -9,6 +9,17 @@ export const config = {
     debug: false,
     exeGlobalNotificationsDefaultOn: true,
 
+    // --- Data Management ---
+    data: {
+        autoSaveIntervalSeconds: 300 // Time in seconds. Set to 0 to disable. Default is 5 minutes.
+    },
+
+    // --- Restart Settings ---
+    restart: {
+        countdownSeconds: 30,
+        kickMessage: 'Server is restarting. Please rejoin in a moment.'
+    },
+
     // --- Player Tags ---
     playerTags: {
         vanished: 'vanished',
@@ -20,13 +31,13 @@ export const config = {
         enabled: true,
         requestTimeoutSeconds: 60,
         cooldownSeconds: 300, // 5 minutes
-        teleportWarmupSeconds: 5
+        teleportWarmupSeconds: 10
     },
     homes: {
         enabled: true,
         maxHomes: 5,
         cooldownSeconds: 300, // 5 minutes
-        teleportWarmupSeconds: 5
+        teleportWarmupSeconds: 10
     },
     kits: {
         enabled: false
@@ -36,7 +47,10 @@ export const config = {
     },
     spawn: {
         cooldownSeconds: 60,
-        teleportWarmupSeconds: 5
+        teleportWarmupSeconds: 10
+    },
+    chat: {
+        logToConsole: false
     },
     economy: {
         enabled: true,
