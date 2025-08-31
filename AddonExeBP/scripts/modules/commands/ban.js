@@ -83,6 +83,7 @@ commandManager.register({
 
 commandManager.register({
     name: 'unban',
+    aliases: ['pardon'],
     description: 'Unbans a player.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
