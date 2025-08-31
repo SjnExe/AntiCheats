@@ -6,17 +6,10 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 commandManager.register({
     name: 'setbalance',
     aliases: ['setbal', 'setmoney'],
-    description: 'Sets a player\'s balance to a specific amount. (Owner only)',
+    description: 'Sets a player\'s balance to a specific amount. (Admin and above)',
     category: 'Economy',
-    permissionLevel: 0, // Owner-only, will be checked manually
+    permissionLevel: 1, // Admin and above
     execute: (player, args) => {
-        const config = getConfig();
-        // Owner check
-        if (!config.ownerPlayerNames.includes(player.name)) {
-            player.sendMessage('§cYou do not have permission to use this command.');
-            return;
-        }
-
         if (args.length < 2) {
             player.sendMessage('§cUsage: !setbalance <playerName> <amount>');
             return;

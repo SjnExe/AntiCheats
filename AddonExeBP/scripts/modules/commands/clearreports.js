@@ -5,7 +5,7 @@ commandManager.register({
     name: 'clearreports',
     description: 'Clears all active reports.',
     category: 'Moderation',
-    permissionLevel: 0, // Owner only
+    permissionLevel: 1, // Admin and above
     execute: (player, args) => {
         clearAllReports();
         player.sendMessage('§aAll reports have been cleared.');
