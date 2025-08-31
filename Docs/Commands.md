@@ -18,10 +18,6 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 
 *(Permission Level 0-1)*
 
-- **`!admin`**
-  - **Syntax:** `!admin <reload|config|setrank>`
-  - **Description:** Top-level admin command for configuration and reloads.
-  - **Permission:** Owner
 - **`!ban`** (Alias: `!b`)
   - **Syntax:** `!ban <playerName> [duration] [reason]`
   - **Description:** Bans a player. Duration e.g., `30m`, `2h`, `7d`, `perm`.
@@ -43,9 +39,9 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Description:** Copies the inventory of another player.
   - **Permission:** Admin
 - **`!debug`**
-  - **Syntax:** `!debug <command> [args]`
-  - **Description:** Provides access to debug tools and information.
-  - **Permission:** Owner
+  - **Syntax:** `!debug <true|false>`
+  - **Description:** Toggles the script debug logging mode.
+  - **Permission:** Admin
 - **`!freeze`** (Alias: `!frz`)
   - **Syntax:** `!freeze <playerName>`
   - **Description:** Freezes or unfreezes a player, preventing movement.
@@ -67,13 +63,13 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Description:** Mutes a player. Duration e.g., `30m`, `1h`, `perm`.
   - **Permission:** Admin
 - **`!rank`**
-  - **Syntax:** `!rank <get|set|remove> <playerName> [rank]`
-  - **Description:** Manages player ranks.
+  - **Syntax:** `!rank <set|remove> <playerName> <rankId>`
+  - **Description:** Manages custom, tag-based player ranks. Does not work for Owner/Admin/Member.
   - **Permission:** Admin
 - **`!reload`**
   - **Syntax:** `!reload`
-  - **Description:** Reloads addon scripts. (Included in `!admin reload`).
-  - **Permission:** Owner
+  - **Description:** Reloads the `ownerPlayerNames` from `config.js` and updates the owner's rank.
+  - **Permission:** Admin
 - **`!reports`**
   - **Syntax:** `!reports [player|clear]`
   - **Description:** Manages player reports.

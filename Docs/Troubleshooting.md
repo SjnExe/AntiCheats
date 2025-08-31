@@ -1,6 +1,8 @@
 # Troubleshooting Guide - AddonExe
 
-This guide helps you resolve common issues you might encounter with AddonExe. If your issue isn't listed here, or the steps don't help, please consider [reporting an issue](https://github.com/SjnExe/AddonExe/issues) with as much detail as possible.
+This guide helps you resolve common issues you might encounter with AddonExe. For answers to common setup questions, **please check the [Frequently Asked Questions](F.A.Q.md) first!**
+
+If your issue isn't listed in the F.A.Q. or this guide, please consider [reporting an issue](https://github.com/SjnExe/AddonExe/issues) with as much detail as possible.
 
 ---
 
@@ -34,20 +36,18 @@ This guide helps you resolve common issues you might encounter with AddonExe. If
 
 ## 2. Configuration & Permission Problems
 
-**Problem: I'm not recognized as the Owner, or I can't use owner commands.**
+**Problem: I'm not recognized as the Owner after editing `config.js`.**
 
-This is the most common setup issue. Follow these steps carefully:
-1.  **Open the correct file:** `AddonExeBP/scripts/config.js`.
-2.  **Find the `ownerPlayerNames` setting.**
-3.  **Add your name:** Add your **exact**, case-sensitive in-game name to the array.
-    ```javascript
-    // Incorrect:
-    // ownerPlayerNames: ['Your•Name•Here'],
+This is the most common setup issue. The key is understanding that the addon's configuration is loaded when the server starts, but the Owner rank might not update automatically if it was already set to someone else.
 
-    // Correct:
-    ownerPlayerNames: ['PlaeyerName123'],
-    ```
-4.  **Save and re-apply:** If you edited the pack after it was applied to the world, you may need to remove the packs from the world and re-apply them for the changes to take effect.
+**Solution:**
+1.  **Stop your server.**
+2.  **Open the correct file:** `AddonExeBP/scripts/config.js`.
+3.  **Add your name:** Find the `ownerPlayerNames` setting and add your **exact**, case-sensitive in-game name.
+4.  **Save and restart your server.**
+5.  **Run the reload command:** Once you are in-game, run the command `!reload`. This will force the addon to sync the owner name from the file and apply the rank.
+
+For a quick summary, see the [F.A.Q.](F.A.Q.md#how-do-i-change-the-server-owner).
 
 **Problem: An admin player doesn't have their rank.**
 
