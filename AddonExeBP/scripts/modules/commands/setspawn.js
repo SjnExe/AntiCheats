@@ -4,6 +4,7 @@ import { playSound } from '../../core/utils.js';
 
 commandManager.register({
     name: 'setspawn',
+    aliases: ['setworldspawn'],
     description: 'Sets the server\'s spawn location to your current position.',
     category: 'Administration',
     permissionLevel: 1, // Admins only

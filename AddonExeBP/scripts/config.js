@@ -9,6 +9,17 @@ export const config = {
     debug: false,
     exeGlobalNotificationsDefaultOn: true,
 
+    // --- Data Management ---
+    data: {
+        autoSaveIntervalSeconds: 300 // Time in seconds. Set to 0 to disable. Default is 5 minutes.
+    },
+
+    // --- Restart Settings ---
+    restart: {
+        countdownSeconds: 30,
+        kickMessage: 'Server is restarting. Please rejoin in a moment.'
+    },
+
     // --- Player Tags ---
     playerTags: {
         vanished: 'vanished',
@@ -20,13 +31,13 @@ export const config = {
         enabled: true,
         requestTimeoutSeconds: 60,
         cooldownSeconds: 300, // 5 minutes
-        teleportWarmupSeconds: 5
+        teleportWarmupSeconds: 10
     },
     homes: {
         enabled: true,
         maxHomes: 5,
         cooldownSeconds: 300, // 5 minutes
-        teleportWarmupSeconds: 5
+        teleportWarmupSeconds: 10
     },
     kits: {
         enabled: false
@@ -36,7 +47,10 @@ export const config = {
     },
     spawn: {
         cooldownSeconds: 60,
-        teleportWarmupSeconds: 5
+        teleportWarmupSeconds: 10
+    },
+    chat: {
+        logToConsole: false
     },
     economy: {
         enabled: true,
@@ -66,9 +80,16 @@ export const config = {
         discordLink: 'https://discord.gg/example',
         websiteLink: 'https://example.com',
         rules: [
-            'Rule 1: Be respectful.',
-            'Rule 2: No cheating or exploiting.',
-            'Rule 3: Have fun!'
+            '§e1. §rBe respectful to all players and staff.',
+            '§e2. §rNo cheating, hacking, or using exploits (e.g., §cX-Ray§r, §cduping§r).',
+            '§e3. §rDo not spam chat or use excessive caps.',
+            '§e4. §rNo griefing or stealing from other players.',
+            '§e5. §rRespect player builds. Do not alter or destroy them without permission.',
+            '§e6. §rNo advertising other servers or websites.',
+            '§e7. §rKeep conversations in English and in the appropriate channels.',
+            '§e8. §rFollow directions from staff members.',
+            '§e9. §rDo not use offensive language, skins, or usernames.',
+            '§e10. §rHave fun and enjoy your time on the server!'
         ]
     },
 

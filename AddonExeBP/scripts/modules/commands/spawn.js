@@ -1,8 +1,8 @@
-import { world, system } from '@minecraft/server';
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
-import { playSound } from '../../core/utils.js';
+import { playSound, startTeleportWarmup } from '../../core/utils.js';
 
 commandManager.register({
     name: 'spawn',
@@ -26,23 +26,8 @@ commandManager.register({
         }
 
         const warmupSeconds = config.spawn.teleportWarmupSeconds;
-        const initialLocation = player.location;
 
         const teleportLogic = () => {
-            // Check if player has moved during warmup
-            const currentLocation = player.location;
-            const distanceMoved = Math.sqrt(
-                Math.pow(currentLocation.x - initialLocation.x, 2) +
-                Math.pow(currentLocation.y - initialLocation.y, 2) +
-                Math.pow(currentLocation.z - initialLocation.z, 2)
-            );
-
-            if (distanceMoved > 1) {
-                player.sendMessage('§cTeleport canceled because you moved.');
-                playSound(player, 'note.bass');
-                return;
-            }
-
             try {
                 const dimension = world.getDimension(spawnLocation.dimensionId);
                 player.teleport(spawnLocation, { dimension: dimension });
@@ -56,11 +41,6 @@ commandManager.register({
             }
         };
 
-        if (warmupSeconds > 0) {
-            player.sendMessage(`§aTeleporting you to spawn in ${warmupSeconds} seconds. Don't move!`);
-            system.runTimeout(teleportLogic, warmupSeconds * 20);
-        } else {
-            teleportLogic();
-        }
+        startTeleportWarmup(player, warmupSeconds, teleportLogic, 'spawn');
     }
 });

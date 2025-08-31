@@ -1,5 +1,6 @@
 import { world, system } from '@minecraft/server';
-import { loadConfig, getConfig } from './configManager.js';
+import { loadConfig, getConfig, updateConfig } from './configManager.js';
+import * as dataManager from './dataManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
@@ -10,6 +11,7 @@ import { clearExpiredPayments } from './economyManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 import * as playerCache from './playerCache.js';
+import { startRestart } from './restartManager.js';
 
 /**
  * Checks a player's rank and updates it if necessary.
@@ -36,7 +38,6 @@ export function updatePlayerRank(player) {
  * Iterates through all online players and updates their ranks.
  */
 export function updateAllPlayerRanks() {
-    debugLog('[AddonExe] Force-updating ranks for all online players...');
     for (const player of playerCache.getAllPlayersFromCache()) {
         updatePlayerRank(player);
     }
@@ -84,8 +85,7 @@ function checkConfiguration() {
 function startSystemTimers() {
     // Periodically clear expired payment confirmations
     system.runInterval(clearExpiredPayments, 6000); // 5 minutes
-    // Periodically update player ranks to catch any tag changes
-    system.runInterval(updateAllPlayerRanks, 100); // 100 ticks = 5 seconds
+    // Rank updates are now handled by events (e.g., !admin command)
     debugLog('[AddonExe] System timers started.');
 }
 
@@ -95,6 +95,7 @@ function startSystemTimers() {
 function initializeAddon() {
     debugLog('[AddonExe] Initializing addon...');
     loadConfig();
+    dataManager.initializeDataManager();
     loadPersistentData();
     initializeManagers();
     checkConfiguration();
@@ -136,12 +137,17 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
         return;
     }
     const rank = rankManager.getRankById(pData.rankId);
-    if (!rank) {
-        world.sendMessage(`§7${player.name}§r: ${eventData.message}`);
-        return;
+    const formattedMessage = rank
+        ? `${rank.chatFormatting.prefixText}${rank.chatFormatting.nameColor}${player.name}§r: ${rank.chatFormatting.messageColor}${eventData.message}`
+        : `§7${player.name}§r: ${eventData.message}`;
+
+    // Log to console if enabled
+    if (getConfig().chat?.logToConsole) {
+        // Using a plain-text version for the console log to avoid clutter from formatting codes
+        console.log(`<${player.name}> ${eventData.message}`);
     }
-    const format = rank.chatFormatting;
-    world.sendMessage(`${format.prefixText}${format.nameColor}${player.name}§r: ${format.messageColor}${eventData.message}`);
+
+    world.sendMessage(formattedMessage);
 });
 
 world.afterEvents.playerSpawn.subscribe(async (event) => {
@@ -154,8 +160,9 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         const remainingTime = Math.round((punishment.expires - Date.now()) / 1000);
         const durationText = punishment.expires === Infinity ? 'permanently' : `for another ${remainingTime} seconds`;
 
+        // Use the native Player.kick() method.
         system.run(() => {
-            player.runCommandAsync(`kick "${player.name}" You are banned ${durationText}. Reason: ${punishment.reason}`);
+            player.kick(`You are banned ${durationText}. Reason: ${punishment.reason}`);
         });
         return;
     }
@@ -213,5 +220,46 @@ world.afterEvents.blockBreak?.subscribe((event) => {
                 admin.sendMessage(message);
             }
         });
+    }
+});
+
+system.afterEvents.scriptEventReceive.subscribe((event) => {
+    const { id, sourceEntity } = event;
+
+    switch (id) {
+        case 'addonexe:restart':
+            // The script event can be triggered by a player or a command block.
+            // If it's a player, we can use their entity as the initiator.
+            // If it's a command block, sourceEntity will be undefined.
+            // The startRestart function can handle a null initiator.
+            startRestart(sourceEntity);
+            break;
+
+        case 'addonexe:toggle_chat_log': {
+            const config = getConfig();
+            const chatConfig = config.chat || { logToConsole: false };
+            const newValue = !chatConfig.logToConsole;
+            chatConfig.logToConsole = newValue;
+            updateConfig('chat', chatConfig);
+
+            const feedbackMessage = `§aChat-to-console has been ${newValue ? '§aenabled' : '§cdisabled'}§a.`;
+            // Notify the entity that triggered the event, if possible
+            if (sourceEntity && sourceEntity.sendMessage) {
+                sourceEntity.sendMessage(feedbackMessage);
+            }
+            // Also log it to console for confirmation from non-player sources
+            console.log(`[AddonExe] ${feedbackMessage}`);
+            break;
+        }
+
+        case 'addonexe:grant_admin_self': {
+            if (sourceEntity && sourceEntity.addTag) {
+                sourceEntity.addTag(getConfig().adminTag);
+                sourceEntity.sendMessage('§aYou have been promoted to Admin.');
+                // Update ranks for everyone to ensure changes are reflected
+                updateAllPlayerRanks();
+            }
+            break;
+        }
     }
 });

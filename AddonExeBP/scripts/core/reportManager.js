@@ -3,7 +3,6 @@ import { debugLog } from './logger.js';
 import { getConfig } from './configManager.js';
 
 const reportsDbKey = 'addonexe:reports';
-const saveIntervalTicks = 6000; // Every 5 minutes
 
 /**
  * @typedef {object} Report
@@ -40,13 +39,17 @@ export function loadReports() {
 }
 
 /**
- * Saves reports to world dynamic properties if a change has occurred.
+ * Saves reports to world dynamic properties.
+ * @param {object} [options={}]
+ * @param {boolean} [options.force=false] - If true, saves even if the `needsSave` flag is false.
  */
-function saveReports() {
-    if (!needsSave) return;
+export function saveReports(options = {}) {
+    const { force = false } = options;
+    if (!needsSave && !force) return;
+
     try {
         world.setDynamicProperty(reportsDbKey, JSON.stringify(reports));
-        needsSave = false;
+        needsSave = false; // Reset flag after saving
         debugLog('[ReportManager] Saved reports to world properties.');
     } catch (e) {
         console.error('[ReportManager] Failed to save reports.', e);
@@ -73,6 +76,7 @@ export function createReport(reporter, reportedPlayer, reason) {
     };
     reports.push(report);
     needsSave = true;
+    saveReports({ force: true }); // Save immediately
 }
 
 /**
@@ -94,6 +98,7 @@ export function assignReport(reportId, adminId) {
         report.status = 'assigned';
         report.assignedAdminId = adminId;
         needsSave = true;
+        saveReports({ force: true });
     }
 }
 
@@ -106,6 +111,7 @@ export function resolveReport(reportId) {
     if (report) {
         report.status = 'resolved';
         needsSave = true;
+        saveReports({ force: true });
     }
 }
 
@@ -118,6 +124,7 @@ export function clearReport(reportId) {
     if (index !== -1) {
         reports.splice(index, 1);
         needsSave = true;
+        saveReports({ force: true });
     }
 }
 
@@ -128,6 +135,7 @@ export function clearAllReports() {
     if (reports.length > 0) {
         reports.length = 0;
         needsSave = true;
+        saveReports({ force: true });
     }
 }
 
@@ -160,8 +168,7 @@ export function clearOldResolvedReports() {
     }
 }
 
-// Periodically save reports and clean up old ones
+// Periodically clean up old reports. Saving is now handled by the central dataManager.
 system.runInterval(() => {
     clearOldResolvedReports();
-    saveReports();
-}, saveIntervalTicks);
+}, 36000); // Clean up every 30 minutes
