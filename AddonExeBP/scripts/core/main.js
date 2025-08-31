@@ -1,5 +1,6 @@
 import { world, system } from '@minecraft/server';
 import { loadConfig, getConfig } from './configManager.js';
+import * as dataManager from './dataManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
 import { commandManager } from '../modules/commands/commandManager.js';
@@ -10,6 +11,7 @@ import { clearExpiredPayments } from './economyManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 import * as playerCache from './playerCache.js';
+import { startRestart } from './restartManager.js';
 
 /**
  * Checks a player's rank and updates it if necessary.
@@ -95,6 +97,7 @@ function startSystemTimers() {
 function initializeAddon() {
     debugLog('[AddonExe] Initializing addon...');
     loadConfig();
+    dataManager.initializeDataManager();
     loadPersistentData();
     initializeManagers();
     checkConfiguration();
@@ -213,5 +216,17 @@ world.afterEvents.blockBreak?.subscribe((event) => {
                 admin.sendMessage(message);
             }
         });
+    }
+});
+
+world.beforeEvents.scriptEventReceive.subscribe((event) => {
+    const { id, sourceEntity } = event;
+
+    if (id === 'addonexe:restart') {
+        // The script event can be triggered by a player or a command block.
+        // If it's a player, we can use their entity as the initiator.
+        // If it's a command block, sourceEntity will be undefined.
+        // The startRestart function can handle a null initiator.
+        startRestart(sourceEntity);
     }
 });

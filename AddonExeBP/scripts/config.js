@@ -9,6 +9,17 @@ export const config = {
     debug: false,
     exeGlobalNotificationsDefaultOn: true,
 
+    // --- Data Management ---
+    data: {
+        autoSaveIntervalSeconds: 300 // Time in seconds. Set to 0 to disable. Default is 5 minutes.
+    },
+
+    // --- Restart Settings ---
+    restart: {
+        countdownSeconds: 30,
+        kickMessage: 'Server is restarting. Please rejoin in a moment.'
+    },
+
     // --- Player Tags ---
     playerTags: {
         vanished: 'vanished',

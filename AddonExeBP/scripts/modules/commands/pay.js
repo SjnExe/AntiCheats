@@ -6,6 +6,7 @@ import { getPlayer } from '../../core/playerDataManager.js';
 
 commandManager.register({
     name: 'pay',
+    aliases: ['givemoney', 'sendmoney'],
     description: 'Pays another player from your balance.',
     category: 'Economy',
     permissionLevel: 1024,

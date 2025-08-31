@@ -51,6 +51,8 @@ const commandFiles = [
     // Administration
     'admin.js',
     'reload.js',
+    'restart.js',
+    'save.js',
     'debug.js',
     'rank.js',
     'setspawn.js',
