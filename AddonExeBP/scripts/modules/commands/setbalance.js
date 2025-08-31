@@ -1,6 +1,5 @@
 import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
-import { getConfig } from '../../core/configManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({
