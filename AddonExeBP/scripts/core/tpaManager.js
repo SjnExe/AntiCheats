@@ -1,6 +1,7 @@
 import { system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { getPlayerFromCache } from './playerCache.js';
+import { startTeleportWarmup } from './utils.js';
 
 /**
  * @typedef {'tpa' | 'tpahere'} TpaRequestType
@@ -118,8 +119,6 @@ export function acceptRequest(player) {
 
     const config = getConfig();
     const warmupSeconds = config.tpa.teleportWarmupSeconds;
-    const initialSourceLoc = sourcePlayer.location;
-    const initialTargetLoc = targetPlayer.location;
 
     const teleportLogic = () => {
         // Re-fetch players in case they logged off during warmup
@@ -127,31 +126,10 @@ export function acceptRequest(player) {
         const freshTarget = getPlayerFromCache(request.targetPlayerId);
 
         if (!freshSource || !freshTarget) {
-            player.sendMessage('§cThe other player logged off during the teleport warmup.');
-            if (freshSource) freshSource.sendMessage('§cThe other player logged off during the teleport warmup.');
-            if (freshTarget) freshTarget.sendMessage('§cThe other player logged off during the teleport warmup.');
-            return; // Don't clear the request, it will expire naturally
-        }
-
-        // Check if either player moved
-        const sourceMoved = Math.sqrt(
-            Math.pow(freshSource.location.x - initialSourceLoc.x, 2) +
-            Math.pow(freshSource.location.y - initialSourceLoc.y, 2) +
-            Math.pow(freshSource.location.z - initialSourceLoc.z, 2)
-        ) > 1;
-        const targetMoved = Math.sqrt(
-            Math.pow(freshTarget.location.x - initialTargetLoc.x, 2) +
-            Math.pow(freshTarget.location.y - initialTargetLoc.y, 2) +
-            Math.pow(freshTarget.location.z - initialTargetLoc.z, 2)
-        ) > 1;
-
-        if (sourceMoved || targetMoved) {
-            freshSource.sendMessage('§cTeleport canceled because one of you moved.');
-            freshTarget.sendMessage('§cTeleport canceled because one of you moved.');
-            clearRequest(request);
+            // One of the players logged off, no need to message them.
+            // The utility will have already handled cleanup for the online player.
             return;
         }
-
 
         if (request.type === 'tpa') {
             // Source teleports to Target
@@ -167,12 +145,15 @@ export function acceptRequest(player) {
         clearRequest(request);
     };
 
-    if (warmupSeconds > 0) {
-        sourcePlayer.sendMessage(`§aTeleporting in ${warmupSeconds} seconds. Don't move!`);
-        targetPlayer.sendMessage(`§aTeleporting in ${warmupSeconds} seconds. Don't move!`);
-        system.runTimeout(teleportLogic, warmupSeconds * 20);
-    } else {
-        teleportLogic();
+    // The new utility handles the warmup, countdown, and movement checks for both players.
+    // We need to decide which player "owns" the warmup. For TPA, it's the person moving.
+    if (request.type === 'tpa') {
+        startTeleportWarmup(sourcePlayer, warmupSeconds, teleportLogic, `TPA to ${targetPlayer.name}`);
+        // The utility only messages the player being teleported, so we add a message for the other player.
+        targetPlayer.sendMessage(`§a${sourcePlayer.name} is teleporting to you in ${warmupSeconds} seconds.`);
+    } else { // 'tpahere'
+        startTeleportWarmup(targetPlayer, warmupSeconds, teleportLogic, `TPA from ${sourcePlayer.name}`);
+        sourcePlayer.sendMessage(`§a${targetPlayer.name} is teleporting to you in ${warmupSeconds} seconds.`);
     }
 }
 

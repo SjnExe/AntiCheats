@@ -97,3 +97,70 @@ export function playSoundFromConfig(player, soundEventKey) {
         console.error(`Failed to play sound from config for key "${soundEventKey}": ${e}`);
     }
 }
+
+/**
+ * Determines the color for the countdown timer based on remaining seconds.
+ * @param {number} secondsRemaining
+ * @returns {string} The Minecraft color code.
+ */
+function getCountdownColor(secondsRemaining) {
+    if (secondsRemaining <= 1) return '§4'; // Dark Red
+    if (secondsRemaining <= 3) return '§c'; // Red
+    if (secondsRemaining <= 5) return '§6'; // Gold
+    if (secondsRemaining <= 10) return '§e'; // Yellow
+    return '§a'; // Green
+}
+
+/**
+ * Starts a teleport warmup timer for a player.
+ * @param {import('@minecraft/server').Player} player The player to teleport.
+ * @param {number} durationSeconds The duration of the warmup in seconds.
+ * @param {() => void} onWarmupComplete The function to execute when the warmup completes successfully.
+ * @param {string} teleportName A short name for the teleport type (e.g., "home", "spawn") for messages.
+ */
+export function startTeleportWarmup(player, durationSeconds, onWarmupComplete, teleportName = 'teleport') {
+    if (durationSeconds <= 0) {
+        onWarmupComplete();
+        return;
+    }
+
+    let remainingSeconds = durationSeconds;
+    const initialLocation = player.location;
+    const dimension = player.dimension;
+
+    player.sendMessage(`§aTeleporting to ${teleportName} in ${durationSeconds} seconds. Don't move!`);
+
+    const intervalId = system.runInterval(() => {
+        try {
+            // Player might have logged off. The try-catch will prevent a crash.
+            const currentLocation = player.location;
+
+            // Check if player moved
+            const distanceMoved = Math.sqrt(
+                Math.pow(currentLocation.x - initialLocation.x, 2) +
+                Math.pow(currentLocation.y - initialLocation.y, 2) +
+                Math.pow(currentLocation.z - initialLocation.z, 2)
+            );
+
+            if (distanceMoved > 1.5 || player.dimension.id !== dimension.id) {
+                system.clearRun(intervalId);
+                player.onScreenDisplay.setActionBar('§cTeleport canceled because you moved.');
+                return;
+            }
+
+            remainingSeconds--;
+
+            if (remainingSeconds > 0) {
+                const color = getCountdownColor(remainingSeconds);
+                player.onScreenDisplay.setActionBar(`${color}Teleporting in ${remainingSeconds}...`);
+            } else {
+                system.clearRun(intervalId);
+                player.onScreenDisplay.setActionBar('§aTeleporting...');
+                onWarmupComplete();
+            }
+        } catch (e) {
+            // This will catch errors if the player object becomes invalid (e.g., player logs off)
+            system.clearRun(intervalId);
+        }
+    }, 20); // Run every second
+}

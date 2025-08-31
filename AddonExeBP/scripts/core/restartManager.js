@@ -1,7 +1,6 @@
 import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { saveAllData } from './dataManager.js';
-import { getPlayer } from './playerDataManager.js';
 import { debugLog } from './logger.js';
 
 let restartInProgress = false;
@@ -58,8 +57,6 @@ function finalizeRestart() {
     world.sendMessage('§l§c[SERVER] Finalizing restart... saving all data now.');
 
     saveAllData({ log: true });
-
-    const kickMessage = getConfig().restart?.kickMessage ?? 'Server is restarting. Please rejoin shortly.';
 
     // Use a short delay to allow the "saving" message to be seen
     system.runTimeout(() => {
