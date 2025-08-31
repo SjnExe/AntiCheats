@@ -18,29 +18,23 @@ The addon's configuration is split across several files, each with a specific pu
 
 ## 🛠️ Initial Setup & Permissions (CRITICAL)
 
-These are the first crucial steps after installing AddonExe.
+Follow these steps to gain administrative control of the addon.
 
 ### 1. Set the Server Owner(s)
-This is the most important step for gaining control over the addon.
-
 - **File:** `AddonExeBP/scripts/config.js`
-- **Action:** Find the `ownerPlayerNames` setting and add your **exact** in-game name (case-sensitive) to the array. You can add multiple names.
+- **Action:** Find `ownerPlayerNames` and add your **exact** in-game name (case-sensitive).
   ```javascript
   // Example in AddonExeBP/scripts/config.js
   ownerPlayerNames: ['YourExactPlayerName', 'AnotherOwnerName'],
   ```
-- **Importance:** The Owner rank has the highest level of permissions (Level 0). **If this array is empty, no one will have administrative control.**
+- **Applying Changes:** After editing, **restart your server**, then run `!reload` in-game.
+- **➡️ For a summary, see the [F.A.Q.](F.A.Q.md#how-do-i-change-the-server-owner)**
 
 ### 2. Set Server Admins (Optional)
-This is the easiest way to give other players administrative privileges.
-
 - **File:** `AddonExeBP/scripts/config.js`
-- **Action:** Find the `adminTag` setting. Players with this Minecraft tag will be granted the "Admin" rank.
-  ```javascript
-  // Example in AddonExeBP/scripts/config.js
-  adminTag: 'admin',
-  ```
-- **Usage:** In-game, give a player the tag: `/tag "PlayerName" add admin`
+- **Action:** The `adminTag` setting (default: `"admin"`) determines who gets the Admin rank.
+- **Usage:** To make someone an admin, give them the tag: `/tag "PlayerName" add admin`.
+- **➡️ For a summary, see the [F.A.Q.](F.A.Q.md#how-do-i-make-myself-an-admin)**
 
 ### 3. Configure Ranks and Permissions
 For more advanced control over permissions and visual styles, you can edit the ranks file.

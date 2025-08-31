@@ -8,7 +8,7 @@ commandManager.register({
     name: 'rank',
     description: 'Sets a player\'s rank by adding or removing the associated tag.',
     category: 'Administration',
-    permissionLevel: 0, // Owner only for now, for safety.
+    permissionLevel: 1, // Admin and above
     execute: (player, args) => {
         const subcommands = ['set', 'remove'];
         if (args.length < 3 || !subcommands.includes(args[0].toLowerCase())) {
