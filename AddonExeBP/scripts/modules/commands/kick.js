@@ -1,4 +1,3 @@
-import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
 import { getPlayer } from '../../core/playerDataManager.js';
@@ -10,7 +9,7 @@ commandManager.register({
     aliases: ['boot'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
-    execute: async (player, args) => {
+    execute: (player, args) => {
         if (args.length < 1) {
             player.sendMessage('§cUsage: !kick <player> [reason]');
             playSound(player, 'note.bass');
@@ -50,8 +49,8 @@ commandManager.register({
         }
 
         try {
-            await world.runCommandAsync(`kick "${targetPlayer.name}" ${reason}`);
-            player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}.`);
+            targetPlayer.kick(reason);
+            player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}. Reason: ${reason}`);
             playSound(player, 'random.orb');
         } catch (error) {
             player.sendMessage(`§cFailed to kick ${targetPlayer.name}.`);

@@ -76,8 +76,8 @@ commandManager.register({
         player.sendMessage(`§aSuccessfully banned ${targetPlayer.name} ${durationText}. Reason: ${reason}`);
         playSoundFromConfig(player, 'adminNotificationReceived');
 
-        // Kick the player after banning them, using world.runCommandAsync for reliability
-        world.runCommandAsync(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
+        // Kick the player after banning them using the native Player.kick() method.
+        targetPlayer.kick(`You have been banned ${durationText}. Reason: ${reason}`);
     }
 });
 

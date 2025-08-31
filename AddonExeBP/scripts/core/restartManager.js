@@ -71,8 +71,8 @@ function finalizeRestart() {
                 player.sendMessage('§eYou were not kicked because you are an admin.');
                 continue;
             }
-            // Use world.runCommandAsync for server-level permissions, which is required for /kick
-            world.runCommandAsync(`kick "${player.name}" ${kickMessage}`);
+            // Use the native Player.kick() method for stability and correctness.
+            player.kick(kickMessage);
         }
 
         // This is the final message to the console operator
