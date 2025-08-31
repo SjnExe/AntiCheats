@@ -13,31 +13,19 @@ The system is designed with a clear hierarchy:
 
 ## 1. Quick Setup (`config.js`)
 
-For most servers, this is the only step you need to manage your staff.
+This is the fastest way to manage your server's staff roles.
 
 - **File:** `AddonExeBP/scripts/config.js`
 
 ### Set Server Owner(s)
-
-Owners have the highest permission level (0) and can use every command.
-
-- **Action:** Find the `ownerPlayerNames` setting and add the **exact** in-game names of all owners to the array.
-  ```javascript
-  // Example in AddonExeBP/scripts/config.js
-  ownerPlayerNames: ['YourExactPlayerName', 'AnotherOwnerName'],
-  ```
+- **What it does:** The `ownerPlayerNames` array grants the highest permission level (0) to the listed players.
+- **Action:** Add the **exact** in-game names of all owners to this array.
+- **➡️ For a summary, see the [F.A.Q.](F.A.Q.md#how-do-i-change-the-server-owner)**
 
 ### Set Server Admin(s)
-
-Admins have the second-highest permission level (1) and can use most moderation commands.
-
-- **Action:** Find the `adminTag` setting. Any player with this tag will get the Admin rank.
-  ```javascript
-  // Example in AddonExeBP/scripts/config.js
-  adminTag: 'admin',
-  ```
-- **Usage:** The recommended way to give another player the Admin rank is with the command: `/tag "PlayerName" add admin`.
-- **Becoming Admin Yourself:** If you have access to run functions (e.g., you are a host or have OP permissions), you can use `/function admin` in-game to give yourself the rank. From the server console, you must use `/tag "YourName" add admin`.
+- **What it does:** The `adminTag` setting grants the Admin permission level (1) to any player with that tag.
+- **Action:** To make someone an admin, give them the tag: `/tag "PlayerName" add admin`.
+- **➡️ For a summary, see the [F.A.Q.](F.A.Q.md#how-do-i-make-myself-an-admin)**
 
 ---
 
