@@ -30,6 +30,7 @@ This is the most important step for gaining control over the addon.
   ownerPlayerNames: ['YourExactPlayerName', 'AnotherOwnerName'],
   ```
 - **Importance:** The Owner rank has the highest level of permissions (Level 0). **If this array is empty, no one will have administrative control.**
+- **Applying Changes:** After editing this list, you must **restart your server**. Once the server is back online, run the command `!reload` in-game to make your changes take effect. This syncs the file with the in-game configuration.
 
 ### 2. Set Server Admins (Optional)
 This is the easiest way to give other players administrative privileges.

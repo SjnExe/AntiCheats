@@ -36,7 +36,8 @@ Admins have the second-highest permission level (1) and can use most moderation 
   // Example in AddonExeBP/scripts/config.js
   adminTag: 'admin',
   ```
-- **Usage:** To give a player the Admin rank, use the in-game command: `/tag "PlayerName" add admin`
+- **Usage:** The recommended way to give another player the Admin rank is with the command: `/tag "PlayerName" add admin`.
+- **Becoming Admin Yourself:** If you have access to run functions (e.g., you are a host or have OP permissions), you can use `/function admin` in-game to give yourself the rank. From the server console, you must use `/tag "YourName" add admin`.
 
 ---
 
