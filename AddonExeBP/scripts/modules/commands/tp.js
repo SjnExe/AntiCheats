@@ -3,6 +3,7 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({
     name: 'tp',
+    aliases: ['teleport'],
     description: 'Teleports a player to another player or to coordinates.',
     category: 'General',
     permissionLevel: 1, // Admins only
