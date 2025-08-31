@@ -1,6 +1,7 @@
 import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { saveAllData } from './dataManager.js';
+import { getPlayer } from './playerDataManager.js';
 import { debugLog } from './logger.js';
 
 let restartInProgress = false;
@@ -62,8 +63,14 @@ function finalizeRestart() {
 
     // Use a short delay to allow the "saving" message to be seen
     system.runTimeout(() => {
-        debugLog('[RestartManager] Kicking all players.');
+        debugLog('[RestartManager] Kicking non-admin players.');
         for (const player of world.getAllPlayers()) {
+            const pData = getPlayer(player.id);
+            // Don't kick owners or admins. This also prevents kicking the host in single-player.
+            if (pData && pData.permissionLevel <= 1) {
+                player.sendMessage('§eYou were not kicked because you are an admin.');
+                continue;
+            }
             player.runCommandAsync(`kick "${player.name}" ${kickMessage}`);
         }
 

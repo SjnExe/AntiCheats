@@ -144,7 +144,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
     // Log to console if enabled
     if (getConfig().chat?.logToConsole) {
         // Using a plain-text version for the console log to avoid clutter from formatting codes
-        console.log(`[CHAT] <${player.name}> ${eventData.message}`);
+        console.log(`<${player.name}> ${eventData.message}`);
     }
 
     world.sendMessage(formattedMessage);
