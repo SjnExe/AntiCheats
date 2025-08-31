@@ -1,5 +1,5 @@
 import { commandManager } from './commandManager.js';
-import { getConfig, updateConfig } from '../../core/configManager.js';
+import { updateConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'debug',

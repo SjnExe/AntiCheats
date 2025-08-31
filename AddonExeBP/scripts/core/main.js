@@ -1,4 +1,4 @@
-import { world, system, GameMode } from '@minecraft/server';
+import { world, system } from '@minecraft/server';
 import { loadConfig, getConfig } from './configManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
