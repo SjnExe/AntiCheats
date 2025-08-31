@@ -14,8 +14,6 @@
 </div>
 
 > [!IMPORTANT]
-> **CURRENT PROJECT STATUS: BETA RELEASE**
->
 > AddonExe is now in **Beta**.
 >
 > **Please be aware:**
