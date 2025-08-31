@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.5.5] - 2025-08-31
+
+### Features
+- **Automatic Rank Updates:** Player ranks are now updated automatically and immediately when their tags change. This provides a seamless experience for promoting new admins without requiring server restarts or manual reload commands.
+
+### Changed
+- **Release Workflow:** The GitHub Actions release workflow has been significantly refactored for improved efficiency, reliability, and simplicity.
+- **Manifest Metadata:** The `name` and `description` fields in the addon's manifest files have been updated with a new color scheme and more informative text for better in-game clarity.
+
+### Fixed
+- **Stability:** Fixed a critical server crash that occurred on some Minecraft versions due to an unsupported API. The rank update system now uses a stable, timer-based approach.
+
+### Documentation
+- **Admin Promotion:** The F.A.Q. has been updated to reflect the new, simpler, automatic process for promoting admins.
+
 ## [v1.5.2] - 2025-08-31
 
 ### Added
