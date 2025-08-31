@@ -66,9 +66,16 @@ export const config = {
         discordLink: 'https://discord.gg/example',
         websiteLink: 'https://example.com',
         rules: [
-            'Rule 1: Be respectful.',
-            'Rule 2: No cheating or exploiting.',
-            'Rule 3: Have fun!'
+            '§e1. §rBe respectful to all players and staff.',
+            '§e2. §rNo cheating, hacking, or using exploits (e.g., §cX-Ray§r, §cduping§r).',
+            '§e3. §rDo not spam chat or use excessive caps.',
+            '§e4. §rNo griefing or stealing from other players.',
+            '§e5. §rRespect player builds. Do not alter or destroy them without permission.',
+            '§e6. §rNo advertising other servers or websites.',
+            '§e7. §rKeep conversations in English and in the appropriate channels.',
+            '§e8. §rFollow directions from staff members.',
+            '§e9. §rDo not use offensive language, skins, or usernames.',
+            '§e10. §rHave fun and enjoy your time on the server!'
         ]
     },
 
