@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.5.5] - 2025-08-31
+## [v1.5.3] - 2025-08-31
 
 ### Features
 - **Automatic Rank Updates:** Player ranks are now updated automatically and immediately when their tags change. This provides a seamless experience for promoting new admins without requiring server restarts or manual reload commands.
