@@ -50,6 +50,7 @@ const commandFiles = [
 
     // Administration
     'admin.js',
+    'chattoconsole.js',
     'reload.js',
     'restart.js',
     'save.js',

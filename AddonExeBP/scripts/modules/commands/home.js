@@ -1,8 +1,9 @@
-import { world, system } from '@minecraft/server';
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import * as homesManager from '../../core/homesManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
+import { startTeleportWarmup } from '../../core/utils.js';
 
 commandManager.register({
     name: 'home',
@@ -31,22 +32,8 @@ commandManager.register({
         }
 
         const warmupSeconds = config.homes.teleportWarmupSeconds;
-        const initialLocation = player.location;
 
         const teleportLogic = () => {
-            // Check if player has moved during warmup (allow for small movements/looking around)
-            const currentLocation = player.location;
-            const distanceMoved = Math.sqrt(
-                Math.pow(currentLocation.x - initialLocation.x, 2) +
-                Math.pow(currentLocation.y - initialLocation.y, 2) +
-                Math.pow(currentLocation.z - initialLocation.z, 2)
-            );
-
-            if (distanceMoved > 1) {
-                player.sendMessage('§cTeleport canceled because you moved.');
-                return;
-            }
-
             try {
                 player.teleport(homeLocation, { dimension: world.getDimension(homeLocation.dimensionId) });
                 player.sendMessage(`§aTeleported to home '${homeName}'.`);
@@ -57,11 +44,6 @@ commandManager.register({
             }
         };
 
-        if (warmupSeconds > 0) {
-            player.sendMessage(`§aTeleporting to home '${homeName}' in ${warmupSeconds} seconds. Don't move!`);
-            system.runTimeout(teleportLogic, warmupSeconds * 20);
-        } else {
-            teleportLogic();
-        }
+        startTeleportWarmup(player, warmupSeconds, teleportLogic, `home '${homeName}'`);
     }
 });

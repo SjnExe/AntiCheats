@@ -58,17 +58,23 @@ function finalizeRestart() {
 
     saveAllData({ log: true });
 
-    const kickMessage = getConfig().restart?.kickMessage ?? 'Server is restarting. Please rejoin shortly.';
-
     // Use a short delay to allow the "saving" message to be seen
     system.runTimeout(() => {
-        debugLog('[RestartManager] Kicking all players.');
-        for (const player of world.getAllPlayers()) {
-            player.runCommandAsync(`kick "${player.name}" ${kickMessage}`);
-        }
+        // Kicking players during the restart sequence has been found to be unstable and causes script errors.
+        // The feature is temporarily disabled until a stable method is found.
+        //
+        // debugLog('[RestartManager] Kicking non-admin players.');
+        // for (const player of world.getAllPlayers()) {
+        //     const pData = getPlayer(player.id);
+        //     if (pData && pData.permissionLevel <= 1) {
+        //         player.sendMessage('§eYou were not kicked because you are an admin.');
+        //         continue;
+        //     }
+        //     player.kick(kickMessage);
+        // }
 
         // This is the final message to the console operator
-        console.warn('[AddonExe] SERVER IS READY FOR RESTART. All players have been kicked and data has been saved.');
+        console.warn('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved. Player kicking is currently disabled.');
 
         restartInProgress = false; // Reset the flag
     }, 60); // 3-second delay

@@ -31,13 +31,13 @@ export const config = {
         enabled: true,
         requestTimeoutSeconds: 60,
         cooldownSeconds: 300, // 5 minutes
-        teleportWarmupSeconds: 5
+        teleportWarmupSeconds: 10
     },
     homes: {
         enabled: true,
         maxHomes: 5,
         cooldownSeconds: 300, // 5 minutes
-        teleportWarmupSeconds: 5
+        teleportWarmupSeconds: 10
     },
     kits: {
         enabled: false
@@ -47,7 +47,7 @@ export const config = {
     },
     spawn: {
         cooldownSeconds: 60,
-        teleportWarmupSeconds: 5
+        teleportWarmupSeconds: 10
     },
     chat: {
         logToConsole: false

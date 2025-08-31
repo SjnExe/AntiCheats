@@ -12,7 +12,6 @@ import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 import * as playerCache from './playerCache.js';
 import { startRestart } from './restartManager.js';
-import { updateAllPlayerRanks } from './main.js';
 
 /**
  * Checks a player's rank and updates it if necessary.
@@ -145,7 +144,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
     // Log to console if enabled
     if (getConfig().chat?.logToConsole) {
         // Using a plain-text version for the console log to avoid clutter from formatting codes
-        console.log(`[CHAT] <${player.name}> ${eventData.message}`);
+        console.log(`<${player.name}> ${eventData.message}`);
     }
 
     world.sendMessage(formattedMessage);
@@ -161,8 +160,9 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         const remainingTime = Math.round((punishment.expires - Date.now()) / 1000);
         const durationText = punishment.expires === Infinity ? 'permanently' : `for another ${remainingTime} seconds`;
 
+        // Use the native Player.kick() method.
         system.run(() => {
-            player.runCommandAsync(`kick "${player.name}" You are banned ${durationText}. Reason: ${punishment.reason}`);
+            player.kick(`You are banned ${durationText}. Reason: ${punishment.reason}`);
         });
         return;
     }
@@ -255,7 +255,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
         case 'addonexe:grant_admin_self': {
             if (sourceEntity && sourceEntity.addTag) {
                 sourceEntity.addTag(getConfig().adminTag);
-                sourceEntity.sendMessage("§aYou have been promoted to Admin.");
+                sourceEntity.sendMessage('§aYou have been promoted to Admin.');
                 // Update ranks for everyone to ensure changes are reflected
                 updateAllPlayerRanks();
             }
