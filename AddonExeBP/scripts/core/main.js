@@ -12,7 +12,6 @@ import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 import * as playerCache from './playerCache.js';
 import { startRestart } from './restartManager.js';
-import { updateAllPlayerRanks } from './main.js';
 
 /**
  * Checks a player's rank and updates it if necessary.
@@ -255,7 +254,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
         case 'addonexe:grant_admin_self': {
             if (sourceEntity && sourceEntity.addTag) {
                 sourceEntity.addTag(getConfig().adminTag);
-                sourceEntity.sendMessage("§aYou have been promoted to Admin.");
+                sourceEntity.sendMessage('§aYou have been promoted to Admin.');
                 // Update ranks for everyone to ensure changes are reflected
                 updateAllPlayerRanks();
             }
