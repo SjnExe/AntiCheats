@@ -160,8 +160,9 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         const remainingTime = Math.round((punishment.expires - Date.now()) / 1000);
         const durationText = punishment.expires === Infinity ? 'permanently' : `for another ${remainingTime} seconds`;
 
+        // Use world.runCommandAsync to ensure the server has permission to kick the player.
         system.run(() => {
-            player.runCommandAsync(`kick "${player.name}" You are banned ${durationText}. Reason: ${punishment.reason}`);
+            world.runCommandAsync(`kick "${player.name}" You are banned ${durationText}. Reason: ${punishment.reason}`);
         });
         return;
     }
