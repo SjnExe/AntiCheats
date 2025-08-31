@@ -16,10 +16,21 @@ commandManager.register({
             return;
         }
 
-        player.sendMessage('§l§a--- Server Rules ---');
-        for (const rule of rules) {
-            player.sendMessage(`§e- ${rule}`);
+        if (args.length > 0) {
+            const ruleNumber = parseInt(args[0], 10);
+            if (isNaN(ruleNumber) || ruleNumber < 1 || ruleNumber > rules.length) {
+                player.sendMessage('§cInvalid rule number. Use !rules to see all rules.');
+                return;
+            }
+            player.sendMessage(`§l§a--- Rule ${ruleNumber} ---`);
+            player.sendMessage(`§e- ${rules[ruleNumber - 1]}`);
+            player.sendMessage('§l§a------------------');
+        } else {
+            player.sendMessage('§l§a--- Server Rules ---');
+            rules.forEach((rule, index) => {
+                player.sendMessage(`§e${index + 1}: ${rule}`);
+            });
+            player.sendMessage('§l§a------------------');
         }
-        player.sendMessage('§l§a------------------');
     }
 });
