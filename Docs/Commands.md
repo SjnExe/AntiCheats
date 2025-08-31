@@ -167,16 +167,4 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 - **`!homes`**
 
 ---
-
-## Function Commands (for Operators)
-
-These are not chat commands. They must be run using Minecraft's `/function` command and require the player to have operator permissions on the server.
-
--   **`/function admin`**
-    -   **Description:** Gives you the `admin` tag. This is the first step to becoming an admin. After running this, you must run `/function reload`.
-
--   **`/function reload`**
-    -   **Description:** Tells the addon to re-check your rank. Use this immediately after giving yourself the `admin` tag to activate your new permissions.
-
----
 This list is based on the addon's current structure. For the most up-to-date information, use `!help` in-game. Command availability may depend on settings in `config.js`.
