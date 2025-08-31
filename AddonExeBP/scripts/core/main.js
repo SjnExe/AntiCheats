@@ -213,3 +213,32 @@ world.afterEvents.blockBreak?.subscribe((event) => {
         });
     }
 });
+
+world.afterEvents.entityTagChanged.subscribe((event) => {
+    const { entity, tag } = event;
+    // Check if the tag is the one we're looking for and the entity is a player
+    if (tag === 'addon:reload' && entity.typeId === 'minecraft:player') {
+        // In Bedrock, we can get the player directly from the entity if it's a player
+        const player = world.getPlayer(entity.id);
+        if (!player) return;
+
+        // Use a system.run to avoid issues with modifying tags while iterating them
+        system.run(() => {
+            try {
+                // Check if the player has the 'admin' tag, which grants them the right to reload
+                if (player.hasTag('admin')) {
+                    player.sendMessage('§aAdmin tag detected. Updating your rank...');
+                    updatePlayerRank(player);
+                } else {
+                    player.sendMessage('§cYou do not have the required "admin" tag to use this function.');
+                }
+            } catch (error) {
+                player.sendMessage('§cAn error occurred while updating your rank.');
+                console.error(`[/function reload] ${error.stack}`);
+            } finally {
+                // Always remove the temporary tag
+                player.removeTag('addon:reload');
+            }
+        });
+    }
+});
