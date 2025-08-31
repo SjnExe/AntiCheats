@@ -84,6 +84,8 @@ function checkConfiguration() {
 function startSystemTimers() {
     // Periodically clear expired payment confirmations
     system.runInterval(clearExpiredPayments, 6000); // 5 minutes
+    // Periodically update player ranks to catch any tag changes
+    system.runInterval(updateAllPlayerRanks, 100); // 100 ticks = 5 seconds
     debugLog('[AddonExe] System timers started.');
 }
 

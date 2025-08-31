@@ -1,8 +1,8 @@
 {
     "format_version": 2,
     "header": {
-        "name": "§l§cAddon §eExe RP§r",
-        "description": "§aAddon Exe Resource Pack §uv__VERSION_STRING__.§r",
+        "name": "§l§cAddon§6Exe §5RP§r",
+        "description": "§aThe required resource pack for AddonExe. Provides UI elements and assets for the moderation tools. By Sjn.exe. Version §uv__VERSION_STRING__§r",
         "uuid": "9dca0c93-f6ec-4701-a74c-a774600640a4",
         "version": "__VERSION_ARRAY__",
         "min_engine_version": [
@@ -13,7 +13,7 @@
     },
     "modules": [
         {
-            "description": "Resource pack assets.",
+            "description": "UI assets and resources for AddonExe.",
             "type": "resources",
             "uuid": "da4ec34d-3a7a-4b10-bd5d-909810558a51",
             "version": "__VERSION_ARRAY__"
