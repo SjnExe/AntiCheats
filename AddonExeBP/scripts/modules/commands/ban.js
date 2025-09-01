@@ -76,8 +76,13 @@ commandManager.register({
         player.sendMessage(`§aSuccessfully banned ${targetPlayer.name} ${durationText}. Reason: ${reason}`);
         playSoundFromConfig(player, 'adminNotificationReceived');
 
-        // Kick the player after banning them using the native Player.kick() method.
-        targetPlayer.kick(`You have been banned ${durationText}. Reason: ${reason}`);
+        // Kick the player after banning them using a reliable command.
+        try {
+            player.runCommand(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
+        } catch (error) {
+            player.sendMessage(`§eWarning: Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`);
+            console.error(`[!ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
+        }
     }
 });
 

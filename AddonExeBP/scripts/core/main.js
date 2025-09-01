@@ -12,7 +12,6 @@ import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 import * as playerCache from './playerCache.js';
 import { startRestart } from './restartManager.js';
-import './testManager.js'; // For handling test functions
 
 /**
  * Checks a player's rank and updates it if necessary.
