@@ -25,7 +25,7 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 - **`!clear`**
   - **Syntax:** `!clear [playerName]`
   - **Description:** Clears your own inventory, or the inventory of another player.
-  - **Permission:** Member (self), Admin (others)
+  - **Permission:** Admin
 - **`!clearchat`** (Alias: `!clrchat`)
   - **Syntax:** `!clearchat`
   - **Description:** Clears the global chat for all players.
@@ -73,6 +73,10 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 - **`!reload`**
   - **Syntax:** `!reload`
   - **Description:** Reloads the `ownerPlayerNames` from `config.js` and updates the owner's rank.
+  - **Permission:** Admin
+- **`!restart`**
+  - **Syntax:** `!restart`
+  - **Description:** Initiates the server restart sequence.
   - **Permission:** Admin
 - **`!reports`**
   - **Syntax:** `!reports [player|clear]`

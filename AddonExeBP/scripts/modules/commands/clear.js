@@ -7,8 +7,8 @@ commandManager.register({
     name: 'clear',
     description: 'Clears the inventory of a player or yourself.',
     aliases: ['ci', 'clearinv'],
-    category: 'General',
-    permissionLevel: 0, // Default permission for self-clearing
+    category: 'Moderation',
+    permissionLevel: 1, // Admin-only to prevent accidental self-clearing
     execute: (player, args) => {
         if (args.length > 0) {
             // Clearing another player's inventory (requires admin)
