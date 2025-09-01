@@ -12,13 +12,10 @@ This document provides a detailed breakdown of the features available in AddonEx
 
 ### A. Core Admin Tools
 
-- **Intuitive Admin Panel:** Accessible via `!panel`. Provides a graphical user interface whose content and available actions vary based on user permissions.
-  - **Enhanced Player Management:** The panel provides a list of online players, sorted by rank and name. Each player's name is clearly marked with `(Owner)`, `(Admin)`, and `(You)` suffixes for easy identification. Selecting a player opens a dedicated menu with a wide range of moderation actions:
-    - Kick, Ban, Mute, and Unmute players.
-    - Freeze and Vanish players.
-    - View and Clear player inventories.
-    - Teleport to a player or teleport a player to you.
-  - For regular players: Shows user-specific info like stats, rules, and links.
+- **Universal UI Panel:** Accessible via `!panel` or `!ui`. The panel item can also be crafted by any player. It provides a graphical user interface whose content and available actions dynamically adapt based on user permissions.
+  - **For Admins & Owners:**
+    - **Enhanced Player Management:** Provides a list of online players, sorted by rank and name. Each player's name is clearly marked with `(Owner)`, `(Admin)`, and `(You)` suffixes for easy identification. Selecting a player opens a dedicated menu with a wide range of moderation actions like Kick, Ban, Mute, Freeze, Vanish, Inventory Management, and Teleportation.
+  - **For Regular Players:** Shows user-specific info like personal stats, server rules, and useful links.
 - **Comprehensive Text Commands:** A full suite of chat-based commands offers granular control over all features and administrative actions. (See [Commands List](Commands.md) for a complete reference).
 - **Persistent Player Data:** Active mutes and bans are saved using Minecraft's dynamic properties, ensuring they persist across player sessions and server restarts.
 
@@ -66,8 +63,20 @@ This document provides a detailed breakdown of the features available in AddonEx
 - **Customizable:** Kits are defined in `AddonExeBP/scripts/core/kitsConfig.js`.
 - *Key Configs: `config.js` (under the `kits` section)*
 
-### E. Server Rules Display
-- Players can view server rules using the `!rules` command.
-- *Key Configs: `serverRules` (string containing all rules)*
+### E. Player Information & Experience
+- **Welcome Message:** Greet players with a customizable message when they join the server.
+- **Death Coordinates:** Automatically send players their coordinates in chat when they die, so they can find their way back.
+- **Server Rules Display:** Players can view server rules using the `!rules` command. The rules are defined as an array of strings in the configuration.
+- *Key Configs: `config.js` (under the `playerInfo` and `serverInfo` sections)*
+
+### F. Customizable Sound Events
+- Customize sounds for specific in-game events to provide auditory feedback to players and admins.
+- Events include:
+  - Receiving a TPA request.
+  - Receiving an admin notification.
+  - Receiving a player warning.
+  - Experiencing a command error.
+- Sounds can be enabled/disabled and their sound ID, volume, and pitch can be configured.
+- *Key Configs: `config.js` (under the `soundEvents` section)*
 
 This overview covers the primary features. For specific configuration options and command usage, please refer to the linked detailed documentation within the `Docs` folder.

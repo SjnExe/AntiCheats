@@ -66,6 +66,10 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Syntax:** `!rank <set|remove> <playerName> <rankId>`
   - **Description:** Manages custom, tag-based player ranks. Does not work for Owner/Admin/Member.
   - **Permission:** Admin
+- **`!admin`**
+  - **Syntax:** `!admin "<playerName>" [add|remove]`
+  - **Description:** Adds or removes the Admin tag from an online player.
+  - **Permission:** Owner
 - **`!reload`**
   - **Syntax:** `!reload`
   - **Description:** Reloads the `ownerPlayerNames` from `config.js` and updates the owner's rank.
@@ -141,8 +145,12 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Description:** Requests another player to teleport to your location.
 - **`!tpaccept`** (Alias: `!tpaa`)
   - **Description:** Accepts an incoming teleport request.
-- **`!tpadeny`** (Alias: `!tpacancel`)
-  - **Description:** Denies an incoming teleport request or cancels an outgoing one.
+- **`!tpadeny`**
+  - **Description:** Denies an incoming teleport request.
+- **`!tpacancel`**
+  - **Description:** Cancels an outgoing teleport request you have sent.
+- **`!tpastatus`**
+  - **Description:** Checks the status of your current incoming and outgoing TPA requests.
 
 ### Economy System Commands
 - **`!balance`** (Alias: `!bal`)
@@ -150,7 +158,9 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 - **`!baltop`**
   - **Description:** Shows the players with the highest balances.
 - **`!pay <playerName> <amount>`**
-  - **Description:** Pays another player from your balance.
+  - **Description:** Pays another player from your balance. If the amount is large, it will require confirmation.
+- **`!payconfirm`**
+  - **Description:** Confirms a pending high-value payment requested with `!pay`.
 
 ### Bounty System Commands
 - **`!bounty <playerName> <amount>`**
