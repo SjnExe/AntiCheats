@@ -49,13 +49,14 @@ commandManager.register({
         }
 
         try {
-            targetPlayer.kick(reason);
+            // Using a command-based kick for reliability. Player names with spaces must be quoted.
+            player.runCommand(`kick "${targetPlayer.name}" ${reason}`);
             player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}. Reason: ${reason}`);
             playSound(player, 'random.orb');
         } catch (error) {
-            player.sendMessage(`§cFailed to kick ${targetPlayer.name}.`);
+            player.sendMessage(`§cFailed to kick ${targetPlayer.name}. See console for details.`);
             playSound(player, 'note.bass');
-            console.error(`[!kick] ${error.stack}`);
+            console.error(`[!kick] Failed to run kick command for ${targetPlayer.name}:`, error);
         }
     }
 });

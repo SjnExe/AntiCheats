@@ -60,21 +60,27 @@ function finalizeRestart() {
 
     // Use a short delay to allow the "saving" message to be seen
     system.runTimeout(() => {
-        // Kicking players during the restart sequence has been found to be unstable and causes script errors.
-        // The feature is temporarily disabled until a stable method is found.
-        //
-        // debugLog('[RestartManager] Kicking non-admin players.');
-        // for (const player of world.getAllPlayers()) {
-        //     const pData = getPlayer(player.id);
-        //     if (pData && pData.permissionLevel <= 1) {
-        //         player.sendMessage('§eYou were not kicked because you are an admin.');
-        //         continue;
-        //     }
-        //     player.kick(kickMessage);
-        // }
+        debugLog('[RestartManager] Kicking non-admin players.');
+        const config = getConfig();
+        const kickMessage = config.restart?.kickMessage ?? 'Server is restarting.';
 
-        // This is the final message to the console operator
-        console.warn('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved. Player kicking is currently disabled.');
+        try {
+            const ownerNames = config.ownerPlayerNames.map(name => `name=!"${name}"`).join(',');
+            const command = `kick @a[tag=!${config.adminTag},${ownerNames}] ${kickMessage}`;
+
+            debugLog(`[RestartManager] Running kick command: /${command}`);
+            const result = world.getDimension('overworld').runCommand(command);
+            debugLog(`[RestartManager] Kick command finished. Success count: ${result.successCount}`);
+
+            // Send a message to any remaining (admin/owner) players.
+            for (const player of world.getAllPlayers()) {
+                player.sendMessage('§aYou were not kicked by the restart sequence because you are an admin/owner.');
+            }
+        } catch (error) {
+            console.error(`[RestartManager] Failed to execute kick command: ${error}`);
+        }
+
+        console.warn('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved and players have been kicked.');
 
         restartInProgress = false; // Reset the flag
     }, 60); // 3-second delay
