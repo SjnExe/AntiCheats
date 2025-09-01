@@ -1,9 +1,22 @@
 # Changelog
 
+> **Note:** This changelog documents user-facing changes to the addon's functionality, features, and configuration. It does not include repository-level changes like workflow updates or development-only file modifications.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [v1.6.5] - 2025-09-01
+
+### Fixed
+- **Command Reliability:** Fixed a major, long-standing bug where the `!restart`, `!kick`, and `!ban` commands would fail to kick players. All kicking actions now use a robust, command-based method that has been verified to work reliably.
+
+### Changed
+- **Default Rules:** The default rules list in `config.js` has been updated. Rule #7 no longer mentions "channels," making it more appropriate for Minecraft chat.
+
+### Documentation
+- **Installation Guide:** The installation instructions in the main `README.md` file have been completely rewritten to be clearer and to recommend a manual folder-extraction method. This makes it significantly easier for server owners to access and modify the addon's configuration files.
 
 ## [v1.6.0] - 2025-09-01
 

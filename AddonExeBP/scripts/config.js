@@ -86,7 +86,7 @@ export const config = {
             '§e4. §rNo griefing or stealing from other players.',
             '§e5. §rRespect player builds. Do not alter or destroy them without permission.',
             '§e6. §rNo advertising other servers or websites.',
-            '§e7. §rKeep conversations in English and in the appropriate channels.',
+            '§e7. §rKeep conversations in English.',
             '§e8. §rFollow directions from staff members.',
             '§e9. §rDo not use offensive language, skins, or usernames.',
             '§e10. §rHave fun and enjoy your time on the server!'
