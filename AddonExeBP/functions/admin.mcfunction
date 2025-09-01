@@ -1,1 +1,1 @@
-scriptevent addonexe:grant_admin_self
+scriptevent exe:grant_admin_self

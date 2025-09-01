@@ -9,10 +9,10 @@ let loadedConfig = null;
  * This should only be called once at startup from main.js.
  */
 export function loadConfig() {
-    const configStr = world.getDynamicProperty('addonexe:config');
+    const configStr = world.getDynamicProperty('exe:config');
 
     if (configStr === undefined) {
-        world.setDynamicProperty('addonexe:config', JSON.stringify(defaultConfig));
+        world.setDynamicProperty('exe:config', JSON.stringify(defaultConfig));
         loadedConfig = defaultConfig;
     } else {
         try {
@@ -20,7 +20,7 @@ export function loadConfig() {
             // Merge default config with saved to ensure new properties are added
             loadedConfig = { ...defaultConfig, ...savedConfig };
             // Save the potentially updated config back to the world
-            world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
+            world.setDynamicProperty('exe:config', JSON.stringify(loadedConfig));
         } catch (error) {
             console.error('[ConfigManager] Failed to parse saved config. Loading default config instead.', error);
             loadedConfig = defaultConfig;
@@ -48,7 +48,7 @@ export function updateConfig(key, value) {
         loadConfig();
     }
     loadedConfig[key] = value;
-    world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
+    world.setDynamicProperty('exe:config', JSON.stringify(loadedConfig));
 }
 
 /**
@@ -56,7 +56,7 @@ export function updateConfig(key, value) {
  * as it was read on server startup.
  */
 export function forceReloadOwnerNameFromFile() {
-    const configStr = world.getDynamicProperty('addonexe:config');
+    const configStr = world.getDynamicProperty('exe:config');
     let savedConfig = {};
 
     if (configStr !== undefined) {
@@ -75,5 +75,5 @@ export function forceReloadOwnerNameFromFile() {
     loadedConfig.ownerPlayerNames = defaultConfig.ownerPlayerNames;
 
     // Save the reloaded and corrected config back to the world
-    world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
+    world.setDynamicProperty('exe:config', JSON.stringify(loadedConfig));
 }

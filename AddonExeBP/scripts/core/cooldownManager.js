@@ -2,7 +2,7 @@ import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 
-const cooldownDbKey = 'addonexe:cooldowns';
+const cooldownDbKey = 'exe:cooldowns';
 const saveIntervalTicks = 6000; // Every 5 minutes
 
 /** @type {Map<string, number>} */

@@ -2,7 +2,7 @@ import { world, system } from '@minecraft/server';
 import { debugLog } from './logger.js';
 import { getConfig } from './configManager.js';
 
-const reportsDbKey = 'addonexe:reports';
+const reportsDbKey = 'exe:reports';
 
 /**
  * @typedef {object} Report
