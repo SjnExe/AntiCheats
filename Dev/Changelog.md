@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.0] - 2025-08-31
+
+### Documentation
+- **Comprehensive Review:** Conducted a full review of all user-facing documentation to ensure accuracy, consistency, and clarity.
+- **Added Command Docs:** Added documentation for previously undocumented commands: `!admin`, `!payconfirm`, and `!tpastatus`.
+- **Clarified TPA Commands:** Clarified the distinction between `!tpadeny` and `!tpacancel` for better user understanding.
+- **Added Feature Docs:** Added documentation for major features that were not previously mentioned:
+  - Player welcome messages (`playerInfo.welcomeMessage`).
+  - Automatic death coordinate messages (`playerInfo.enableDeathCoords`).
+  - Configurable sound events for TPA, admin notifications, and more (`soundEvents`).
+- **Improved Feature Descriptions:**
+  - Updated the `!rules` command description to reflect its configuration from an array.
+  - Clarified that the `!panel` (`!ui`) item is craftable by all players and that its content is dynamic based on permissions.
+- **Consistency Pass:** Ensured information in `README.md`, `Docs/Commands.md`, and `Docs/FeaturesOverview.md` is consistent.
+
 ## [v1.5.3] - 2025-08-31
 
 ### Features
