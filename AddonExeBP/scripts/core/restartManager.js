@@ -71,7 +71,10 @@ function finalizeRestart() {
             // Kick players with a permission level greater than 1 (e.g., Member)
             if (rank.permissionLevel > 1) {
                 try {
-                    player.kick(kickMessage);
+                    // Using system.run() to schedule the kick for the next tick, avoiding context issues.
+                    system.run(() => {
+                        player.kick(kickMessage);
+                    });
                     kickedPlayers++;
                 } catch (error) {
                     console.error(`[RestartManager] Failed to kick player ${player.name}: ${error}`);
