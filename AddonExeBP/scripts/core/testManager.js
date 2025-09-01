@@ -3,8 +3,6 @@ import { getPlayerRank } from './rankManager.js';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 
-const overworld = world.getDimension('overworld');
-
 /**
  * --- Test Method 1: Direct Kick Command ---
  * Tries to kick players using a single /kick command with selectors.
@@ -12,6 +10,7 @@ const overworld = world.getDimension('overworld');
  */
 async function runTestKickMethod1() {
     try {
+        const overworld = world.getDimension('overworld');
         const config = getConfig();
         // This selector is complex and may not work as expected in-game, which is part of the test.
         // It attempts to exclude owners by name and admins by tag.
@@ -37,6 +36,7 @@ async function runTestKickMethod1() {
  */
 async function runTestKickMethod2() {
     try {
+        const overworld = world.getDimension('overworld');
         const config = getConfig();
         const tempTag = 'kickme';
         const ownerNames = config.ownerPlayerNames.map(name => `name=!"${name}"`).join(',');
