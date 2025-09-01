@@ -6,21 +6,18 @@ import { debugLog } from './logger.js';
 /**
  * --- Test Method 1: Direct Kick Command ---
  * Tries to kick players using a single /kick command with selectors.
- * This is often unreliable in Bedrock but is included for comprehensive testing.
  */
-async function runTestKickMethod1() {
+function runTestKickMethod1() {
     try {
         const overworld = world.getDimension('overworld');
         const config = getConfig();
-        // This selector is complex and may not work as expected in-game, which is part of the test.
-        // It attempts to exclude owners by name and admins by tag.
         const ownerNames = config.ownerPlayerNames.map(name => `name=!"${name}"`).join(',');
-        const command = `kick @a[tag=!${config.adminTag},${ownerNames}] "Kicked by Test Method 1: Direct Kick"`;
+        const command = `kick @a[tag=!${config.adminTag},${ownerNames}] Kicked by Test Method 1: Direct Kick`;
 
         world.sendMessage('§e[Test] Running Method 1: Direct Kick Command...');
         debugLog(`[TestManager] Running command: /${command}`);
 
-        const result = await overworld.runCommandAsync(command);
+        const result = overworld.runCommand(command);
         world.sendMessage(`§e[Test] Method 1 finished. Success count: ${result.successCount}`);
         debugLog(`[TestManager] Method 1 success count: ${result.successCount}`);
     } catch (error) {
@@ -32,9 +29,8 @@ async function runTestKickMethod1() {
 /**
  * --- Test Method 2: Tag and Kick Command ---
  * Tries to kick players by first tagging them, then kicking based on the tag.
- * This can sometimes be more reliable than a single complex selector.
  */
-async function runTestKickMethod2() {
+function runTestKickMethod2() {
     try {
         const overworld = world.getDimension('overworld');
         const config = getConfig();
@@ -46,17 +42,17 @@ async function runTestKickMethod2() {
         // Step 1: Add tag
         const tagCommand = `tag @a[tag=!${config.adminTag},${ownerNames}] add ${tempTag}`;
         debugLog(`[TestManager] Running command: /${tagCommand}`);
-        await overworld.runCommandAsync(tagCommand);
+        overworld.runCommand(tagCommand);
 
         // Step 2: Kick
-        const kickCommand = `kick @a[tag=${tempTag}] "Kicked by Test Method 2: Tag and Kick"`;
+        const kickCommand = `kick @a[tag=${tempTag}] Kicked by Test Method 2: Tag and Kick`;
         debugLog(`[TestManager] Running command: /${kickCommand}`);
-        const kickResult = await overworld.runCommandAsync(kickCommand);
+        const kickResult = overworld.runCommand(kickCommand);
 
         // Step 3: Clean up tag
         const cleanupCommand = `tag @a[tag=${tempTag}] remove ${tempTag}`;
         debugLog(`[TestManager] Running command: /${cleanupCommand}`);
-        await overworld.runCommandAsync(cleanupCommand);
+        overworld.runCommand(cleanupCommand);
 
         world.sendMessage(`§e[Test] Method 2 finished. Kicked players: ${kickResult.successCount}`);
         debugLog(`[TestManager] Method 2 success count: ${kickResult.successCount}`);
@@ -67,30 +63,30 @@ async function runTestKickMethod2() {
 }
 
 /**
- * --- Test Method 3: Script-Based Kick ---
- * Iterates through players in script, checks their rank, and uses the Player.kick() API.
- * This is expected to be the most reliable method.
+ * --- Test Method 3: Script-Based Command Kick ---
+ * Iterates through players in script, checks rank, and runs a /kick command for each one.
  */
 function runTestKickMethod3() {
-    world.sendMessage('§e[Test] Running Method 3: Script-Based Kick...');
+    world.sendMessage('§e[Test] Running Method 3: Script-Based Command Kick...');
     debugLog('[TestManager] Running Method 3...');
 
+    const overworld = world.getDimension('overworld');
     const config = getConfig();
-    const kickMessage = 'Kicked by Test Method 3: Script Event';
+    const kickReason = 'Kicked by Test Method 3: Script-Based Command';
     let kickedPlayers = 0;
 
     for (const player of world.getAllPlayers()) {
         const rank = getPlayerRank(player, config);
         if (rank.permissionLevel > 1) {
             try {
-                // Using system.run() to schedule the kick for the next tick, avoiding context issues.
-                system.run(() => {
-                    player.kick(kickMessage);
-                });
-                debugLog(`[TestManager] Attempted to kick player ${player.name} (Rank: ${rank.name})`);
+                // Using a command-based kick for maximum reliability.
+                // Player names with spaces must be quoted.
+                const command = `kick "${player.name}" ${kickReason}`;
+                debugLog(`[TestManager] Running command: /${command}`);
+                overworld.runCommand(command);
                 kickedPlayers++;
             } catch (error) {
-                console.error(`[TestManager] Failed to kick player ${player.name}: ${error}`);
+                console.error(`[TestManager] Failed to kick player ${player.name} via command: ${error}`);
             }
         } else {
             debugLog(`[TestManager] Did not kick player ${player.name} (Rank: ${rank.name})`);

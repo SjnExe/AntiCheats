@@ -71,13 +71,12 @@ function finalizeRestart() {
             // Kick players with a permission level greater than 1 (e.g., Member)
             if (rank.permissionLevel > 1) {
                 try {
-                    // Using system.run() to schedule the kick for the next tick, avoiding context issues.
-                    system.run(() => {
-                        player.kick(kickMessage);
-                    });
+                    // Use a command-based kick for maximum reliability.
+                    // Player names with spaces must be quoted.
+                    world.getDimension('overworld').runCommand(`kick "${player.name}" ${kickMessage}`);
                     kickedPlayers++;
                 } catch (error) {
-                    console.error(`[RestartManager] Failed to kick player ${player.name}: ${error}`);
+                    console.error(`[RestartManager] Failed to kick player ${player.name} via command: ${error}`);
                 }
             } else {
                 player.sendMessage('§aYou were not kicked by the restart sequence because you are an admin/owner.');
