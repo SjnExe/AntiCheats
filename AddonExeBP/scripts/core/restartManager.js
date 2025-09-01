@@ -1,6 +1,7 @@
 import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { saveAllData } from './dataManager.js';
+import { getPlayerRank } from './rankManager.js';
 import { debugLog } from './logger.js';
 
 let restartInProgress = false;
@@ -60,21 +61,28 @@ function finalizeRestart() {
 
     // Use a short delay to allow the "saving" message to be seen
     system.runTimeout(() => {
-        // Kicking players during the restart sequence has been found to be unstable and causes script errors.
-        // The feature is temporarily disabled until a stable method is found.
-        //
-        // debugLog('[RestartManager] Kicking non-admin players.');
-        // for (const player of world.getAllPlayers()) {
-        //     const pData = getPlayer(player.id);
-        //     if (pData && pData.permissionLevel <= 1) {
-        //         player.sendMessage('§eYou were not kicked because you are an admin.');
-        //         continue;
-        //     }
-        //     player.kick(kickMessage);
-        // }
+        debugLog('[RestartManager] Kicking non-admin players.');
+        const config = getConfig();
+        const kickMessage = config.restart?.kickMessage ?? 'Server is restarting.';
 
-        // This is the final message to the console operator
-        console.warn('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved. Player kicking is currently disabled.');
+        let kickedPlayers = 0;
+        for (const player of world.getAllPlayers()) {
+            const rank = getPlayerRank(player, config);
+            // Kick players with a permission level greater than 1 (e.g., Member)
+            if (rank.permissionLevel > 1) {
+                try {
+                    player.kick(kickMessage);
+                    kickedPlayers++;
+                } catch (error) {
+                    console.error(`[RestartManager] Failed to kick player ${player.name}: ${error}`);
+                }
+            } else {
+                player.sendMessage('§aYou were not kicked by the restart sequence because you are an admin/owner.');
+            }
+        }
+
+        debugLog(`[RestartManager] Kicked ${kickedPlayers} player(s).`);
+        console.warn('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved and players have been kicked.');
 
         restartInProgress = false; // Reset the flag
     }, 60); // 3-second delay
