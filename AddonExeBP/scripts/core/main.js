@@ -232,7 +232,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     const { id, sourceEntity } = event;
 
     switch (id) {
-        case 'exe:restart':
+        case 'addonexe:restart':
             // The script event can be triggered by a player or a command block.
             // If it's a player, we can use their entity as the initiator.
             // If it's a command block, sourceEntity will be undefined.
@@ -240,7 +240,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             startRestart(sourceEntity);
             break;
 
-        case 'exe:toggle_chat_log': {
+        case 'addonexe:toggle_chat_log': {
             const config = getConfig();
             const chatConfig = config.chat || { logToConsole: false };
             const newValue = !chatConfig.logToConsole;
@@ -257,7 +257,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             break;
         }
 
-        case 'exe:grant_admin_self': {
+        case 'addonexe:grant_admin_self': {
             if (sourceEntity && sourceEntity.addTag) {
                 sourceEntity.addTag(getConfig().adminTag);
                 sourceEntity.sendMessage('§aYou have been promoted to Admin.');

@@ -8,21 +8,10 @@
 [![GitHub All Releases](https://img.shields.io/github/downloads/SjnExe/AddonExe/total?style=for-the-badge)](https://github.com/SjnExe/AddonExe/releases)
 ![Minecraft BE Version](https://img.shields.io/badge/Minecraft_BE-1.21.100%2B-brightgreen?style=for-the-badge&logo=minecraft)
 [![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AddonExe?style=for-the-badge&logo=github)](https://github.com/SjnExe/AddonExe/issues)
-![Status: Beta Release](https://img.shields.io/badge/Status-Beta%20Release-yellow?style=for-the-badge)
+![Status: Stable Release](https://img.shields.io/badge/Status-Stable%20Release-green?style=for-the-badge)
 [![Discord Server](https://img.shields.io/discord/633296555650318346?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289DA)](https://discord.gg/SMUHUnGyyz)
 
 </div>
-
-> [!IMPORTANT]
-> AddonExe is now in **Beta**.
->
-> **Please be aware:**
->
-> - While more stable than pre-release versions, some bugs may still be present.
-> - We encourage you to back up your world before installation.
-> - Your feedback is crucial for identifying and fixing remaining issues.
->
-> We appreciate your understanding and encourage testers to [report any issues on GitHub](https://github.com/SjnExe/AddonExe/issues). Your feedback is vital for the final release!
 
 > [!WARNING]
 > **Do not use pre-release versions for public servers.**

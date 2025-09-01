@@ -1,1 +1,1 @@
-scriptevent exe:restart
+scriptevent addonexe:restart

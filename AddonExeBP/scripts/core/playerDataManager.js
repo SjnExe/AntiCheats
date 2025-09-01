@@ -22,8 +22,8 @@ import { getConfig } from './configManager.js';
 import { world } from '@minecraft/server';
 import { debugLog } from './logger.js';
 
-const playerPropertyPrefix = 'exe:player.';
-const playerNameIdMapKey = 'exe:playerNameIdMap';
+const playerPropertyPrefix = 'addonexe:player.';
+const playerNameIdMapKey = 'addonexe:playerNameIdMap';
 
 /**
  * @type {Map<string, PlayerData>}

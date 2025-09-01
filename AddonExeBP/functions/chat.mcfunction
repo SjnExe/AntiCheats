@@ -1,1 +1,1 @@
-scriptevent exe:toggle_chat_log
+scriptevent addonexe:toggle_chat_log
