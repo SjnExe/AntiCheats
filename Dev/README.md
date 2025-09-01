@@ -73,17 +73,6 @@ To help identify potential bottlenecks, the addon includes a basic performance p
 - **Usage:** This data can help developers pinpoint specific areas that might be consuming more resources than expected. It's recommended to only enable this for temporary debugging sessions, as continuous profiling can itself have a minor performance overhead.
 - **Configuration:** The logging interval can be adjusted with `logPerformanceProfileIntervalTicks` in the config.
 
-## Community Anti-Cheat Projects & Resources
-
-These are community-driven open-source anti-cheat projects that serve as excellent examples and learning resources:
-
-- **Scythe Anticheat:**
-  - GitHub: [https://github.com/Scythe-Anticheat/Scythe-Anticheat](https://github.com/Scythe-Anticheat/Scythe-Anticheat)
-  - Focuses on a wide range of detections using Beta APIs and mcfunctions. Features include detailed setup, in-game commands, and a configuration file.
-- **SafeGuard Anticheat:**
-  - GitHub: [https://github.com/BlaizerBrumo/SafeGuard](https://github.com/BlaizerBrumo/SafeGuard)
-  - Offers protection against combat, item, and movement hacks. Includes an admin panel item for configuration, Xray alerts, and various utility features.
-
 ## Purpose of this Folder
 
 This directory can be used by developers (including AI assistants like Jules) to:
