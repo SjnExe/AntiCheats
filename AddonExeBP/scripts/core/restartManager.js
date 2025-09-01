@@ -1,7 +1,6 @@
 import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { saveAllData } from './dataManager.js';
-import { getPlayerRank } from './rankManager.js';
 import { debugLog } from './logger.js';
 
 let restartInProgress = false;
@@ -65,25 +64,22 @@ function finalizeRestart() {
         const config = getConfig();
         const kickMessage = config.restart?.kickMessage ?? 'Server is restarting.';
 
-        let kickedPlayers = 0;
-        for (const player of world.getAllPlayers()) {
-            const rank = getPlayerRank(player, config);
-            // Kick players with a permission level greater than 1 (e.g., Member)
-            if (rank.permissionLevel > 1) {
-                try {
-                    // Use a command-based kick for maximum reliability.
-                    // Player names with spaces must be quoted.
-                    world.getDimension('overworld').runCommand(`kick "${player.name}" ${kickMessage}`);
-                    kickedPlayers++;
-                } catch (error) {
-                    console.error(`[RestartManager] Failed to kick player ${player.name} via command: ${error}`);
-                }
-            } else {
+        try {
+            const ownerNames = config.ownerPlayerNames.map(name => `name=!"${name}"`).join(',');
+            const command = `kick @a[tag=!${config.adminTag},${ownerNames}] ${kickMessage}`;
+
+            debugLog(`[RestartManager] Running kick command: /${command}`);
+            const result = world.getDimension('overworld').runCommand(command);
+            debugLog(`[RestartManager] Kick command finished. Success count: ${result.successCount}`);
+
+            // Send a message to any remaining (admin/owner) players.
+            for (const player of world.getAllPlayers()) {
                 player.sendMessage('§aYou were not kicked by the restart sequence because you are an admin/owner.');
             }
+        } catch (error) {
+            console.error(`[RestartManager] Failed to execute kick command: ${error}`);
         }
 
-        debugLog(`[RestartManager] Kicked ${kickedPlayers} player(s).`);
         console.warn('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved and players have been kicked.');
 
         restartInProgress = false; // Reset the flag
