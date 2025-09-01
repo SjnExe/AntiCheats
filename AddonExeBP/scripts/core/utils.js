@@ -93,8 +93,8 @@ export function playSoundFromConfig(player, soundEventKey) {
                 pitch: soundEvent.pitch
             });
         }
-    } catch (e) {
-        console.error(`Failed to play sound from config for key "${soundEventKey}": ${e}`);
+    } catch (error) {
+        console.error(`Failed to play sound from config for key "${soundEventKey}": ${error}`);
     }
 }
 
@@ -158,7 +158,7 @@ export function startTeleportWarmup(player, durationSeconds, onWarmupComplete, t
                 player.onScreenDisplay.setActionBar('§aTeleporting...');
                 onWarmupComplete();
             }
-        } catch (e) {
+        } catch {
             // This will catch errors if the player object becomes invalid (e.g., player logs off)
             system.clearRun(intervalId);
         }

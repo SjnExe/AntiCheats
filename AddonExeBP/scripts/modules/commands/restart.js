@@ -5,7 +5,7 @@ commandManager.register({
     name: 'restart',
     description: 'Initiates a timed server restart sequence.',
     category: 'Administration',
-    permissionLevel: 0, // Owner only
+    permissionLevel: 1, // Admin and Owner
     execute: (player, args) => {
         startRestart(player);
     }

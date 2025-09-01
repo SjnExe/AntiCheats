@@ -160,9 +160,14 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         const remainingTime = Math.round((punishment.expires - Date.now()) / 1000);
         const durationText = punishment.expires === Infinity ? 'permanently' : `for another ${remainingTime} seconds`;
 
-        // Use the native Player.kick() method.
+        // Use a command-based kick for reliability.
+        // A system.run is still good practice to ensure the command runs in a clean context after the spawn event.
         system.run(() => {
-            player.kick(`You are banned ${durationText}. Reason: ${punishment.reason}`);
+            try {
+                world.getDimension('overworld').runCommand(`kick "${player.name}" You have been banned ${durationText}. Reason: ${punishment.reason}`);
+            } catch (error) {
+                console.error(`[BanCheck] Failed to kick banned player ${player.name}:`, error);
+            }
         });
         return;
     }
