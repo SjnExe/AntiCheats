@@ -14,37 +14,19 @@ class CustomCommandManager {
         this.commands = [];
         this.aliases = new Map();
         this.prefix = 'x'; // Namespace for all custom commands
-        this.registry = null;
-        this.queue = [];
 
         system.beforeEvents.startup.subscribe(event => {
-            this.registry = event.customCommandRegistry;
-            this.processQueue();
+            this.commands.forEach(command => {
+                if (command.disableSlashCommand) return;
+                try {
+                    const commandData = this.prepareCommandData(command);
+                    const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData);
+                    event.customCommandRegistry.registerCommand(commandData, commandCallback);
+                } catch (e) {
+                    console.error(`[CustomCommandManager] Failed to register slash command '${command.name}':`, e);
+                }
+            });
         });
-    }
-
-    processQueue() {
-        this.queue.forEach(command => this.registerSlashCommand(command));
-        this.queue = []; // Clear the queue
-    }
-
-    registerSlashCommand(command) {
-        if (!this.registry) {
-            this.queue.push(command);
-            return;
-        }
-
-        if (command.disableSlashCommand) {
-            return;
-        }
-
-        try {
-            const commandData = this.prepareCommandData(command);
-            const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData);
-            this.registry.registerCommand(commandData, commandCallback);
-        } catch (e) {
-            console.error(`[CustomCommandManager] Failed to register slash command '${command.name}':`, e);
-        }
     }
 
     /**
@@ -190,8 +172,6 @@ class CustomCommandManager {
                 this.aliases.set(alias.toLowerCase(), command.name);
             }
         }
-
-        this.registerSlashCommand(command);
     }
 }
 

@@ -12,6 +12,7 @@ import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 import * as playerCache from './playerCache.js';
 import { startRestart } from './restartManager.js';
+import '../modules/commands/index.js';
 
 /**
  * Checks a player's rank and updates it if necessary.
@@ -99,13 +100,6 @@ function initializeAddon() {
     loadPersistentData();
     initializeManagers();
     checkConfiguration();
-
-    // Dynamically load command modules
-    import('../modules/commands/index.js').then(() => {
-        debugLog('[AddonExe] Commands loaded successfully.');
-    }).catch(error => {
-        console.error(`[AddonExe] Failed to load commands: ${error.stack}`);
-    });
 
     startSystemTimers();
     debugLog('[AddonExe] Addon initialized successfully.');
