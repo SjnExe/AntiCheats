@@ -55,7 +55,12 @@ class CustomCommandManager {
      * @private
      */
     executeCommand(command, commandExecuteData) {
-        const player = commandExecuteData.sender;
+        const player = commandExecuteData.sender || commandExecuteData.source;
+
+        if (!player) {
+            console.error(`[CustomCommandManager] Could not determine player for command '${command.name}'.`);
+            return;
+        }
 
         const pData = getPlayer(player.id);
         if (!pData || pData.permissionLevel > command.permissionLevel) {
