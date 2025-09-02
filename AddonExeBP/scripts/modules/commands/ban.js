@@ -9,7 +9,6 @@ customCommandManager.register({
     description: 'Bans a player for a specified duration with a reason.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
-    disableSlashCommand: true,
     execute: (player, args) => {
         if (args.length < 1) {
             player.sendMessage('§cUsage: !ban <player> [duration] [reason]');
@@ -91,7 +90,6 @@ customCommandManager.register({
     description: 'Unbans a player.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
-    disableSlashCommand: true,
     execute: (player, args) => {
         if (args.length < 1) {
             player.sendMessage('§cUsage: !unban <player>');

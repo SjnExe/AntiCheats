@@ -10,7 +10,6 @@ customCommandManager.register({
     aliases: ['silence'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
-    disableSlashCommand: true,
     execute: (player, args) => {
         if (args.length < 1) {
             player.sendMessage('§cUsage: !mute <player> [duration] [reason]');
@@ -86,7 +85,6 @@ customCommandManager.register({
     aliases: ['um'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
-    disableSlashCommand: true,
     execute: (player, args) => {
         if (args.length < 1) {
             player.sendMessage('§cUsage: !unmute <player>');
