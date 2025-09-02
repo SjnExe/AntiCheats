@@ -1,25 +1,25 @@
 import { world } from '@minecraft/server';
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'freeze',
     description: 'Freezes or unfreezes a player.',
     category: 'Moderation',
     permissionLevel: 1, // Admin only
-    parameters: [
-        { name: 'target', type: 'player', description: 'The player to freeze or unfreeze.' },
-        { name: 'state', type: 'string', description: 'Set to "on" to freeze or "off" to unfreeze. Toggles if omitted.', optional: true }
-    ],
     execute: (player, args) => {
-        const { target, state } = args;
-
-        if (!target || target.length === 0) {
-            player.sendMessage('§cPlayer not found.');
+        if (args.length < 1) {
+            player.sendMessage('§cUsage: !freeze <playerName> [on|off]');
             return;
         }
 
-        const targetPlayer = target[0];
+        const targetName = args[0];
+        const targetPlayer = [...world.getPlayers()].find(p => p.name === targetName);
+
+        if (!targetPlayer) {
+            player.sendMessage(`§cPlayer "${targetName}" not found.`);
+            return;
+        }
 
         if (player.id === targetPlayer.id) {
             player.sendMessage('§cYou cannot freeze yourself.');
@@ -39,7 +39,7 @@ customCommandManager.register({
             return;
         }
 
-        const action = state ? state.toLowerCase() : 'toggle';
+        const action = args[1] ? args[1].toLowerCase() : 'toggle';
         const frozenTag = 'frozen';
         const isFrozen = targetPlayer.hasTag(frozenTag);
 

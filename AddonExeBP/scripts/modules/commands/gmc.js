@@ -1,21 +1,25 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { GameMode } from '@minecraft/server';
+import { findPlayerByName } from '../utils/playerUtils.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'gmc',
     aliases: ['c', 'creative'],
     description: 'Sets your or another player\'s gamemode to Creative.',
     category: 'General',
     permissionLevel: 1, // Admins only
-    parameters: [
-        { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }
-    ],
     execute: (player, args) => {
         let targetPlayer = player;
-        if (args.target && args.target.length > 0) {
-            targetPlayer = args.target[0];
+        if (args.length > 0) {
+            const foundPlayer = findPlayerByName(args[0]);
+            if (!foundPlayer) {
+                player.sendMessage(`§cPlayer "${args[0]}" not found.`);
+                return;
+            }
+            targetPlayer = foundPlayer;
 
+            // Permission check
             const executorData = getPlayer(player.id);
             const targetData = getPlayer(targetPlayer.id);
             if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel && player.id !== targetPlayer.id) {
@@ -34,7 +38,7 @@ customCommandManager.register({
             }
         } catch (e) {
             player.sendMessage(`§cFailed to set gamemode. Error: ${e.message}`);
-            console.error(`[/exe:gmc] Failed to set gamemode: ${e.stack}`);
+            console.error(`[gmc] Failed to set gamemode: ${e.stack}`);
         }
     }
 });

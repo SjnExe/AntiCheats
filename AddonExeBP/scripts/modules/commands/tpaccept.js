@@ -1,14 +1,13 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as tpaManager from '../../core/tpaManager.js';
 import { getConfig } from '../../core/configManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'tpaccept',
     aliases: ['tpyes', 'tpac'],
     description: 'Accepts an incoming TPA request.',
     category: 'TPA System',
     permissionLevel: 1024, // Everyone
-    parameters: [],
     execute: (player, args) => {
         const config = getConfig();
         if (!config.tpa.enabled) {

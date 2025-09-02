@@ -1,13 +1,12 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
 import { addAdminToXrayCache, removeAdminFromXrayCache } from '../../core/playerCache.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'xraynotify',
     description: 'Toggles X-Ray notifications for yourself.',
     category: '§4Administration',
     permissionLevel: 1, // Admin and above
-    parameters: [],
     execute: (player, args) => {
         const pData = getPlayer(player.id);
         if (!pData) {
@@ -16,7 +15,7 @@ customCommandManager.register({
         }
 
         pData.xrayNotifications = !pData.xrayNotifications;
-        savePlayerData(player.id);
+        savePlayerData(player.id); // Save the change immediately
 
         if (pData.xrayNotifications) {
             addAdminToXrayCache(player.id);

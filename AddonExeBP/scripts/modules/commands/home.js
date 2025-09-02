@@ -1,18 +1,15 @@
 import { world } from '@minecraft/server';
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as homesManager from '../../core/homesManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 import { startTeleportWarmup } from '../../core/utils.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'home',
     description: 'Teleports you to one of your set homes.',
     category: 'Home System',
     permissionLevel: 1024, // Everyone
-    parameters: [
-        { name: 'homeName', type: 'string', description: 'The name of the home to teleport to. Defaults to "home".', optional: true }
-    ],
     execute: (player, args) => {
         const config = getConfig();
         if (!config.homes.enabled) {
@@ -26,11 +23,11 @@ customCommandManager.register({
             return;
         }
 
-        const homeName = args.homeName || 'home';
+        const homeName = args[0] || 'home';
         const homeLocation = homesManager.getHome(player, homeName);
 
         if (!homeLocation) {
-            player.sendMessage(`§cHome '${homeName}' not found. Use /exe:homes to see your list of homes.`);
+            player.sendMessage(`§cHome '${homeName}' not found. Use !homes to see your list of homes.`);
             return;
         }
 
@@ -43,7 +40,7 @@ customCommandManager.register({
                 setCooldown(player, 'home');
             } catch (e) {
                 player.sendMessage(`§cFailed to teleport. Error: ${e.message}`);
-                console.error(`[/exe:home] Failed to teleport: ${e.stack}`);
+                console.error(`[home] Failed to teleport: ${e.stack}`);
             }
         };
 

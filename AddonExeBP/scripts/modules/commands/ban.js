@@ -8,21 +8,22 @@ customCommandManager.register({
     description: 'Bans a player for a specified duration with a reason.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
-    parameters: [
-        { name: 'target', type: 'player', description: 'The player to ban.' },
-        { name: 'duration', type: 'string', description: 'The duration of the ban (e.g., 1d, 2h, 30m). Default: perm', optional: true },
-        { name: 'reason', type: 'string', description: 'The reason for the ban.', optional: true }
-    ],
+    disableSlashCommand: true,
     execute: (player, args) => {
-        const { target, duration, reason: reasonArg } = args;
-
-        if (!target || target.length === 0) {
-            player.sendMessage('§cPlayer not found. You can only ban online players.');
+        if (args.length < 1) {
+            player.sendMessage('§cUsage: !ban <player> [duration] [reason]');
             playSoundFromConfig(player, 'commandError');
             return;
         }
 
-        const targetPlayer = target[0];
+        const targetName = args[0];
+        const targetPlayer = findPlayerByName(targetName);
+
+        if (!targetPlayer) {
+            player.sendMessage(`§cPlayer "${targetName}" not found. You can only ban online players.`);
+            playSoundFromConfig(player, 'commandError');
+            return;
+        }
 
         if (player.id === targetPlayer.id) {
             player.sendMessage('§cYou cannot ban yourself.');
@@ -49,18 +50,17 @@ customCommandManager.register({
         let reason;
         let durationMs = Infinity;
 
-        if (duration) {
-            const parsedMs = parseDuration(duration);
+        if (args.length > 1) {
+            const parsedMs = parseDuration(args[1]);
             if (parsedMs > 0) {
-                durationString = duration;
+                durationString = args[1];
                 durationMs = parsedMs;
-                reason = reasonArg || 'No reason provided.';
+                reason = args.slice(2).join(' ') || 'No reason provided.';
             } else {
-                // Invalid duration format, treat it as part of the reason
-                reason = reasonArg ? `${duration} ${reasonArg}` : duration;
+                reason = args.slice(1).join(' ');
             }
         } else {
-            reason = reasonArg || 'No reason provided.';
+            reason = 'No reason provided.';
         }
 
         const expires = durationMs === Infinity ? Infinity : Date.now() + durationMs;
@@ -90,11 +90,15 @@ customCommandManager.register({
     description: 'Unbans a player.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
-    parameters: [
-        { name: 'target', type: 'string', description: 'The name of the player to unban.' }
-    ],
+    disableSlashCommand: true,
     execute: (player, args) => {
-        const { target: targetName } = args;
+        if (args.length < 1) {
+            player.sendMessage('§cUsage: !unban <player>');
+            playSoundFromConfig(player, 'commandError');
+            return;
+        }
+
+        const targetName = args[0];
 
         const targetId = getPlayerIdByName(targetName);
 

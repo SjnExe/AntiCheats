@@ -1,13 +1,12 @@
 import { world } from '@minecraft/server';
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'vanish',
     aliases: ['v'],
     description: 'Makes you invisible to other players.',
     category: 'Moderation',
     permissionLevel: 1, // Admin only
-    parameters: [],
     execute: (player, args) => {
         const vanishedTag = 'vanished';
         const isVanished = player.hasTag(vanishedTag);

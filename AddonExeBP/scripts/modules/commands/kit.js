@@ -1,15 +1,12 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as kitsManager from '../../core/kitsManager.js';
 import { getConfig } from '../../core/configManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'kit',
     description: 'Lists available kits or claims a specific kit.',
     category: 'General',
     permissionLevel: 1024, // Everyone
-    parameters: [
-        { name: 'kitName', type: 'string', description: 'The name of the kit to claim, or "list" to see all kits.', optional: true }
-    ],
     execute: (player, args) => {
         const config = getConfig();
         if (!config.kits.enabled) {
@@ -17,7 +14,7 @@ customCommandManager.register({
             return;
         }
 
-        const action = args.kitName;
+        const action = args[0];
 
         if (!action || action.toLowerCase() === 'list') {
             const allKits = kitsManager.listKits();
@@ -26,7 +23,7 @@ customCommandManager.register({
                 return;
             }
             player.sendMessage(`§aAvailable kits: §e${allKits.join(', ')}`);
-            player.sendMessage('§7Use /exe:kit <kitName> to claim a kit.');
+            player.sendMessage('§7Use !kit <kitName> to claim a kit.');
             return;
         }
 

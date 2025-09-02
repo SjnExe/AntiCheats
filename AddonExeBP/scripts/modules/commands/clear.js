@@ -8,6 +8,7 @@ customCommandManager.register({
     aliases: ['ci', 'clearinv'],
     category: 'Moderation',
     permissionLevel: 1, // Admin-only to prevent accidental self-clearing
+    disableSlashCommand: true,
     parameters: [
         { name: 'target', type: 'player', description: 'The player whose inventory to clear.', optional: true }
     ],

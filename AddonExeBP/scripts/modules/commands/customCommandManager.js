@@ -4,19 +4,23 @@ import {
     CustomCommandParamType
 } from '@minecraft/server';
 import { getPlayer } from '../../core/playerDataManager.js';
+import { getConfig } from '../../core/configManager.js';
 
 /**
- * Manages the registration and execution of custom slash commands.
+ * Manages the registration and execution of both slash and chat commands.
  */
 class CustomCommandManager {
     constructor() {
         this.commands = [];
-        this.prefix = 'exe'; // Namespace for all custom commands
+        this.aliases = new Map();
+        this.prefix = 'x'; // Namespace for all custom commands
 
         system.beforeEvents.startup.subscribe(event => {
             this.commands.forEach(command => {
+                if (command.disableSlashCommand) return;
+
                 const commandData = this.prepareCommandData(command);
-                const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData);
+                const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData, true);
                 event.customCommandRegistry.registerCommand(commandData, commandCallback);
             });
         });
@@ -45,9 +49,10 @@ class CustomCommandManager {
      * Executes a registered command.
      * @param {object} command The command definition.
      * @param {object} commandExecuteData The data from the command execution event.
+     * @param {boolean} isSlashCommand Whether the command was executed as a slash command.
      * @private
      */
-    executeCommand(command, commandExecuteData) {
+    executeCommand(command, commandExecuteData, isSlashCommand) {
         const player = commandExecuteData.sender;
 
         const pData = getPlayer(player.id);
@@ -58,13 +63,49 @@ class CustomCommandManager {
 
         system.run(() => {
             try {
-                const args = commandExecuteData.parameters;
+                const args = isSlashCommand ? commandExecuteData.parameters : commandExecuteData.args;
                 command.execute(player, args);
             } catch (error) {
                 console.error(`[CustomCommandManager] Error executing command '${command.name}': ${error.stack}`);
                 player.sendMessage('§cAn unexpected error occurred while running this command.');
             }
         });
+    }
+
+    /**
+     * Handles an incoming chat message and schedules it for execution if it's a valid command.
+     * @param {import('@minecraft/server').BeforeChatSendEvent} eventData The chat event data.
+     * @returns {boolean} `true` if the message was a command, otherwise `false`.
+     */
+    handleChatCommand(eventData) {
+        const config = getConfig();
+        const { sender: player, message } = eventData;
+        if (!message.startsWith(config.commandPrefix)) {
+            return false;
+        }
+
+        eventData.cancel = true;
+
+        const args = message.slice(config.commandPrefix.length).trim().split(/ +/);
+        let commandName = args.shift().toLowerCase();
+
+        if (this.aliases.has(commandName)) {
+            commandName = this.aliases.get(commandName);
+        }
+
+        const command = this.commands.find(c => c.name === commandName);
+
+        if (!command) {
+            return false;
+        }
+
+        const commandExecuteData = {
+            sender: player,
+            args: args
+        };
+
+        this.executeCommand(command, commandExecuteData, false);
+        return true;
     }
 
     /**
@@ -109,7 +150,7 @@ class CustomCommandManager {
      * @private
      */
     translatePermissionLevel(level) {
-        if (level === 0) {
+        if (level > 1000) { // Assuming 1024 is for everyone
             return CustomCommandPermissionLevel.Any;
         } else {
             return CustomCommandPermissionLevel.Admin;
@@ -117,16 +158,18 @@ class CustomCommandManager {
     }
 
     /**
-     * Registers a new custom slash command.
+     * Registers a new command.
      * @param {object} commandOptions
-     * @param {string} commandOptions.name The primary name of the command.
-     * @param {string} [commandOptions.description] A brief description of what the command does.
-     * @param {number} [commandOptions.permissionLevel=0] The minimum permission level required to use the command.
-     * @param {object[]} [commandOptions.parameters=[]] A list of parameters for the command.
-     * @param {(player: import('@minecraft/server').Player, args: object) => void} commandOptions.execute The function to run when the command is executed.
      */
     register(commandOptions) {
-        this.commands.push({ permissionLevel: 0, ...commandOptions });
+        const command = { permissionLevel: 0, ...commandOptions };
+        this.commands.push(command);
+
+        if (command.aliases) {
+            for (const alias of command.aliases) {
+                this.aliases.set(alias.toLowerCase(), command.name);
+            }
+        }
     }
 }
 

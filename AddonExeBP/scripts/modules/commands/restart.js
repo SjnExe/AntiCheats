@@ -1,12 +1,11 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { startRestart } from '../../core/restartManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'restart',
-    description: 'Initiates the server restart sequence.',
+    description: 'Initiates a timed server restart sequence.',
     category: 'Administration',
-    permissionLevel: 1, // Admin only
-    parameters: [],
+    permissionLevel: 1, // Admin and Owner
     execute: (player, args) => {
         startRestart(player);
     }
