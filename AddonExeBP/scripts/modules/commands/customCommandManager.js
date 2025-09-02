@@ -45,6 +45,7 @@ class CustomCommandManager {
         console.log(`[CustomCommandManager] Registering slash command '${command.name}'...`);
         try {
             const commandData = this.prepareCommandData(command);
+            console.log(`[CustomCommandManager] Command data for '${command.name}': ${JSON.stringify(commandData, null, 2)}`);
             const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData, true);
             this.registry.registerCommand(commandData, commandCallback);
             console.log(`[CustomCommandManager] Successfully registered slash command '${command.name}'.`);
