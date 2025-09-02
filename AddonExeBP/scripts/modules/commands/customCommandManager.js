@@ -50,7 +50,7 @@ class CustomCommandManager {
             this.registry.registerCommand(commandData, commandCallback);
             console.log(`[CustomCommandManager] Successfully registered slash command '${command.name}'.`);
         } catch (e) {
-            console.error(`[CustomCommandManager] Failed to register slash command '${command.name}': ${e.stack}`);
+            console.error(`[CustomCommandManager] Failed to register slash command '${command.name}':`, e);
         }
     }
 
