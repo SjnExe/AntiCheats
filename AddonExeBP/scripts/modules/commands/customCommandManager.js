@@ -46,7 +46,7 @@ class CustomCommandManager {
         try {
             const commandData = this.prepareCommandData(command);
             console.log(`[CustomCommandManager] Command data for '${command.name}': ${JSON.stringify(commandData, null, 2)}`);
-            const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData, true);
+            const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData);
             this.registry.registerCommand(commandData, commandCallback);
             console.log(`[CustomCommandManager] Successfully registered slash command '${command.name}'.`);
         } catch (e) {
@@ -77,10 +77,9 @@ class CustomCommandManager {
      * Executes a registered command.
      * @param {object} command The command definition.
      * @param {object} commandExecuteData The data from the command execution event.
-     * @param {boolean} isSlashCommand Whether the command was executed as a slash command.
      * @private
      */
-    executeCommand(command, commandExecuteData, isSlashCommand) {
+    executeCommand(command, commandExecuteData) {
         const player = commandExecuteData.sender;
 
         const pData = getPlayer(player.id);
@@ -91,7 +90,7 @@ class CustomCommandManager {
 
         system.run(() => {
             try {
-                const args = isSlashCommand ? commandExecuteData.parameters : commandExecuteData.args;
+                const args = commandExecuteData.parameters ?? commandExecuteData.args;
                 command.execute(player, args);
             } catch (error) {
                 console.error(`[CustomCommandManager] Error executing command '${command.name}': ${error.stack}`);
@@ -132,7 +131,7 @@ class CustomCommandManager {
             args: args
         };
 
-        this.executeCommand(command, commandExecuteData, false);
+        this.executeCommand(command, commandExecuteData);
         return true;
     }
 
