@@ -14,25 +14,43 @@ class CustomCommandManager {
         this.commands = [];
         this.aliases = new Map();
         this.prefix = 'x'; // Namespace for all custom commands
+        this.registry = null;
+        this.queue = [];
 
         system.beforeEvents.startup.subscribe(event => {
-            console.log(`[CustomCommandManager] Startup event fired. Registering ${this.commands.length} commands...`);
-            this.commands.forEach(command => {
-                if (command.disableSlashCommand) {
-                    console.log(`[CustomCommandManager] Skipping slash command registration for '${command.name}' because it is disabled.`);
-                    return;
-                }
-                console.log(`[CustomCommandManager] Registering slash command '${command.name}'...`);
-                try {
-                    const commandData = this.prepareCommandData(command);
-                    const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData, true);
-                    event.customCommandRegistry.registerCommand(commandData, commandCallback);
-                    console.log(`[CustomCommandManager] Successfully registered slash command '${command.name}'.`);
-                } catch (e) {
-                    console.error(`[CustomCommandManager] Failed to register slash command '${command.name}': ${e.stack}`);
-                }
-            });
+            console.log('[CustomCommandManager] Startup event fired.');
+            this.registry = event.customCommandRegistry;
+            this.processQueue();
         });
+    }
+
+    processQueue() {
+        console.log(`[CustomCommandManager] Processing registration queue with ${this.queue.length} commands...`);
+        this.queue.forEach(command => this.registerSlashCommand(command));
+        this.queue = []; // Clear the queue
+    }
+
+    registerSlashCommand(command) {
+        if (!this.registry) {
+            console.warn(`[CustomCommandManager] Registry not available, queuing command '${command.name}'.`);
+            this.queue.push(command);
+            return;
+        }
+
+        if (command.disableSlashCommand) {
+            console.log(`[CustomCommandManager] Skipping slash command registration for '${command.name}' because it is disabled.`);
+            return;
+        }
+
+        console.log(`[CustomCommandManager] Registering slash command '${command.name}'...`);
+        try {
+            const commandData = this.prepareCommandData(command);
+            const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData, true);
+            this.registry.registerCommand(commandData, commandCallback);
+            console.log(`[CustomCommandManager] Successfully registered slash command '${command.name}'.`);
+        } catch (e) {
+            console.error(`[CustomCommandManager] Failed to register slash command '${command.name}': ${e.stack}`);
+        }
     }
 
     /**
@@ -180,6 +198,8 @@ class CustomCommandManager {
                 this.aliases.set(alias.toLowerCase(), command.name);
             }
         }
+
+        this.registerSlashCommand(command);
     }
 }
 
