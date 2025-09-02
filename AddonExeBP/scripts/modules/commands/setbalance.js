@@ -1,26 +1,26 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import * as economyManager from '../../core/economyManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'setbalance',
     aliases: ['setbal', 'setmoney'],
     description: 'Sets a player\'s balance to a specific amount. (Admin and above)',
     category: 'Economy',
     permissionLevel: 1, // Admin and above
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player whose balance to set.' },
+        { name: 'amount', type: 'float', description: 'The amount to set the balance to.' }
+    ],
     execute: (player, args) => {
-        if (args.length < 2) {
-            player.sendMessage('§cUsage: !setbalance <playerName> <amount>');
+        const { target, amount } = args;
+
+        if (!target || target.length === 0) {
+            player.sendMessage('§cPlayer not found.');
             return;
         }
 
-        const targetPlayer = findPlayerByName(args[0]);
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer '${args[0]}' not found.`);
-            return;
-        }
+        const targetPlayer = target[0];
 
-        const amount = parseFloat(args[1]);
         if (isNaN(amount) || amount < 0) {
             player.sendMessage('§cInvalid amount. Please enter a non-negative number.');
             return;

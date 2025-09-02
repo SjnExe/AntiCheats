@@ -1,14 +1,14 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { showPanel } from '../../core/uiManager.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'panel',
-    aliases: ['ui', 'gui'],
+    aliases: ['ui', 'menu'],
     description: 'Opens the main UI panel.',
     category: 'General',
-    permissionLevel: 1024, // Everyone can access the panel
+    permissionLevel: 1024, // Everyone
+    parameters: [],
     execute: (player, args) => {
-        // The command now directly opens the panel for the player.
         showPanel(player, 'mainPanel');
     }
 });

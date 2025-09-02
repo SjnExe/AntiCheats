@@ -1,21 +1,19 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { getPlayer, getAllPlayerNameIdMap, loadPlayerData } from '../../core/playerDataManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
 import { getPlayerFromCache } from '../../core/playerCache.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'listbounty',
     aliases: ['lbounty', 'bounties', 'bountylist'],
-    description: 'Lists all active bounties.',
+    description: 'Lists all active bounties or a specific player\'s bounty.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to check the bounty of.', optional: true }
+    ],
     execute: (player, args) => {
-        if (args.length > 0) {
-            const targetPlayer = findPlayerByName(args[0]);
-            if (!targetPlayer) {
-                player.sendMessage(`§cPlayer '${args[0]}' not found.`);
-                return;
-            }
+        if (args.target && args.target.length > 0) {
+            const targetPlayer = args.target[0];
             const targetData = getPlayer(targetPlayer.id);
             if (!targetData) {
                 player.sendMessage('§cCould not find player data.');

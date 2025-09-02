@@ -1,35 +1,34 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { getConfig } from '../../core/configManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
 import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
 import { world } from '@minecraft/server';
 
-commandManager.register({
+customCommandManager.register({
     name: 'bounty',
     description: 'Place a bounty on a player.',
     aliases: ['setbounty'],
     category: 'Economy',
     permissionLevel: 1024, // Everyone
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to place a bounty on.' },
+        { name: 'amount', type: 'int', description: 'The amount of the bounty.' }
+    ],
     execute: (player, args) => {
+        const { target, amount } = args;
         const config = getConfig();
         if (!config.economy.enabled) {
             player.sendMessage('§cThe economy system is currently disabled.');
             return;
         }
 
-        if (args.length < 2) {
-            player.sendMessage('§cUsage: !bounty <playerName> <amount>');
+        if (!target || target.length === 0) {
+            player.sendMessage('§cPlayer not found.');
             return;
         }
 
-        const targetPlayer = findPlayerByName(args[0]);
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer '${args[0]}' not found.`);
-            return;
-        }
+        const targetPlayer = target[0];
 
-        const amount = parseInt(args[1]);
         if (isNaN(amount) || amount < config.economy.minimumBounty) {
             player.sendMessage(`§cInvalid amount. The minimum bounty is $${config.economy.minimumBounty}.`);
             return;

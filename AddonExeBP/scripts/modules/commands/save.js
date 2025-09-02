@@ -1,12 +1,13 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { saveAllData } from '../../core/dataManager.js';
 import { playSoundFromConfig } from '../../core/utils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'save',
     description: 'Manually saves all server data to disk.',
     category: 'Administration',
     permissionLevel: 1, // Admins only
+    parameters: [],
     execute: (player, args) => {
         player.sendMessage('§aStarting manual data save...');
         try {
@@ -15,7 +16,7 @@ commandManager.register({
             playSoundFromConfig(player, 'adminNotificationReceived');
         } catch (e) {
             player.sendMessage(`§cAn error occurred during save: ${e.message}`);
-            console.error(`[SaveCommand] Manual save failed: ${e.stack}`);
+            console.error(`[/exe:save] Manual save failed: ${e.stack}`);
         }
     }
 });

@@ -1,30 +1,29 @@
-import { commandManager } from './commandManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
+import { customCommandManager } from './customCommandManager.js';
 import { getPlayer, getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSound } from '../../core/utils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'mute',
     description: 'Mutes a player for a specified duration with a reason.',
     aliases: ['silence'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to mute.' },
+        { name: 'duration', type: 'string', description: 'The duration of the mute (e.g., 1d, 2h, 30m). Default: perm', optional: true },
+        { name: 'reason', type: 'string', description: 'The reason for the mute.', optional: true }
+    ],
     execute: (player, args) => {
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !mute <player> [duration] [reason]');
+        const { target, duration, reason: reasonArg } = args;
+
+        if (!target || target.length === 0) {
+            player.sendMessage('§cPlayer not found.');
             playSound(player, 'note.bass');
             return;
         }
 
-        const targetName = args[0];
-        const targetPlayer = findPlayerByName(targetName);
-
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found.`);
-            playSound(player, 'note.bass');
-            return;
-        }
+        const targetPlayer = target[0];
 
         if (player.id === targetPlayer.id) {
             player.sendMessage('§cYou cannot mute yourself.');
@@ -47,22 +46,14 @@ commandManager.register({
             return;
         }
 
-        let durationString = 'perm';
-        let reason;
-        let durationMs = Infinity;
+        const durationString = duration || 'perm';
+        const reason = reasonArg || 'No reason provided.';
+        const durationMs = duration ? parseDuration(duration) : Infinity;
 
-        if (args.length > 1) {
-            const parsedMs = parseDuration(args[1]);
-            if (parsedMs > 0) {
-                durationString = args[1];
-                durationMs = parsedMs;
-                reason = args.slice(2).join(' ') || 'No reason provided.';
-            } else {
-                // Invalid duration format, treat it as part of the reason
-                reason = args.slice(1).join(' ');
-            }
-        } else {
-            reason = 'No reason provided.';
+        if (duration && durationMs === 0) {
+            player.sendMessage(`§cInvalid duration format: "${duration}". Use formats like 1d, 2h, 30m.`);
+            playSound(player, 'note.bass');
+            return;
         }
 
         const expires = durationMs === Infinity ? Infinity : Date.now() + durationMs;
@@ -80,22 +71,18 @@ commandManager.register({
     }
 });
 
-commandManager.register({
+customCommandManager.register({
     name: 'unmute',
     description: 'Unmutes a player.',
     aliases: ['um'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    parameters: [
+        { name: 'target', type: 'string', description: 'The name of the player to unmute.' }
+    ],
     execute: (player, args) => {
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !unmute <player>');
-            playSound(player, 'note.bass');
-            return;
-        }
+        const { target: targetName } = args;
 
-        const targetName = args[0];
-        // For unmuting, we need to handle offline players.
-        // This simplified version assumes the player is online.
         const targetId = getPlayerIdByName(targetName);
 
         if (!targetId) {
@@ -127,7 +114,6 @@ commandManager.register({
 
         removePunishment(targetId);
         player.sendMessage(`§aSuccessfully unmuted ${targetName}.`);
-        // Cannot send message to target if they are offline.
         playSound(player, 'random.orb');
     }
 });

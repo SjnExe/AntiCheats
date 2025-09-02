@@ -1,50 +1,33 @@
 import { world } from '@minecraft/server';
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { updateAllPlayerRanks } from '../../core/main.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'admin',
     description: 'Grants a player the admin tag.',
     category: 'Administration',
     permissionLevel: 0, // Owner only
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to grant or revoke admin from.' },
+        { name: 'action', type: 'string', description: 'The action to perform: "add" or "remove". Defaults to "add".', optional: true }
+    ],
     execute: (player, args) => {
+        const { target, action: actionArg } = args;
         const config = getConfig();
+        const action = actionArg?.toLowerCase() || 'add';
 
-        if (args.length === 0) {
-            player.sendMessage('§cUsage: !admin "<playerName>" [add|remove]');
+        if (!target || target.length === 0) {
+            player.sendMessage(`§cPlayer not found. They must be online.`);
+            return;
+        }
+        const targetPlayer = target[0];
+
+        if (action !== 'add' && action !== 'remove') {
+            player.sendMessage('§cInvalid action. Use "add" or "remove".');
             return;
         }
 
-        // --- Argument Parsing ---
-        let action = 'add'; // Default action
-        let remainingArgs = [...args];
-
-        const lastArg = remainingArgs[remainingArgs.length - 1]?.toLowerCase();
-        if (lastArg === 'add' || lastArg === 'remove') {
-            action = lastArg;
-            remainingArgs.pop();
-        }
-
-        let targetName = remainingArgs.join(' ');
-        if (targetName.startsWith('"') && targetName.endsWith('"')) {
-            targetName = targetName.substring(1, targetName.length - 1);
-        }
-
-        if (!targetName) {
-            player.sendMessage('§cUsage: !admin "<playerName>" [add|remove]');
-            return;
-        }
-
-        // --- Player Finding ---
-        const targetPlayer = world.getAllPlayers().find(p => p.name === targetName);
-
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer not found: '${targetName}'. They must be online.`);
-            return;
-        }
-
-        // --- Action Execution ---
         try {
             if (action === 'add') {
                 targetPlayer.addTag(config.adminTag);
@@ -55,11 +38,10 @@ commandManager.register({
                 player.sendMessage(`§aSuccessfully removed the admin tag from ${targetPlayer.name}.`);
                 targetPlayer.sendMessage('§cYou have been demoted from Admin.');
             }
-            // Re-evaluate all players' ranks to ensure changes are applied system-wide
             updateAllPlayerRanks();
         } catch (e) {
             player.sendMessage(`§cFailed to ${action} admin tag. Error: ${e.message}`);
-            console.error(`[AdminCommand] Failed to ${action} tag: ${e.stack}`);
+            console.error(`[/exe:admin] Failed to ${action} tag: ${e.stack}`);
         }
     }
 });

@@ -1,14 +1,16 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { getConfig } from '../../core/configManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'balance',
     aliases: ['bal', 'money'],
     description: 'Checks your or another player\'s balance.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to check the balance of.', optional: true }
+    ],
     execute: (player, args) => {
         const config = getConfig();
         if (!config.economy.enabled) {
@@ -17,13 +19,8 @@ commandManager.register({
         }
 
         let targetPlayer = player;
-        if (args.length > 0) {
-            const foundPlayer = findPlayerByName(args[0]);
-            if (!foundPlayer) {
-                player.sendMessage(`§cPlayer '${args[0]}' not found.`);
-                return;
-            }
-            targetPlayer = foundPlayer;
+        if (args.target && args.target.length > 0) {
+            targetPlayer = args.target[0];
         }
 
         const balance = economyManager.getBalance(targetPlayer.id);

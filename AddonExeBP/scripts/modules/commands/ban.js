@@ -1,29 +1,28 @@
-import { commandManager } from './commandManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
-import { getPlayer } from '../../core/playerDataManager.js';
+import { customCommandManager } from './customCommandManager.js';
+import { getPlayer, getPlayerIdByName } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSoundFromConfig } from '../../core/utils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'ban',
     description: 'Bans a player for a specified duration with a reason.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to ban.' },
+        { name: 'duration', type: 'string', description: 'The duration of the ban (e.g., 1d, 2h, 30m). Default: perm', optional: true },
+        { name: 'reason', type: 'string', description: 'The reason for the ban.', optional: true }
+    ],
     execute: (player, args) => {
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !ban <player> [duration] [reason]');
+        const { target, duration, reason: reasonArg } = args;
+
+        if (!target || target.length === 0) {
+            player.sendMessage('§cPlayer not found. You can only ban online players.');
             playSoundFromConfig(player, 'commandError');
             return;
         }
 
-        const targetName = args[0];
-        const targetPlayer = findPlayerByName(targetName);
-
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found. You can only ban online players.`);
-            playSoundFromConfig(player, 'commandError');
-            return;
-        }
+        const targetPlayer = target[0];
 
         if (player.id === targetPlayer.id) {
             player.sendMessage('§cYou cannot ban yourself.');
@@ -50,18 +49,18 @@ commandManager.register({
         let reason;
         let durationMs = Infinity;
 
-        if (args.length > 1) {
-            const parsedMs = parseDuration(args[1]);
+        if (duration) {
+            const parsedMs = parseDuration(duration);
             if (parsedMs > 0) {
-                durationString = args[1];
+                durationString = duration;
                 durationMs = parsedMs;
-                reason = args.slice(2).join(' ') || 'No reason provided.';
+                reason = reasonArg || 'No reason provided.';
             } else {
                 // Invalid duration format, treat it as part of the reason
-                reason = args.slice(1).join(' ');
+                reason = reasonArg ? `${duration} ${reasonArg}` : duration;
             }
         } else {
-            reason = 'No reason provided.';
+            reason = reasonArg || 'No reason provided.';
         }
 
         const expires = durationMs === Infinity ? Infinity : Date.now() + durationMs;
@@ -76,43 +75,37 @@ commandManager.register({
         player.sendMessage(`§aSuccessfully banned ${targetPlayer.name} ${durationText}. Reason: ${reason}`);
         playSoundFromConfig(player, 'adminNotificationReceived');
 
-        // Kick the player after banning them using a reliable command.
         try {
             player.runCommand(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
         } catch (error) {
             player.sendMessage(`§eWarning: Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`);
-            console.error(`[!ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
+            console.error(`[/exe:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
         }
     }
 });
 
-commandManager.register({
+customCommandManager.register({
     name: 'unban',
     aliases: ['pardon'],
     description: 'Unbans a player.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    parameters: [
+        { name: 'target', type: 'string', description: 'The name of the player to unban.' }
+    ],
     execute: (player, args) => {
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !unban <player>');
+        const { target: targetName } = args;
+
+        const targetId = getPlayerIdByName(targetName);
+
+        if (!targetId) {
+            player.sendMessage(`§cPlayer "${targetName}" not found in the database. Make sure the name is correct (case-insensitive).`);
             playSoundFromConfig(player, 'commandError');
             return;
         }
 
-        const targetName = args[0];
-        // For unbanning, we need to handle offline players.
-        // This simplified version assumes the player is online.
-        // A more robust solution would require a way to get a player's ID from their name, even if offline.
-        const targetPlayer = findPlayerByName(targetName);
-
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found or is offline.`);
-            playSoundFromConfig(player, 'commandError');
-            return;
-        }
-
-        removePunishment(targetPlayer.id);
-        player.sendMessage(`§aSuccessfully unbanned ${targetPlayer.name}. They can now rejoin the server.`);
+        removePunishment(targetId);
+        player.sendMessage(`§aSuccessfully unbanned ${targetName}. They can now rejoin the server.`);
         playSoundFromConfig(player, 'adminNotificationReceived');
     }
 });

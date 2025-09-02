@@ -1,16 +1,19 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import * as tpaManager from '../../core/tpaManager.js';
 import { getConfig } from '../../core/configManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'tpa',
     description: 'Sends a request to teleport to another player.',
     aliases: ['tprequest'],
     category: 'TPA System',
     permissionLevel: 1024, // Everyone
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to send the request to.' }
+    ],
     execute: (player, args) => {
+        const { target } = args;
         const config = getConfig();
         if (!config.tpa.enabled) {
             player.sendMessage('§cThe TPA system is currently disabled.');
@@ -23,16 +26,12 @@ commandManager.register({
             return;
         }
 
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !tpa <playerName>');
+        if (!target || target.length === 0) {
+            player.sendMessage('§cPlayer not found.');
             return;
         }
 
-        const targetPlayer = findPlayerByName(args[0]);
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer '${args[0]}' not found.`);
-            return;
-        }
+        const targetPlayer = target[0];
 
         if (targetPlayer.id === player.id) {
             player.sendMessage('§cYou cannot send a TPA request to yourself.');
@@ -44,7 +43,7 @@ commandManager.register({
         if (result.success) {
             setCooldown(player, 'tpa');
             player.sendMessage(`§aTPA request sent to ${targetPlayer.name}. They have ${config.tpa.requestTimeoutSeconds} seconds to accept.`);
-            targetPlayer.sendMessage(`§a${player.name} has requested to teleport to you. Type §e!tpaccept§a to accept or §e!tpadeny§a to deny.`);
+            targetPlayer.sendMessage(`§a${player.name} has requested to teleport to you. Type §e/exe:tpaccept§a to accept or §e/exe:tpadeny§a to deny.`);
         } else {
             player.sendMessage(`§c${result.message}`);
         }
