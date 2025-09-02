@@ -1,5 +1,6 @@
 import { system } from '@minecraft/server';
 import {
+    CommandPermissionLevel,
     CustomCommandParamType
 } from '@minecraft/server';
 import { getPlayer } from '../../core/playerDataManager.js';
@@ -10,7 +11,6 @@ import { getConfig } from '../../core/configManager.js';
  */
 class CustomCommandManager {
     constructor() {
-        console.log('[CustomCommandManager] Initializing...');
         this.commands = [];
         this.aliases = new Map();
         this.prefix = 'x'; // Namespace for all custom commands
@@ -18,37 +18,30 @@ class CustomCommandManager {
         this.queue = [];
 
         system.beforeEvents.startup.subscribe(event => {
-            console.log('[CustomCommandManager] Startup event fired.');
             this.registry = event.customCommandRegistry;
             this.processQueue();
         });
     }
 
     processQueue() {
-        console.log(`[CustomCommandManager] Processing registration queue with ${this.queue.length} commands...`);
         this.queue.forEach(command => this.registerSlashCommand(command));
         this.queue = []; // Clear the queue
     }
 
     registerSlashCommand(command) {
         if (!this.registry) {
-            console.warn(`[CustomCommandManager] Registry not available, queuing command '${command.name}'.`);
             this.queue.push(command);
             return;
         }
 
         if (command.disableSlashCommand) {
-            console.log(`[CustomCommandManager] Skipping slash command registration for '${command.name}' because it is disabled.`);
             return;
         }
 
-        console.log(`[CustomCommandManager] Registering slash command '${command.name}'...`);
         try {
             const commandData = this.prepareCommandData(command);
-            console.log(`[CustomCommandManager] Command data for '${command.name}': ${JSON.stringify(commandData, null, 2)}`);
             const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData);
             this.registry.registerCommand(commandData, commandCallback);
-            console.log(`[CustomCommandManager] Successfully registered slash command '${command.name}'.`);
         } catch (e) {
             console.error(`[CustomCommandManager] Failed to register slash command '${command.name}':`, e);
         }
@@ -173,14 +166,14 @@ class CustomCommandManager {
     /**
      * Translates the numeric permission level to the API's enum.
      * @param {number} level The numeric permission level.
-     * @returns {string} The corresponding permission level string.
+     * @returns {CommandPermissionLevel} The corresponding enum value.
      * @private
      */
     translatePermissionLevel(level) {
         if (level > 1000) { // Assuming 1024 is for everyone
-            return 'Any';
+            return CommandPermissionLevel.Any;
         } else {
-            return 'Admin';
+            return CommandPermissionLevel.Admin;
         }
     }
 
@@ -189,7 +182,6 @@ class CustomCommandManager {
      * @param {object} commandOptions
      */
     register(commandOptions) {
-        console.log(`[CustomCommandManager] Registering command '${commandOptions.name}'...`);
         const command = { permissionLevel: 0, ...commandOptions };
         this.commands.push(command);
 
