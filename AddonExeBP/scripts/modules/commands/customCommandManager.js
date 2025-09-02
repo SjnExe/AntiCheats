@@ -13,7 +13,7 @@ class CustomCommandManager {
     constructor() {
         this.commands = [];
         this.aliases = new Map();
-        this.prefix = 'x'; // Namespace for all custom commands
+        this.prefix = 'exe'; // Namespace for all custom commands
 
         system.beforeEvents.startup.subscribe(event => {
             this.commands.forEach(command => {
@@ -55,6 +55,7 @@ class CustomCommandManager {
      * @private
      */
     executeCommand(command, commandExecuteData) {
+        console.log(`[AddonExe-Debug] Command '${command.name}' execute data: ${JSON.stringify(commandExecuteData, null, 2)}`);
         const player = commandExecuteData.sender || commandExecuteData.source;
 
         if (!player) {
