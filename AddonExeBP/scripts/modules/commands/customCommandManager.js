@@ -10,17 +10,27 @@ import { getConfig } from '../../core/configManager.js';
  */
 class CustomCommandManager {
     constructor() {
+        console.log('[CustomCommandManager] Initializing...');
         this.commands = [];
         this.aliases = new Map();
         this.prefix = 'x'; // Namespace for all custom commands
 
         system.beforeEvents.startup.subscribe(event => {
+            console.log(`[CustomCommandManager] Startup event fired. Registering ${this.commands.length} commands...`);
             this.commands.forEach(command => {
-                if (command.disableSlashCommand) return;
-
-                const commandData = this.prepareCommandData(command);
-                const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData, true);
-                event.customCommandRegistry.registerCommand(commandData, commandCallback);
+                if (command.disableSlashCommand) {
+                    console.log(`[CustomCommandManager] Skipping slash command registration for '${command.name}' because it is disabled.`);
+                    return;
+                }
+                console.log(`[CustomCommandManager] Registering slash command '${command.name}'...`);
+                try {
+                    const commandData = this.prepareCommandData(command);
+                    const commandCallback = (commandExecuteData) => this.executeCommand(command, commandExecuteData, true);
+                    event.customCommandRegistry.registerCommand(commandData, commandCallback);
+                    console.log(`[CustomCommandManager] Successfully registered slash command '${command.name}'.`);
+                } catch (e) {
+                    console.error(`[CustomCommandManager] Failed to register slash command '${command.name}': ${e.stack}`);
+                }
             });
         });
     }
@@ -145,7 +155,7 @@ class CustomCommandManager {
     /**
      * Translates the numeric permission level to the API's enum.
      * @param {number} level The numeric permission level.
-     * @returns {CustomCommandPermissionLevel} The corresponding enum value.
+     * @returns {string} The corresponding permission level string.
      * @private
      */
     translatePermissionLevel(level) {
@@ -161,6 +171,7 @@ class CustomCommandManager {
      * @param {object} commandOptions
      */
     register(commandOptions) {
+        console.log(`[CustomCommandManager] Registering command '${commandOptions.name}'...`);
         const command = { permissionLevel: 0, ...commandOptions };
         this.commands.push(command);
 
