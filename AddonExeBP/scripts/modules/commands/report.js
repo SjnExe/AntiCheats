@@ -1,26 +1,31 @@
-import { commandManager } from './commandManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
-import { createReport } from '../../core/reportManager.js';
+import { customCommandManager } from './customCommandManager.js';
+import * as reportManager from '../../core/reportManager.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'report',
-    description: 'Reports a player for misconduct.',
+    description: 'Reports a player for a specific reason.',
     category: 'General',
     permissionLevel: 1024, // Everyone
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to report.' },
+        { name: 'reason', type: 'string', description: 'The reason for the report.' }
+    ],
     execute: (player, args) => {
-        if (args.length < 2) {
-            player.sendMessage('§cUsage: !report <playerName> <reason>');
+        const { target, reason } = args;
+
+        if (!target || target.length === 0) {
+            player.sendMessage('§cPlayer not found.');
             return;
         }
 
-        const targetPlayer = findPlayerByName(args[0]);
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer '${args[0]}' not found.`);
+        const targetPlayer = target[0];
+
+        if (targetPlayer.id === player.id) {
+            player.sendMessage('§cYou cannot report yourself.');
             return;
         }
 
-        const reason = args.slice(1).join(' ');
-        createReport(player, targetPlayer, reason);
-        player.sendMessage('§aThank you for your report. An admin will review it shortly.');
+        reportManager.createReport(player, targetPlayer, reason);
+        player.sendMessage('§aReport submitted. Thank you for your help.');
     }
 });

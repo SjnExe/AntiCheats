@@ -1,14 +1,15 @@
 import { world } from '@minecraft/server';
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 import { playSound, startTeleportWarmup } from '../../core/utils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'spawn',
     description: 'Teleports you to the server spawn point.',
     category: 'General',
     permissionLevel: 1024, // Everyone
+    parameters: [],
     execute: (player, args) => {
         const config = getConfig();
         const spawnLocation = config.spawnLocation;
@@ -36,7 +37,7 @@ commandManager.register({
                 playSound(player, 'random.orb');
             } catch (e) {
                 player.sendMessage('§cFailed to teleport to spawn. The dimension may be invalid or the location unsafe.');
-                console.error(`[SpawnCommand] Failed to teleport: ${e.stack}`);
+                console.error(`[/x:spawn] Failed to teleport: ${e.stack}`);
                 playSound(player, 'note.bass');
             }
         };

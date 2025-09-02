@@ -2,6 +2,7 @@ import { customCommandManager } from './customCommandManager.js';
 import { getPlayer, getPlayerIdByName } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSoundFromConfig } from '../../core/utils.js';
+import { findPlayerByName } from '../utils/playerUtils.js';
 
 customCommandManager.register({
     name: 'ban',
@@ -79,7 +80,7 @@ customCommandManager.register({
             player.runCommand(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
         } catch (error) {
             player.sendMessage(`§eWarning: Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`);
-            console.error(`[/exe:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
+            console.error(`[/x:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
         }
     }
 });

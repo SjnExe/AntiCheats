@@ -1,11 +1,12 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { world, system } from '@minecraft/server';
 
-commandManager.register({
+customCommandManager.register({
     name: 'status',
     description: 'Displays the current server status.',
     category: 'General',
     permissionLevel: 1024, // Everyone
+    parameters: [],
     execute: (player, args) => {
         const onlinePlayers = world.getAllPlayers().length;
         const statusText = [

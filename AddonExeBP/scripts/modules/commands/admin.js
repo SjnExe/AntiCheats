@@ -41,7 +41,7 @@ customCommandManager.register({
             updateAllPlayerRanks();
         } catch (e) {
             player.sendMessage(`§cFailed to ${action} admin tag. Error: ${e.message}`);
-            console.error(`[/exe:admin] Failed to ${action} tag: ${e.stack}`);
+            console.error(`[/x:admin] Failed to ${action} tag: ${e.stack}`);
         }
     }
 });

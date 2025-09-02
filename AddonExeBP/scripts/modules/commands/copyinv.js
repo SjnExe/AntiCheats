@@ -42,7 +42,7 @@ customCommandManager.register({
             playSound(player, 'random.orb');
         } catch (e) {
             player.sendMessage('§cFailed to copy inventory.');
-            console.error(`[/exe:copyinv] Error: ${e.stack}`);
+            console.error(`[/x:copyinv] Error: ${e.stack}`);
         }
     }
 });

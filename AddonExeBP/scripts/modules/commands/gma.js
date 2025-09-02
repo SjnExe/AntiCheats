@@ -1,25 +1,22 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { GameMode } from '@minecraft/server';
-import { findPlayerByName } from '../utils/playerUtils.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'gma',
     aliases: ['a', 'adventure'],
     description: 'Sets your or another player\'s gamemode to Adventure.',
     category: 'General',
     permissionLevel: 1, // Admins only
+    disableSlashCommand: true,
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }
+    ],
     execute: (player, args) => {
         let targetPlayer = player;
-        if (args.length > 0) {
-            const foundPlayer = findPlayerByName(args[0]);
-            if (!foundPlayer) {
-                player.sendMessage(`§cPlayer "${args[0]}" not found.`);
-                return;
-            }
-            targetPlayer = foundPlayer;
+        if (args.target && args.target.length > 0) {
+            targetPlayer = args.target[0];
 
-            // Permission check
             const executorData = getPlayer(player.id);
             const targetData = getPlayer(targetPlayer.id);
             if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel && player.id !== targetPlayer.id) {
@@ -38,7 +35,7 @@ commandManager.register({
             }
         } catch (e) {
             player.sendMessage(`§cFailed to set gamemode. Error: ${e.message}`);
-            console.error(`[gma] Failed to set gamemode: ${e.stack}`);
+            console.error(`[/x:gma] Failed to set gamemode: ${e.stack}`);
         }
     }
 });

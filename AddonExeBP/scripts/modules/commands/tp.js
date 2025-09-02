@@ -1,19 +1,20 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'tp',
     aliases: ['teleport'],
     description: 'Teleports a player to another player or to coordinates.',
     category: 'General',
     permissionLevel: 1, // Admins only
+    disableSlashCommand: true, // This command has a vanilla counterpart
     execute: (player, args) => {
+        // This command is chat-only, so args will be an array of strings.
         if (args.length === 0) {
             player.sendMessage('§cUsage: !tp <targetPlayer> [destinationPlayer] or !tp [targetPlayer] <x> <y> <z>');
             return;
         }
 
-        // Teleporting self to another player: !tp <destinationPlayer>
         if (args.length === 1) {
             const destinationPlayer = findPlayerByName(args[0]);
             if (!destinationPlayer) {
@@ -25,7 +26,6 @@ commandManager.register({
             return;
         }
 
-        // Teleporting a player to another player: !tp <playerToMove> <destinationPlayer>
         if (args.length === 2) {
             const playerToMove = findPlayerByName(args[0]);
             if (!playerToMove) {
@@ -42,7 +42,6 @@ commandManager.register({
             return;
         }
 
-        // Teleporting self to coordinates: !tp <x> <y> <z>
         if (args.length === 3) {
             const [x, y, z] = args.map(Number);
             if (isNaN(x) || isNaN(y) || isNaN(z)) {
@@ -54,7 +53,6 @@ commandManager.register({
             return;
         }
 
-        // Teleporting a player to coordinates: !tp <targetPlayer> <x> <y> <z>
         if (args.length === 4) {
             const targetPlayer = findPlayerByName(args[0]);
             if (!targetPlayer) {

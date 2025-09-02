@@ -16,7 +16,7 @@ customCommandManager.register({
             world.sendMessage(`§aChat has been cleared by ${player.name}.`);
         } catch (error) {
             player.sendMessage('§cFailed to clear chat.');
-            console.error(`[/exe:clearchat] ${error.stack}`);
+            console.error(`[/x:clearchat] ${error.stack}`);
         }
     }
 });

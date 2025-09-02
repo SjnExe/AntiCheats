@@ -1,15 +1,16 @@
-import { commandManager } from './commandManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
+import { customCommandManager } from './customCommandManager.js';
 import { getPlayer, getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSound } from '../../core/utils.js';
+import { findPlayerByName } from '../utils/playerUtils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'mute',
     description: 'Mutes a player for a specified duration with a reason.',
     aliases: ['silence'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    disableSlashCommand: true,
     execute: (player, args) => {
         if (args.length < 1) {
             player.sendMessage('§cUsage: !mute <player> [duration] [reason]');
@@ -58,7 +59,6 @@ commandManager.register({
                 durationMs = parsedMs;
                 reason = args.slice(2).join(' ') || 'No reason provided.';
             } else {
-                // Invalid duration format, treat it as part of the reason
                 reason = args.slice(1).join(' ');
             }
         } else {
@@ -80,12 +80,13 @@ commandManager.register({
     }
 });
 
-commandManager.register({
+customCommandManager.register({
     name: 'unmute',
     description: 'Unmutes a player.',
     aliases: ['um'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    disableSlashCommand: true,
     execute: (player, args) => {
         if (args.length < 1) {
             player.sendMessage('§cUsage: !unmute <player>');
@@ -94,8 +95,6 @@ commandManager.register({
         }
 
         const targetName = args[0];
-        // For unmuting, we need to handle offline players.
-        // This simplified version assumes the player is online.
         const targetId = getPlayerIdByName(targetName);
 
         if (!targetId) {
@@ -127,7 +126,6 @@ commandManager.register({
 
         removePunishment(targetId);
         player.sendMessage(`§aSuccessfully unmuted ${targetName}.`);
-        // Cannot send message to target if they are offline.
         playSound(player, 'random.orb');
     }
 });

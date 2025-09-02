@@ -1,18 +1,17 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { updateConfig } from '../../core/configManager.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'debug',
     description: 'Toggles the debug logging mode.',
     category: 'Administration',
     permissionLevel: 1, // Admin and above
+    parameters: [
+        { name: 'state', type: 'boolean', description: 'Set to true to enable debug mode, false to disable.' }
+    ],
     execute: (player, args) => {
-        if (args.length !== 1 || (args[0] !== 'true' && args[0] !== 'false')) {
-            player.sendMessage('§cInvalid syntax. Use: !debug [true|false]');
-            return;
-        }
+        const { state: newDebugState } = args;
 
-        const newDebugState = (args[0] === 'true');
         updateConfig('debug', newDebugState);
 
         player.sendMessage(`§aDebug mode has been set to: ${newDebugState}`);

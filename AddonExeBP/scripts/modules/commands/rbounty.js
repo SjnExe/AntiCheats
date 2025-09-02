@@ -1,31 +1,23 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'removebounty',
     aliases: ['rbounty', 'delbounty'],
     description: 'Removes a bounty from a player using your money.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone
+    parameters: [
+        { name: 'amount', type: 'float', description: 'The amount to remove from the bounty.' },
+        { name: 'target', type: 'player', description: 'The player to remove the bounty from. Defaults to yourself.', optional: true }
+    ],
     execute: (player, args) => {
-        let targetPlayer;
-        let amount;
+        const { target, amount } = args;
+        let targetPlayer = player;
 
-        if (args.length === 1) {
-            targetPlayer = player;
-            amount = parseFloat(args[0]);
-        } else if (args.length === 2) {
-            targetPlayer = findPlayerByName(args[0]);
-            if (!targetPlayer) {
-                player.sendMessage(`§cPlayer '${args[0]}' not found.`);
-                return;
-            }
-            amount = parseFloat(args[1]);
-        } else {
-            player.sendMessage('§cUsage: !rbounty [playerName] <amount>');
-            return;
+        if (target && target.length > 0) {
+            targetPlayer = target[0];
         }
 
         if (isNaN(amount) || amount <= 0) {

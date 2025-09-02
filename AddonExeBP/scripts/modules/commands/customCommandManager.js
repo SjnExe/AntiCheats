@@ -1,6 +1,5 @@
 import { system } from '@minecraft/server';
 import {
-    CustomCommandPermissionLevel,
     CustomCommandParamType
 } from '@minecraft/server';
 import { getPlayer } from '../../core/playerDataManager.js';
@@ -151,9 +150,9 @@ class CustomCommandManager {
      */
     translatePermissionLevel(level) {
         if (level > 1000) { // Assuming 1024 is for everyone
-            return CustomCommandPermissionLevel.Any;
+            return 'Any';
         } else {
-            return CustomCommandPermissionLevel.Admin;
+            return 'Admin';
         }
     }
 

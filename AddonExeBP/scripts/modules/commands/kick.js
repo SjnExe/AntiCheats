@@ -1,14 +1,14 @@
-import { commandManager } from './commandManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
+import { customCommandManager } from './customCommandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 import { playSound } from '../../core/utils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'kick',
     description: 'Kicks a player from the server.',
     aliases: ['boot'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    disableSlashCommand: true,
     execute: (player, args) => {
         if (args.length < 1) {
             player.sendMessage('§cUsage: !kick <player> [reason]');
@@ -49,14 +49,13 @@ commandManager.register({
         }
 
         try {
-            // Using a command-based kick for reliability. Player names with spaces must be quoted.
             player.runCommand(`kick "${targetPlayer.name}" ${reason}`);
             player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}. Reason: ${reason}`);
             playSound(player, 'random.orb');
         } catch (error) {
             player.sendMessage(`§cFailed to kick ${targetPlayer.name}. See console for details.`);
             playSound(player, 'note.bass');
-            console.error(`[!kick] Failed to run kick command for ${targetPlayer.name}:`, error);
+            console.error(`[/x:kick] Failed to run kick command for ${targetPlayer.name}:`, error);
         }
     }
 });
