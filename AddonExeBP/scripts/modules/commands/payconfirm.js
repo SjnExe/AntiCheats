@@ -1,12 +1,13 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { world } from '@minecraft/server';
 
-commandManager.register({
+customCommandManager.register({
     name: 'payconfirm',
     description: 'Confirms a pending payment.',
     category: 'Economy',
     permissionLevel: 1024,
+    parameters: [],
     execute: (player, args) => {
         const pendingPayment = economyManager.getPendingPayment(player.id);
 
@@ -28,11 +29,9 @@ commandManager.register({
             player.sendMessage(`§aPayment confirmed. You sent §e$${amount.toFixed(2)}§a to ${targetPlayer.name}.`);
             targetPlayer.sendMessage(`§aYou have received §e$${amount.toFixed(2)}§a from ${player.name}.`);
         } else {
-            // This might happen if the player spent their money after the initial !pay command
             player.sendMessage(`§cPayment failed: ${result.message}`);
         }
 
-        // Clear the pending payment regardless of success or failure
         economyManager.clearPendingPayment(player.id);
     }
 });

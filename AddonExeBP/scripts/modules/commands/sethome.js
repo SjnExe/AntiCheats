@@ -1,13 +1,16 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import * as homesManager from '../../core/homesManager.js';
 import { getConfig } from '../../core/configManager.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'sethome',
     aliases: ['addhome', 'createhome'],
     description: 'Sets a home at your current location.',
     category: 'Home System',
     permissionLevel: 1024, // Everyone
+    parameters: [
+        { name: 'homeName', type: 'string', description: 'The name of the home to set. Defaults to "home".', optional: true }
+    ],
     execute: (player, args) => {
         const config = getConfig();
         if (!config.homes.enabled) {
@@ -15,7 +18,7 @@ commandManager.register({
             return;
         }
 
-        const homeName = args[0] || 'home'; // Default to 'home' if no name is provided
+        const homeName = args.homeName || 'home';
 
         const result = homesManager.setHome(player, homeName);
         player.sendMessage(result.success ? `§a${result.message}` : `§c${result.message}`);

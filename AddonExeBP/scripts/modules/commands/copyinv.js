@@ -1,25 +1,23 @@
-import { commandManager } from './commandManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
+import { customCommandManager } from './customCommandManager.js';
 import { playSound } from '../../core/utils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'copyinv',
     description: "Copies a player's inventory, replacing your own.",
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    parameters: [
+        { name: 'target', type: 'player', description: "The player whose inventory to copy." }
+    ],
     execute: (player, args) => {
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !copyinv <playerName>');
+        const { target } = args;
+
+        if (!target || target.length === 0) {
+            player.sendMessage('§cPlayer not found.');
             return;
         }
 
-        const targetName = args[0];
-        const targetPlayer = findPlayerByName(targetName);
-
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found.`);
-            return;
-        }
+        const targetPlayer = target[0];
 
         if (player.id === targetPlayer.id) {
             player.sendMessage('§cYou cannot copy your own inventory.');
@@ -44,7 +42,7 @@ commandManager.register({
             playSound(player, 'random.orb');
         } catch (e) {
             player.sendMessage('§cFailed to copy inventory.');
-            console.error(`[CopyInv] Error: ${e.stack}`);
+            console.error(`[/x:copyinv] Error: ${e.stack}`);
         }
     }
 });

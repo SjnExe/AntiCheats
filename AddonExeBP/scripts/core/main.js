@@ -3,7 +3,7 @@ import { loadConfig, getConfig, updateConfig } from './configManager.js';
 import * as dataManager from './dataManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
-import { commandManager } from '../modules/commands/commandManager.js';
+import { customCommandManager } from '../modules/commands/customCommandManager.js';
 import { getPunishment, loadPunishments, clearExpiredPunishments } from './punishmentManager.js';
 import { loadReports, clearOldResolvedReports } from './reportManager.js';
 import { loadCooldowns, clearExpiredCooldowns } from './cooldownManager.js';
@@ -12,6 +12,7 @@ import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
 import * as playerCache from './playerCache.js';
 import { startRestart } from './restartManager.js';
+import '../modules/commands/index.js';
 
 /**
  * Checks a player's rank and updates it if necessary.
@@ -100,13 +101,6 @@ function initializeAddon() {
     initializeManagers();
     checkConfiguration();
 
-    // Dynamically load command modules
-    import('../modules/commands/index.js').then(() => {
-        debugLog('[AddonExe] Commands loaded successfully.');
-    }).catch(error => {
-        console.error(`[AddonExe] Failed to load commands: ${error.stack}`);
-    });
-
     startSystemTimers();
     debugLog('[AddonExe] Addon initialized successfully.');
 }
@@ -127,7 +121,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
         return;
     }
 
-    const wasCommand = commandManager.handleCommand(eventData, getConfig());
+    const wasCommand = customCommandManager.handleChatCommand(eventData);
     if (wasCommand) return;
 
     eventData.cancel = true;

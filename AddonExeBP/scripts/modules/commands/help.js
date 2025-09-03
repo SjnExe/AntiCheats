@@ -1,16 +1,11 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
-import { getConfig } from '../../core/configManager.js';
 
 function showCategorizedHelp(player, userPermissionLevel) {
-    const config = getConfig();
     const categorizedCommands = {};
 
-    // Dynamically categorize all registered commands that the player has access to
-    for (const cmd of commandManager.commands.values()) {
+    for (const cmd of customCommandManager.commands) {
         if (userPermissionLevel > cmd.permissionLevel) continue;
-        const cmdSetting = config.commandSettings?.[cmd.name];
-        if (cmdSetting && cmdSetting.enabled === false) continue;
 
         const category = cmd.category || 'General';
         if (!categorizedCommands[category]) {
@@ -19,7 +14,6 @@ function showCategorizedHelp(player, userPermissionLevel) {
         categorizedCommands[category].push(cmd);
     }
 
-    // Define the order in which categories should appear
     const categoryOrder = [
         'Administration',
         'Moderation',
@@ -37,7 +31,6 @@ function showCategorizedHelp(player, userPermissionLevel) {
 
         if (commands && commands.length > 0) {
             commandsShown = true;
-            // Use a distinct color for the category headers
             helpMessage += `\n§l§e--- ${categoryName} ---§r`;
             for (const cmd of commands.sort((a, b) => a.name.localeCompare(b.name))) {
                 helpMessage += `\n §b!${cmd.name}§r: ${cmd.description}`;
@@ -54,7 +47,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
 }
 
 function showSpecificHelp(player, commandName) {
-    const cmd = commandManager.commands.get(commandName) || commandManager.commands.get(commandManager.aliases.get(commandName));
+    const cmd = customCommandManager.commands.find(c => c.name === commandName || (c.aliases && c.aliases.includes(commandName)));
 
     if (!cmd) {
         player.sendMessage(`§cUnknown command: '${commandName}'.`);
@@ -72,8 +65,9 @@ function showSpecificHelp(player, commandName) {
     player.sendMessage(helpMessage);
 }
 
-commandManager.register({
+customCommandManager.register({
     name: 'help',
+    slashName: 'xhelp',
     aliases: ['?', 'h'],
     description: 'Displays a list of available commands or help for a specific command.',
     category: 'General',

@@ -1,16 +1,19 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { getConfig, updateConfig } from '../../core/configManager.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'chattoconsole',
     aliases: ['ctc', 'chat'],
     description: 'Toggles or sets whether player chat is logged to the server console.',
     category: 'Administration',
     permissionLevel: 1, // Admins only
+    parameters: [
+        { name: 'state', type: 'string', description: 'Set to "true" or "on" to enable, "false" or "off" to disable. Toggles if omitted.', optional: true }
+    ],
     execute: (player, args) => {
         const config = getConfig();
         const chatConfig = config.chat || { logToConsole: false };
-        const arg = args[0]?.toLowerCase();
+        const arg = args.state?.toLowerCase();
 
         let newValue;
 
@@ -19,7 +22,6 @@ commandManager.register({
         } else if (arg === 'false' || arg === 'off') {
             newValue = false;
         } else {
-            // No valid argument, so toggle the current setting
             newValue = !chatConfig.logToConsole;
         }
 
@@ -28,7 +30,6 @@ commandManager.register({
             return;
         }
 
-        // Update the setting
         chatConfig.logToConsole = newValue;
         updateConfig('chat', chatConfig);
 

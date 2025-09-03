@@ -1,13 +1,14 @@
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import { updateConfig } from '../../core/configManager.js';
 import { playSound } from '../../core/utils.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'setspawn',
     aliases: ['setworldspawn'],
     description: 'Sets the server\'s spawn location to your current position.',
     category: 'Administration',
     permissionLevel: 1, // Admins only
+    parameters: [],
     execute: (player, args) => {
         const location = {
             x: player.location.x,

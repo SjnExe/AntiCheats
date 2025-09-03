@@ -1,14 +1,15 @@
 import { world } from '@minecraft/server';
-import { commandManager } from './commandManager.js';
+import { customCommandManager } from './customCommandManager.js';
 import * as playerDataManager from '../../core/playerDataManager.js';
 import { getConfig } from '../../core/configManager.js';
 
-commandManager.register({
+customCommandManager.register({
     name: 'baltop',
     aliases: ['topbal', 'rich'],
     description: 'Shows the players with the highest balances on the server.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone
+    parameters: [],
     execute: (player, args) => {
         const config = getConfig();
         if (!config.economy.enabled) {

@@ -60,6 +60,9 @@ Below are links to specific sections particularly relevant for Add-On developmen
   - [https://github.com/Mojang/minecraft-creator-tools](https://github.com/Mojang/minecraft-creator-tools)
 - **Microsoft Minecraft Samples**:
   - [https://github.com/microsoft/minecraft-samples](https://github.com/microsoft/minecraft-samples)
+- **Microsoft Minecraft Scripting Samples**:
+  - [https://github.com/microsoft/minecraft-scripting-samples](https://github.com/microsoft/minecraft-scripting-samples)
+  - Contains many useful examples, including for custom commands.
 - **Mojang Minecraft Scripting Libraries**:
   - [https://github.com/Mojang/minecraft-scripting-libraries](https://github.com/Mojang/minecraft-scripting-libraries)
 
