@@ -66,7 +66,7 @@ function showSpecificHelp(player, commandName) {
 }
 
 customCommandManager.register({
-    name: 'help',
+    name: 'xhelp',
     aliases: ['?', 'h'],
     description: 'Displays a list of available commands or help for a specific command.',
     category: 'General',

@@ -55,7 +55,7 @@ class CustomCommandManager {
      * @private
      */
     executeCommand(command, commandExecuteData) {
-        console.log(`[AddonExe-Debug] Command '${command.name}' execute data: ${JSON.stringify(commandExecuteData, null, 2)}`);
+        console.log(`[AddonExe-Debug] Command '${command.name}' data keys: ${Object.keys(commandExecuteData).join(', ')}`);
         const player = commandExecuteData.sender || commandExecuteData.source;
 
         if (!player) {
