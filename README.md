@@ -147,6 +147,12 @@ For developers, the addon includes a basic performance profiling feature that ca
 
 Contributions are highly welcome and appreciated! Help us make this addon even better.
 
+**Project Philosophy:** Our goal is to keep this addon clean, universal, and easy to maintain. A planned future feature is full internationalization (i18n) support.
+
+**Review Process:** All contributions will be reviewed by SjnExe or Jules AI assistant to ensure they align with the project's goals and coding standards.
+
+**Crediting:** Please note that contributions are generally not credited directly in the codebase. Significant contributions will be acknowledged in the project's changelog or a dedicated contributors file.
+
 - **Fork & Branch:** Create your own fork and make changes in a dedicated branch.
 - **Code Style:** Follow our 📄 [**Coding Style Guide**](Dev/CodingStyle.md).
 - **Test Thoroughly:** Ensure your changes are stable and don't introduce new issues.
@@ -159,16 +165,24 @@ Looking for a place to start? Check out our [**issues tab**](https://github.com/
 
 ---
 
-## ❤️ Our Valued Contributors
+## ❤️ Acknowledgements & Contributors
 
-This project is made possible by the community and all the developers who dedicate their time to contribute. We are incredibly grateful for every contribution, from reporting issues and suggesting new ideas to writing code and improving documentation.
+This addon was developed by SjnExe with significant assistance from Jules, an AI software engineer.
+
+This project is also made possible by the community and all the developers who dedicate their time to contribute. We are incredibly grateful for every contribution, from reporting issues and suggesting new ideas to writing code and improving documentation.
 
 ➡️ You can see a list of code contributors on [**GitHub**](https://github.com/SjnExe/AddonExe/graphs/contributors).
 
 ---
 <div align="center">
+
+## ⚖️ License
   
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+In the spirit of open source, you are free to use, modify, and distribute this code with or without credit to SjnExe.
 </div>
 Thank you for using AddonExe!
 We hope it helps create a fairer and more enjoyable Minecraft experience for your community.
