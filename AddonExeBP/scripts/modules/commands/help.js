@@ -1,10 +1,10 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 
 function showCategorizedHelp(player, userPermissionLevel) {
     const categorizedCommands = {};
 
-    for (const cmd of customCommandManager.commands) {
+    for (const cmd of commandManager.commands) {
         if (userPermissionLevel > cmd.permissionLevel) continue;
 
         const category = cmd.category || 'General';
@@ -47,7 +47,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
 }
 
 function showSpecificHelp(player, commandName) {
-    const cmd = customCommandManager.commands.find(c => c.name === commandName || (c.aliases && c.aliases.includes(commandName)));
+    const cmd = commandManager.commands.find(c => c.name === commandName || (c.aliases && c.aliases.includes(commandName)));
 
     if (!cmd) {
         player.sendMessage(`§cUnknown command: '${commandName}'.`);
@@ -65,7 +65,7 @@ function showSpecificHelp(player, commandName) {
     player.sendMessage(helpMessage);
 }
 
-customCommandManager.register({
+commandManager.register({
     name: 'help',
     slashName: 'xhelp',
     aliases: ['?', 'h'],

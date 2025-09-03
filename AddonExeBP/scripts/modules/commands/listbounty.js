@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getPlayer, getAllPlayerNameIdMap, loadPlayerData } from '../../core/playerDataManager.js';
 import { getPlayerFromCache } from '../../core/playerCache.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'listbounty',
     aliases: ['lbounty', 'bounties', 'bountylist'],
     description: 'Lists all active bounties or a specific player\'s bounty.',

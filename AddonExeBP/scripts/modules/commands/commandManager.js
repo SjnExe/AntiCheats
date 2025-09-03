@@ -9,7 +9,7 @@ import { getConfig } from '../../core/configManager.js';
 /**
  * Manages the registration and execution of both slash and chat commands.
  */
-class CustomCommandManager {
+class CommandManager {
     constructor() {
         this.commands = [];
         this.aliases = new Map();
@@ -70,7 +70,7 @@ class CustomCommandManager {
                     command.execute(player, parsedArgs);
                 } catch (error) {
                     if (getConfig().debug) {
-                        console.error(`[CustomCommandManager] Error executing slash command '${name}': ${error.stack}`);
+                        console.error(`[CommandManager] Error executing slash command '${name}': ${error.stack}`);
                     }
                     player.sendMessage('§cAn unexpected error occurred while running this command.');
                 }
@@ -85,7 +85,7 @@ class CustomCommandManager {
                 // Do nothing, this is expected for some aliases.
             } else {
                 if (getConfig().debug) {
-                    console.error(`[CustomCommandManager] Failed to register slash command '${name}':`, e);
+                    console.error(`[CommandManager] Failed to register slash command '${name}':`, e);
                 }
             }
         }
@@ -164,7 +164,7 @@ class CustomCommandManager {
                 command.execute(player, parsedArgs);
             } catch (error) {
                 if (getConfig().debug) {
-                    console.error(`[CustomCommandManager] Error executing chat command '${command.name}': ${error.stack}`);
+                    console.error(`[CommandManager] Error executing chat command '${command.name}': ${error.stack}`);
                 }
                 player.sendMessage('§cAn unexpected error occurred while running this command.');
             }
@@ -195,7 +195,7 @@ class CustomCommandManager {
         const type = paramTypeMap[param.type.toLowerCase()];
 
         if (!type) {
-            console.warn(`[CustomCommandManager] Unknown parameter type '${param.type}' for parameter '${param.name}'. Defaulting to String.`);
+            console.warn(`[CommandManager] Unknown parameter type '${param.type}' for parameter '${param.name}'. Defaulting to String.`);
             return {
                 name: param.name,
                 type: CustomCommandParamType.String,
@@ -238,4 +238,4 @@ class CustomCommandManager {
     }
 }
 
-export const customCommandManager = new CustomCommandManager();
+export const commandManager = new CommandManager();

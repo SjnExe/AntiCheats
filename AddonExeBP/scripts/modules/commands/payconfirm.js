@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { world } from '@minecraft/server';
 
-customCommandManager.register({
+commandManager.register({
     name: 'payconfirm',
     description: 'Confirms a pending payment.',
     category: 'Economy',

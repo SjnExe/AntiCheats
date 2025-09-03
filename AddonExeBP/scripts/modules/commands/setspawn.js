@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { updateConfig } from '../../core/configManager.js';
 import { playSound } from '../../core/utils.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'setspawn',
     aliases: ['setworldspawn'],
     description: 'Sets the server\'s spawn location to your current position.',

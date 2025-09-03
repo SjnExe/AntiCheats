@@ -1,7 +1,7 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { playSound } from '../../core/utils.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'copyinv',
     description: "Copies a player's inventory, replacing your own.",
     category: 'Moderation',

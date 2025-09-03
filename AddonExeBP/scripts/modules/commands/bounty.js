@@ -1,4 +1,4 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
@@ -49,7 +49,7 @@ function placeBounty(player, targetPlayer, amount) {
     }
 }
 
-customCommandManager.register({
+commandManager.register({
     name: 'bounty',
     description: 'Place a bounty on a player.',
     aliases: ['setbounty'],

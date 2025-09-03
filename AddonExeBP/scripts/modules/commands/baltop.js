@@ -1,9 +1,9 @@
 import { world } from '@minecraft/server';
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as playerDataManager from '../../core/playerDataManager.js';
 import { getConfig } from '../../core/configManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'baltop',
     aliases: ['topbal', 'rich'],
     description: 'Shows the players with the highest balances on the server.',

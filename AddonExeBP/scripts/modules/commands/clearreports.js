@@ -1,7 +1,7 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { clearAllReports } from '../../core/reportManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'clearreports',
     description: 'Clears all active reports.',
     category: 'Moderation',

@@ -1,7 +1,7 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { world, system } from '@minecraft/server';
 
-customCommandManager.register({
+commandManager.register({
     name: 'status',
     description: 'Displays the current server status.',
     category: 'General',

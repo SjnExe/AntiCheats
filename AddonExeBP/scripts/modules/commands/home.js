@@ -1,11 +1,11 @@
 import { world } from '@minecraft/server';
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as homesManager from '../../core/homesManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 import { startTeleportWarmup } from '../../core/utils.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'home',
     description: 'Teleports you to one of your set homes.',
     category: 'Home System',

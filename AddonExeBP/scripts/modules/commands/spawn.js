@@ -1,10 +1,10 @@
 import { world } from '@minecraft/server';
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 import { playSound, startTeleportWarmup } from '../../core/utils.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'spawn',
     description: 'Teleports you to the server spawn point.',
     category: 'General',

@@ -1,7 +1,7 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { updateConfig } from '../../core/configManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'debug',
     description: 'Toggles the debug logging mode.',
     category: 'Administration',

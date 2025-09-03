@@ -1,9 +1,9 @@
 import { world } from '@minecraft/server';
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { updateAllPlayerRanks } from '../../core/main.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'admin',
     description: 'Grants a player the admin tag.',
     category: 'Administration',

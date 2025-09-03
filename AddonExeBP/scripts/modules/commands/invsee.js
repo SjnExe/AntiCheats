@@ -1,6 +1,6 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'invsee',
     description: "Views a player's inventory in chat.",
     category: 'Moderation',

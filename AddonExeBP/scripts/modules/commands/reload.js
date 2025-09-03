@@ -1,10 +1,10 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { forceReloadOwnerNameFromFile, getConfig } from '../../core/configManager.js';
 import { updatePlayerRank } from '../../core/main.js';
 import { findPlayerByName } from '../../core/playerCache.js';
 import { debugLog } from '../../core/logger.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'reload',
     description: 'Reloads the addon configuration from storage and updates player ranks.',
     category: 'Administration',

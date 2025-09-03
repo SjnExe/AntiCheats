@@ -1,7 +1,7 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as reportManager from '../../core/reportManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'report',
     description: 'Reports a player for a specific reason.',
     category: 'General',

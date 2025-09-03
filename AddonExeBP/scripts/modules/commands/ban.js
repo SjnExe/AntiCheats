@@ -1,4 +1,4 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getPlayer, getPlayerIdByName } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSoundFromConfig } from '../../core/utils.js';
@@ -51,7 +51,7 @@ function banPlayer(player, targetPlayer, duration, reason) {
     }
 }
 
-customCommandManager.register({
+commandManager.register({
     name: 'ban',
     description: 'Bans a player for a specified duration with a reason.',
     category: 'Moderation',
@@ -95,7 +95,7 @@ customCommandManager.register({
     }
 });
 
-customCommandManager.register({
+commandManager.register({
     name: 'unban',
     aliases: ['pardon'],
     description: 'Unbans a player.',
