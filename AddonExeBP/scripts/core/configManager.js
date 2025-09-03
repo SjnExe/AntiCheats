@@ -12,8 +12,12 @@ let lastLoadedConfig = null;
 /**
  * Loads the addon's configurations from world dynamic properties.
  * This should only be called once at startup from main.js.
+ * @returns {boolean} True if this is the first time the addon is being initialized.
  */
 export function loadConfig() {
+    const initialConfig = deepMerge({}, defaultConfig);
+    let isFirstInit = false;
+
     // Load current config
     const currentConfigStr = world.getDynamicProperty(currentConfigKey);
     if (currentConfigStr) {
@@ -21,10 +25,11 @@ export function loadConfig() {
             currentConfig = JSON.parse(currentConfigStr);
         } catch (e) {
             errorLog('[ConfigManager] Failed to parse current config from world property. Initializing from default.', e);
-            currentConfig = { ...defaultConfig };
+            currentConfig = deepMerge({}, initialConfig);
         }
     } else {
-        currentConfig = { ...defaultConfig };
+        isFirstInit = true;
+        currentConfig = deepMerge({}, initialConfig);
     }
 
     // Load last loaded config
@@ -34,20 +39,21 @@ export function loadConfig() {
             lastLoadedConfig = JSON.parse(lastLoadedConfigStr);
         } catch (e) {
             errorLog('[ConfigManager] Failed to parse last loaded config from world property. Initializing from default.', e);
-            lastLoadedConfig = { ...defaultConfig };
+            lastLoadedConfig = deepMerge({}, initialConfig);
         }
     } else {
-        lastLoadedConfig = { ...defaultConfig };
+        lastLoadedConfig = deepMerge({}, initialConfig);
     }
 
     // Deep merge with default config to ensure new properties from updates are included
-    currentConfig = deepMerge({ ...defaultConfig }, currentConfig);
-    lastLoadedConfig = deepMerge({ ...defaultConfig }, lastLoadedConfig);
-
+    currentConfig = deepMerge(deepMerge({}, initialConfig), currentConfig);
+    lastLoadedConfig = deepMerge(deepMerge({}, initialConfig), lastLoadedConfig);
 
     // Save back to ensure they are persisted for the first time
     saveCurrentConfig();
     saveLastLoadedConfig();
+
+    return isFirstInit;
 }
 
 /**
@@ -97,15 +103,15 @@ export function updateConfig(key, value) {
  * Reloads the configuration based on the user's specified logic.
  */
 export function reloadConfig() {
-    const storageConfig = { ...defaultConfig }; // Fresh copy from the file
+    const storageConfig = deepMerge({}, defaultConfig); // Fresh deep copy from the file
 
     for (const key in storageConfig) {
         if (!deepEqual(lastLoadedConfig[key], storageConfig[key])) {
-            currentConfig[key] = storageConfig[key];
+            currentConfig[key] = deepMerge({}, storageConfig[key]);
         }
     }
 
-    lastLoadedConfig = { ...storageConfig };
+    lastLoadedConfig = deepMerge({}, storageConfig);
 
     saveCurrentConfig();
     saveLastLoadedConfig();

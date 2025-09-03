@@ -6,6 +6,7 @@ import { errorLog } from '../../core/errorLogger.js';
 const commandFiles = [
     // General
     'help.js',
+    'deathcoords.js',
     'panel.js',
     'rules.js',
     'status.js',

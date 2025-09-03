@@ -1,5 +1,5 @@
 import { world, system } from '@minecraft/server';
-import { loadConfig, getConfig, updateConfig } from './configManager.js';
+import { loadConfig, getConfig, updateConfig, reloadConfig } from './configManager.js';
 import * as dataManager from './dataManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
@@ -15,8 +15,6 @@ import * as playerCache from './playerCache.js';
 import { startRestart } from './restartManager.js';
 import { formatString } from './utils.js';
 import '../modules/commands/index.js';
-
-const lastDeathLocations = new Map();
 
 /**
  * Checks a player's rank and updates it if necessary.
@@ -99,7 +97,10 @@ function startSystemTimers() {
  */
 function initializeAddon() {
     debugLog('[AddonExe] Initializing addon...');
-    loadConfig();
+    const isFirstInit = loadConfig();
+    if (!isFirstInit) {
+        reloadConfig();
+    }
     dataManager.initializeDataManager();
     loadPersistentData();
     initializeManagers();
@@ -187,7 +188,7 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
                 websiteLink: config.serverInfo.websiteLink
             };
             const welcomeMessage = formatString(config.playerInfo.welcomeMessage, context);
-            world.sendMessage(welcomeMessage);
+            player.sendMessage(welcomeMessage);
         }
     }
 
@@ -196,19 +197,22 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         playerCache.addAdminToXrayCache(player.id);
     }
 
-    // Check for a recent death
-    if (lastDeathLocations.has(player.id)) {
-        const location = lastDeathLocations.get(player.id);
+    // Check for a death location to message the player
+    if (pData.lastDeathLocation) {
+        const location = pData.lastDeathLocation;
         const config = getConfig();
         const context = {
             x: Math.floor(location.x),
             y: Math.floor(location.y),
             z: Math.floor(location.z),
-            dimensionId: player.dimension.id.replace('minecraft:', '')
+            dimensionId: location.dimensionId.replace('minecraft:', '')
         };
         const message = formatString(config.playerInfo.deathCoordsMessage, context);
         player.sendMessage(message);
-        lastDeathLocations.delete(player.id);
+
+        // Clear the death location so it's not shown again
+        pData.lastDeathLocation = null;
+        // No need to save immediately, it will be saved on next leave or manual save.
     }
 });
 
@@ -240,7 +244,16 @@ world.afterEvents.entityDie?.subscribe((event) => {
     const config = getConfig();
 
     if (config.playerInfo.enableDeathCoords) {
-        lastDeathLocations.set(player.id, player.location);
+        const pData = playerDataManager.getPlayer(player.id);
+        if (pData) {
+            pData.lastDeathLocation = {
+                x: player.location.x,
+                y: player.location.y,
+                z: player.location.z,
+                dimensionId: player.dimension.id
+            };
+            // The data will be saved on playerLeave event
+        }
     }
 });
 

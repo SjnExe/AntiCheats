@@ -150,10 +150,10 @@ export function acceptRequest(player) {
     if (request.type === 'tpa') {
         startTeleportWarmup(sourcePlayer, warmupSeconds, teleportLogic, `TPA to ${targetPlayer.name}`);
         // The utility only messages the player being teleported, so we add a message for the other player.
-        targetPlayer.sendMessage(`§a${sourcePlayer.name} is teleporting to you in ${warmupSeconds} seconds.`);
+        targetPlayer.sendMessage(`§aTeleport accepted. ${sourcePlayer.name} is teleporting to you.`);
     } else { // 'tpahere'
         startTeleportWarmup(targetPlayer, warmupSeconds, teleportLogic, `TPA from ${sourcePlayer.name}`);
-        sourcePlayer.sendMessage(`§a${targetPlayer.name} is teleporting to you in ${warmupSeconds} seconds.`);
+        sourcePlayer.sendMessage(`§aTeleport accepted. ${targetPlayer.name} is teleporting to you.`);
     }
 }
 

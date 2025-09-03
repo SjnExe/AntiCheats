@@ -16,6 +16,7 @@
  * @property {number} bounty
  * @property {Object.<string, number>} bounties
  * @property {boolean} xrayNotifications
+ * @property {HomeLocation | null} lastDeathLocation
  */
 
 import { getConfig } from './configManager.js';
@@ -133,7 +134,8 @@ export function getOrCreatePlayer(player) {
         kitCooldowns: {},
         bounty: config.playerDefaults.bounty,
         bounties: {},
-        xrayNotifications: config.playerDefaults.xrayNotifications
+        xrayNotifications: config.playerDefaults.xrayNotifications,
+        lastDeathLocation: null
     };
     activePlayerData.set(player.id, newPlayerData);
     savePlayerData(player.id); // Save the new player's data immediately
