@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
 import { addAdminToXrayCache, removeAdminFromXrayCache } from '../../core/playerCache.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'xraynotify',
     description: 'Toggles X-Ray notifications for yourself.',
     category: '§4Administration',

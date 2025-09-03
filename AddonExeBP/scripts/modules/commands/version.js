@@ -1,7 +1,7 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getConfig } from '../../core/configManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'version',
     aliases: ['ver'],
     description: 'Displays the current version of the addon.',

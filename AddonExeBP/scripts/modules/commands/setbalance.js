@@ -1,7 +1,7 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'setbalance',
     aliases: ['setbal', 'setmoney'],
     description: 'Sets a player\'s balance to a specific amount. (Admin and above)',

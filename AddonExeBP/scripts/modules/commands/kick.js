@@ -1,4 +1,4 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 import { playSound } from '../../core/utils.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
@@ -37,7 +37,7 @@ function kickPlayer(player, targetPlayer, reason) {
     }
 }
 
-customCommandManager.register({
+commandManager.register({
     name: 'kick',
     description: 'Kicks a player from the server.',
     aliases: ['boot'],

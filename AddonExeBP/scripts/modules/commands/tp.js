@@ -1,7 +1,7 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'tp',
     aliases: ['teleport'],
     description: 'Teleports a player to another player or to coordinates.',

@@ -3,7 +3,7 @@ import { loadConfig, getConfig, updateConfig } from './configManager.js';
 import * as dataManager from './dataManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
-import { customCommandManager } from '../modules/commands/customCommandManager.js';
+import { commandManager } from '../modules/commands/commandManager.js';
 import { getPunishment, loadPunishments, clearExpiredPunishments } from './punishmentManager.js';
 import { loadReports, clearOldResolvedReports } from './reportManager.js';
 import { loadCooldowns, clearExpiredCooldowns } from './cooldownManager.js';
@@ -121,7 +121,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
         return;
     }
 
-    const wasCommand = customCommandManager.handleChatCommand(eventData);
+    const wasCommand = commandManager.handleChatCommand(eventData);
     if (wasCommand) return;
 
     eventData.cancel = true;

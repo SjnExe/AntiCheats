@@ -1,4 +1,4 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getPlayer, getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSound } from '../../core/utils.js';
@@ -41,7 +41,7 @@ function mutePlayer(player, targetPlayer, duration, reason) {
     playSound(player, 'random.orb');
 }
 
-customCommandManager.register({
+commandManager.register({
     name: 'mute',
     description: 'Mutes a player for a specified duration with a reason.',
     aliases: ['silence'],
@@ -85,7 +85,7 @@ customCommandManager.register({
     }
 });
 
-customCommandManager.register({
+commandManager.register({
     name: 'unmute',
     description: 'Unmutes a player.',
     aliases: ['um'],

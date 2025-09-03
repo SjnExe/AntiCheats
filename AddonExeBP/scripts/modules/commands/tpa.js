@@ -1,9 +1,9 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as tpaManager from '../../core/tpaManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'tpa',
     description: 'Sends a request to teleport to another player.',
     aliases: ['tprequest'],

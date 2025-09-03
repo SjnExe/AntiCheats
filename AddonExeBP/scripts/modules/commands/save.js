@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { saveAllData } from '../../core/dataManager.js';
 import { playSoundFromConfig } from '../../core/utils.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'save',
     description: 'Manually saves all server data to disk.',
     category: 'Administration',

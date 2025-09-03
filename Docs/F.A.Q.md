@@ -11,7 +11,7 @@ Changing the server owner is a two-step process that requires editing a file and
     -   Save the file and start your server.
 
 2.  **Reload the Config In-Game:**
-    -   Once the server is online, have an admin or operator run the command `!reload`.
+    -   Once the server is online, have an admin or operator run the command `/xreload`.
     -   This will sync the change from the file, and the new owner will receive their rank.
 
 For more details, see the [Configuration Guide](ConfigurationGuide.md#1-set-the-server-owners).
@@ -22,7 +22,7 @@ For more details, see the [Configuration Guide](ConfigurationGuide.md#1-set-the-
 
 If you have console access or are an operator in-game, you can grant a player the Admin rank. The Admin rank is assigned to any player who has the `admin` tag (this tag can be changed in `config.js`).
 
-Simply give the player the `admin` tag. Their permissions will be granted **immediately**. There is no need to restart the server or use any `!reload` commands.
+Simply give the player the `admin` tag. Their permissions will be granted **immediately**. There is no need to restart the server or use any `/xreload` commands.
 
 -   **From the Server Console:**
     ```

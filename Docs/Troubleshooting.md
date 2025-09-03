@@ -23,7 +23,7 @@ If your issue isn't listed in the F.A.Q. or this guide, please consider [reporti
 
 - **Behavior Pack Order:** Ensure `AddonExeBP` is at the **VERY TOP** of your Behavior Pack list in your world settings. This is the most common cause of issues.
 - **Resource Pack Applied:** Make sure `AddonExeRP` is also applied in the Resource Pack section of your world settings.
-- **"Beta APIs" Enabled:** In your World Settings under "Experiments", ensure the **"Beta APIs"** toggle is turned ON. The addon will not work without it.
+- **Enable Cheats & Beta APIs:** In your World Settings, ensure both **"Activate Cheats"** (under the "Game" tab) and **"Beta APIs"** (under the "Experiments" tab) are turned ON.
 - **Correct Files:** Double-check you've downloaded the latest `.mcaddon` file from the official [GitHub Releases](https://github.com/SjnExe/AddonExe/releases) and applied both packs from it.
 
 **Problem: World fails to load or crashes on load after adding AddonExe.**

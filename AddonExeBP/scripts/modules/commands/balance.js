@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { getConfig } from '../../core/configManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'balance',
     aliases: ['bal', 'money'],
     description: 'Checks your or another player\'s balance.',

@@ -1,7 +1,7 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getConfig, updateConfig } from '../../core/configManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'chattoconsole',
     aliases: ['ctc', 'chat'],
     description: 'Toggles or sets whether player chat is logged to the server console.',

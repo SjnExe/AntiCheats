@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getOutgoingRequest, getIncomingRequest } from '../../core/tpaManager.js';
 import { playSound } from '../../core/utils.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'tpastatus',
     description: 'Checks the status of your outgoing and incoming TPA requests.',
     category: 'TPA System',

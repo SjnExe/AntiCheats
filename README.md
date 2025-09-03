@@ -18,6 +18,10 @@
 >
 > Pre-releases are intended for development and testing purposes only. They may be unstable, contain bugs, or cause unintended issues. For the best experience, please use the [latest stable release](https://github.com/SjnExe/AddonExe/releases/latest).
 
+> [!NOTE]
+> **Always Use the Latest Version**
+> This addon is designed for and tested on the **latest stable version of Minecraft Bedrock Edition**. It is intended for servers and realms that are kept up-to-date. Support for older versions of Minecraft is not maintained.
+
 ---
 
 <div align="center">
@@ -33,7 +37,7 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 
 - **Scripting Power:** Built entirely with the Minecraft Scripting API, offering flexibility and complex detection logic not always possible with traditional methods.
 - **Comprehensive Detection (Coming Soon):** While currently a powerful moderation tool, a full suite of cheat detections is in active development.
-- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`!panel`) and extensive text commands. The `!ui` command is a convenient alias. Features a detailed Player Management panel with sorting, role display, and a wide array of actions.
+- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`/panel`) and extensive slash commands. Most commands also have a chat-based fallback (e.g. `!panel`).
 - **Highly Customizable:** Fine-tune almost every aspect, from feature toggles to command permissions, to perfectly suit your server's needs.
 - **Active Development:** Continuously updated with new features, improvements, and compatibility for the latest Minecraft versions.
 - **Open & Documented:** With clear documentation and an open codebase, understand how it works and even contribute!
@@ -46,13 +50,13 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 This addon is packed with features to keep your server clean:
 
 - 🛠️ **Powerful Admin & Moderation Tools:**
-  - A universal, dynamic in-game UI panel that shows each player only the buttons they are permitted to see. The panel item can be crafted by anyone, or spawned directly with the admin-only `!panel` (or `!ui`) command.
+  - A universal, dynamic in-game UI panel that shows each player only the buttons they are permitted to see. The panel item can be crafted by anyone, or spawned directly with the admin-only `/panel` command.
   - **Enhanced Player Management Panel:**
     - View online players, sorted by rank and name.
     - Player names are clearly marked with `(Owner)`, `(Admin)`, and `(You)` suffixes.
     - Perform a wide range of actions: Kick, Ban/Unban, Mute/Unmute, Freeze, View/Clear Inventory, Teleport.
-  - **New Commands:** `!clear` (clear inventory), `!ecwipe` (wipe ender chest), `!invsee` (view inventory).
-  - Extensive text commands for all administrative functions (Note: the `!` prefix is configurable).
+  - **New Commands:** `/clear` (clear inventory), `/ecwipe` (wipe ender chest), `/invsee` (view inventory).
+  - Extensive slash commands for all administrative functions (Note: a `!` prefix is available as a fallback).
 - 💾 **Persistent Player Data Management:**
   - Mutes and bans are saved across player sessions using dynamic properties.
 - ⚙️ **Highly Configurable System:**
@@ -82,27 +86,28 @@ We recommend the following manual installation method, as it makes future config
 2.  **Extract the Packs (Recommended Method):**
     - Do **not** open the `.mcaddon` file directly. Instead, rename it to end in `.zip` (e.g., `AddonExe.mcaddon` -> `AddonExe.zip`).
     - Unzip the file. Inside, you will find two folders: `AddonExeBP` (the Behavior Pack) and `AddonExeRP` (the Resource Pack).
-    - Move these two folders into your Minecraft's development packs folders (`development_behavior_packs` and `development_resource_packs`).
+    - Move these two folders into your Minecraft's `behavior_packs` and `resource_packs` folders, respectively.
     > **Why this method?** Installing the folders directly makes it simple to find and edit the `config.js` file later. Installing a sealed `.mcpack` or `.mcaddon` makes configuration much more difficult.
 3.  **Apply to Your World:**
     - Open Minecraft and go to your world's settings.
     - Apply both `AddonExeBP` and `AddonExeRP` to your world.
-4.  **Enable Beta APIs (CRITICAL!):**
-    - In your world settings, go to the "Experiments" section.
-    - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function without this setting enabled.
+4.  **Enable World Settings (CRITICAL!):**
+    - In your world settings, go to the "Game" section and enable **"Activate Cheats"**. This is required for slash commands to work.
+    - Next, go to the "Experiments" section and **enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function without this setting enabled.
 5.  **Prioritize:** Ensure `AddonExeBP` is at the **TOP** of your behavior pack list in the world settings. This is crucial for AddonExe to function correctly.
 6.  **👑 Set Owner(s) (CRUCIAL!):**
-    - Now that you've installed the folders, navigate to `development_behavior_packs/AddonExeBP/scripts/` and open `config.js` in a text editor.
+    - Now that you've installed the folders, navigate to `behavior_packs/AddonExeBP/scripts/` and open `config.js` in a text editor.
     - Find the `ownerPlayerNames` setting.
     - Add your **exact** in-game name (case-sensitive) to the array. You can add multiple owner names.
       ```javascript
       // Example in AddonExeBP/scripts/config.js
       ownerPlayerNames: ['YourNameHere', 'AnotherOwnerName'],
       ```
-    - **Failure to set at least one owner will result in no player having administrative permissions.**
-7.  **🎮 Explore:** Join your world and open the Admin UI. Admins can get the panel item directly by typing `!panel` or `!ui`. Any player can also craft the item using a single stick.
+    - To apply changes to the owner list on a live server, you must use the `/xreload` command after saving the file.
+    - **Note:** Failure to set an owner will not lock you out. Admin permissions can still be granted via the `/function admin` command or by giving a player the `admin` tag.
+7.  **🎮 Explore:** Join your world and open the Admin UI. Admins can get the panel item directly by typing `/panel`. Any player can also craft the item using a single stick.
 8.  **🔧 Configure (Optional but Recommended):**
-    - Review `AddonExeBP/scripts/config.js` for other core settings (like the command `prefix`).
+    - Review `AddonExeBP/scripts/config.js` for other core settings (like the chat command `prefix`).
     - For detailed setup and advanced options, visit our [**Setup and Configuration Guide**](Docs/ConfigurationGuide.md).
 
 <details>
@@ -110,7 +115,7 @@ We recommend the following manual installation method, as it makes future config
 
 Common quick checks:
 
-- **Enable "Beta APIs":** Make sure the "Beta APIs" experimental toggle is ON in your world settings. This addon requires it.
+- **Enable Cheats & Beta APIs:** Make sure both "Activate Cheats" and the "Beta APIs" experimental toggle are ON in your world settings.
 - Ensure `AddonExeBP` is at the very top of your behavior packs.
 - Verify you have added your exact, case-sensitive name to the `ownerPlayerNames` array in `config.js`.
 - Check Minecraft version compatibility (see badge above).
@@ -147,6 +152,12 @@ For developers, the addon includes a basic performance profiling feature that ca
 
 Contributions are highly welcome and appreciated! Help us make this addon even better.
 
+**Project Philosophy:** Our goal is to keep this addon clean, universal, and easy to maintain. A planned future feature is full internationalization (i18n) support.
+
+**Review Process:** All contributions will be reviewed by SjnExe or Jules AI assistant to ensure they align with the project's goals and coding standards.
+
+**Crediting:** Please note that contributions are generally not credited directly in the codebase. Significant contributions will be acknowledged in the project's changelog or a dedicated contributors file.
+
 - **Fork & Branch:** Create your own fork and make changes in a dedicated branch.
 - **Code Style:** Follow our 📄 [**Coding Style Guide**](Dev/CodingStyle.md).
 - **Test Thoroughly:** Ensure your changes are stable and don't introduce new issues.
@@ -159,16 +170,24 @@ Looking for a place to start? Check out our [**issues tab**](https://github.com/
 
 ---
 
-## ❤️ Our Valued Contributors
+## ❤️ Acknowledgements & Contributors
 
-This project is made possible by the community and all the developers who dedicate their time to contribute. We are incredibly grateful for every contribution, from reporting issues and suggesting new ideas to writing code and improving documentation.
+This addon was developed by SjnExe with significant assistance from Jules, an AI software engineer.
+
+This project is also made possible by the community and all the developers who dedicate their time to contribute. We are incredibly grateful for every contribution, from reporting issues and suggesting new ideas to writing code and improving documentation.
 
 ➡️ You can see a list of code contributors on [**GitHub**](https://github.com/SjnExe/AddonExe/graphs/contributors).
 
 ---
 <div align="center">
+
+## ⚖️ License
   
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+In the spirit of open source, you are free to use, modify, and distribute this code with or without credit to SjnExe.
 </div>
 Thank you for using AddonExe!
 We hope it helps create a fairer and more enjoyable Minecraft experience for your community.

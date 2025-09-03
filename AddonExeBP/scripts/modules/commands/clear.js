@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { playSound } from '../../core/utils.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'clear',
     description: 'Clears the inventory of a player or yourself.',
     aliases: ['ci', 'clearinv'],

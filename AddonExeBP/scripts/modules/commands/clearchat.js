@@ -1,7 +1,7 @@
 import { world } from '@minecraft/server';
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'clearchat',
     aliases: ['cc'],
     description: 'Clears the chat for all players.',

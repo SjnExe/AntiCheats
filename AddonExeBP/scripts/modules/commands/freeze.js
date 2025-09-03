@@ -1,8 +1,8 @@
 import { world } from '@minecraft/server';
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'freeze',
     description: 'Freezes or unfreezes a player.',
     category: 'Moderation',

@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { GameMode } from '@minecraft/server';
 import { getPlayer } from '../../core/playerDataManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'gms',
     aliases: ['s', 'survival'],
     description: 'Sets your or another player\'s gamemode to Survival.',

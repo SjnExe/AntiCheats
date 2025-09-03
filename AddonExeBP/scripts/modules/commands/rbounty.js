@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'removebounty',
     aliases: ['rbounty', 'delbounty'],
     description: 'Removes a bounty from a player using your money.',

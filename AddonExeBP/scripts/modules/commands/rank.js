@@ -1,9 +1,9 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import { playSound } from '../../core/utils.js';
 import { rankDefinitions } from '../../core/ranksConfig.js';
 import { updatePlayerRank } from '../../core/main.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'rank',
     description: 'Sets a player\'s rank by adding or removing the associated tag.',
     category: 'Administration',

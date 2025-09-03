@@ -56,6 +56,12 @@ We welcome suggestions for new features or improvements to existing functionalit
 
 We are excited to receive code contributions! If you'd like to contribute code, please follow these guidelines.
 
+### Project Philosophy & Review Process
+
+- **Philosophy:** Our goal is to keep this addon clean, universal, and easy to maintain. A planned future feature is full internationalization (i18n) support.
+- **Review Process:** All contributions will be reviewed by the project owner (SjnExe) or Jules AI assistant to ensure they align with the project's goals and coding standards.
+- **Crediting:** Please note that contributions are generally not credited directly in the codebase. Significant contributions will be acknowledged in the project's changelog or a dedicated contributors file.
+
 ### Setting Up Your Environment
 
 Details on setting up a development environment can be found in our [Addon Development Resources](Dev/README.md). (This may include information on required software, project structure, and build processes if applicable).

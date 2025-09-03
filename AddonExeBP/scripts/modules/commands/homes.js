@@ -1,8 +1,8 @@
-import { customCommandManager } from './customCommandManager.js';
+import { commandManager } from './commandManager.js';
 import * as homesManager from '../../core/homesManager.js';
 import { getConfig } from '../../core/configManager.js';
 
-customCommandManager.register({
+commandManager.register({
     name: 'homes',
     description: 'Lists all of your set homes.',
     aliases: ['homelist'],
