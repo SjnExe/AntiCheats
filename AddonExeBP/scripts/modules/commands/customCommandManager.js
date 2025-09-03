@@ -19,65 +19,87 @@ class CustomCommandManager {
             this.commands.forEach(command => {
                 if (command.disableSlashCommand) return;
 
-                const commandData = this.prepareCommandData(command);
+                // Register the primary command name
+                this.registerSlashCommand(customCommandRegistry, command, command.slashName || command.name);
 
-                // The actual callback that will be executed by the game
-                const commandCallback = (origin, ...args) => {
-                    const player = origin.sourceEntity;
-
-                    // This can happen if the command is run from a command block
-                    if (!player) {
-                        console.warn(`Command '${command.name}' executed by a non-player entity.`);
-                        return;
-                    }
-
-                    // Permission Check
-                    const pData = getPlayer(player.id);
-                    if (!pData || pData.permissionLevel > command.permissionLevel) {
-                        player.sendMessage('§cYou do not have permission to use this command.');
-                        return;
-                    }
-
-                    // The game API passes arguments as a flat array. We need to map them to an object
-                    // based on the parameter definitions for our command's execute function.
-                    const mandatoryParams = command.parameters?.filter(p => !p.optional) || [];
-                    const optionalParams = command.parameters?.filter(p => p.optional) || [];
-                    const allParams = [...mandatoryParams, ...optionalParams];
-
-                    const parsedArgs = {};
-                    for (let i = 0; i < allParams.length; i++) {
-                        if (args[i] !== undefined) {
-                            parsedArgs[allParams[i].name] = args[i];
-                        }
-                    }
-
-                    system.run(() => {
-                        try {
-                            command.execute(player, parsedArgs);
-                        } catch (error) {
-                            console.error(`[CustomCommandManager] Error executing slash command '${command.name}': ${error.stack}`);
-                            player.sendMessage('§cAn unexpected error occurred while running this command.');
-                        }
+                // Register all aliases as separate slash commands
+                if (command.aliases) {
+                    command.aliases.forEach(alias => {
+                        this.registerSlashCommand(customCommandRegistry, command, alias);
                     });
-                };
-
-                try {
-                    customCommandRegistry.registerCommand(commandData, commandCallback);
-                } catch (e) {
-                    console.error(`[CustomCommandManager] Failed to register slash command '${command.name}':`, e);
                 }
             });
         });
     }
 
     /**
+     * Registers a single slash command or alias.
+     * @param {object} customCommandRegistry The registry object from the startup event.
+     * @param {object} command The command definition.
+     * @param {string} name The name to register (either primary or an alias).
+     * @private
+     */
+    registerSlashCommand(customCommandRegistry, command, name) {
+        const commandData = this.prepareCommandData(command, name);
+
+        const commandCallback = (origin, ...args) => {
+            const player = origin.sourceEntity;
+            if (!player) {
+                return;
+            }
+
+            const pData = getPlayer(player.id);
+            if (!pData || pData.permissionLevel > command.permissionLevel) {
+                player.sendMessage('§cYou do not have permission to use this command.');
+                return;
+            }
+
+            const mandatoryParams = command.parameters?.filter(p => !p.optional) || [];
+            const optionalParams = command.parameters?.filter(p => p.optional) || [];
+            const allParams = [...mandatoryParams, ...optionalParams];
+
+            const parsedArgs = {};
+            for (let i = 0; i < allParams.length; i++) {
+                if (args[i] !== undefined) {
+                    parsedArgs[allParams[i].name] = args[i];
+                }
+            }
+
+            system.run(() => {
+                try {
+                    command.execute(player, parsedArgs);
+                } catch (error) {
+                    if (getConfig().debug) {
+                        console.error(`[CustomCommandManager] Error executing slash command '${name}': ${error.stack}`);
+                    }
+                    player.sendMessage('§cAn unexpected error occurred while running this command.');
+                }
+            });
+        };
+
+        try {
+            customCommandRegistry.registerCommand(commandData, commandCallback);
+        } catch (e) {
+            // We expect an error if an alias conflicts with a vanilla command, which is fine.
+            if (e.toString().includes("already in use")) {
+                // Do nothing, this is expected for some aliases.
+            } else {
+                if (getConfig().debug) {
+                    console.error(`[CustomCommandManager] Failed to register slash command '${name}':`, e);
+                }
+            }
+        }
+    }
+
+    /**
      * Prepares the command data for registration with the Minecraft API.
      * @param {object} command The command definition.
+     * @param {string} nameOverride The specific name to use for this registration (main name or alias).
      * @returns {object} The formatted command data.
      * @private
      */
-    prepareCommandData(command) {
-        const slashCommandName = command.slashName || command.name;
+    prepareCommandData(command, nameOverride) {
+        const slashCommandName = nameOverride || command.slashName || command.name;
         const mandatoryParameters = (command.parameters || []).filter(p => !p.optional).map(p => this.formatParameter(p));
         const optionalParameters = (command.parameters || []).filter(p => p.optional).map(p => this.formatParameter(p));
 
@@ -141,7 +163,9 @@ class CustomCommandManager {
             try {
                 command.execute(player, parsedArgs);
             } catch (error) {
-                console.error(`[CustomCommandManager] Error executing chat command '${command.name}': ${error.stack}`);
+                if (getConfig().debug) {
+                    console.error(`[CustomCommandManager] Error executing chat command '${command.name}': ${error.stack}`);
+                }
                 player.sendMessage('§cAn unexpected error occurred while running this command.');
             }
         });
