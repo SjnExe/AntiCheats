@@ -18,6 +18,10 @@
 >
 > Pre-releases are intended for development and testing purposes only. They may be unstable, contain bugs, or cause unintended issues. For the best experience, please use the [latest stable release](https://github.com/SjnExe/AddonExe/releases/latest).
 
+> [!NOTE]
+> **Always Use the Latest Version**
+> This addon is designed for and tested on the **latest stable version of Minecraft Bedrock Edition**. It is intended for servers and realms that are kept up-to-date. Support for older versions of Minecraft is not maintained.
+
 ---
 
 <div align="center">
@@ -99,7 +103,7 @@ We recommend the following manual installation method, as it makes future config
       // Example in AddonExeBP/scripts/config.js
       ownerPlayerNames: ['YourNameHere', 'AnotherOwnerName'],
       ```
-    - After saving the file, you must restart the server or use `/xreload` for the changes to take effect.
+    - To apply changes to the owner list on a live server, you must use the `/xreload` command after saving the file.
     - **Note:** Failure to set an owner will not lock you out. Admin permissions can still be granted via the `/function admin` command or by giving a player the `admin` tag.
 7.  **🎮 Explore:** Join your world and open the Admin UI. Admins can get the panel item directly by typing `/panel`. Any player can also craft the item using a single stick.
 8.  **🔧 Configure (Optional but Recommended):**
