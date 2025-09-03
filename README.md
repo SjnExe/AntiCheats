@@ -82,7 +82,7 @@ We recommend the following manual installation method, as it makes future config
 2.  **Extract the Packs (Recommended Method):**
     - Do **not** open the `.mcaddon` file directly. Instead, rename it to end in `.zip` (e.g., `AddonExe.mcaddon` -> `AddonExe.zip`).
     - Unzip the file. Inside, you will find two folders: `AddonExeBP` (the Behavior Pack) and `AddonExeRP` (the Resource Pack).
-    - Move these two folders into your Minecraft's development packs folders (`development_behavior_packs` and `development_resource_packs`).
+    - Move these two folders into your Minecraft's `behavior_packs` and `resource_packs` folders, respectively.
     > **Why this method?** Installing the folders directly makes it simple to find and edit the `config.js` file later. Installing a sealed `.mcpack` or `.mcaddon` makes configuration much more difficult.
 3.  **Apply to Your World:**
     - Open Minecraft and go to your world's settings.
@@ -92,14 +92,15 @@ We recommend the following manual installation method, as it makes future config
     - Next, go to the "Experiments" section and **enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function without this setting enabled.
 5.  **Prioritize:** Ensure `AddonExeBP` is at the **TOP** of your behavior pack list in the world settings. This is crucial for AddonExe to function correctly.
 6.  **👑 Set Owner(s) (CRUCIAL!):**
-    - Now that you've installed the folders, navigate to `development_behavior_packs/AddonExeBP/scripts/` and open `config.js` in a text editor.
+    - Now that you've installed the folders, navigate to `behavior_packs/AddonExeBP/scripts/` and open `config.js` in a text editor.
     - Find the `ownerPlayerNames` setting.
     - Add your **exact** in-game name (case-sensitive) to the array. You can add multiple owner names.
       ```javascript
       // Example in AddonExeBP/scripts/config.js
       ownerPlayerNames: ['YourNameHere', 'AnotherOwnerName'],
       ```
-    - **Failure to set at least one owner will result in no player having administrative permissions.**
+    - After saving the file, you must restart the server or use `/xreload` for the changes to take effect.
+    - **Note:** Failure to set an owner will not lock you out. Admin permissions can still be granted via the `/function admin` command or by giving a player the `admin` tag.
 7.  **🎮 Explore:** Join your world and open the Admin UI. Admins can get the panel item directly by typing `/panel`. Any player can also craft the item using a single stick.
 8.  **🔧 Configure (Optional but Recommended):**
     - Review `AddonExeBP/scripts/config.js` for other core settings (like the chat command `prefix`).
