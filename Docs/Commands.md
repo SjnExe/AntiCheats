@@ -1,8 +1,9 @@
 # AddonExe Commands
 
-The default command prefix for this addon is `!` (this can be configured in `AddonExeBP/scripts/config.js`). All commands are entered via the standard Minecraft chat.
+Commands in AddonExe are primarily run using slash commands (e.g., `/help`), which support autocomplete in-game. For convenience, most commands can also be run using a chat-based prefix, which defaults to `!` (e.g., `!help`). This prefix can be configured in `AddonExeBP/scripts/config.js`.
 
 > [!NOTE]
+> To use slash commands, you must **enable cheats** in your world settings.
 > Angle brackets (`< >`) in command syntax denote required parameters.
 > Square brackets (`[ ]`) denote optional parameters.
 > Do not include the brackets themselves when using the commands.
@@ -18,96 +19,106 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 
 *(Permission Level 0-1)*
 
-- **`!ban`** (Alias: `!b`)
-  - **Syntax:** `!ban <playerName> [duration] [reason]`
+- **/admin**
+  - **Syntax:** `/admin <target: player> [action: "add" | "remove"]`
+  - **Permission:** Owner
+  - **Chat Fallback:** `!admin`
+- **/ban**
+  - **Syntax:** `/ban <target: player> [duration: string] [reason: string]`
   - **Description:** Bans a player. Duration e.g., `30m`, `2h`, `7d`, `perm`.
   - **Permission:** Admin
-- **`!clear`**
-  - **Syntax:** `!clear [playerName]`
+  - **Chat Fallback:** `!ban`
+- **/clear**
+  - **Syntax:** `!clear [target: player]` (Chat-only)
   - **Description:** Clears your own inventory, or the inventory of another player.
   - **Permission:** Admin
-- **`!clearchat`** (Alias: `!clrchat`)
-  - **Syntax:** `!clearchat`
-  - **Description:** Clears the global chat for all players.
+- **/clearchat**
+  - **Syntax:** `/clearchat`
   - **Permission:** Admin
-- **`!clearreports`**
-  - **Syntax:** `!clearreports`
+  - **Chat Fallback:** `!clearchat`
+- **/clearreports**
+  - **Syntax:** `/clearreports`
   - **Description:** Clears all player-submitted reports.
   - **Permission:** Admin
-- **`!copyinv`**
-  - **Syntax:** `!copyinv <playerName>`
+  - **Chat Fallback:** `!clearreports`
+- **/copyinv**
+  - **Syntax:** `/copyinv <target: player>`
   - **Description:** Copies the inventory of another player.
   - **Permission:** Admin
-- **`!debug`**
-  - **Syntax:** `!debug <true|false>`
+  - **Chat Fallback:** `!copyinv`
+- **/debug**
+  - **Syntax:** `/debug <state: boolean>`
   - **Description:** Toggles the script debug logging mode.
   - **Permission:** Admin
-- **`!freeze`** (Alias: `!frz`)
-  - **Syntax:** `!freeze <playerName>`
+  - **Chat Fallback:** `!debug`
+- **/freeze**
+  - **Syntax:** `/freeze <target: player> [state: "on" | "off"]`
   - **Description:** Freezes or unfreezes a player, preventing movement.
   - **Permission:** Admin
-- **`!gamemode`** (Aliases: `!gmc`, `!gms`, `!gma`, `!gmsp`)
-  - **Syntax:** `!gmc [playerName]`
-  - **Description:** Sets a player's gamemode (Creative, Survival, Adventure, Spectator).
+  - **Chat Fallback:** `!freeze`
+- **/gma, /gmc, /gms, /gmsp**
+  - **Syntax:** `!gma|gmc|gms|gmsp [target: player]` (Chat-only)
+  - **Description:** Sets a player's gamemode (Adventure, Creative, Survival, Spectator).
   - **Permission:** Admin
-- **`!invsee`** (Alias: `!is`)
-  - **Syntax:** `!invsee <playerName>`
-  - **Description:** Views a player's inventory through a UI.
+- **/invsee**
+  - **Syntax:** `/invsee <target: player> [page: int]`
+  - **Description:** Views a player's inventory in chat.
   - **Permission:** Admin
-- **`!kick`** (Alias: `!k`)
-  - **Syntax:** `!kick <playerName> [reason]`
+- **/kick**
+  - **Syntax:** `!kick <playerName> [reason]` (Chat-only)
   - **Description:** Kicks a player from the server.
   - **Permission:** Admin
-- **`!mute`** (Alias: `!m`)
-  - **Syntax:** `!mute <playerName> [duration] [reason]`
+- **/mute**
+  - **Syntax:** `/mute <target: player> [duration: string] [reason: string]`
   - **Description:** Mutes a player. Duration e.g., `30m`, `1h`, `perm`.
   - **Permission:** Admin
-- **`!rank`**
-  - **Syntax:** `!rank <set|remove> <playerName> <rankId>`
+  - **Chat Fallback:** `!mute`
+- **/rank**
+  - **Syntax:** `/rank <action: "set" | "remove"> <target: player> <rankId: string>`
   - **Description:** Manages custom, tag-based player ranks. Does not work for Owner/Admin/Member.
   - **Permission:** Admin
-- **`!admin`**
-  - **Syntax:** `!admin "<playerName>" [add|remove]`
-  - **Description:** Adds or removes the Admin tag from an online player.
-  - **Permission:** Owner
-- **`!reload`**
-  - **Syntax:** `!reload`
+- **/xreload**
+  - **Syntax:** `/xreload`
   - **Description:** Reloads the `ownerPlayerNames` from `config.js` and updates the owner's rank.
   - **Permission:** Admin
-- **`!restart`**
-  - **Syntax:** `!restart`
+  - **Chat Fallback:** `!reload`
+- **/restart**
+  - **Syntax:** `/restart`
   - **Description:** Initiates the server restart sequence.
   - **Permission:** Admin
-- **`!reports`**
-  - **Syntax:** `!reports [player|clear]`
-  - **Description:** Manages player reports.
+  - **Chat Fallback:** `!restart`
+- **/reports**
+  - **Syntax:** `/reports`
+  - **Description:** Views the list of active reports via a UI panel.
   - **Permission:** Admin
-- **`!setbalance`**
-  - **Syntax:** `!setbalance <playerName> <amount>`
+- **/setbalance**
+  - **Syntax:** `/setbalance <target: player> <amount: float>`
   - **Description:** Sets a player's balance to a specific amount.
   - **Permission:** Admin
-- **`!setspawn`**
-  - **Syntax:** `!setspawn`
+  - **Chat Fallback:** `!setbalance`
+- **/setspawn**
+  - **Syntax:** `/setspawn`
   - **Description:** Sets the world's default spawn point to your current location.
   - **Permission:** Admin
-- **`!tp`**
-  - **Syntax:** `!tp <playerName> [targetPlayer]`
+- **/tp**
+  - **Syntax:** `!tp <target> [destination]` (Chat-only)
   - **Description:** Teleports a player to another player or location.
   - **Permission:** Admin
-- **`!unban`** (Alias: `!ub`)
-  - **Syntax:** `!unban <playerName>`
+- **/unban**
+  - **Syntax:** `/unban <target: string>`
   - **Description:** Removes an active ban for a player.
   - **Permission:** Admin
-- **`!unmute`** (Alias: `!um`)
-  - **Syntax:** `!unmute <playerName>`
+- **/unmute**
+  - **Syntax:** `/unmute <target: string>`
   - **Description:** Removes an active mute for a player.
   - **Permission:** Admin
-- **`!vanish`** (Alias: `!vsh`)
-  - **Syntax:** `!vanish`
+- **/vanish**
+  - **Syntax:** `/vanish`
   - **Description:** Toggles your visibility.
   - **Permission:** Admin
-- **`!xraynotify`**
-  - **Syntax:** `!xraynotify <on|off>`
+  - **Chat Fallback:** `!vanish`
+- **/xraynotify**
+  - **Syntax:** `/xraynotify`
   - **Description:** Toggles X-ray detection notifications for yourself.
   - **Permission:** Admin
 
@@ -117,68 +128,93 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 
 *(Permission Level 1024)*
 
-- **`!help`** (Alias: `!h`)
-  - **Syntax:** `!help [commandName]`
+- **/xhelp**
+  - **Syntax:** `/xhelp [commandName: string]`
   - **Description:** Shows available commands or help for a specific command.
-- **`!kit`**
-  - **Syntax:** `!kit [name]`
+  - **Chat Fallback:** `!help`, `!?`
+- **/kit**
+  - **Syntax:** `/kit [kitName: string]`
   - **Description:** Gives you a kit of items. If no name is provided, lists available kits.
-- **`!panel`** (Alias: `!ui`)
-  - **Syntax:** `!panel`
+  - **Chat Fallback:** `!kit`
+- **/panel**
+  - **Syntax:** `/panel`
   - **Description:** Opens the main UI panel.
-- **`!report`**
-  - **Syntax:** `!report <playerName> <reason>`
+  - **Chat Fallback:** `!panel`, `!ui`
+- **/report**
+  - **Syntax:** `/report <target: player> <reason: string>`
   - **Description:** Reports a player for misconduct.
-- **`!rules`** (Alias: `!r`)
-  - **Syntax:** `!rules`
+  - **Chat Fallback:** `!report`
+- **/rules**
+  - **Syntax:** `/rules [ruleNumber: int]`
   - **Description:** Displays the server rules.
-- **`!spawn`**
-  - **Syntax:** `!spawn`
+  - **Chat Fallback:** `!rules`
+- **/spawn**
+  - **Syntax:** `/spawn`
   - **Description:** Teleports you to the world spawn.
-- **`!status`**
-  - **Syntax:** `!status`
-  - **Description:** Shows your current status (rank, money, etc.).
-- **`!version`** (Alias: `!v`)
-  - **Syntax:** `!version`
+  - **Chat Fallback:** `!spawn`
+- **/status**
+  - **Syntax:** `/status`
+  - **Description:** Shows the current server status.
+  - **Chat Fallback:** `!status`
+- **/version**
+  - **Syntax:** `/version`
   - **Description:** Displays the current version of AddonExe.
+  - **Chat Fallback:** `!version`
 
 ### TPA System Commands
-- **`!tpa <playerName>`**
+- **/tpa**
+  - **Syntax:** `/tpa <target: player>`
   - **Description:** Sends a teleport request to another player.
-- **`!tpahere <playerName>`**
+- **/tpahere**
+  - **Syntax:** `/tpahere <target: player>`
   - **Description:** Requests another player to teleport to your location.
-- **`!tpaccept`** (Alias: `!tpaa`)
+- **/tpaccept**
+  - **Syntax:** `/tpaccept`
   - **Description:** Accepts an incoming teleport request.
-- **`!tpadeny`**
+- **/tpadeny**
+  - **Syntax:** `/tpadeny`
   - **Description:** Denies an incoming teleport request.
-- **`!tpacancel`**
+- **/tpacancel**
+  - **Syntax:** `/tpacancel`
   - **Description:** Cancels an outgoing teleport request you have sent.
-- **`!tpastatus`**
+- **/tpastatus**
+  - **Syntax:** `/tpastatus`
   - **Description:** Checks the status of your current incoming and outgoing TPA requests.
 
 ### Economy System Commands
-- **`!balance`** (Alias: `!bal`)
-  - **Description:** Shows your current balance.
-- **`!baltop`**
+- **/balance**
+  - **Syntax:** `/balance [target: player]`
+  - **Description:** Shows your or another player's current balance.
+- **/baltop**
+  - **Syntax:** `/baltop`
   - **Description:** Shows the players with the highest balances.
-- **`!pay <playerName> <amount>`**
+- **/pay**
+  - **Syntax:** `/pay <target: player> <amount: float>`
   - **Description:** Pays another player from your balance. If the amount is large, it will require confirmation.
-- **`!payconfirm`**
-  - **Description:** Confirms a pending high-value payment requested with `!pay`.
+- **/payconfirm**
+  - **Syntax:** `/payconfirm`
+  - **Description:** Confirms a pending high-value payment requested with `/pay`.
 
 ### Bounty System Commands
-- **`!bounty <playerName> <amount>`**
+- **/bounty**
+  - **Syntax:** `/bounty <target: player> <amount: int>`
   - **Description:** Places a bounty on a player, making them a target.
-- **`!listbounty`**
-  - **Description:** Lists all players who currently have a bounty on them.
-- **`!rbounty <playerName> <amount>`**
-  - **Description:** Removes a portion of a bounty you have placed on a player.
+- **/listbounty**
+  - **Syntax:** `/listbounty [target: player]`
+  - **Description:** Lists all active bounties or a specific player's bounty.
+- **/removebounty**
+  - **Syntax:** `/removebounty <amount: float> [target: player]`
+  - **Description:** Removes a portion of a bounty from a player.
 
 ### Homes System Commands
-- **`!sethome <name>`**
-- **`!home <name>`**
-- **`!delhome <name>`**
-- **`!homes`**
+- **/sethome**
+  - **Syntax:** `/sethome [homeName: string]`
+- **/home**
+  - **Syntax:** `/home [homeName: string]`
+- **/delhome**
+  - **Syntax:** `/delhome <homeName: string>`
+- **/homes**
+  - **Syntax:** `/homes`
 
 ---
-This list is based on the addon's current structure. For the most up-to-date information, use `!help` in-game. Command availability may depend on settings in `config.js`.
+This list is based on the addon's current structure. For the most up-to-date information, use `/xhelp` in-game. Command availability may depend on settings in `config.js`.

@@ -33,7 +33,7 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 
 - **Scripting Power:** Built entirely with the Minecraft Scripting API, offering flexibility and complex detection logic not always possible with traditional methods.
 - **Comprehensive Detection (Coming Soon):** While currently a powerful moderation tool, a full suite of cheat detections is in active development.
-- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`!panel`) and extensive text commands. The `!ui` command is a convenient alias. Features a detailed Player Management panel with sorting, role display, and a wide array of actions.
+- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`/panel`) and extensive slash commands. Most commands also have a chat-based fallback (e.g. `!panel`).
 - **Highly Customizable:** Fine-tune almost every aspect, from feature toggles to command permissions, to perfectly suit your server's needs.
 - **Active Development:** Continuously updated with new features, improvements, and compatibility for the latest Minecraft versions.
 - **Open & Documented:** With clear documentation and an open codebase, understand how it works and even contribute!
@@ -46,13 +46,13 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 This addon is packed with features to keep your server clean:
 
 - 🛠️ **Powerful Admin & Moderation Tools:**
-  - A universal, dynamic in-game UI panel that shows each player only the buttons they are permitted to see. The panel item can be crafted by anyone, or spawned directly with the admin-only `!panel` (or `!ui`) command.
+  - A universal, dynamic in-game UI panel that shows each player only the buttons they are permitted to see. The panel item can be crafted by anyone, or spawned directly with the admin-only `/panel` command.
   - **Enhanced Player Management Panel:**
     - View online players, sorted by rank and name.
     - Player names are clearly marked with `(Owner)`, `(Admin)`, and `(You)` suffixes.
     - Perform a wide range of actions: Kick, Ban/Unban, Mute/Unmute, Freeze, View/Clear Inventory, Teleport.
-  - **New Commands:** `!clear` (clear inventory), `!ecwipe` (wipe ender chest), `!invsee` (view inventory).
-  - Extensive text commands for all administrative functions (Note: the `!` prefix is configurable).
+  - **New Commands:** `/clear` (clear inventory), `/ecwipe` (wipe ender chest), `/invsee` (view inventory).
+  - Extensive slash commands for all administrative functions (Note: a `!` prefix is available as a fallback).
 - 💾 **Persistent Player Data Management:**
   - Mutes and bans are saved across player sessions using dynamic properties.
 - ⚙️ **Highly Configurable System:**
@@ -87,9 +87,9 @@ We recommend the following manual installation method, as it makes future config
 3.  **Apply to Your World:**
     - Open Minecraft and go to your world's settings.
     - Apply both `AddonExeBP` and `AddonExeRP` to your world.
-4.  **Enable Beta APIs (CRITICAL!):**
-    - In your world settings, go to the "Experiments" section.
-    - **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function without this setting enabled.
+4.  **Enable World Settings (CRITICAL!):**
+    - In your world settings, go to the "Game" section and enable **"Activate Cheats"**. This is required for slash commands to work.
+    - Next, go to the "Experiments" section and **enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function without this setting enabled.
 5.  **Prioritize:** Ensure `AddonExeBP` is at the **TOP** of your behavior pack list in the world settings. This is crucial for AddonExe to function correctly.
 6.  **👑 Set Owner(s) (CRUCIAL!):**
     - Now that you've installed the folders, navigate to `development_behavior_packs/AddonExeBP/scripts/` and open `config.js` in a text editor.
@@ -100,9 +100,9 @@ We recommend the following manual installation method, as it makes future config
       ownerPlayerNames: ['YourNameHere', 'AnotherOwnerName'],
       ```
     - **Failure to set at least one owner will result in no player having administrative permissions.**
-7.  **🎮 Explore:** Join your world and open the Admin UI. Admins can get the panel item directly by typing `!panel` or `!ui`. Any player can also craft the item using a single stick.
+7.  **🎮 Explore:** Join your world and open the Admin UI. Admins can get the panel item directly by typing `/panel`. Any player can also craft the item using a single stick.
 8.  **🔧 Configure (Optional but Recommended):**
-    - Review `AddonExeBP/scripts/config.js` for other core settings (like the command `prefix`).
+    - Review `AddonExeBP/scripts/config.js` for other core settings (like the chat command `prefix`).
     - For detailed setup and advanced options, visit our [**Setup and Configuration Guide**](Docs/ConfigurationGuide.md).
 
 <details>
@@ -110,7 +110,7 @@ We recommend the following manual installation method, as it makes future config
 
 Common quick checks:
 
-- **Enable "Beta APIs":** Make sure the "Beta APIs" experimental toggle is ON in your world settings. This addon requires it.
+- **Enable Cheats & Beta APIs:** Make sure both "Activate Cheats" and the "Beta APIs" experimental toggle are ON in your world settings.
 - Ensure `AddonExeBP` is at the very top of your behavior packs.
 - Verify you have added your exact, case-sensitive name to the `ownerPlayerNames` array in `config.js`.
 - Check Minecraft version compatibility (see badge above).

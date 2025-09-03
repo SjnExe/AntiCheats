@@ -6,9 +6,9 @@ This guide provides an overview of how to configure AddonExe. Proper configurati
 
 The addon's configuration is split across several files, each with a specific purpose. This modular approach keeps settings organized and easier to manage.
 
-- **`config.js`:** The main hub for most toggles and values. Use this file to enable/disable major features, set the command prefix, define owner/admin access, and adjust feature-specific settings.
+- **`config.js`:** The main hub for most toggles and values. Use this file to enable/disable major features, set the chat command prefix, define owner/admin access, and adjust feature-specific settings.
 - **`ranksConfig.js`:** The definitive file for managing all permissions and visual rank styles (chat, nametags).
-- **`panelLayoutConfig.js`:** Controls the structure and content of the main Admin UI (`!panel`).
+- **`panelLayoutConfig.js`:** Controls the structure and content of the main Admin UI (`/panel`).
 - **`kitsConfig.js`:** Defines the contents and cooldowns for player kits.
 
 > [!NOTE]
@@ -27,7 +27,7 @@ Follow these steps to gain administrative control of the addon.
   // Example in AddonExeBP/scripts/config.js
   ownerPlayerNames: ['YourExactPlayerName', 'AnotherOwnerName'],
   ```
-- **Applying Changes:** After editing, **restart your server**, then run `!reload` in-game.
+- **Applying Changes:** After editing, **restart your server**, then run `/xreload` in-game.
 - **➡️ For a summary, see the [F.A.Q.](F.A.Q.md#how-do-i-change-the-server-owner)**
 
 ### 2. Set Server Admins (Optional)
@@ -54,7 +54,7 @@ This is the primary file for most top-level settings.
 - **Purpose:**
   - Define `ownerPlayerNames` and the `adminTag`.
   - Enable or disable major systems (`tpa.enabled`, `homes.enabled`, `economy.enabled`, etc.).
-  - Set the global command `prefix` (default: `!`).
+  - Set the global chat command `prefix` (default: `!`).
   - Configure server features like starting economy balance, max homes, or welcome messages.
   - Customize server info like Discord links and rules.
   - Toggle individual commands on or off in the `commandSettings` section.
@@ -71,7 +71,7 @@ This file defines the entire hierarchy of roles on your server.
   - Define the `conditions` for how a rank is assigned (e.g., based on the `ownerPlayerNames` list, the `adminTag`, or being the default).
 
 ### `panelLayoutConfig.js` - Admin Panel UI
-This file controls the layout, buttons, and actions of the `!panel` user interface.
+This file controls the layout, buttons, and actions of the `/panel` user interface.
 
 - **File:** `AddonExeBP/scripts/core/panelLayoutConfig.js`
 - **Purpose:**
