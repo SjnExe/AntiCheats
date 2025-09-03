@@ -25,6 +25,9 @@ class CommandManager {
                 // Register all aliases as separate slash commands
                 if (command.aliases) {
                     command.aliases.forEach(alias => {
+                        if (command.disabledSlashAliases && command.disabledSlashAliases.includes(alias)) {
+                            return; // Skip slash command registration for this alias
+                        }
                         this.registerSlashCommand(customCommandRegistry, command, alias);
                     });
                 }

@@ -6,6 +6,7 @@ import { debugLog } from '../../core/logger.js';
 
 commandManager.register({
     name: 'reload',
+    slashName: 'xreload',
     description: 'Reloads the addon configuration from storage and updates player ranks.',
     category: 'Administration',
     permissionLevel: 1, // Admins only

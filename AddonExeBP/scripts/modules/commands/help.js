@@ -69,6 +69,7 @@ commandManager.register({
     name: 'help',
     slashName: 'xhelp',
     aliases: ['?', 'h'],
+    disabledSlashAliases: ['?'],
     description: 'Displays a list of available commands or help for a specific command.',
     category: 'General',
     permissionLevel: 1024, // Available to everyone
