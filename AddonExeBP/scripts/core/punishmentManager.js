@@ -1,5 +1,6 @@
 import { world, system } from '@minecraft/server';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 
 const punishmentDbKey = 'addonexe:punishments';
 const saveIntervalTicks = 6000; // Every 5 minutes (20 ticks/sec * 60 sec/min * 5 min)
@@ -34,7 +35,7 @@ export function loadPunishments() {
             punishments = new Map(parsedData);
             debugLog(`[PunishmentManager] Loaded ${punishments.size} punishments.`);
         } catch (e) {
-            console.error('[PunishmentManager] Failed to parse punishment data from world property.', e);
+            errorLog('[PunishmentManager] Failed to parse punishment data from world property.', e);
             punishments = new Map();
         }
     }
@@ -62,7 +63,7 @@ export function clearExpiredPunishments() {
  * Saves punishment data to world dynamic properties if a change has occurred.
  */
 function savePunishments() {
-    if (!needsSave) return;
+    if (!needsSave) {return;}
     try {
         // JSON can't stringify a Map directly, so convert to an array first.
         const dataToSave = Array.from(punishments.entries());
@@ -70,7 +71,7 @@ function savePunishments() {
         needsSave = false;
         debugLog('[PunishmentManager] Saved punishments to world properties.');
     } catch (e) {
-        console.error('[PunishmentManager] Failed to save punishments.', e);
+        errorLog('[PunishmentManager] Failed to save punishments.', e);
     }
 }
 

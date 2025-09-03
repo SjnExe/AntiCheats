@@ -1,6 +1,7 @@
 import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 
 const cooldownDbKey = 'addonexe:cooldowns';
 const saveIntervalTicks = 6000; // Every 5 minutes
@@ -22,7 +23,7 @@ export function loadCooldowns() {
             cooldowns = new Map(parsedData);
             debugLog(`[CooldownManager] Loaded ${cooldowns.size} cooldowns.`);
         } catch (e) {
-            console.error('[CooldownManager] Failed to parse cooldown data from world property.', e);
+            errorLog('[CooldownManager] Failed to parse cooldown data from world property.', e);
             cooldowns = new Map();
         }
     }
@@ -32,7 +33,7 @@ export function loadCooldowns() {
  * Saves cooldowns to world dynamic properties if a change has occurred.
  */
 function saveCooldowns() {
-    if (!needsSave) return;
+    if (!needsSave) {return;}
     try {
         // Convert Map to an array for JSON serialization
         const dataToSave = Array.from(cooldowns.entries());
@@ -40,7 +41,7 @@ function saveCooldowns() {
         needsSave = false;
         debugLog('[CooldownManager] Saved cooldowns to world properties.');
     } catch (e) {
-        console.error('[CooldownManager] Failed to save cooldowns.', e);
+        errorLog('[CooldownManager] Failed to save cooldowns.', e);
     }
 }
 
@@ -75,7 +76,7 @@ function getCooldownKey(playerId, commandName) {
 export function setCooldown(player, commandName) {
     const config = getConfig();
     const commandConfig = config[commandName];
-    if (!commandConfig || !commandConfig.cooldownSeconds) return;
+    if (!commandConfig || !commandConfig.cooldownSeconds) {return;}
 
     const key = getCooldownKey(player.id, commandName);
     const cooldownMs = commandConfig.cooldownSeconds * 1000;
@@ -93,7 +94,7 @@ export function getCooldown(player, commandName) {
     const key = getCooldownKey(player.id, commandName);
     const expiry = cooldowns.get(key);
 
-    if (!expiry) return 0;
+    if (!expiry) {return 0;}
 
     const now = Date.now();
     if (now >= expiry) {

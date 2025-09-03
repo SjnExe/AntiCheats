@@ -1,6 +1,7 @@
 import { commandManager } from './commandManager.js';
 import { saveAllData } from '../../core/dataManager.js';
 import { playSoundFromConfig } from '../../core/utils.js';
+import { errorLog } from '../../core/errorLogger.js';
 
 commandManager.register({
     name: 'save',
@@ -16,7 +17,7 @@ commandManager.register({
             playSoundFromConfig(player, 'adminNotificationReceived');
         } catch (e) {
             player.sendMessage(`§cAn error occurred during save: ${e.message}`);
-            console.error(`[/x:save] Manual save failed: ${e.stack}`);
+            errorLog(`[/x:save] Manual save failed: ${e.stack}`);
         }
     }
 });

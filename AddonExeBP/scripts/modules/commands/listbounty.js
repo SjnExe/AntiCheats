@@ -4,7 +4,7 @@ import { getPlayerFromCache } from '../../core/playerCache.js';
 
 commandManager.register({
     name: 'listbounty',
-    aliases: ['lbounty', 'bounties', 'bountylist'],
+    aliases: ['lbounty', 'bounties', 'bountylist', 'showbounties', 'hitlist'],
     description: 'Lists all active bounties or a specific player\'s bounty.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone

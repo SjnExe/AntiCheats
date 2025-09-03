@@ -12,7 +12,7 @@ function placeBounty(player, targetPlayer, amount) {
         return;
     }
     if (!targetPlayer) {
-        player.sendMessage(`§cPlayer not found.`);
+        player.sendMessage('§cPlayer not found.');
         return;
     }
     if (isNaN(amount) || amount < config.economy.minimumBounty) {
@@ -52,7 +52,7 @@ function placeBounty(player, targetPlayer, amount) {
 commandManager.register({
     name: 'bounty',
     description: 'Place a bounty on a player.',
-    aliases: ['setbounty'],
+    aliases: ['setbounty', 'addbounty', '+bounty', 'abounty'],
     category: 'Economy',
     permissionLevel: 1024, // Everyone
     parameters: [

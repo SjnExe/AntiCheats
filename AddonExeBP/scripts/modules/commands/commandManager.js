@@ -5,6 +5,7 @@ import {
 } from '@minecraft/server';
 import { getPlayer } from '../../core/playerDataManager.js';
 import { getConfig } from '../../core/configManager.js';
+import { errorLog } from '../../core/errorLogger.js';
 
 /**
  * Manages the registration and execution of both slash and chat commands.
@@ -17,7 +18,7 @@ class CommandManager {
 
         system.beforeEvents.startup.subscribe(({ customCommandRegistry }) => {
             this.commands.forEach(command => {
-                if (command.disableSlashCommand) return;
+                if (command.disableSlashCommand) {return;}
 
                 // Register the primary command name
                 this.registerSlashCommand(customCommandRegistry, command, command.slashName || command.name);
@@ -73,7 +74,7 @@ class CommandManager {
                     command.execute(player, parsedArgs);
                 } catch (error) {
                     if (getConfig().debug) {
-                        console.error(`[CommandManager] Error executing slash command '${name}': ${error.stack}`);
+                        errorLog(`[CommandManager] Error executing slash command '${name}': ${error.stack}`);
                     }
                     player.sendMessage('§cAn unexpected error occurred while running this command.');
                 }
@@ -84,11 +85,11 @@ class CommandManager {
             customCommandRegistry.registerCommand(commandData, commandCallback);
         } catch (e) {
             // We expect an error if an alias conflicts with a vanilla command, which is fine.
-            if (e.toString().includes("already in use")) {
+            if (e.toString().includes('already in use')) {
                 // Do nothing, this is expected for some aliases.
             } else {
                 if (getConfig().debug) {
-                    console.error(`[CommandManager] Failed to register slash command '${name}':`, e);
+                    errorLog(`[CommandManager] Failed to register slash command '${name}':`, e);
                 }
             }
         }
@@ -167,7 +168,7 @@ class CommandManager {
                 command.execute(player, parsedArgs);
             } catch (error) {
                 if (getConfig().debug) {
-                    console.error(`[CommandManager] Error executing chat command '${command.name}': ${error.stack}`);
+                    errorLog(`[CommandManager] Error executing chat command '${command.name}': ${error.stack}`);
                 }
                 player.sendMessage('§cAn unexpected error occurred while running this command.');
             }
@@ -198,16 +199,16 @@ class CommandManager {
         const type = paramTypeMap[param.type.toLowerCase()];
 
         if (!type) {
-            console.warn(`[CommandManager] Unknown parameter type '${param.type}' for parameter '${param.name}'. Defaulting to String.`);
+            errorLog(`[CommandManager] Unknown parameter type '${param.type}' for parameter '${param.name}'. Defaulting to String.`);
             return {
                 name: param.name,
-                type: CustomCommandParamType.String,
+                type: CustomCommandParamType.String
             };
         }
 
         return {
             name: param.name,
-            type: type,
+            type: type
         };
     }
 

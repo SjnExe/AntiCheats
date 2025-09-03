@@ -21,6 +21,7 @@
 import { getConfig } from './configManager.js';
 import { world } from '@minecraft/server';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 
 const playerPropertyPrefix = 'addonexe:player.';
 const playerNameIdMapKey = 'addonexe:playerNameIdMap';
@@ -43,7 +44,7 @@ function saveNameIdMap() {
         const dataToSave = Array.from(playerNameIdMap.entries());
         world.setDynamicProperty(playerNameIdMapKey, JSON.stringify(dataToSave));
     } catch (e) {
-        console.error(`[PlayerDataManager] Failed to save name-to-ID map: ${e.stack}`);
+        errorLog(`[PlayerDataManager] Failed to save name-to-ID map: ${e.stack}`);
     }
 }
 
@@ -59,7 +60,7 @@ export function loadNameIdMap() {
             debugLog(`[PlayerDataManager] Loaded ${playerNameIdMap.size} entries into name-to-ID map.`);
         }
     } catch (e) {
-        console.error(`[PlayerDataManager] Failed to load name-to-ID map: ${e.stack}`);
+        errorLog(`[PlayerDataManager] Failed to load name-to-ID map: ${e.stack}`);
     }
 }
 
@@ -69,7 +70,7 @@ export function loadNameIdMap() {
  */
 export function savePlayerData(playerId) {
     if (!activePlayerData.has(playerId)) {
-        console.warn(`[PlayerDataManager] Attempted to save data for non-cached player: ${playerId}`);
+        errorLog(`[PlayerDataManager] Attempted to save data for non-cached player: ${playerId}`);
         return;
     }
     try {
@@ -77,7 +78,7 @@ export function savePlayerData(playerId) {
         const dataString = JSON.stringify(playerData);
         world.setDynamicProperty(`${playerPropertyPrefix}${playerId}`, dataString);
     } catch (e) {
-        console.error(`[PlayerDataManager] Failed to save data for player ${playerId}: ${e.stack}`);
+        errorLog(`[PlayerDataManager] Failed to save data for player ${playerId}: ${e.stack}`);
     }
 }
 
@@ -95,7 +96,7 @@ export function loadPlayerData(playerId) {
             return playerData;
         }
     } catch (e) {
-        console.error(`[PlayerDataManager] Failed to load data for player ${playerId}: ${e.stack}`);
+        errorLog(`[PlayerDataManager] Failed to load data for player ${playerId}: ${e.stack}`);
     }
     return null;
 }

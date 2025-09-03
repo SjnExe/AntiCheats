@@ -3,6 +3,7 @@ import { panelDefinitions } from './panelLayoutConfig.js';
 import { getPlayer, getPlayerIdByName, loadPlayerData, getAllPlayerNameIdMap } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 import { getPlayerRank } from './rankManager.js';
 import { getPlayerFromCache } from './playerCache.js';
 import * as utils from './utils.js';
@@ -29,7 +30,7 @@ export async function showPanel(player, panelId, context = {}) {
 
         await handleFormResponse(player, panelId, response, context);
     } catch (e) {
-        console.error(`[UIManager] showPanel failed for panel '${panelId}': ${e.stack}`);
+        errorLog(`[UIManager] showPanel failed for panel '${panelId}': ${e.stack}`);
         debugLog(`[UIManager] ERROR: showPanel failed for panel '${panelId}': ${e.message}`);
     }
 }
@@ -92,7 +93,7 @@ async function handleFormResponse(player, panelId, response, context) {
     }
 
     if (panelId === 'reportListPanel') {
-        if (response.selection === 0) return showPanel(player, 'mainPanel');
+        if (response.selection === 0) {return showPanel(player, 'mainPanel');}
         const reports = reportManager.getAllReports().filter(r => r.status === 'open' || r.status === 'assigned').sort((a, b) => a.timestamp - b.timestamp);
         const selectedReport = reports[response.selection - 1];
         if (selectedReport) {
@@ -239,7 +240,7 @@ uiActionFunctions['showRules'] = async (player, context) => {
 
 uiActionFunctions['assignReport'] = (player, context, panelId) => {
     const { targetReport } = context;
-    if (!targetReport) return;
+    if (!targetReport) {return;}
     debugLog(`[UIManager] Action 'assignReport' called by ${player.name} for report ${targetReport.id}.`);
     reportManager.assignReport(targetReport.id, player.id);
     player.sendMessage(`§aReport ${targetReport.id} has been assigned to you.`);
@@ -248,7 +249,7 @@ uiActionFunctions['assignReport'] = (player, context, panelId) => {
 
 uiActionFunctions['resolveReport'] = (player, context, panelId) => {
     const { targetReport } = context;
-    if (!targetReport) return;
+    if (!targetReport) {return;}
     debugLog(`[UIManager] Action 'resolveReport' called by ${player.name} for report ${targetReport.id}.`);
     reportManager.resolveReport(targetReport.id);
     player.sendMessage(`§aReport ${targetReport.id} has been marked as resolved.`);
@@ -257,7 +258,7 @@ uiActionFunctions['resolveReport'] = (player, context, panelId) => {
 
 uiActionFunctions['clearReport'] = (player, context, panelId) => {
     const { targetReport } = context;
-    if (!targetReport) return;
+    if (!targetReport) {return;}
     debugLog(`[UIManager] Action 'clearReport' called by ${player.name} for report ${targetReport.id}.`);
     reportManager.clearReport(targetReport.id);
     player.sendMessage(`§aReport ${targetReport.id} has been cleared.`);

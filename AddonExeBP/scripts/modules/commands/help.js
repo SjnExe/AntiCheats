@@ -5,7 +5,7 @@ function showCategorizedHelp(player, userPermissionLevel) {
     const categorizedCommands = {};
 
     for (const cmd of commandManager.commands) {
-        if (userPermissionLevel > cmd.permissionLevel) continue;
+        if (userPermissionLevel > cmd.permissionLevel) {continue;}
 
         const category = cmd.category || 'General';
         if (!categorizedCommands[category]) {
@@ -68,7 +68,7 @@ function showSpecificHelp(player, commandName) {
 commandManager.register({
     name: 'help',
     slashName: 'xhelp',
-    aliases: ['?', 'h'],
+    aliases: ['?', 'h', 'cmds', 'commands'],
     disabledSlashAliases: ['?'],
     description: 'Displays a list of available commands or help for a specific command.',
     category: 'General',

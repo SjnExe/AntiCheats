@@ -2,10 +2,11 @@ import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 import { playSound } from '../../core/utils.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
+import { errorLog } from '../../core/errorLogger.js';
 
 function kickPlayer(player, targetPlayer, reason) {
     if (!targetPlayer) {
-        player.sendMessage(`§cPlayer not found.`);
+        player.sendMessage('§cPlayer not found.');
         playSound(player, 'note.bass');
         return;
     }
@@ -33,7 +34,7 @@ function kickPlayer(player, targetPlayer, reason) {
     } catch (error) {
         player.sendMessage(`§cFailed to kick ${targetPlayer.name}. See console for details.`);
         playSound(player, 'note.bass');
-        console.error(`[/x:kick] Failed to run kick command for ${targetPlayer.name}:`, error);
+        errorLog(`[/x:kick] Failed to run kick command for ${targetPlayer.name}:`, error);
     }
 }
 

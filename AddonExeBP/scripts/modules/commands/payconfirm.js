@@ -4,6 +4,7 @@ import { world } from '@minecraft/server';
 
 commandManager.register({
     name: 'payconfirm',
+    aliases: ['confirmpay'],
     description: 'Confirms a pending payment.',
     category: 'Economy',
     permissionLevel: 1024,

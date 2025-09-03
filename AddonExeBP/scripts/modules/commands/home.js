@@ -1,5 +1,6 @@
 import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
+import { errorLog } from '../../core/errorLogger.js';
 import * as homesManager from '../../core/homesManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
@@ -43,7 +44,7 @@ commandManager.register({
                 setCooldown(player, 'home');
             } catch (e) {
                 player.sendMessage(`§cFailed to teleport. Error: ${e.message}`);
-                console.error(`[/x:home] Failed to teleport: ${e.stack}`);
+                errorLog(`[/x:home] Failed to teleport: ${e.stack}`);
             }
         };
 

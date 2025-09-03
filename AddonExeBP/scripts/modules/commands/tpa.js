@@ -6,7 +6,7 @@ import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 commandManager.register({
     name: 'tpa',
     description: 'Sends a request to teleport to another player.',
-    aliases: ['tprequest'],
+    aliases: ['tprequest', 'asktp', 'requesttp'],
     category: 'TPA System',
     permissionLevel: 1024, // Everyone
     parameters: [

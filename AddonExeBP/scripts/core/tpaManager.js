@@ -28,7 +28,7 @@ const incomingRequests = new Map();
  * @param {TpaRequest} request The request to clear.
  */
 function clearRequest(request) {
-    if (!request) return;
+    if (!request) {return;}
     system.clearRun(request.timeoutId);
     outgoingRequests.delete(request.sourcePlayerId);
     incomingRequests.delete(request.targetPlayerId);

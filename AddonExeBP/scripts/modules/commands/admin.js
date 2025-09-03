@@ -1,7 +1,7 @@
-import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { updateAllPlayerRanks } from '../../core/main.js';
+import { errorLog } from '../../core/errorLogger.js';
 
 commandManager.register({
     name: 'admin',
@@ -18,7 +18,7 @@ commandManager.register({
         const action = actionArg?.toLowerCase() || 'add';
 
         if (!target || target.length === 0) {
-            player.sendMessage(`§cPlayer not found. They must be online.`);
+            player.sendMessage('§cPlayer not found. They must be online.');
             return;
         }
         const targetPlayer = target[0];
@@ -41,7 +41,7 @@ commandManager.register({
             updateAllPlayerRanks();
         } catch (e) {
             player.sendMessage(`§cFailed to ${action} admin tag. Error: ${e.message}`);
-            console.error(`[/x:admin] Failed to ${action} tag: ${e.stack}`);
+            errorLog(`[/x:admin] Failed to ${action} tag: ${e.stack}`);
         }
     }
 });

@@ -43,7 +43,7 @@ export function setHome(player, homeName) {
  */
 export function getHome(player, homeName) {
     const pData = getPlayer(player.id);
-    if (!pData) return null;
+    if (!pData) {return null;}
     return pData.homes[homeName.toLowerCase()] || null;
 }
 
@@ -75,7 +75,7 @@ export function deleteHome(player, homeName) {
  */
 export function listHomes(player) {
     const pData = getPlayer(player.id);
-    if (!pData) return [];
+    if (!pData) {return [];}
     return Object.keys(pData.homes);
 }
 
@@ -86,6 +86,6 @@ export function listHomes(player) {
  */
 export function getHomeCount(player) {
     const pData = getPlayer(player.id);
-    if (!pData) return 0;
+    if (!pData) {return 0;}
     return Object.keys(pData.homes).length;
 }
