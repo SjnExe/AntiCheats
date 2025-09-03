@@ -27,7 +27,7 @@ Follow these steps to gain administrative control of the addon.
   // Example in AddonExeBP/scripts/config.js
   ownerPlayerNames: ['YourExactPlayerName', 'AnotherOwnerName'],
   ```
-- **Applying Changes:** After editing, **restart your server**, then run `/xreload` in-game.
+- **Applying Changes:** After editing `config.js`, simply run `/xreload` in-game as an Admin. A full server restart is no longer required for most config changes.
 - **➡️ For a summary, see the [F.A.Q.](F.A.Q.md#how-do-i-change-the-server-owner)**
 
 ### 2. Set Server Admins (Optional)
@@ -42,6 +42,31 @@ For more advanced control over permissions and visual styles, you can edit the r
 - **File:** `AddonExeBP/scripts/core/ranksConfig.js`
 - **Action:** Modify the `rankDefinitions` array to define your server's roles (e.g., Moderator, VIP). You can set permission levels, chat formats, and nametags for each rank.
 - **➡️ For a complete guide, see: [Rank System Documentation](RankSystem.md)**
+
+---
+
+## 🔄 Reloading the Configuration
+
+AddonExe features a smart reloading system to apply configuration changes without needing to restart your server.
+
+- **Command:** `/xreload` (or `!reload` in chat)
+- **Permission:** Admin
+
+### How it Works
+The addon uses a two-state configuration system to prevent accidental loss of in-game changes (like a player's balance set via a command).
+
+1.  **Live Config:** This is the configuration currently being used by the addon. It can be modified by in-game commands.
+2.  **Last Loaded Config:** This is a snapshot of the `config.js` file from the last time the server started or `/xreload` was used.
+
+When you run `/xreload`, the addon compares the current `config.js` file on disk to the `Last Loaded Config`.
+
+-   **If a setting has been changed in the file:** The addon will update the live config with the new value from the file. This means changes in the file always take priority.
+-   **If a setting has NOT been changed in the file:** The addon will leave the live config value untouched, preserving any changes made through in-game commands.
+
+After the reload, a new snapshot is taken, and the process repeats on the next `/xreload`.
+
+> [!IMPORTANT]
+> This smart reloading applies to most settings in `config.js`. However, for structural changes (like adding a new rank in `ranksConfig.js` or a new button in `panelLayoutConfig.js`), a full server restart is still recommended to ensure everything initializes correctly.
 
 ---
 
