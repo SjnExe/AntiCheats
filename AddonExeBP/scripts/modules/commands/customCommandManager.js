@@ -36,11 +36,12 @@ class CustomCommandManager {
      * @private
      */
     prepareCommandData(command) {
+        const slashCommandName = command.slashName || command.name;
         const mandatoryParameters = (command.parameters || []).filter(p => !p.optional).map(p => this.formatParameter(p));
         const optionalParameters = (command.parameters || []).filter(p => p.optional).map(p => this.formatParameter(p));
 
         return {
-            name: `${this.prefix}:${command.name}`,
+            name: `${this.prefix}:${slashCommandName}`,
             description: command.description,
             permissionLevel: this.translatePermissionLevel(command.permissionLevel),
             mandatoryParameters,
