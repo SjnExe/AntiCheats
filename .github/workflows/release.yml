@@ -34,7 +34,6 @@ jobs:
       - name: Replace placeholders in staged files
         shell: bash
         env:
-          VERSION_STRING: ${{ env.VERSION_STRING }}
           VERSION_ARRAY_STRING: ${{ env.VERSION_ARRAY_STRING }}
         run: |
           set -e
@@ -43,12 +42,10 @@ jobs:
           RP_MANIFEST="staging/AddonExeRP/manifest.json"
           CONFIG_JS_PATH="staging/AddonExeBP/scripts/config.js"
 
-          # Replace in JSON files
-          find staging -type f -name "*.json" -exec sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" {} +
-          find staging -type f -name "*.json" -exec sed -i "s/\"__VERSION_ARRAY__\"/${VERSION_ARRAY_STRING}/g" {} +
-
-          # Replace in JS config
-          sed -i "s/version: \[1, 0, 0\]/version: ${VERSION_ARRAY_STRING}/g" "$CONFIG_JS_PATH"
+          # Replace version array placeholder in all relevant files
+          sed -i "s|\"version\": \[1, 0, 0\]|\"version\": ${VERSION_ARRAY_STRING}|g" "$BP_MANIFEST"
+          sed -i "s|\"version\": \[1, 0, 0\]|\"version\": ${VERSION_ARRAY_STRING}|g" "$RP_MANIFEST"
+          sed -i "s|version: \[1, 0, 0\]|version: ${VERSION_ARRAY_STRING}|g" "$CONFIG_JS_PATH"
 
           echo "--- Verification ---"
           echo "BP Manifest:"
