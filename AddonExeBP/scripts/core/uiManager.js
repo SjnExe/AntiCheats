@@ -219,7 +219,7 @@ function buildReportListForm(title) {
         reports.sort((a, b) => a.timestamp - b.timestamp);
         for (const report of reports) {
             const statusColor = report.status === 'assigned' ? '§6' : '§c';
-            form.button(`[${statusColor}${report.status.toUpperCase()}§r] ${report.reportedPlayerName}\n§7Reported by: ${report.reporterName}`);
+            form.button(`[${statusColor}${report.status.toUpperCase()}§r] ${report.reportedPlayerName}\n§8Reported by: ${report.reporterName}`);
         }
     }
     return form;
