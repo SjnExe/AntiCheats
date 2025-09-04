@@ -94,6 +94,8 @@ We recommend the following manual installation method, as it makes future config
 4.  **Enable World Settings (CRITICAL!):**
     - In your world settings, go to the "Game" section and enable **"Activate Cheats"**. This is required for slash commands to work.
     - Next, go to the "Experiments" section and **enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function without this setting enabled.
+    > **For Bedrock Dedicated Server (BDS) users:**
+    > You must also edit your `server.properties` file and set `allow-cheats=true`.
 5.  **Prioritize:** Ensure `AddonExeBP` is at the **TOP** of your behavior pack list in the world settings. This is crucial for AddonExe to function correctly.
 6.  **👑 Set Owner(s) (CRUCIAL!):**
     - Now that you've installed the folders, navigate to `behavior_packs/AddonExeBP/scripts/` and open `config.js` in a text editor.
