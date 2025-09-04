@@ -51,6 +51,10 @@ async function buildPanelForm(player, panelId, context) {
     }
     let title = panelDef.title.replace('{playerName}', context.targetPlayer?.name ?? '');
 
+    if (panelDef.formType === 'modal') {
+        return buildModalForm(title, panelDef, context);
+    }
+
     if (panelId === 'mainPanel') {
         const config = getConfig();
         title = config.serverName || panelDef.title;
@@ -78,13 +82,28 @@ async function buildPanelForm(player, panelId, context) {
 
 // Processes the response from a submitted form.
 async function handleFormResponse(player, panelId, response, context) {
-    debugLog(`[UIManager] Handling form response for panel '${panelId}' from ${player.name}. Selection: ${response.selection}`);
+    debugLog(`[UIManager] Handling form response for panel '${panelId}' from ${player.name}.`);
     const pData = getPlayer(player.id);
     if (!pData) {
         debugLog(`[UIManager] Player data not found for ${player.name} during form response. Aborting.`);
         return;
     }
 
+    const panelDef = panelDefinitions[panelId];
+
+    // Handle modal form submissions
+    if (panelDef.formType === 'modal') {
+        if (panelDef.onSubmit) {
+            const actionFunction = uiActionFunctions[panelDef.onSubmit];
+            if (actionFunction) {
+                debugLog(`[UIManager] Calling modal onSubmit function: ${panelDef.onSubmit}`);
+                await actionFunction(player, context, response.formValues);
+            } else {
+                debugLog(`[UIManager] ERROR: Modal onSubmit function '${panelDef.onSubmit}' not found.`);
+            }
+        }
+        return;
+    }
 
     if (panelId === 'bountyListPanel') {
         // The first button (selection 0) is 'Back'. For now, clicking a bounty
@@ -103,7 +122,6 @@ async function handleFormResponse(player, panelId, response, context) {
         return;
     }
 
-    const panelDef = panelDefinitions[panelId];
     const menuItems = getMenuItems(panelDef, pData.permissionLevel);
     const selectedItem = menuItems[response.selection];
     if (!selectedItem) {
@@ -142,6 +160,37 @@ function getMenuItems(panelDef, permissionLevel) {
     return items;
 }
 
+function buildModalForm(title, panelDef) {
+    const form = new ModalFormData().title(title);
+    (panelDef.controls || []).forEach(control => {
+        switch (control.type) {
+            case 'textField':
+                form.textField(control.label, control.placeholder || '', control.defaultValue || '');
+                break;
+            case 'toggle':
+                form.toggle(control.label, control.defaultValue || false);
+                break;
+            // Add other control types like slider, dropdown here if needed
+        }
+    });
+    return form;
+}
+
+function getReportedPlayerName(report) {
+    if (report.reportedPlayerName) {
+        return report.reportedPlayerName;
+    }
+    // Fallback for old reports that didn't store the name
+    const allNames = getAllPlayerNameIdMap();
+    for (const [name, id] of allNames.entries()) {
+        if (id === report.reportedPlayerId) {
+            // This is not the original casing, but it's better than nothing.
+            return name.charAt(0).toUpperCase() + name.slice(1);
+        }
+    }
+    return 'Unknown Player';
+}
+
 function addPanelBody(form, player, panelId, context) {
     const config = getConfig();
     if (panelId === 'myStatsPanel') {
@@ -167,9 +216,10 @@ function addPanelBody(form, player, panelId, context) {
     } else if (panelId === 'reportActionsPanel' && context.targetReport) {
         const { targetReport } = context;
         const reportDate = new Date(targetReport.timestamp).toLocaleString();
+        const reportedPlayerName = getReportedPlayerName(targetReport);
         const body = [
             `§fReport ID: §e${targetReport.id}`,
-            `§fReported Player: §e${targetReport.reportedPlayerName}`,
+            `§fReported Player: §e${reportedPlayerName}`,
             `§fReporter: §e${targetReport.reporterName}`,
             `§fReason: §e${targetReport.reason}`,
             `§fStatus: §e${targetReport.status}`,
@@ -203,7 +253,7 @@ async function buildBountyListForm(title) {
     } else {
         bounties.sort((a, b) => b.bounty - a.bounty); // Sort descending by bounty amount
         for (const bounty of bounties) {
-            form.button(`${bounty.name}\n§e$${bounty.bounty.toFixed(2)}`);
+            form.button(`§e${bounty.name}\n§e$${bounty.bounty.toFixed(2)}`);
         }
     }
     return form;
@@ -219,13 +269,31 @@ function buildReportListForm(title) {
         reports.sort((a, b) => a.timestamp - b.timestamp);
         for (const report of reports) {
             const statusColor = report.status === 'assigned' ? '§6' : '§c';
-            form.button(`[${statusColor}${report.status.toUpperCase()}§r] ${report.reportedPlayerName}\n§7Reported by: ${report.reporterName}`);
+            const reportedPlayerName = getReportedPlayerName(report);
+            form.button(`[${statusColor}${report.status.toUpperCase()}§r] §e${reportedPlayerName}\n§7Reported by: ${report.reporterName}`);
         }
     }
     return form;
 }
 
 // --- UI Action Functions ---
+
+uiActionFunctions['submitReport'] = async (player, context, formValues) => {
+    const { targetPlayer } = context;
+    const [reason] = formValues;
+
+    if (!targetPlayer) {
+        errorLog('[UIManager] submitReport action called without a targetPlayer in context.');
+        return;
+    }
+    if (!reason) {
+        player.sendMessage('§cYou must provide a reason for the report.');
+        return;
+    }
+
+    reportManager.createReport(player, targetPlayer, reason);
+    player.sendMessage('§aReport submitted. Thank you for your help.');
+};
 
 uiActionFunctions['showRules'] = async (player, context) => {
     debugLog(`[UIManager] Action 'showRules' called by ${player.name}.`);

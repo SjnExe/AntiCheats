@@ -18,7 +18,7 @@ commandManager.register({
         const { action, target, rankId } = args;
         const subcommands = ['set', 'remove'];
         if (!subcommands.includes(action.toLowerCase())) {
-            player.sendMessage('§cUsage: /rank <set|remove> <playerName> <rankId>');
+            player.sendMessage('§cUsage: /x:rank <set|remove> <playerName> <rankId>');
             return;
         }
 

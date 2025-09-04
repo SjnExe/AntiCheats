@@ -43,7 +43,7 @@ commandManager.register({
         if (amount > config.economy.paymentConfirmationThreshold) {
             economyManager.createPendingPayment(player.id, targetPlayer.id, amount);
             player.sendMessage(`§ePayment of $${amount.toFixed(2)} to ${targetPlayer.name} is pending.`);
-            player.sendMessage(`§eType §a/payconfirm§e within ${config.economy.paymentConfirmationTimeout} seconds to complete the transaction.`);
+            player.sendMessage(`§eType §a/x:payconfirm§e within ${config.economy.paymentConfirmationTimeout} seconds to complete the transaction.`);
         } else {
             const result = economyManager.transfer(player.id, targetPlayer.id, amount);
             if (result.success) {

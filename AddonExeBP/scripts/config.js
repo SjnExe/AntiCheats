@@ -95,8 +95,7 @@ export const config = {
     },
 
     // --- Miscellaneous ---
-    // Default spawn location. Can be set manually here (e.g., { x: 0, y: 100, z: 0, dimensionId: 'minecraft:overworld' }) or with the in-game /setspawn command.
-    spawnLocation: null,
+    spawnLocation: null, // Example: { x: 0, y: 100, z: 0, dimensionId: 'minecraft:overworld' }
 
     // --- Sound Events ---
     soundEvents: {
@@ -107,22 +106,25 @@ export const config = {
     },
 
     // --- Command Enable/Disable ---
+    // This section will be populated as commands are added.
     commandSettings: {
         'admin': { enabled: true },
+        'unban': { enabled: true },
+        'unmute': { enabled: true },
+        'chattoconsole': { enabled: true },
+        'restart': { enabled: true },
+        'save': { enabled: true },
         'balance': { enabled: true },
         'baltop': { enabled: true },
         'ban': { enabled: true },
         'bounty': { enabled: true },
-        'chattoconsole': { enabled: true },
         'clear': { enabled: true },
         'clearchat': { enabled: true },
         'clearreports': { enabled: true },
         'copyinv': { enabled: true },
-        'deathcoords': { enabled: true },
         'debug': { enabled: true },
         'delhome': { enabled: true },
         'freeze': { enabled: true },
-        'gm': { enabled: true },
         'gma': { enabled: true },
         'gmc': { enabled: true },
         'gms': { enabled: true },
@@ -143,9 +145,7 @@ export const config = {
         'reload': { enabled: true },
         'report': { enabled: true },
         'reports': { enabled: true },
-        'restart': { enabled: true },
         'rules': { enabled: true },
-        'save': { enabled: true },
         'setbalance': { enabled: true },
         'sethome': { enabled: true },
         'setspawn': { enabled: true },
@@ -158,8 +158,6 @@ export const config = {
         'tpadeny': { enabled: true },
         'tpahere': { enabled: true },
         'tpastatus': { enabled: true },
-        'unban': { enabled: true },
-        'unmute': { enabled: true },
         'vanish': { enabled: true },
         'version': { enabled: true },
         'xraynotify': { enabled: true }

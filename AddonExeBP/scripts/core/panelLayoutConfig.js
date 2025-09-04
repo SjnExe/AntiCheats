@@ -141,5 +141,14 @@ export const panelDefinitions = {
                 actionValue: 'showUnbanForm'
             }
         ]
+    },
+    reportSubmitPanel: {
+        title: '§l§cReport {playerName}§r',
+        parentPanelId: null, // It's a modal, no back button needed.
+        formType: 'modal',
+        controls: [
+            { id: 'reason', type: 'textField', label: 'Reason for Report', placeholder: 'e.g., Griefing, Cheating, etc.' }
+        ],
+        onSubmit: 'submitReport' // New action function to handle submission
     }
 };

@@ -60,29 +60,39 @@ commandManager.register({
     parameters: [
         { name: 'target', type: 'player', description: 'The player to ban.' },
         { name: 'duration', type: 'string', description: 'The duration of the ban (e.g., 1d, 2h, 30m). Default: perm', optional: true },
-        { name: 'reason', type: 'text', description: 'The reason for the ban.', optional: true }
+        { name: 'reason', type: 'string', description: 'The reason for the ban.', optional: true }
     ],
     execute: (player, args) => {
-        // For slash commands, target is a player object array. For chat, it's a name string.
-        const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
+        if (Array.isArray(args)) { // Chat command
+            if (args.length < 1) {
+                player.sendMessage('§cUsage: !ban <player> [duration] [reason]');
+                return;
+            }
+            const targetName = args[0];
+            const targetPlayer = findPlayerByName(targetName);
+            let duration;
+            let reason;
 
-        if (!targetPlayer) {
-            player.sendMessage('§cPlayer not found.');
-            return;
+            if (args.length > 1) {
+                const parsedMs = parseDuration(args[1]);
+                if (parsedMs > 0) {
+                    duration = args[1];
+                    reason = args.slice(2).join(' ') || 'No reason provided.';
+                } else {
+                    reason = args.slice(1).join(' ');
+                }
+            } else {
+                reason = 'No reason provided.';
+            }
+            banPlayer(player, targetPlayer, duration, reason);
+        } else { // Slash command
+            const { target, duration, reason } = args;
+            if (!target || target.length === 0) {
+                player.sendMessage('§cPlayer not found.');
+                return;
+            }
+            banPlayer(player, target[0], duration, reason || 'No reason provided.');
         }
-
-        let duration = args.duration;
-        let reason = args.reason;
-
-        // The command manager can't distinguish between an optional duration and the reason.
-        // We need to check if the 'duration' argument is actually a duration or the start of the reason.
-        if (duration && parseDuration(duration) === 0) {
-            // It's not a valid duration, so it must be the start of the reason.
-            reason = `${duration}${reason ? ' ' + reason : ''}`;
-            duration = undefined; // Reset duration
-        }
-
-        banPlayer(player, targetPlayer, duration, reason || 'No reason provided.');
     }
 });
 
@@ -96,7 +106,17 @@ commandManager.register({
         { name: 'target', type: 'string', description: 'The name of the player to unban.' }
     ],
     execute: (player, args) => {
-        const targetName = args.target;
+        let targetName;
+        if (Array.isArray(args)) {
+            if (args.length < 1) {
+                player.sendMessage('§cUsage: !unban <player>');
+                return;
+            }
+            targetName = args[0];
+        } else {
+            targetName = args.target;
+        }
+
         const targetId = getPlayerIdByName(targetName);
 
         if (!targetId) {

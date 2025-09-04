@@ -62,7 +62,10 @@ const commandFiles = [
     'setspawn.js',
     'setbalance.js',
     'tp.js',
-    'gamemode.js',
+    'gmc.js',
+    'gms.js',
+    'gma.js',
+    'gmsp.js',
     'xraynotify.js'
 ];
 

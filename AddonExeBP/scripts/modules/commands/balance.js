@@ -4,7 +4,7 @@ import { getConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'balance',
-    aliases: ['bal', 'money', 'cash'],
+    aliases: ['bal', 'money', 'cash', 'credits'],
     description: 'Checks your or another player\'s balance.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone
