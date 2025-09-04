@@ -201,9 +201,14 @@ async function handleFormResponse(player, panelId, response, context) {
         // Apply all grouped changes
         const config = getConfig();
         for (const key in partialChanges) {
-            // For nested objects, we need to merge. For top-level simple values, this just replaces it.
-            const newTopLevelValue = deepMerge(config[key], partialChanges[key]);
-            updateConfig(key, newTopLevelValue);
+            if (typeof config[key] === 'object' && config[key] !== null && !Array.isArray(config[key])) {
+                // If the config property is an object, deep merge the changes
+                const newTopLevelValue = deepMerge(config[key], partialChanges[key]);
+                updateConfig(key, newTopLevelValue);
+            } else {
+                // Otherwise, it's a primitive value, so just update it directly
+                updateConfig(key, partialChanges[key]);
+            }
         }
 
         player.sendMessage(`§aSuccessfully saved settings for ${category.title}§a.`);
