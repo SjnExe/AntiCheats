@@ -62,7 +62,7 @@ export default [
             'no-undef': 'error',
             'object-curly-spacing': ['error', 'always'],
             'comma-dangle': ['error', 'never'],
-            'no-console': 'off',
+            'no-console': 'warn',
             'key-spacing': ['error', { 'beforeColon': false, 'afterColon': true }],
             'keyword-spacing': ['error', { 'before': true, 'after': true }],
             'space-before-function-paren': ['error', {
@@ -71,6 +71,14 @@ export default [
                 'asyncArrow': 'always',
             }],
             'arrow-spacing': ['error', { 'before': true, 'after': true }],
+            'curly': ['error', 'all'],
+            'eqeqeq': ['error', 'always'],
+            'no-var': 'error',
+            'comma-spacing': ['error', { 'before': false, 'after': true }],
+            'space-infix-ops': 'error',
+            'space-in-parens': ['error', 'never'],
+            'space-before-blocks': 'error',
+            'max-len': ['warn', { 'code': 256, 'ignoreUrls': true, 'ignoreStrings': true, 'ignoreTemplateLiterals': true, 'ignoreRegExpLiterals': true }],
         },
     },
     // JSONC configuration

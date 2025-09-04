@@ -4,7 +4,7 @@ import { getConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'delhome',
-    aliases: ['remhome', 'deletehome', 'rmhome'],
+    aliases: ['remhome', 'deletehome', 'rmhome', '-home'],
     description: 'Deletes one of your set homes.',
     category: 'Home System',
     permissionLevel: 1024, // Everyone

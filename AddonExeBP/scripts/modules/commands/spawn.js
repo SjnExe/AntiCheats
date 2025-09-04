@@ -3,9 +3,11 @@ import { commandManager } from './commandManager.js';
 import { getConfig } from '../../core/configManager.js';
 import { getCooldown, setCooldown } from '../../core/cooldownManager.js';
 import { playSound, startTeleportWarmup } from '../../core/utils.js';
+import { errorLog } from '../../core/errorLogger.js';
 
 commandManager.register({
     name: 'spawn',
+    aliases: ['lobby', 'hub'],
     description: 'Teleports you to the server spawn point.',
     category: 'General',
     permissionLevel: 1024, // Everyone
@@ -37,7 +39,7 @@ commandManager.register({
                 playSound(player, 'random.orb');
             } catch (e) {
                 player.sendMessage('§cFailed to teleport to spawn. The dimension may be invalid or the location unsafe.');
-                console.error(`[/x:spawn] Failed to teleport: ${e.stack}`);
+                errorLog(`[/x:spawn] Failed to teleport: ${e.stack}`);
                 playSound(player, 'note.bass');
             }
         };

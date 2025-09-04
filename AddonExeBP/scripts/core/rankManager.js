@@ -1,5 +1,6 @@
 import { rankDefinitions } from './ranksConfig.js';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 
 let sortedRanks = [];
 
@@ -74,7 +75,7 @@ export function getPlayerRank(player, config) {
     }
 
     // If the configured default rank doesn't exist, log an error and return a minimal, safe fallback.
-    console.error(`[RankManager] CRITICAL: The configured default rank with id "${config.playerDefaults.rankId}" was not found in ranksConfig.js. Please check your configuration.`);
+    errorLog(`[RankManager] CRITICAL: The configured default rank with id "${config.playerDefaults.rankId}" was not found in ranksConfig.js. Please check your configuration.`);
     return {
         id: 'fallback',
         name: 'Fallback',

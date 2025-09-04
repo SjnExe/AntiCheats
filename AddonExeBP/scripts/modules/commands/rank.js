@@ -2,6 +2,7 @@ import { commandManager } from './commandManager.js';
 import { playSound } from '../../core/utils.js';
 import { rankDefinitions } from '../../core/ranksConfig.js';
 import { updatePlayerRank } from '../../core/main.js';
+import { errorLog } from '../../core/errorLogger.js';
 
 commandManager.register({
     name: 'rank',
@@ -24,7 +25,7 @@ commandManager.register({
         const actionLC = action.toLowerCase();
 
         if (!target || target.length === 0) {
-            player.sendMessage(`§cPlayer not found.`);
+            player.sendMessage('§cPlayer not found.');
             return;
         }
         const targetPlayer = target[0];
@@ -64,7 +65,7 @@ commandManager.register({
             playSound(player, 'random.orb');
         } catch (e) {
             player.sendMessage('§cFailed to update rank tag.');
-            console.error(`[/x:rank] Error: ${e.stack}`);
+            errorLog(`[/x:rank] Error: ${e.stack}`);
         }
     }
 });

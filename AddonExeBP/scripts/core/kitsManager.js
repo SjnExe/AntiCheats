@@ -1,6 +1,7 @@
 import { ItemStack } from '@minecraft/server';
 import { getPlayer, savePlayerData } from './playerDataManager.js';
 import { kits } from './kitsConfig.js';
+import { errorLog } from './errorLogger.js';
 
 /**
  * Gets the definition of a kit.
@@ -27,10 +28,10 @@ export function listKits() {
  */
 export function getKitCooldown(player, kitName) {
     const pData = getPlayer(player.id);
-    if (!pData) return 0;
+    if (!pData) {return 0;}
 
     const cooldownExpiry = pData.kitCooldowns[kitName.toLowerCase()];
-    if (!cooldownExpiry) return 0;
+    if (!cooldownExpiry) {return 0;}
 
     const now = Date.now();
     if (now >= cooldownExpiry) {
@@ -94,7 +95,7 @@ export function giveKit(player, kitName) {
 
         return { success: true, message: `You have received the '${kitName}' kit.` };
     } catch (e) {
-        console.error(`[KitsManager] Failed to give kit: ${e.stack}`);
+        errorLog(`[KitsManager] Failed to give kit: ${e.stack}`);
         return { success: false, message: 'An unexpected error occurred while giving the kit.' };
     }
 }

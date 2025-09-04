@@ -69,7 +69,7 @@ export function setBalance(playerId, amount) {
 }
 
 export function addBalance(playerId, amount) {
-    if (amount < 0) return false;
+    if (amount < 0) {return false;}
     const currentBalance = getBalance(playerId);
     if (currentBalance === null) {
         return false;
@@ -78,7 +78,7 @@ export function addBalance(playerId, amount) {
 }
 
 export function removeBalance(playerId, amount) {
-    if (amount < 0) return false;
+    if (amount < 0) {return false;}
     const currentBalance = getBalance(playerId);
     if (currentBalance === null || currentBalance < amount) {
         return false;

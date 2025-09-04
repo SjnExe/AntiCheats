@@ -1,5 +1,5 @@
 import { commandManager } from './commandManager.js';
-import { updateConfig } from '../../core/configManager.js';
+import { getConfig, updateConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'debug',
@@ -7,13 +7,14 @@ commandManager.register({
     category: 'Administration',
     permissionLevel: 1, // Admin and above
     parameters: [
-        { name: 'state', type: 'boolean', description: 'Set to true to enable debug mode, false to disable.' }
+        { name: 'state', type: 'boolean', description: 'Set to true to enable, false to disable. Toggles if omitted.', optional: true }
     ],
     execute: (player, args) => {
-        const { state: newDebugState } = args;
+        const currentDebugState = getConfig().debug;
+        const newDebugState = args.state ?? !currentDebugState;
 
         updateConfig('debug', newDebugState);
 
-        player.sendMessage(`§aDebug mode has been set to: ${newDebugState}`);
+        player.sendMessage(`§aDebug mode has been ${newDebugState ? '§aenabled' : '§cdisabled'}§a.`);
     }
 });

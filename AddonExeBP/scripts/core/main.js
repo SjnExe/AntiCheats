@@ -1,5 +1,5 @@
 import { world, system } from '@minecraft/server';
-import { loadConfig, getConfig, updateConfig } from './configManager.js';
+import { loadConfig, getConfig, updateConfig, reloadConfig } from './configManager.js';
 import * as dataManager from './dataManager.js';
 import * as rankManager from './rankManager.js';
 import * as playerDataManager from './playerDataManager.js';
@@ -10,8 +10,10 @@ import { loadCooldowns, clearExpiredCooldowns } from './cooldownManager.js';
 import { clearExpiredPayments } from './economyManager.js';
 import { showPanel } from './uiManager.js';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 import * as playerCache from './playerCache.js';
 import { startRestart } from './restartManager.js';
+import { formatString } from './utils.js';
 import '../modules/commands/index.js';
 
 /**
@@ -20,7 +22,7 @@ import '../modules/commands/index.js';
  */
 export function updatePlayerRank(player) {
     const pData = playerDataManager.getPlayer(player.id);
-    if (!pData) return;
+    if (!pData) {return;}
 
     const config = getConfig();
     const oldRankId = pData.rankId;
@@ -76,7 +78,7 @@ function checkConfiguration() {
     if (!config.ownerPlayerNames || config.ownerPlayerNames.length === 0 || config.ownerPlayerNames[0] === 'Your•Name•Here') {
         const warningMessage = '§l§c[AddonExe] WARNING: No owner is configured. Please set `ownerPlayerNames` in `scripts/config.js` to gain access to admin commands.';
         system.runTimeout(() => world.sendMessage(warningMessage), 20);
-        console.warn('[AddonExe] No owner configured.');
+        errorLog('[AddonExe] No owner configured.');
     }
 }
 
@@ -95,7 +97,10 @@ function startSystemTimers() {
  */
 function initializeAddon() {
     debugLog('[AddonExe] Initializing addon...');
-    loadConfig();
+    const isFirstInit = loadConfig();
+    if (!isFirstInit) {
+        reloadConfig();
+    }
     dataManager.initializeDataManager();
     loadPersistentData();
     initializeManagers();
@@ -122,7 +127,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
     }
 
     const wasCommand = commandManager.handleChatCommand(eventData);
-    if (wasCommand) return;
+    if (wasCommand) {return;}
 
     eventData.cancel = true;
     const pData = playerDataManager.getPlayer(player.id);
@@ -138,6 +143,7 @@ world.beforeEvents.chatSend.subscribe((eventData) => {
     // Log to console if enabled
     if (getConfig().chat?.logToConsole) {
         // Using a plain-text version for the console log to avoid clutter from formatting codes
+        // eslint-disable-next-line no-console
         console.log(`<${player.name}> ${eventData.message}`);
     }
 
@@ -160,7 +166,7 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
             try {
                 world.getDimension('overworld').runCommand(`kick "${player.name}" You have been banned ${durationText}. Reason: ${punishment.reason}`);
             } catch (error) {
-                console.error(`[BanCheck] Failed to kick banned player ${player.name}:`, error);
+                errorLog(`[BanCheck] Failed to kick banned player ${player.name}:`, error);
             }
         });
         return;
@@ -172,11 +178,37 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
     if (initialSpawn) {
         const rank = rankManager.getRankById(pData.rankId);
         debugLog(`[AddonExe] Player ${player.name} joined with rank ${rank?.name ?? 'unknown'}.`);
+
+        const config = getConfig();
+        if (config.playerInfo.enableWelcomer) {
+            const context = {
+                playerName: player.name,
+                serverName: config.serverName,
+                discordLink: config.serverInfo.discordLink,
+                websiteLink: config.serverInfo.websiteLink
+            };
+            const welcomeMessage = formatString(config.playerInfo.welcomeMessage, context);
+            player.sendMessage(welcomeMessage);
+        }
     }
 
     // Update X-ray notification cache for admins
     if (pData.permissionLevel <= 1 && pData.xrayNotifications) {
         playerCache.addAdminToXrayCache(player.id);
+    }
+
+    // Check for a death location to message the player
+    if (pData.lastDeathLocation) {
+        const location = pData.lastDeathLocation;
+        const config = getConfig();
+        const context = {
+            x: Math.floor(location.x),
+            y: Math.floor(location.y),
+            z: Math.floor(location.z),
+            dimensionId: location.dimensionId.replace('minecraft:', '')
+        };
+        const message = formatString(config.playerInfo.deathCoordsMessage, context);
+        player.sendMessage(message);
     }
 });
 
@@ -198,6 +230,29 @@ world.afterEvents.itemUse.subscribe((event) => {
     }
 });
 
+world.afterEvents.entityDie?.subscribe((event) => {
+    const { deadEntity } = event;
+    if (deadEntity.typeId !== 'minecraft:player') {
+        return;
+    }
+
+    const player = deadEntity;
+    const config = getConfig();
+
+    if (config.playerInfo.enableDeathCoords) {
+        const pData = playerDataManager.getPlayer(player.id);
+        if (pData) {
+            pData.lastDeathLocation = {
+                x: player.location.x,
+                y: player.location.y,
+                z: player.location.z,
+                dimensionId: player.dimension.id
+            };
+            // The data will be saved on playerLeave event
+        }
+    }
+});
+
 world.afterEvents.blockBreak?.subscribe((event) => {
     const { brokenBlock, player } = event;
     const valuableOres = [
@@ -208,7 +263,7 @@ world.afterEvents.blockBreak?.subscribe((event) => {
 
     if (valuableOres.includes(brokenBlock.typeId)) {
         const onlineAdmins = playerCache.getXrayAdmins();
-        if (onlineAdmins.length === 0) return;
+        if (onlineAdmins.length === 0) {return;}
 
         const location = brokenBlock.location;
         const message = `§e${player.name}§r mined §e${brokenBlock.typeId.replace('minecraft:', '')}§r at §bX: ${Math.floor(location.x)}, Y: ${Math.floor(location.y)}, Z: ${Math.floor(location.z)}`;
@@ -226,7 +281,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     const { id, sourceEntity } = event;
 
     switch (id) {
-        case 'addonexe:restart':
+        case 'exe:restart':
             // The script event can be triggered by a player or a command block.
             // If it's a player, we can use their entity as the initiator.
             // If it's a command block, sourceEntity will be undefined.
@@ -234,7 +289,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             startRestart(sourceEntity);
             break;
 
-        case 'addonexe:toggle_chat_log': {
+        case 'exe:toggle_chat_log': {
             const config = getConfig();
             const chatConfig = config.chat || { logToConsole: false };
             const newValue = !chatConfig.logToConsole;
@@ -247,11 +302,12 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
                 sourceEntity.sendMessage(feedbackMessage);
             }
             // Also log it to console for confirmation from non-player sources
+            // eslint-disable-next-line no-console
             console.log(`[AddonExe] ${feedbackMessage}`);
             break;
         }
 
-        case 'addonexe:grant_admin_self': {
+        case 'exe:grant_admin_self': {
             if (sourceEntity && sourceEntity.addTag) {
                 sourceEntity.addTag(getConfig().adminTag);
                 sourceEntity.sendMessage('§aYou have been promoted to Admin.');

@@ -1,5 +1,6 @@
 import { commandManager } from './commandManager.js';
 import { playSound } from '../../core/utils.js';
+import { errorLog } from '../../core/errorLogger.js';
 
 commandManager.register({
     name: 'copyinv',
@@ -7,7 +8,7 @@ commandManager.register({
     category: 'Moderation',
     permissionLevel: 1, // Admins only
     parameters: [
-        { name: 'target', type: 'player', description: "The player whose inventory to copy." }
+        { name: 'target', type: 'player', description: 'The player whose inventory to copy.' }
     ],
     execute: (player, args) => {
         const { target } = args;
@@ -42,7 +43,7 @@ commandManager.register({
             playSound(player, 'random.orb');
         } catch (e) {
             player.sendMessage('§cFailed to copy inventory.');
-            console.error(`[/x:copyinv] Error: ${e.stack}`);
+            errorLog(`[/x:copyinv] Error: ${e.stack}`);
         }
     }
 });

@@ -5,7 +5,7 @@ import { getConfig } from '../../core/configManager.js';
 
 commandManager.register({
     name: 'baltop',
-    aliases: ['topbal', 'rich'],
+    aliases: ['topbal', 'leaderboard', 'richlist'],
     description: 'Shows the players with the highest balances on the server.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone

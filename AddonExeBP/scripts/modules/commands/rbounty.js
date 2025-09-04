@@ -4,7 +4,7 @@ import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
 
 commandManager.register({
     name: 'removebounty',
-    aliases: ['rbounty', 'delbounty'],
+    aliases: ['rbounty', 'delbounty', '-bounty'],
     description: 'Removes a bounty from a player using your money.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone
@@ -41,7 +41,7 @@ commandManager.register({
             return;
         }
 
-        if (economyManager.getBalance(player.id) < amount){
+        if (economyManager.getBalance(player.id) < amount) {
             player.sendMessage('§cYou dont have enough money for this!');
             return;
         }

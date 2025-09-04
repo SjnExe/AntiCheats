@@ -1,5 +1,6 @@
 import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
+import { errorLog } from '../../core/errorLogger.js';
 
 commandManager.register({
     name: 'clearchat',
@@ -16,7 +17,7 @@ commandManager.register({
             world.sendMessage(`§aChat has been cleared by ${player.name}.`);
         } catch (error) {
             player.sendMessage('§cFailed to clear chat.');
-            console.error(`[/x:clearchat] ${error.stack}`);
+            errorLog(`[/x:clearchat] ${error.stack}`);
         }
     }
 });

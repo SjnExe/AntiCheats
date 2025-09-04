@@ -27,7 +27,7 @@ Follow these steps to gain administrative control of the addon.
   // Example in AddonExeBP/scripts/config.js
   ownerPlayerNames: ['YourExactPlayerName', 'AnotherOwnerName'],
   ```
-- **Applying Changes:** After editing, **restart your server**, then run `/xreload` in-game.
+- **Applying Changes:** After editing `config.js`, simply run `/xreload` in-game as an Admin. A full server restart is no longer required for most config changes.
 - **➡️ For a summary, see the [F.A.Q.](F.A.Q.md#how-do-i-change-the-server-owner)**
 
 ### 2. Set Server Admins (Optional)
@@ -45,10 +45,35 @@ For more advanced control over permissions and visual styles, you can edit the r
 
 ---
 
+## 🔄 Reloading the Configuration
+
+AddonExe features a smart reloading system to apply configuration changes without needing to restart your server.
+
+- **Command:** `/xreload` (or `!reload` in chat)
+- **Permission:** Admin
+
+### How it Works
+The addon uses a two-state configuration system to prevent accidental loss of in-game changes (like a player's balance set via a command).
+
+1.  **Live Config:** This is the configuration currently being used by the addon. It can be modified by in-game commands.
+2.  **Last Loaded Config:** This is a snapshot of the `config.js` file from the last time the server started or `/xreload` was used.
+
+When you run `/xreload`, the addon compares the current `config.js` file on disk to the `Last Loaded Config`.
+
+-   **If a setting has been changed in the file:** The addon will update the live config with the new value from the file. This means changes in the file always take priority.
+-   **If a setting has NOT been changed in the file:** The addon will leave the live config value untouched, preserving any changes made through in-game commands.
+
+After the reload, a new snapshot is taken, and the process repeats on the next `/xreload`.
+
+> [!IMPORTANT]
+> The `/xreload` command applies to settings in `config.js`. For structural changes in other files like `ranksConfig.js`, `panelLayoutConfig.js`, and `kitsConfig.js`, a full server restart is required to ensure they are applied correctly.
+
+---
+
 ## 📄 Core Configuration Files
 
 ### `config.js` - The Main Hub
-This is the primary file for most top-level settings.
+This is the primary file for most top-level settings. **Changes to this file can be reloaded with `/xreload`**.
 
 - **File:** `AddonExeBP/scripts/config.js`
 - **Purpose:**
@@ -60,7 +85,7 @@ This is the primary file for most top-level settings.
   - Toggle individual commands on or off in the `commandSettings` section.
 
 ### `ranksConfig.js` - Ranks & Permissions
-This file defines the entire hierarchy of roles on your server.
+This file defines the entire hierarchy of roles on your server. **Requires a server restart to apply changes.**
 
 - **File:** `AddonExeBP/scripts/core/ranksConfig.js`
 - **Purpose:**
@@ -71,19 +96,13 @@ This file defines the entire hierarchy of roles on your server.
   - Define the `conditions` for how a rank is assigned (e.g., based on the `ownerPlayerNames` list, the `adminTag`, or being the default).
 
 ### `panelLayoutConfig.js` - Admin Panel UI
-This file controls the layout, buttons, and actions of the `/panel` user interface.
+This file controls the layout, buttons, and actions of the `/panel` user interface. **Requires a server restart to apply changes.**
 
 - **File:** `AddonExeBP/scripts/core/panelLayoutConfig.js`
 - **Purpose:**
   - Add, remove, or reorder categories and buttons.
   - Change button text, icons, and required permission levels.
   - Link buttons to specific actions (like running a command or opening another panel).
-
-### `kitsConfig.js` - Player Kits
-This file defines the kits that players can claim.
-
-- **File:** `AddonExeBP/scripts/core/kitsConfig.js`
-- **Purpose:** Add, remove, or modify kits, including their items, cooldowns, and descriptions.
 
 > [!IMPORTANT]
 > **Cheat Detection Configuration Coming Soon**

@@ -2,6 +2,7 @@ import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { saveAllData } from './dataManager.js';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 
 let restartInProgress = false;
 let countdownTimer = -1;
@@ -77,10 +78,10 @@ function finalizeRestart() {
                 player.sendMessage('§aYou were not kicked by the restart sequence because you are an admin/owner.');
             }
         } catch (error) {
-            console.error(`[RestartManager] Failed to execute kick command: ${error}`);
+            errorLog(`[RestartManager] Failed to execute kick command: ${error}`);
         }
 
-        console.warn('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved and players have been kicked.');
+        errorLog('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved and players have been kicked.');
 
         restartInProgress = false; // Reset the flag
     }, 60); // 3-second delay

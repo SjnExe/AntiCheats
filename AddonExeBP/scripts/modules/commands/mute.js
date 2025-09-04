@@ -6,7 +6,7 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 
 function mutePlayer(player, targetPlayer, duration, reason) {
     if (!targetPlayer) {
-        player.sendMessage(`§cPlayer not found.`);
+        player.sendMessage('§cPlayer not found.');
         playSound(player, 'note.bass');
         return;
     }

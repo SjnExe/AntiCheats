@@ -10,6 +10,7 @@ commandManager.register({
     parameters: [],
     execute: (player, args) => {
         const config = getConfig();
-        player.sendMessage(`§7AddonExe Version: §e${config.version}`);
+        const versionString = `v${config.version.join('.')}`;
+        player.sendMessage(`§7AddonExe Version: §e${versionString}`);
     }
 });

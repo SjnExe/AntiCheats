@@ -1,8 +1,9 @@
 import { world, system } from '@minecraft/server';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 import { getConfig } from './configManager.js';
 
-const reportsDbKey = 'addonexe:reports';
+const reportsDbKey = 'exe:reports';
 
 /**
  * @typedef {object} Report
@@ -32,7 +33,7 @@ export function loadReports() {
             reports = JSON.parse(dataStr);
             debugLog(`[ReportManager] Loaded ${reports.length} reports.`);
         } catch (e) {
-            console.error('[ReportManager] Failed to parse report data from world property.', e);
+            errorLog('[ReportManager] Failed to parse report data from world property.', e);
             reports = [];
         }
     }
@@ -45,14 +46,14 @@ export function loadReports() {
  */
 export function saveReports(options = {}) {
     const { force = false } = options;
-    if (!needsSave && !force) return;
+    if (!needsSave && !force) {return;}
 
     try {
         world.setDynamicProperty(reportsDbKey, JSON.stringify(reports));
         needsSave = false; // Reset flag after saving
         debugLog('[ReportManager] Saved reports to world properties.');
     } catch (e) {
-        console.error('[ReportManager] Failed to save reports.', e);
+        errorLog('[ReportManager] Failed to save reports.', e);
     }
 }
 

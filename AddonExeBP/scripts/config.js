@@ -1,12 +1,12 @@
 export const config = {
     // --- System & Core Settings ---
-    version: 'v__VERSION_STRING__',
-    ownerPlayerNames: ['SjnTechMlmYT'], // Default : ['Your•Name•Here']
+    version: [1, 0, 0], // This will be replaced by the release workflow
+    ownerPlayerNames: ['Your•Name•Here'], // Default : ['Your•Name•Here']
     adminTag: 'admin',
     commandPrefix: '!',
-    serverName: '§aServerExe',
+    serverName: '§cServerExe',
     defaultGamemode: 'survival',
-    debug: true,
+    debug: false,
     exeGlobalNotificationsDefaultOn: true,
 
     // --- Data Management ---
@@ -62,7 +62,8 @@ export const config = {
     },
     playerInfo: {
         enableWelcomer: true,
-        welcomeMessage: 'Welcome, {playerName}, to our amazing server!',
+        // Available placeholders: {playerName}, {serverName}, {discordLink}, {websiteLink}. Use \n for a new line.
+        welcomeMessage: 'Welcome, {playerName}, to {serverName}!',
         notifyAdminOnNewPlayer: true,
         enableDeathCoords: true,
         deathCoordsMessage: '§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.'
@@ -101,13 +102,18 @@ export const config = {
         tpaRequestReceived: { enabled: true, soundId: 'random.orb', volume: 1.0, pitch: 1.2 },
         adminNotificationReceived: { enabled: true, soundId: 'note.pling', volume: 0.8, pitch: 1.5 },
         playerWarningReceived: { enabled: true, soundId: 'note.bass', volume: 1.0, pitch: 0.8 },
-        commandError: { enabled: false, soundId: 'mob.villager.no', volume: 1.0, pitch: 0.9 }
+        commandError: { enabled: true, soundId: 'mob.villager.no', volume: 1.0, pitch: 0.9 }
     },
 
     // --- Command Enable/Disable ---
     // This section will be populated as commands are added.
     commandSettings: {
         'admin': { enabled: true },
+        'unban': { enabled: true },
+        'unmute': { enabled: true },
+        'chattoconsole': { enabled: true },
+        'restart': { enabled: true },
+        'save': { enabled: true },
         'balance': { enabled: true },
         'baltop': { enabled: true },
         'ban': { enabled: true },

@@ -1,6 +1,7 @@
 import { commandManager } from './commandManager.js';
 import { GameMode } from '@minecraft/server';
 import { getPlayer } from '../../core/playerDataManager.js';
+import { errorLog } from '../../core/errorLogger.js';
 
 commandManager.register({
     name: 'gms',
@@ -35,7 +36,7 @@ commandManager.register({
             }
         } catch (e) {
             player.sendMessage(`§cFailed to set gamemode. Error: ${e.message}`);
-            console.error(`[/x:gms] Failed to set gamemode: ${e.stack}`);
+            errorLog(`[/x:gms] Failed to set gamemode: ${e.stack}`);
         }
     }
 });

@@ -1,4 +1,3 @@
-import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 
@@ -44,9 +43,9 @@ commandManager.register({
         const isFrozen = targetPlayer.hasTag(frozenTag);
 
         let freeze;
-        if (action === 'on') freeze = true;
-        else if (action === 'off') freeze = false;
-        else freeze = !isFrozen;
+        if (action === 'on') {freeze = true;}
+        else if (action === 'off') {freeze = false;}
+        else {freeze = !isFrozen;}
 
         if (freeze) {
             if (isFrozen) {
