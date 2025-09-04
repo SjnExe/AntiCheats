@@ -1,54 +1,26 @@
 import { commandManager } from './commandManager.js';
 import * as reportManager from '../../core/reportManager.js';
-import { getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
-import { ModalFormData } from '@minecraft/server-ui';
-import { uiWait } from '../../core/utils.js';
 
 commandManager.register({
     name: 'report',
-    description: 'Reports a player using a UI. The player can be offline.',
+    description: 'Reports a player for a specific reason.',
     category: 'General',
     permissionLevel: 1024, // Everyone
     parameters: [
-        { name: 'target', type: 'string', description: 'The name of the player to report.' }
+        { name: 'target', type: 'player', description: 'The player to report.' },
+        { name: 'reason', type: 'text', description: 'The reason for the report.' }
     ],
-    execute: async (player, args) => {
-        const { target: targetName } = args;
+    execute: (player, args) => {
+        const { target, reason } = args;
 
-        if (!targetName) {
-            player.sendMessage('§cYou must specify a player to report.');
+        if (!target || target.length === 0) {
+            player.sendMessage('§cPlayer not found.');
             return;
         }
 
-        const targetId = getPlayerIdByName(targetName);
-        if (!targetId) {
-            player.sendMessage(`§cPlayer "${targetName}" has never joined this server.`);
-            return;
-        }
+        const targetPlayer = target[0];
 
-        // Load the target's data to get their correctly-cased name for the UI
-        const targetData = loadPlayerData(targetId);
-        const correctTargetName = targetData ? targetData.name : targetName;
-
-        const form = new ModalFormData()
-            .title(`Report ${correctTargetName}`)
-            .textField('Reason for report:', 'Enter the reason here');
-
-        const response = await uiWait(player, form);
-
-        if (response.canceled) {
-            player.sendMessage('§cReport canceled.');
-            return;
-        }
-
-        const [reason] = response.formValues;
-
-        if (!reason || reason.trim().length === 0) {
-            player.sendMessage('§cYou must provide a reason.');
-            return;
-        }
-
-        reportManager.createReport(player, targetId, correctTargetName, reason);
+        reportManager.createReport(player, targetPlayer, reason);
         player.sendMessage('§aReport submitted. Thank you for your help.');
     }
 });

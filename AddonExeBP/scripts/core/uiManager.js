@@ -57,15 +57,17 @@ async function buildPanelForm(player, panelId, context) {
             const currentValue = getValueFromPath(config, setting.key);
             switch (setting.type) {
                 case 'toggle':
-                    form.toggle(setting.label, currentValue);
+                    form.toggle(setting.label, !!currentValue);
                     break;
                 case 'textField':
-                    // Convert non-string values to string for text field
                     form.textField(setting.label, setting.description || '', String(currentValue ?? ''));
                     break;
                 case 'dropdown':
-                    form.dropdown(setting.label, setting.options, setting.options.indexOf(currentValue));
+                {
+                    const index = setting.options.indexOf(currentValue);
+                    form.dropdown(setting.label, setting.options, index === -1 ? 0 : index);
                     break;
+                }
             }
         }
         return form;

@@ -60,17 +60,16 @@ export function saveReports(options = {}) {
 /**
  * Creates a new report and adds it to the list.
  * @param {import('@minecraft/server').Player} reporter The player making the report.
- * @param {string} reportedPlayerId The ID of the player being reported.
- * @param {string} reportedPlayerName The name of the player being reported.
+ * @param {import('@minecraft/server').Player} reportedPlayer The player being reported.
  * @param {string} reason The reason for the report.
  */
-export function createReport(reporter, reportedPlayerId, reportedPlayerName, reason) {
+export function createReport(reporter, reportedPlayer, reason) {
     const report = {
         id: Math.random().toString(36).substring(2, 9),
         reporterId: reporter.id,
         reporterName: reporter.name,
-        reportedPlayerId: reportedPlayerId,
-        reportedPlayerName: reportedPlayerName,
+        reportedPlayerId: reportedPlayer.id,
+        reportedPlayerName: reportedPlayer.name,
         reason: reason,
         status: 'open',
         assignedAdminId: null,

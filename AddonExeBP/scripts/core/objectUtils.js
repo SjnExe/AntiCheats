@@ -56,6 +56,7 @@ export function deepMerge(target, source) {
  * @returns {*} The value of the property, or undefined if not found.
  */
 export function getValueFromPath(obj, path) {
+    if (!path) {return obj;}
     return path.split('.').reduce((current, key) => (current && current[key] !== undefined) ? current[key] : undefined, obj);
 }
 
@@ -69,6 +70,9 @@ export function getValueFromPath(obj, path) {
 export function setValueByPath(obj, path, value) {
     const keys = path.split('.');
     const lastKey = keys.pop();
+    if (!lastKey) {
+        return;
+    }
     const lastObj = keys.reduce((current, key) => (current[key] = current[key] || {}), obj);
     lastObj[lastKey] = value;
 }
