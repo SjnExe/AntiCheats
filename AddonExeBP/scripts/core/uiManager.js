@@ -40,6 +40,38 @@ export async function showPanel(player, panelId, context = {}) {
 // Builds and returns a form object based on a panel definition.
 async function buildPanelForm(player, panelId, context) {
     debugLog(`[UIManager] Building form for panel '${panelId}' for player ${player.name}.`);
+
+    // First, handle dynamic panel generation that doesn't rely on panelDefinitions
+    if (panelId.startsWith('config_')) {
+        const categoryId = panelId.replace('config_', '');
+        const category = configPanelSchema.find(c => c.id === categoryId);
+        if (!category) {
+            errorLog(`[UIManager] Could not find config category for ID: ${categoryId}`);
+            return null;
+        }
+        debugLog(`[UIManager] Building config settings form for category: ${categoryId}`);
+        const form = new ModalFormData().title(category.title);
+        const config = getConfig();
+
+        for (const setting of category.settings) {
+            const currentValue = getValueFromPath(config, setting.key);
+            switch (setting.type) {
+                case 'toggle':
+                    form.toggle(setting.label, currentValue);
+                    break;
+                case 'textField':
+                    // Convert non-string values to string for text field
+                    form.textField(setting.label, setting.description || '', String(currentValue ?? ''));
+                    break;
+                case 'dropdown':
+                    form.dropdown(setting.label, setting.options, setting.options.indexOf(currentValue));
+                    break;
+            }
+        }
+        return form;
+    }
+
+    // Then, handle panels that are statically or semi-statically defined
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) {
         debugLog(`[UIManager] Panel definition not found for '${panelId}'.`);
@@ -74,35 +106,6 @@ async function buildPanelForm(player, panelId, context) {
         form.button('§l§8< Back', 'textures/gui/controls/left.png');
         for (const category of configPanelSchema) {
             form.button(category.title, category.icon);
-        }
-        return form;
-    }
-
-    if (panelId.startsWith('config_')) {
-        const categoryId = panelId.replace('config_', '');
-        const category = configPanelSchema.find(c => c.id === categoryId);
-        if (!category) {
-            errorLog(`[UIManager] Could not find config category for ID: ${categoryId}`);
-            return null;
-        }
-        debugLog(`[UIManager] Building config settings form for category: ${categoryId}`);
-        const form = new ModalFormData().title(category.title);
-        const config = getConfig();
-
-        for (const setting of category.settings) {
-            const currentValue = getValueFromPath(config, setting.key);
-            switch (setting.type) {
-                case 'toggle':
-                    form.toggle(setting.label, currentValue);
-                    break;
-                case 'textField':
-                    // Convert non-string values to string for text field
-                    form.textField(setting.label, setting.description || '', String(currentValue ?? ''));
-                    break;
-                case 'dropdown':
-                    form.dropdown(setting.label, setting.options, setting.options.indexOf(currentValue));
-                    break;
-            }
         }
         return form;
     }

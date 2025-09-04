@@ -26,11 +26,6 @@ commandManager.register({
             return;
         }
 
-        if (targetId === player.id) {
-            player.sendMessage('§cYou cannot report yourself.');
-            return;
-        }
-
         // Load the target's data to get their correctly-cased name for the UI
         const targetData = loadPlayerData(targetId);
         const correctTargetName = targetData ? targetData.name : targetName;

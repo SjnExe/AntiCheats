@@ -1,17 +1,23 @@
 import { commandManager } from './commandManager.js';
-import { getPlayer, getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
+import { getPlayer, getPlayerIdByName } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSoundFromConfig } from '../../core/utils.js';
+import { findPlayerByName } from '../utils/playerUtils.js';
+import { errorLog } from '../../core/errorLogger.js';
 
-function banPlayer(player, targetId, targetName, duration, reason) {
-    if (player.id === targetId) {
+function banPlayer(player, targetPlayer, duration, reason) {
+    if (!targetPlayer) {
+        player.sendMessage('§cPlayer not found.');
+        return;
+    }
+
+    if (player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot ban yourself.');
         return;
     }
 
     const executorData = getPlayer(player.id);
-    // Load offline player data for permission check
-    const targetData = loadPlayerData(targetId);
+    const targetData = getPlayer(targetPlayer.id);
 
     if (!executorData || !targetData) {
         player.sendMessage('§cCould not retrieve player data for permission check.');
@@ -25,59 +31,58 @@ function banPlayer(player, targetId, targetName, duration, reason) {
 
     const durationString = duration || 'perm';
     const durationMs = duration ? parseDuration(duration) : Infinity;
+
     const expires = durationMs === Infinity ? Infinity : Date.now() + durationMs;
 
-    addPunishment(targetId, {
+    addPunishment(targetPlayer.id, {
         type: 'ban',
         expires,
         reason
     });
 
     const durationText = durationMs === Infinity ? 'permanently' : `for ${durationString}`;
-    player.sendMessage(`§aSuccessfully banned ${targetName} ${durationText}. Reason: ${reason}`);
+    player.sendMessage(`§aSuccessfully banned ${targetPlayer.name} ${durationText}. Reason: ${reason}`);
     playSoundFromConfig(player, 'adminNotificationReceived');
 
-    // Try to kick the player if they are online. This will fail silently if they are not.
     try {
-        player.runCommand(`kick "${targetName}" You have been banned ${durationText}. Reason: ${reason}`);
-    } catch {
-        // Player is likely offline, which is fine. No need to log this as an error.
+        player.runCommand(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
+    } catch (error) {
+        player.sendMessage(`§eWarning: Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`);
+        errorLog(`[/x:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
     }
 }
 
 commandManager.register({
     name: 'ban',
-    description: 'Bans a player, even if they are offline.',
+    description: 'Bans a player for a specified duration with a reason.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
     parameters: [
-        { name: 'target', type: 'string', description: 'The name of the player to ban.' },
+        { name: 'target', type: 'player', description: 'The player to ban.' },
         { name: 'duration', type: 'string', description: 'The duration of the ban (e.g., 1d, 2h, 30m). Default: perm', optional: true },
         { name: 'reason', type: 'text', description: 'The reason for the ban.', optional: true }
     ],
     execute: (player, args) => {
-        const { target: targetName } = args;
+        // For slash commands, target is a player object array. For chat, it's a name string.
+        const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
 
-        const targetId = getPlayerIdByName(targetName);
-        if (!targetId) {
-            player.sendMessage(`§cPlayer "${targetName}" has never joined this server.`);
+        if (!targetPlayer) {
+            player.sendMessage('§cPlayer not found.');
             return;
         }
-
-        // Load data to get the correctly-cased name
-        const targetData = loadPlayerData(targetId);
-        const correctTargetName = targetData ? targetData.name : targetName;
 
         let duration = args.duration;
         let reason = args.reason;
 
-        // Handle case where duration is omitted and reason is provided
+        // The command manager can't distinguish between an optional duration and the reason.
+        // We need to check if the 'duration' argument is actually a duration or the start of the reason.
         if (duration && parseDuration(duration) === 0) {
+            // It's not a valid duration, so it must be the start of the reason.
             reason = `${duration}${reason ? ' ' + reason : ''}`;
-            duration = undefined;
+            duration = undefined; // Reset duration
         }
 
-        banPlayer(player, targetId, correctTargetName, duration, reason || 'No reason provided.');
+        banPlayer(player, targetPlayer, duration, reason || 'No reason provided.');
     }
 });
 

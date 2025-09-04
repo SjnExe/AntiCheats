@@ -40,6 +40,7 @@ const commandFiles = [
     // Moderation
     'kick.js',
     'ban.js', // This file contains 'unban'
+    'offlineban.js',
     'mute.js', // This file contains 'unmute'
     'freeze.js',
     'vanish.js',
