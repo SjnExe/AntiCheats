@@ -47,6 +47,8 @@ export function loadConfig() {
             errorLog(`[ConfigManager] Version mismatch detected. Migrating config from ${lastLoadedConfig.version?.join('.')} to ${storageConfig.version?.join('.')}.`);
             // Preserve user's settings by merging them on top of the new default config
             currentConfig = deepMerge(storageConfig, currentConfig);
+            // Explicitly set the version to the new version
+            currentConfig.version = storageConfig.version;
             // Update the last loaded config to the new version
             lastLoadedConfig = deepMerge({}, storageConfig);
         }
