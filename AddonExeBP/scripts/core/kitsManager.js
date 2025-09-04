@@ -10,7 +10,7 @@ let loadedKits = {};
  */
 export async function loadKits() {
     try {
-        const module = await import('../core/kitsConfig.js?v=' + Date.now());
+        const module = await import('./kitsConfig.js?v=' + Date.now());
         loadedKits = module.kits;
     } catch (e) {
         errorLog('[KitsManager] Failed to load kitsConfig.js. Kits will not be available.', e);

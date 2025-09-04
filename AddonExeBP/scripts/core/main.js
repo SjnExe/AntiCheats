@@ -211,10 +211,6 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         };
         const message = formatString(config.playerInfo.deathCoordsMessage, context);
         player.sendMessage(message);
-
-        // Clear the death location so it's not shown again
-        pData.lastDeathLocation = null;
-        // No need to save immediately, it will be saved on next leave or manual save.
     }
 });
 
