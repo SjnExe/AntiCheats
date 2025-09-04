@@ -3,6 +3,7 @@ import * as reportManager from '../../core/reportManager.js';
 import { getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { ModalFormData } from '@minecraft/server-ui';
 import { uiWait } from '../../core/utils.js';
+import { debugLog } from '../../core/logger.js';
 
 commandManager.register({
     name: 'report',
@@ -48,6 +49,7 @@ commandManager.register({
             return;
         }
 
+        debugLog(`[ReportCommand] Creating report with: targetId=${targetId}, correctTargetName=${correctTargetName}, reason=${reason}`);
         reportManager.createReport(player, targetId, correctTargetName, reason);
         player.sendMessage('§aReport submitted. Thank you for your help.');
     }

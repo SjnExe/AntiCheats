@@ -57,15 +57,15 @@ async function buildPanelForm(player, panelId, context) {
             const currentValue = getValueFromPath(config, setting.key);
             switch (setting.type) {
                 case 'toggle':
-                    form.toggle(setting.label, !!currentValue);
+                    form.toggle(setting.label, { defaultValue: !!currentValue });
                     break;
                 case 'textField':
-                    form.textField(setting.label, setting.description || '', String(currentValue ?? ''));
+                    form.textField(setting.label, setting.description || '', { defaultValue: String(currentValue ?? '') });
                     break;
                 case 'dropdown':
                 {
                     const index = setting.options.indexOf(currentValue);
-                    form.dropdown(setting.label, setting.options, index === -1 ? 0 : index);
+                    form.dropdown(setting.label, setting.options, { defaultValueIndex: index === -1 ? 0 : index });
                     break;
                 }
             }
