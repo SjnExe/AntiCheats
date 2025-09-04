@@ -55,13 +55,10 @@ function setGamemode(player, gamemode, target) {
     }
 }
 
-commandManager.register({
-    name: 'gamemode',
-    aliases: ['gm'],
+const gamemodeCommand = {
     description: 'Sets your or another player\'s gamemode.',
     category: 'General',
     permissionLevel: 1, // Admins only
-    disableSlashCommand: false,
     parameters: [
         { name: 'gamemode', type: 'string', description: 'The gamemode to set (survival, creative, adventure, spectator).', optional: false },
         { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }
@@ -73,64 +70,44 @@ commandManager.register({
         }
         setGamemode(player, args.gamemode, args.target);
     }
+};
+
+commandManager.register({
+    ...gamemodeCommand,
+    name: 'gamemode',
+    disableSlashCommand: true
 });
 
 commandManager.register({
-    name: 'gms',
-    aliases: ['s', 'survival'],
-    description: 'Sets your or another player\'s gamemode to Survival.',
-    category: 'General',
-    permissionLevel: 1, // Admins only
-    disableSlashCommand: true,
-    parameters: [
-        { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }
-    ],
-    execute: (player, args) => {
-        setGamemode(player, 'survival', args.target);
-    }
+    ...gamemodeCommand,
+    name: 'gm',
+    disableSlashCommand: false
 });
 
-commandManager.register({
-    name: 'gmc',
-    aliases: ['c', 'creative'],
-    description: 'Sets your or another player\'s gamemode to Creative.',
-    category: 'General',
-    permissionLevel: 1, // Admins only
-    disableSlashCommand: true,
-    parameters: [
-        { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }
-    ],
-    execute: (player, args) => {
-        setGamemode(player, 'creative', args.target);
-    }
-});
+const legacyCommands = [
+    { name: 'gms', aliases: ['survival'], gamemode: 'survival', description: 'Sets your or another player\'s gamemode to Survival.' },
+    { name: 'gmc', aliases: ['creative'], gamemode: 'creative', description: 'Sets your or another player\'s gamemode to Creative.' },
+    { name: 'gma', aliases: ['adventure'], gamemode: 'adventure', description: 'Sets your or another player\'s gamemode to Adventure.' },
+    { name: 'gmsp', aliases: ['spectator'], gamemode: 'spectator', description: 'Sets your or another player\'s gamemode to Spectator.' },
+    { name: 's', gamemode: 'survival', description: 'Sets your or another player\'s gamemode to Survival.' },
+    { name: 'c', gamemode: 'creative', description: 'Sets your or another player\'s gamemode to Creative.' },
+    { name: 'a', gamemode: 'adventure', description: 'Sets your or another player\'s gamemode to Adventure.' },
+    { name: 'sp', gamemode: 'spectator', description: 'Sets your or another player\'s gamemode to Spectator.' }
+];
 
-commandManager.register({
-    name: 'gma',
-    aliases: ['a', 'adventure'],
-    description: 'Sets your or another player\'s gamemode to Adventure.',
-    category: 'General',
-    permissionLevel: 1, // Admins only
-    disableSlashCommand: true,
-    parameters: [
-        { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }
-    ],
-    execute: (player, args) => {
-        setGamemode(player, 'adventure', args.target);
-    }
-});
-
-commandManager.register({
-    name: 'gmsp',
-    aliases: ['sp', 'spectator'],
-    description: 'Sets your or another player\'s gamemode to Spectator.',
-    category: 'General',
-    permissionLevel: 1, // Admins only
-    disableSlashCommand: true,
-    parameters: [
-        { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }
-    ],
-    execute: (player, args) => {
-        setGamemode(player, 'spectator', args.target);
-    }
-});
+for (const cmd of legacyCommands) {
+    commandManager.register({
+        name: cmd.name,
+        aliases: cmd.aliases || [],
+        description: cmd.description,
+        category: 'General',
+        permissionLevel: 1, // Admins only
+        disableSlashCommand: false,
+        parameters: [
+            { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }
+        ],
+        execute: (player, args) => {
+            setGamemode(player, cmd.gamemode, args.target);
+        }
+    });
+}
