@@ -1,8 +1,9 @@
 import { commandManager } from './commandManager.js';
 import * as reportManager from '../../core/reportManager.js';
-import { getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
+import { getPlayerIdByName } from '../../core/playerDataManager.js';
 import { ModalFormData } from '@minecraft/server-ui';
 import { uiWait } from '../../core/utils.js';
+import { world } from '@minecraft/server';
 
 commandManager.register({
     name: 'report',
@@ -26,9 +27,9 @@ commandManager.register({
             return;
         }
 
-        // Load the target's data to get their correctly-cased name for the UI
-        const targetData = loadPlayerData(targetId);
-        const correctTargetName = targetData ? targetData.name : reportedPlayerName;
+        // Try to get the correctly-cased name if the player is online.
+        const onlinePlayer = Array.from(world.getPlayers()).find(p => p.id === targetId);
+        const correctTargetName = onlinePlayer ? onlinePlayer.name : reportedPlayerName;
 
         const form = new ModalFormData()
             .title(`Report ${correctTargetName}`)
