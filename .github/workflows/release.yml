@@ -2,7 +2,7 @@ name: Release mcaddon
 on:
   push:
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+*"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,11 +18,27 @@ jobs:
           set -e
           RAW_TAG_NAME="${{ github.ref_name }}"
           echo "FULL_TAG_NAME=$RAW_TAG_NAME" >> $GITHUB_ENV
+
+          # Check for -beta suffix
+          IS_BETA="false"
+          if [[ "$RAW_TAG_NAME" == *"-beta" ]]; then
+            IS_BETA="true"
+          fi
+          echo "IS_BETA_RELEASE=$IS_BETA" >> $GITHUB_ENV
+
+          # Strip 'v' prefix and '-beta' suffix to get the clean version string
           VERSION_STR="${RAW_TAG_NAME#v}"
+          VERSION_STR="${VERSION_STR%-beta}"
           echo "VERSION_STRING=$VERSION_STR" >> $GITHUB_ENV
+
+          # Create version array string
           VERSION_ARR_STR="[$(echo "$VERSION_STR" | tr '.' ',')]"
           echo "VERSION_ARRAY_STRING=$VERSION_ARR_STR" >> $GITHUB_ENV
-          echo "Full tag: $RAW_TAG_NAME, Extracted version string: $VERSION_STR, Resulting version array string: $VERSION_ARR_STR"
+
+          echo "Full tag: $RAW_TAG_NAME"
+          echo "Is Beta: $IS_BETA"
+          echo "Clean Version String: $VERSION_STR"
+          echo "Version Array String: $VERSION_ARR_STR"
 
       - name: Create staging directory and copy addon folders
         run: |
@@ -36,6 +52,7 @@ jobs:
         env:
           VERSION_STRING: ${{ env.VERSION_STRING }}
           VERSION_ARRAY_STRING: ${{ env.VERSION_ARRAY_STRING }}
+          IS_BETA_RELEASE: ${{ env.IS_BETA_RELEASE }}
         run: |
           set -e
           echo "--- Starting Placeholder Replacement ---"
@@ -50,6 +67,14 @@ jobs:
 
           # Replace version string in descriptions
           sed -i "s|v1.0.0|v${VERSION_STRING}|g" "$BP_MANIFEST" "$RP_MANIFEST"
+
+          # Conditionally modify config for beta releases
+          if [ "${IS_BETA_RELEASE}" = "true" ]; then
+            echo "--- Applying Beta Release Modifications ---"
+            sed -i "s|ownerPlayerNames: \['Your•Name•Here'\]|ownerPlayerNames: \['SjnTechMlmYT'\]|g" "$CONFIG_JS_PATH"
+            sed -i "s|debug: false|debug: true|g" "$CONFIG_JS_PATH"
+            echo "Beta modifications applied."
+          fi
 
           echo "--- Verification ---"
           echo "BP Manifest:"
