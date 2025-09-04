@@ -1,30 +1,31 @@
 import { commandManager } from './commandManager.js';
-import { showPanel } from '../../core/uiManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
+import * as reportManager from '../../core/reportManager.js';
 
 commandManager.register({
     name: 'report',
-    description: 'Opens a UI to report a player for a specific reason.',
+    description: 'Reports a player for a specific reason.',
     category: 'General',
     permissionLevel: 1024, // Everyone
     parameters: [
-        { name: 'target', type: 'player', description: 'The player to report.' }
+        { name: 'target', type: 'player', description: 'The player to report.' },
+        { name: 'reason', type: 'text', description: 'The reason for the report.' }
     ],
     execute: (player, args) => {
-        const { target } = args;
-        // For slash commands, target is a player object array. For chat, it's a name string.
-        const targetPlayer = Array.isArray(target) ? target[0] : findPlayerByName(target);
+        const { target, reason } = args;
 
-        if (!targetPlayer) {
+        if (!target || target.length === 0) {
             player.sendMessage('§cPlayer not found.');
             return;
         }
+
+        const targetPlayer = target[0];
 
         if (targetPlayer.id === player.id) {
             player.sendMessage('§cYou cannot report yourself.');
             return;
         }
 
-        showPanel(player, 'reportSubmitPanel', { targetPlayer });
+        reportManager.createReport(player, targetPlayer, reason);
+        player.sendMessage('§aReport submitted. Thank you for your help.');
     }
 });

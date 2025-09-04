@@ -31,7 +31,7 @@ commandManager.register({
         const homeLocation = homesManager.getHome(player, homeName);
 
         if (!homeLocation) {
-            player.sendMessage(`§cHome '${homeName}' not found. Use /x:homes to see your list of homes.`);
+            player.sendMessage(`§cHome '${homeName}' not found. Use /homes to see your list of homes.`);
             return;
         }
 
