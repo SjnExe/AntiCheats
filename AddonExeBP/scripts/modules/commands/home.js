@@ -21,7 +21,7 @@ commandManager.register({
             return;
         }
 
-        const cooldown = getCooldown(player, 'home');
+        const cooldown = getCooldown(player, 'homes');
         if (cooldown > 0) {
             player.sendMessage(`§cYou must wait ${cooldown} more seconds before using this command again.`);
             return;
@@ -41,7 +41,7 @@ commandManager.register({
             try {
                 player.teleport(homeLocation, { dimension: world.getDimension(homeLocation.dimensionId) });
                 player.sendMessage(`§aTeleported to home '${homeName}'.`);
-                setCooldown(player, 'home');
+                setCooldown(player, 'homes');
             } catch (e) {
                 player.sendMessage(`§cFailed to teleport. Error: ${e.message}`);
                 errorLog(`[/x:home] Failed to teleport: ${e.stack}`);
