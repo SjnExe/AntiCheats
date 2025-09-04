@@ -1,40 +1,42 @@
 import { commandManager } from './commandManager.js';
 import * as reportManager from '../../core/reportManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
+import { getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { ModalFormData } from '@minecraft/server-ui';
 import { uiWait } from '../../core/utils.js';
 
 commandManager.register({
     name: 'report',
-    description: 'Reports a player using a UI.',
+    description: 'Reports a player using a UI. The player can be offline.',
     category: 'General',
     permissionLevel: 1024, // Everyone
     parameters: [
-        { name: 'target', type: 'player', description: 'The player to report.' }
+        { name: 'target', type: 'string', description: 'The name of the player to report.' }
     ],
     execute: async (player, args) => {
-        const { target } = args;
+        const { target: targetName } = args;
 
-        if (!target) {
-            player.sendMessage('§cPlayer not found.');
+        if (!targetName) {
+            player.sendMessage('§cYou must specify a player to report.');
             return;
         }
 
-        // For slash commands, target is a player object array. For chat, it's a name string.
-        const targetPlayer = Array.isArray(target) ? target[0] : findPlayerByName(target);
-
-        if (!targetPlayer) {
-            player.sendMessage('§cPlayer not found or is not online.');
+        const targetId = getPlayerIdByName(targetName);
+        if (!targetId) {
+            player.sendMessage(`§cPlayer "${targetName}" has never joined this server.`);
             return;
         }
 
-        if (targetPlayer.id === player.id) {
+        if (targetId === player.id) {
             player.sendMessage('§cYou cannot report yourself.');
             return;
         }
 
+        // Load the target's data to get their correctly-cased name for the UI
+        const targetData = loadPlayerData(targetId);
+        const correctTargetName = targetData ? targetData.name : targetName;
+
         const form = new ModalFormData()
-            .title(`Report ${targetPlayer.name}`)
+            .title(`Report ${correctTargetName}`)
             .textField('Reason for report:', 'Enter the reason here');
 
         const response = await uiWait(player, form);
@@ -51,7 +53,7 @@ commandManager.register({
             return;
         }
 
-        reportManager.createReport(player, targetPlayer, reason);
+        reportManager.createReport(player, targetId, correctTargetName, reason);
         player.sendMessage('§aReport submitted. Thank you for your help.');
     }
 });
