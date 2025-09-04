@@ -73,10 +73,13 @@ commandManager.register({
     description: 'Displays a list of available commands or help for a specific command.',
     category: 'General',
     permissionLevel: 1024, // Available to everyone
+    parameters: [
+        { name: 'command', type: 'string', description: 'The command to get help for.', optional: true }
+    ],
     execute: (player, args) => {
         const pData = getPlayer(player.id);
         const userPermissionLevel = pData ? pData.permissionLevel : 1024;
-        const topic = args[0] ? args[0].toLowerCase() : null;
+        const topic = args.command ? args.command.toLowerCase() : null;
 
         if (!topic) {
             showCategorizedHelp(player, userPermissionLevel);
