@@ -3,8 +3,8 @@ import { config as defaultConfig } from '../config.js';
 import { errorLog } from './errorLogger.js';
 import { deepEqual, deepMerge } from './objectUtils.js';
 
-const currentConfigKey = 'addonexe:config:current';
-const lastLoadedConfigKey = 'addonexe:config:lastLoaded';
+const currentConfigKey = 'exe:config:current';
+const lastLoadedConfigKey = 'exe:config:lastLoaded';
 
 let currentConfig = null;
 let lastLoadedConfig = null;

@@ -1,7 +1,22 @@
 import { ItemStack } from '@minecraft/server';
 import { getPlayer, savePlayerData } from './playerDataManager.js';
-import { kits } from './kitsConfig.js';
 import { errorLog } from './errorLogger.js';
+
+let loadedKits = {};
+
+/**
+ * Loads or reloads the kits from the kitsConfig.js file.
+ * Uses a dynamic import with a cache-busting query string to ensure the latest version is loaded.
+ */
+export async function loadKits() {
+    try {
+        const module = await import('../core/kitsConfig.js?v=' + Date.now());
+        loadedKits = module.kits;
+    } catch (e) {
+        errorLog('[KitsManager] Failed to load kitsConfig.js. Kits will not be available.', e);
+        loadedKits = {};
+    }
+}
 
 /**
  * Gets the definition of a kit.
@@ -9,7 +24,7 @@ import { errorLog } from './errorLogger.js';
  * @returns {import('./kitsConfig.js').Kit | undefined}
  */
 export function getKit(kitName) {
-    return kits[kitName.toLowerCase()];
+    return loadedKits[kitName.toLowerCase()];
 }
 
 /**
@@ -17,7 +32,7 @@ export function getKit(kitName) {
  * @returns {string[]}
  */
 export function listKits() {
-    return Object.keys(kits).filter(kitName => kits[kitName].enabled);
+    return Object.keys(loadedKits).filter(kitName => loadedKits[kitName].enabled);
 }
 
 /**

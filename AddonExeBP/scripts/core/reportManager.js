@@ -3,7 +3,7 @@ import { debugLog } from './logger.js';
 import { errorLog } from './errorLogger.js';
 import { getConfig } from './configManager.js';
 
-const reportsDbKey = 'addonexe:reports';
+const reportsDbKey = 'exe:reports';
 
 /**
  * @typedef {object} Report

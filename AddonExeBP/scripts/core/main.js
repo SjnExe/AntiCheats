@@ -14,6 +14,7 @@ import { errorLog } from './errorLogger.js';
 import * as playerCache from './playerCache.js';
 import { startRestart } from './restartManager.js';
 import { formatString } from './utils.js';
+import { loadKits } from './kitsManager.js';
 import '../modules/commands/index.js';
 
 /**
@@ -95,12 +96,13 @@ function startSystemTimers() {
 /**
  * Main entry point for addon initialization.
  */
-function initializeAddon() {
+async function initializeAddon() {
     debugLog('[AddonExe] Initializing addon...');
     const isFirstInit = loadConfig();
     if (!isFirstInit) {
         reloadConfig();
     }
+    await loadKits();
     dataManager.initializeDataManager();
     loadPersistentData();
     initializeManagers();
@@ -285,7 +287,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
     const { id, sourceEntity } = event;
 
     switch (id) {
-        case 'addonexe:restart':
+        case 'exe:restart':
             // The script event can be triggered by a player or a command block.
             // If it's a player, we can use their entity as the initiator.
             // If it's a command block, sourceEntity will be undefined.
@@ -293,7 +295,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             startRestart(sourceEntity);
             break;
 
-        case 'addonexe:toggle_chat_log': {
+        case 'exe:toggle_chat_log': {
             const config = getConfig();
             const chatConfig = config.chat || { logToConsole: false };
             const newValue = !chatConfig.logToConsole;
@@ -311,7 +313,7 @@ system.afterEvents.scriptEventReceive.subscribe((event) => {
             break;
         }
 
-        case 'addonexe:grant_admin_self': {
+        case 'exe:grant_admin_self': {
             if (sourceEntity && sourceEntity.addTag) {
                 sourceEntity.addTag(getConfig().adminTag);
                 sourceEntity.sendMessage('§aYou have been promoted to Admin.');

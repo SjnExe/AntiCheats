@@ -66,14 +66,14 @@ When you run `/xreload`, the addon compares the current `config.js` file on disk
 After the reload, a new snapshot is taken, and the process repeats on the next `/xreload`.
 
 > [!IMPORTANT]
-> This smart reloading applies to most settings in `config.js`. However, for structural changes (like adding a new rank in `ranksConfig.js` or a new button in `panelLayoutConfig.js`), a full server restart is still recommended to ensure everything initializes correctly.
+> The `/xreload` command applies to settings in `config.js` and `kitsConfig.js`. For structural changes in other files like `ranksConfig.js` or `panelLayoutConfig.js`, a full server restart is still required to ensure they are applied correctly.
 
 ---
 
 ## 📄 Core Configuration Files
 
 ### `config.js` - The Main Hub
-This is the primary file for most top-level settings.
+This is the primary file for most top-level settings. **Changes to this file can be reloaded with `/xreload`**.
 
 - **File:** `AddonExeBP/scripts/config.js`
 - **Purpose:**
@@ -84,8 +84,14 @@ This is the primary file for most top-level settings.
   - Customize server info like Discord links and rules.
   - Toggle individual commands on or off in the `commandSettings` section.
 
+### `kitsConfig.js` - Player Kits
+This file defines the kits that players can claim. **Changes to this file can be reloaded with `/xreload`**.
+
+- **File:** `AddonExeBP/scripts/core/kitsConfig.js`
+- **Purpose:** Add, remove, or modify kits, including their items, cooldowns, and descriptions.
+
 ### `ranksConfig.js` - Ranks & Permissions
-This file defines the entire hierarchy of roles on your server.
+This file defines the entire hierarchy of roles on your server. **Requires a server restart to apply changes.**
 
 - **File:** `AddonExeBP/scripts/core/ranksConfig.js`
 - **Purpose:**
@@ -96,19 +102,13 @@ This file defines the entire hierarchy of roles on your server.
   - Define the `conditions` for how a rank is assigned (e.g., based on the `ownerPlayerNames` list, the `adminTag`, or being the default).
 
 ### `panelLayoutConfig.js` - Admin Panel UI
-This file controls the layout, buttons, and actions of the `/panel` user interface.
+This file controls the layout, buttons, and actions of the `/panel` user interface. **Requires a server restart to apply changes.**
 
 - **File:** `AddonExeBP/scripts/core/panelLayoutConfig.js`
 - **Purpose:**
   - Add, remove, or reorder categories and buttons.
   - Change button text, icons, and required permission levels.
   - Link buttons to specific actions (like running a command or opening another panel).
-
-### `kitsConfig.js` - Player Kits
-This file defines the kits that players can claim.
-
-- **File:** `AddonExeBP/scripts/core/kitsConfig.js`
-- **Purpose:** Add, remove, or modify kits, including their items, cooldowns, and descriptions.
 
 > [!IMPORTANT]
 > **Cheat Detection Configuration Coming Soon**

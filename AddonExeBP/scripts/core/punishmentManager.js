@@ -2,7 +2,7 @@ import { world, system } from '@minecraft/server';
 import { debugLog } from './logger.js';
 import { errorLog } from './errorLogger.js';
 
-const punishmentDbKey = 'addonexe:punishments';
+const punishmentDbKey = 'exe:punishments';
 const saveIntervalTicks = 6000; // Every 5 minutes (20 ticks/sec * 60 sec/min * 5 min)
 
 /**

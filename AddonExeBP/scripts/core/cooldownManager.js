@@ -3,7 +3,7 @@ import { getConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 import { errorLog } from './errorLogger.js';
 
-const cooldownDbKey = 'addonexe:cooldowns';
+const cooldownDbKey = 'exe:cooldowns';
 const saveIntervalTicks = 6000; // Every 5 minutes
 
 /** @type {Map<string, number>} */
