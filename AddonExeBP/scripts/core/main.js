@@ -14,7 +14,6 @@ import { errorLog } from './errorLogger.js';
 import * as playerCache from './playerCache.js';
 import { startRestart } from './restartManager.js';
 import { formatString } from './utils.js';
-import { loadKits } from './kitsManager.js';
 import '../modules/commands/index.js';
 
 /**
@@ -96,13 +95,12 @@ function startSystemTimers() {
 /**
  * Main entry point for addon initialization.
  */
-async function initializeAddon() {
+function initializeAddon() {
     debugLog('[AddonExe] Initializing addon...');
     const isFirstInit = loadConfig();
     if (!isFirstInit) {
         reloadConfig();
     }
-    await loadKits();
     dataManager.initializeDataManager();
     loadPersistentData();
     initializeManagers();

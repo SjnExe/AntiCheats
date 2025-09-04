@@ -66,7 +66,7 @@ When you run `/xreload`, the addon compares the current `config.js` file on disk
 After the reload, a new snapshot is taken, and the process repeats on the next `/xreload`.
 
 > [!IMPORTANT]
-> The `/xreload` command applies to settings in `config.js` and `kitsConfig.js`. For structural changes in other files like `ranksConfig.js` or `panelLayoutConfig.js`, a full server restart is still required to ensure they are applied correctly.
+> The `/xreload` command applies to settings in `config.js`. For structural changes in other files like `ranksConfig.js`, `panelLayoutConfig.js`, and `kitsConfig.js`, a full server restart is required to ensure they are applied correctly.
 
 ---
 
@@ -83,12 +83,6 @@ This is the primary file for most top-level settings. **Changes to this file can
   - Configure server features like starting economy balance, max homes, or welcome messages.
   - Customize server info like Discord links and rules.
   - Toggle individual commands on or off in the `commandSettings` section.
-
-### `kitsConfig.js` - Player Kits
-This file defines the kits that players can claim. **Changes to this file can be reloaded with `/xreload`**.
-
-- **File:** `AddonExeBP/scripts/core/kitsConfig.js`
-- **Purpose:** Add, remove, or modify kits, including their items, cooldowns, and descriptions.
 
 ### `ranksConfig.js` - Ranks & Permissions
 This file defines the entire hierarchy of roles on your server. **Requires a server restart to apply changes.**

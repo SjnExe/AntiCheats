@@ -1,7 +1,6 @@
 import { commandManager } from './commandManager.js';
 import { reloadConfig } from '../../core/configManager.js';
 import { updateAllPlayerRanks } from '../../core/main.js';
-import { loadKits } from '../../core/kitsManager.js';
 import { errorLog } from '../../core/errorLogger.js';
 
 commandManager.register({
@@ -11,13 +10,10 @@ commandManager.register({
     category: 'Administration',
     permissionLevel: 1, // Admins only
     parameters: [],
-    execute: async (player, args) => {
+    execute: (player, args) => {
         try {
             reloadConfig();
             player.sendMessage('§aConfiguration reloaded successfully.');
-
-            await loadKits();
-            player.sendMessage('§aKits configuration reloaded successfully.');
 
             updateAllPlayerRanks();
             player.sendMessage('§aAll online player ranks have been re-evaluated.');
