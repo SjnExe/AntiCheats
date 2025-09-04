@@ -53,16 +53,20 @@ commandManager.register({
         { name: 'reason', type: 'text', description: 'The reason for the mute.', optional: true }
     ],
     execute: (player, args) => {
-        const { duration, reason } = args;
+        const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
 
-        // Check if the optional 'duration' argument was provided, but is not a valid duration string.
-        // This indicates the user tried to type a multi-word reason without quotes in a slash command.
-        if (duration && parseDuration(duration) === 0) {
-            player.sendMessage('§cInvalid duration format. If you are providing a multi-word reason, please enclose it in "quotes".');
+        if (!targetPlayer) {
+            player.sendMessage('§cPlayer not found.');
             return;
         }
 
-        const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
+        let duration = args.duration;
+        let reason = args.reason;
+
+        if (duration && parseDuration(duration) === 0) {
+            reason = `${duration}${reason ? ' ' + reason : ''}`;
+            duration = undefined;
+        }
 
         mutePlayer(player, targetPlayer, duration, reason || 'No reason provided.');
     }

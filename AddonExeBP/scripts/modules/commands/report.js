@@ -1,41 +1,53 @@
 import { commandManager } from './commandManager.js';
 import * as reportManager from '../../core/reportManager.js';
-import { findPlayerByName } from '../../core/playerCache.js';
+import { findPlayerByName } from '../utils/playerUtils.js';
+import { ModalFormData } from '@minecraft/server-ui';
+import { uiWait } from '../../core/utils.js';
 
 commandManager.register({
     name: 'report',
-    description: 'Reports a player for a specific reason.',
+    description: 'Reports a player using a UI.',
     category: 'General',
     permissionLevel: 1024, // Everyone
     parameters: [
-        { name: 'target', type: 'player', description: 'The player to report.' },
-        { name: 'reason', type: 'text', description: 'The reason for the report.' }
+        { name: 'target', type: 'player', description: 'The player to report.' }
     ],
-    execute: (player, args) => {
-        const { target, reason } = args;
+    execute: async (player, args) => {
+        const { target } = args;
 
-        if (!target || target.length === 0) {
+        if (!target) {
             player.sendMessage('§cPlayer not found.');
             return;
         }
-        if (!reason || reason.trim().length === 0) {
-            player.sendMessage('§cYou must provide a reason for the report. For multi-word reasons, please enclose the reason in "quotes".');
+
+        // For slash commands, target is a player object array. For chat, it's a name string.
+        const targetPlayer = Array.isArray(target) ? target[0] : findPlayerByName(target);
+
+        if (!targetPlayer) {
+            player.sendMessage('§cPlayer not found or is not online.');
             return;
         }
-        let targetPlayer;
-        if (typeof target === 'string') {
-            targetPlayer = findPlayerByName(target);
-            if (!targetPlayer) {
-                player.sendMessage(`§cPlayer "${target}" not found or is not online.`);
-                return;
-            }
-        } else {
-            targetPlayer = target[0];
-        }
-
 
         if (targetPlayer.id === player.id) {
             player.sendMessage('§cYou cannot report yourself.');
+            return;
+        }
+
+        const form = new ModalFormData()
+            .title(`Report ${targetPlayer.name}`)
+            .textField('Reason for report:', 'Enter the reason here');
+
+        const response = await uiWait(player, form);
+
+        if (response.canceled) {
+            player.sendMessage('§cReport canceled.');
+            return;
+        }
+
+        const [reason] = response.formValues;
+
+        if (!reason || reason.trim().length === 0) {
+            player.sendMessage('§cYou must provide a reason.');
             return;
         }
 
