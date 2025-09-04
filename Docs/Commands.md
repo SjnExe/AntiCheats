@@ -57,11 +57,16 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Description:** Freezes or unfreezes a player, preventing movement.
   - **Permission:** Admin
   - **Aliases:** `!freeze`, `!lock`
+- **/gamemode**
+  - **Syntax:** `/gamemode <gamemode: string> [target: player]`
+  - **Description:** Sets a player's gamemode. Gamemode can be `survival`, `creative`, `adventure`, or `spectator`.
+  - **Permission:** Admin
+  - **Aliases:** `/gm`, `!gamemode`, `!gm`
 - **/gma, /gmc, /gms, /gmsp**
   - **Syntax:** `!gma|gmc|gms|gmsp [target: player]` (Chat-only)
-  - **Description:** Sets a player's gamemode (Adventure, Creative, Survival, Spectator).
+  - **Description:** Legacy commands to set a player's gamemode (Adventure, Creative, Survival, Spectator).
   - **Permission:** Admin
-  - **Aliases:** `!a`, `!c`, `!s`, `!sp`
+  - **Aliases:** `!a`, `!c`, `!s`, `!sp`, `!survival`, `!creative`, `!adventure`, `!spectator`
 - **/invsee**
   - **Syntax:** `/invsee <target: player> [page: int]`
   - **Description:** Views a player's inventory in chat.
@@ -202,7 +207,7 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 - **/balance**
   - **Syntax:** `/balance [target: player]`
   - **Description:** Shows your or another player's current balance.
-  - **Aliases:** `!balance`, `!bal`, `!money`, `!cash`, `!credits`
+  - **Aliases:** `!balance`, `!bal`, `!money`, `!cash`
 - **/baltop**
   - **Syntax:** `/baltop`
   - **Description:** Shows the players with the highest balances.
