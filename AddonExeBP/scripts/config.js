@@ -1,12 +1,12 @@
 export const config = {
     // --- System & Core Settings ---
     version: [1, 0, 0], // This will be replaced by the release workflow
-    ownerPlayerNames: ['SjnTechMlmYT'], // Default : ['Your•Name•Here']
+    ownerPlayerNames: ['Your•Name•Here'], // Default : ['Your•Name•Here']
     adminTag: 'admin',
     commandPrefix: '!',
     serverName: '§cServerExe',
     defaultGamemode: 'survival',
-    debug: true,
+    debug: false,
     exeGlobalNotificationsDefaultOn: true,
 
     // --- Data Management ---
