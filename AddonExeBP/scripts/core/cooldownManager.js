@@ -82,6 +82,7 @@ export function setCooldown(player, commandName) {
     const cooldownMs = commandConfig.cooldownSeconds * 1000;
     cooldowns.set(key, Date.now() + cooldownMs);
     needsSave = true;
+    saveCooldowns(); // Save immediately to ensure persistence
 }
 
 /**
