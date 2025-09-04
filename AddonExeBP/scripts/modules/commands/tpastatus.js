@@ -19,14 +19,14 @@ commandManager.register({
             foundRequest = true;
             const typeText = outgoing.type === 'tpa' ? 'teleport to them' : 'teleport them to you';
             statusMessage += `§eOutgoing Request:§r You have sent a request to §b${outgoing.targetPlayerName}§r to ${typeText}.\n`;
-            statusMessage += '§7(Use /x:tpacancel to cancel this request)\n';
+            statusMessage += '§7(Use /tpacancel to cancel this request)\n';
         }
 
         if (incoming) {
             foundRequest = true;
             const typeText = incoming.type === 'tpa' ? 'teleport to you' : 'teleport you to them';
             statusMessage += `§eIncoming Request:§r You have a request from §b${incoming.sourcePlayerName}§r to ${typeText}.\n`;
-            statusMessage += '§7(Use /x:tpaccept or /x:tpadeny to respond)\n';
+            statusMessage += '§7(Use /tpaccept or /tpadeny to respond)\n';
         }
 
         if (!foundRequest) {

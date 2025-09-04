@@ -1,12 +1,11 @@
 # AddonExe Commands
 
-Commands in AddonExe are primarily run using slash commands (e.g., `/help`), which support autocomplete in-game. For convenience, most commands can also be run using a chat-based prefix, which defaults to `!` (e.g., `!help`). This prefix can be configured in `AddonExeBP/scripts/config.js`.
+Commands in AddonExe are primarily run using slash commands (e.g., `/help`), which support autocomplete in-game. For convenience, most commands can also be run using a chat-based prefix, which defaults to `!` (e.g., `!help`).
 
 > [!NOTE]
-> To use slash commands, you must **enable cheats** in your world settings.
-> Angle brackets (`< >`) in command syntax denote required parameters.
-> Square brackets (`[ ]`) denote optional parameters.
-> Do not include the brackets themselves when using the commands.
+> - To use slash commands, you must **enable cheats** in your world settings.
+> - For chat commands, arguments with spaces must be enclosed in `"double quotes"`.
+> - Angle brackets `< >` denote required parameters. Square brackets `[ ]` denote optional parameters.
 
 Command permissions are based on a level system defined in `AddonExeBP/scripts/core/ranksConfig.js`. Common levels are:
 - **Owner (0):** Highest permission for server owners.
@@ -20,118 +19,159 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 *(Permission Level 0-1)*
 
 - **/admin**
-  - **Syntax:** `/admin <target: player> [action: "add" | "remove"]`
+  - **Syntax:** `/admin <target: player> <action: "add" | "remove">`
+  - **Description:** Adds or removes a player from the Admin rank.
   - **Permission:** Owner
-  - **Aliases:** `!admin`
+
 - **/ban**
-  - **Syntax:** `/ban <target: player> [duration: string] [reason: string]`
-  - **Description:** Bans a player. Duration e.g., `30m`, `2h`, `7d`, `perm`.
+  - **Syntax:** `/ban <target: player> [duration: string] [reason: text]`
+  - **Description:** Bans a player. `duration` is a string like `30m`, `2h`, `7d`. Defaults to `perm`. `reason` can be multiple words.
   - **Permission:** Admin
-  - **Aliases:** `!ban`
+
 - **/clear**
   - **Syntax:** `!clear [target: player]` (Chat-only)
   - **Description:** Clears your own inventory, or the inventory of another player.
   - **Permission:** Admin
-  - **Aliases:** `!ci`, `!clearinv`, `!clearinventory`
+  - **Aliases:** `!ci`, `!clearinv`
+
 - **/clearchat**
   - **Syntax:** `/clearchat`
+  - **Description:** Clears the chat for all players.
   - **Permission:** Admin
-  - **Aliases:** `!clearchat`, `!cc`, `!clearscreen`
+  - **Aliases:** `/cc`
+
 - **/clearreports**
   - **Syntax:** `/clearreports`
   - **Description:** Clears all player-submitted reports.
   - **Permission:** Admin
-  - **Aliases:** `!clearreports`, `!delreports`
+  - **Aliases:** `/delreports`
+
 - **/copyinv**
   - **Syntax:** `/copyinv <target: player>`
   - **Description:** Copies the inventory of another player.
   - **Permission:** Admin
-  - **Aliases:** `!copyinv`, `!cloneinv`
+  - **Aliases:** `/cloneinv`
+
 - **/debug**
   - **Syntax:** `/debug [state: boolean]`
   - **Description:** Toggles the script debug logging mode.
   - **Permission:** Admin
-  - **Aliases:** `!debug`
+
 - **/freeze**
-  - **Syntax:** `/freeze <target: player> [state: "on" | "off"]`
-  - **Description:** Freezes or unfreezes a player, preventing movement.
+  - **Syntax:** `/freeze <target: player>`
+  - **Description:** Freezes or unfreezes a player.
   - **Permission:** Admin
-  - **Aliases:** `!freeze`, `!lock`
-- **/gma, /gmc, /gms, /gmsp**
-  - **Syntax:** `!gma|gmc|gms|gmsp [target: player]` (Chat-only)
-  - **Description:** Sets a player's gamemode (Adventure, Creative, Survival, Spectator).
+  - **Aliases:** `/lock`
+
+- **/gm**
+  - **Syntax:** `/gm <gamemode> [target: player]`
+  - **Description:** Sets a player's gamemode. Can use full names or shortcuts (`s`, `c`, `a`, `sp`).
   - **Permission:** Admin
-  - **Aliases:** `!a`, `!c`, `!s`, `!sp`
+
+- **/gms**
+  - **Syntax:** `/gms [target: player]`
+  - **Description:** Sets gamemode to Survival.
+  - **Permission:** Admin
+  - **Aliases:** `/s`, `/survival`
+
+- **/gmc**
+  - **Syntax:** `/gmc [target: player]`
+  - **Description:** Sets gamemode to Creative.
+  - **Permission:** Admin
+  - **Aliases:** `/c`, `/creative`
+
+- **/gma**
+  - **Syntax:** `/gma [target: player]`
+  - **Description:** Sets gamemode to Adventure.
+  - **Permission:** Admin
+  - **Aliases:** `/a`, `/adventure`
+
+- **/gmsp**
+  - **Syntax:** `/gmsp [target: player]`
+  - **Description:** Sets gamemode to Spectator.
+  - **Permission:** Admin
+  - **Aliases:** `/sp`, `/spectator`
+
 - **/invsee**
   - **Syntax:** `/invsee <target: player> [page: int]`
   - **Description:** Views a player's inventory in chat.
   - **Permission:** Admin
-  - **Aliases:** `!invsee`, `!seeinv`, `!viewing`
+  - **Aliases:** `/seeinv`
+
 - **/kick**
-  - **Syntax:** `!kick <playerName> [reason]` (Chat-only)
-  - **Description:** Kicks a player from the server.
+  - **Syntax:** `!kick <target: string> [reason: text]` (Chat-only)
+  - **Description:** Kicks a player from the server. `reason` can be multiple words.
   - **Permission:** Admin
   - **Aliases:** `!boot`
+
 - **/mute**
-  - **Syntax:** `/mute <target: player> [duration: string] [reason: string]`
-  - **Description:** Mutes a player. Duration e.g., `30m`, `1h`, `perm`.
+  - **Syntax:** `/mute <target: player> [duration: string] [reason: text]`
+  - **Description:** Mutes a player. `duration` is a string like `30m`, `1h`. Defaults to `perm`. `reason` can be multiple words.
   - **Permission:** Admin
-  - **Aliases:** `!mute`, `!silence`
+  - **Aliases:** `/silence`
+
 - **/rank**
   - **Syntax:** `/rank <action: "set" | "remove"> <target: player> <rankId: string>`
-  - **Description:** Manages custom, tag-based player ranks. Does not work for Owner/Admin/Member.
+  - **Description:** Manages custom, tag-based player ranks.
   - **Permission:** Admin
-  - **Aliases:** `!rank`
-- **/xreload**
-  - **Syntax:** `/xreload`
+
+- **/reload**
+  - **Syntax:** `/reload`
   - **Description:** Reloads the addon configuration from the config file.
   - **Permission:** Admin
-  - **Aliases:** `!reload`
+  - **Aliases:** `/xreload`
+
 - **/restart**
   - **Syntax:** `/restart`
   - **Description:** Initiates the server restart sequence.
   - **Permission:** Admin
-  - **Aliases:** `!restart`
+
 - **/reports**
   - **Syntax:** `/reports`
   - **Description:** Views the list of active reports via a UI panel.
   - **Permission:** Admin
-  - **Aliases:** `!reports`, `!reportlist`, `!viewreports`
+  - **Aliases:** `/reportlist`
+
 - **/setbalance**
   - **Syntax:** `/setbalance <target: player> <amount: float>`
-  - **Description:** Sets a player's balance to a specific amount.
+  - **Description:** Sets a player's balance.
   - **Permission:** Admin
-  - **Aliases:** `!setbalance`, `!setbal`, `!setmoney`
+  - **Aliases:** `/setbal`
+
 - **/setspawn**
   - **Syntax:** `/setspawn`
   - **Description:** Sets the world's default spawn point to your current location.
   - **Permission:** Admin
-  - **Aliases:** `!setspawn`, `!addspawn`
+
 - **/tp**
-  - **Syntax:** `!tp <target> [destination]` (Chat-only)
-  - **Description:** Teleports a player to another player or location.
+  - **Syntax 1 (Player):** `!tp <targetPlayer> [destinationPlayer]`
+  - **Syntax 2 (Coords):** `!tp [targetPlayer] <x> <y> <z>`
+  - **Description:** Teleports a player to another player or to coordinates. Chat-only command.
   - **Permission:** Admin
   - **Aliases:** `!teleport`
+
 - **/unban**
   - **Syntax:** `/unban <target: string>`
-  - **Description:** Removes an active ban for a player.
+  - **Description:** Unbans a player. The player can be offline.
   - **Permission:** Admin
-  - **Aliases:** `!unban`, `!pardon`
+  - **Aliases:** `/pardon`
+
 - **/unmute**
   - **Syntax:** `/unmute <target: string>`
-  - **Description:** Removes an active mute for a player.
+  - **Description:** Unmutes a player. The player can be offline.
   - **Permission:** Admin
-  - **Aliases:** `!unmute`, `!unsilence`
+  - **Aliases:** `/um`
+
 - **/vanish**
   - **Syntax:** `/vanish`
-  - **Description:** Toggles your visibility.
+  - **Description:** Toggles your visibility to other players.
   - **Permission:** Admin
-  - **Aliases:** `!vanish`, `!v`, `!hide`
+  - **Aliases:** `/v`
+
 - **/xraynotify**
   - **Syntax:** `/xraynotify`
   - **Description:** Toggles X-ray detection notifications for yourself.
   - **Permission:** Admin
-  - **Aliases:** `!xraynotify`, `!xraynotifs`, `!xrayalerts`
 
 ---
 
@@ -139,110 +179,115 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 
 *(Permission Level 1024)*
 
-- **/xhelp**
-  - **Syntax:** `/xhelp [commandName: string]`
+- **/help**
+  - **Syntax:** `/help [commandName: string]`
   - **Description:** Shows available commands or help for a specific command.
-  - **Aliases:** `!help`, `!?`, `!h`, `!cmds`, `!commands`
+  - **Aliases:** `/?`, `/cmds`, `/commands`
+
 - **/kit**
   - **Syntax:** `/kit [kitName: string]`
   - **Description:** Gives you a kit of items. If no name is provided, lists available kits.
-  - **Aliases:** `!kit`, `!kits`
+  - **Aliases:** `/kits`
+
 - **/panel**
   - **Syntax:** `/panel`
   - **Description:** Opens the main UI panel.
-  - **Aliases:** `!panel`, `!ui`, `!menu`
+  - **Aliases:** `/menu`
+
 - **/report**
-  - **Syntax:** `/report <target: player> <reason: string>`
-  - **Description:** Reports a player for misconduct.
-  - **Aliases:** `!report`
+  - **Syntax:** `/report <target: player> <reason: text>`
+  - **Description:** Reports a player for misconduct. `reason` can be multiple words.
+
 - **/rules**
   - **Syntax:** `/rules [ruleNumber: int]`
   - **Description:** Displays the server rules.
-  - **Aliases:** `!rules`, `!rule`
+  - **Aliases:** `/rule`
+
 - **/spawn**
   - **Syntax:** `/spawn`
   - **Description:** Teleports you to the world spawn.
-  - **Aliases:** `!spawn`, `!lobby`, `!hub`
+  - **Aliases:** `/lobby`, `/hub`
+
 - **/status**
   - **Syntax:** `/status`
   - **Description:** Shows the current server status.
-  - **Aliases:** `!status`, `!s`, `!stats`, `!info`
+  - **Aliases:** `/info`
+
 - **/version**
   - **Syntax:** `/version`
   - **Description:** Displays the current version of AddonExe.
-  - **Aliases:** `!version`, `!ver`
+  - **Aliases:** `/ver`
 
 ### TPA System Commands
 - **/tpa**
   - **Syntax:** `/tpa <target: player>`
   - **Description:** Sends a teleport request to another player.
-  - **Aliases:** `!tpa`, `!tprequest`, `!asktp`, `!requesttp`
+
 - **/tpahere**
   - **Syntax:** `/tpahere <target: player>`
   - **Description:** Requests another player to teleport to your location.
-  - **Aliases:** `!tpahere`, `!asktphere`
+
 - **/tpaccept**
   - **Syntax:** `/tpaccept`
   - **Description:** Accepts an incoming teleport request.
-  - **Aliases:** `!tpaccept`, `!tpyes`, `!tpaaccept`
+  - **Aliases:** `/tpyes`
+
 - **/tpadeny**
   - **Syntax:** `/tpadeny`
   - **Description:** Denies an incoming teleport request.
-  - **Aliases:** `!tpadeny`, `!tpno`, `!tpadecline`
+  - **Aliases:** `/tpno`
+
 - **/tpacancel**
   - **Syntax:** `/tpacancel`
   - **Description:** Cancels an outgoing teleport request you have sent.
-  - **Aliases:** `!tpacancel`, `!tpcancel`
+
 - **/tpastatus**
   - **Syntax:** `/tpastatus`
-  - **Description:** Checks the status of your current incoming and outgoing TPA requests.
-  - **Aliases:** `!tpastatus`, `!tpstatus`
+  - **Description:** Checks the status of your TPA requests.
 
 ### Economy System Commands
 - **/balance**
   - **Syntax:** `/balance [target: player]`
-  - **Description:** Shows your or another player's current balance.
-  - **Aliases:** `!balance`, `!bal`, `!money`, `!cash`, `!credits`
+  - **Description:** Shows your or another player's balance.
+  - **Aliases:** `/bal`, `/money`
+
 - **/baltop**
   - **Syntax:** `/baltop`
   - **Description:** Shows the players with the highest balances.
-  - **Aliases:** `!baltop`, `!topbal`, `!leaderboard`, `!richlist`
+  - **Aliases:** `/topbal`, `/leaderboard`
+
 - **/pay**
   - **Syntax:** `/pay <target: player> <amount: float>`
-  - **Description:** Pays another player from your balance. If the amount is large, it will require confirmation.
-  - **Aliases:** `!pay`, `!givemoney`, `!transfer`
+  - **Description:** Pays another player from your balance.
+
 - **/payconfirm**
   - **Syntax:** `/payconfirm`
-  - **Description:** Confirms a pending high-value payment requested with `/pay`.
-  - **Aliases:** `!payconfirm`, `!confirmpay`
+  - **Description:** Confirms a pending high-value payment.
 
 ### Bounty System Commands
 - **/bounty**
   - **Syntax:** `/bounty <target: player> <amount: int>`
-  - **Description:** Places a bounty on a player, making them a target.
-  - **Aliases:** `!bounty`, `!setbounty`, `!addbounty`, `!+bounty`, `!abounty`
+  - **Description:** Places a bounty on a player.
+
 - **/listbounty**
   - **Syntax:** `/listbounty [target: player]`
-  - **Description:** Lists all active bounties or a specific player's bounty.
-  - **Aliases:** `!listbounty`, `!lbounty`, `!bounties`, `!bountylist`, `!showbounties`, `!hitlist`
+  - **Description:** Lists active bounties.
+  - **Aliases:** `/bounties`
+
 - **/removebounty**
   - **Syntax:** `/removebounty <amount: float> [target: player]`
   - **Description:** Removes a portion of a bounty from a player.
-  - **Aliases:** `!removebounty`, `!rbounty`, `!delbounty`, `!-bounty`
+  - **Aliases:** `/rbounty`
 
 ### Homes System Commands
 - **/sethome**
-  - **Syntax:** `/sethome [homeName: string]`
-  - **Aliases:** `!sethome`, `!addhome`, `!+home`
+  - **Syntax:** `/sethome <homeName: string>`
+  - **Aliases:** `/addhome`
 - **/home**
   - **Syntax:** `/home [homeName: string]`
-  - **Aliases:** `!home`
 - **/delhome**
   - **Syntax:** `/delhome <homeName: string>`
-  - **Aliases:** `!delhome`, `!remhome`, `!deletehome`, `!rmhome`, `!-home`
+  - **Aliases:** `/remhome`
 - **/homes**
   - **Syntax:** `/homes`
-  - **Aliases:** `!homes`, `!listhomes`
-
----
-This list is based on the addon's current structure. For the most up-to-date information, use `/xhelp` in-game. Command availability may depend on settings in `config.js`.
+  - **Aliases:** `/listhomes`

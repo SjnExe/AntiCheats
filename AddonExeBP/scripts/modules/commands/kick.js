@@ -28,6 +28,7 @@ function kickPlayer(player, targetPlayer, reason) {
         return;
     }
     try {
+        // The kick command itself handles the reason string formatting.
         player.runCommand(`kick "${targetPlayer.name}" ${reason}`);
         player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}. Reason: ${reason}`);
         playSound(player, 'random.orb');
@@ -45,14 +46,12 @@ commandManager.register({
     category: 'Moderation',
     permissionLevel: 1, // Admins only
     disableSlashCommand: true,
+    parameters: [
+        { name: 'target', type: 'string', description: 'The name of the player to kick.' },
+        { name: 'reason', type: 'text', description: 'The reason for kicking the player.', optional: true }
+    ],
     execute: (player, args) => {
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !kick <player> [reason]');
-            playSound(player, 'note.bass');
-            return;
-        }
-        const targetName = args[0];
-        const reason = args.slice(1).join(' ') || 'No reason provided';
+        const { target: targetName, reason = 'No reason provided' } = args;
         const targetPlayer = findPlayerByName(targetName);
         kickPlayer(player, targetPlayer, reason);
     }

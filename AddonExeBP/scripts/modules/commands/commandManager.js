@@ -124,42 +124,56 @@ class CommandManager {
     handleChatCommand(eventData) {
         const config = getConfig();
         const { sender: player, message } = eventData;
-        if (!message.startsWith(config.commandPrefix)) {
-            return false;
-        }
+        if (!message.startsWith(config.commandPrefix)) {return false;}
 
         eventData.cancel = true;
 
-        const rawArgs = message.slice(config.commandPrefix.length).trim().split(/ +/);
-        let commandName = rawArgs.shift().toLowerCase();
+        const commandString = message.slice(config.commandPrefix.length).trim();
+        // Regex to split by spaces, but keep quoted text (single or double) together.
+        const rawArgs = commandString.match(/"[^"]*"|'[^']*'|\S+/g) || [];
+        if (rawArgs.length === 0) {return true;}
+
+        const cleanedArgs = rawArgs.map(arg => (arg.startsWith('"') && arg.endsWith('"')) || (arg.startsWith("'") && arg.endsWith("'")) ? arg.slice(1, -1) : arg);
+        let commandName = cleanedArgs.shift().toLowerCase();
 
         if (this.aliases.has(commandName)) {
             commandName = this.aliases.get(commandName);
         }
-
         const command = this.commands.find(c => c.name === commandName);
 
         if (!command) {
             player.sendMessage(`§cUnknown command: ${commandName}`);
-            return false;
+            return true;
         }
 
-        // Permission Check for chat command
         const pData = getPlayer(player.id);
         if (!pData || pData.permissionLevel > command.permissionLevel) {
             player.sendMessage('§cYou do not have permission to use this command.');
-            return true; // Command was handled, just no permission
+            return true;
         }
 
-        // For consistency, parse chat arguments into an object like slash commands do.
-        const mandatoryParams = command.parameters?.filter(p => !p.optional) || [];
-        const optionalParams = command.parameters?.filter(p => p.optional) || [];
-        const allParams = [...mandatoryParams, ...optionalParams];
-
         const parsedArgs = {};
-        for (let i = 0; i < allParams.length; i++) {
-            if (rawArgs[i] !== undefined) {
-                parsedArgs[allParams[i].name] = rawArgs[i];
+        const paramDefs = command.parameters || [];
+        let currentArgIndex = 0;
+
+        for (let i = 0; i < paramDefs.length; i++) {
+            const paramDef = paramDefs[i];
+
+            if (currentArgIndex >= cleanedArgs.length) {
+                if (!paramDef.optional) {
+                    player.sendMessage(`§cMissing required argument: ${paramDef.name}.`);
+                    return true;
+                }
+                break; // No more args to process
+            }
+
+            if (paramDef.type === 'text') { // Greedy parameter
+                parsedArgs[paramDef.name] = cleanedArgs.slice(currentArgIndex).join(' ');
+                currentArgIndex = cleanedArgs.length; // Consume rest
+                break;
+            } else {
+                parsedArgs[paramDef.name] = cleanedArgs[currentArgIndex];
+                currentArgIndex++;
             }
         }
 
@@ -187,6 +201,7 @@ class CommandManager {
         const paramTypeMap = {
             'player': CustomCommandParamType.PlayerSelector,
             'string': CustomCommandParamType.String,
+            'text': CustomCommandParamType.String, // For greedy strings
             'int': CustomCommandParamType.Integer,
             'float': CustomCommandParamType.Float,
             'boolean': CustomCommandParamType.Boolean,

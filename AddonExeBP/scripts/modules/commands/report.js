@@ -8,7 +8,7 @@ commandManager.register({
     permissionLevel: 1024, // Everyone
     parameters: [
         { name: 'target', type: 'player', description: 'The player to report.' },
-        { name: 'reason', type: 'string', description: 'The reason for the report.' }
+        { name: 'reason', type: 'text', description: 'The reason for the report.' }
     ],
     execute: (player, args) => {
         const { target, reason } = args;

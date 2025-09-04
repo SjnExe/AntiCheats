@@ -22,7 +22,7 @@ commandManager.register({
         if (args.ruleNumber) {
             const ruleNumber = args.ruleNumber;
             if (isNaN(ruleNumber) || ruleNumber < 1 || ruleNumber > rules.length) {
-                player.sendMessage('§cInvalid rule number. Use /x:rules to see all rules.');
+                player.sendMessage('§cInvalid rule number. Use /rules to see all rules.');
                 return;
             }
             player.sendMessage('§l§a--- Server Rules ---');
