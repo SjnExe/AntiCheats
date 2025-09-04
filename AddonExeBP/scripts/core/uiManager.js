@@ -1,12 +1,14 @@
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
+import { configPanelSchema } from './configPanelSchema.js';
 import { getPlayer, getPlayerIdByName, loadPlayerData, getAllPlayerNameIdMap } from './playerDataManager.js';
-import { getConfig } from './configManager.js';
+import { getConfig, updateConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 import { errorLog } from './errorLogger.js';
 import { getPlayerRank } from './rankManager.js';
 import { getPlayerFromCache } from './playerCache.js';
 import * as utils from './utils.js';
+import { getValueFromPath, setValueByPath, deepMerge } from './objectUtils.js';
 import * as punishmentManager from './punishmentManager.js';
 import * as reportManager from './reportManager.js';
 
@@ -66,6 +68,45 @@ async function buildPanelForm(player, panelId, context) {
         return buildReportListForm(title);
     }
 
+    if (panelId === 'configCategoryPanel') {
+        debugLog('[UIManager] Building config category list form.');
+        const form = new ActionFormData().title(title);
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
+        for (const category of configPanelSchema) {
+            form.button(category.title, category.icon);
+        }
+        return form;
+    }
+
+    if (panelId.startsWith('config_')) {
+        const categoryId = panelId.replace('config_', '');
+        const category = configPanelSchema.find(c => c.id === categoryId);
+        if (!category) {
+            errorLog(`[UIManager] Could not find config category for ID: ${categoryId}`);
+            return null;
+        }
+        debugLog(`[UIManager] Building config settings form for category: ${categoryId}`);
+        const form = new ModalFormData().title(category.title);
+        const config = getConfig();
+
+        for (const setting of category.settings) {
+            const currentValue = getValueFromPath(config, setting.key);
+            switch (setting.type) {
+                case 'toggle':
+                    form.toggle(setting.label, currentValue);
+                    break;
+                case 'textField':
+                    // Convert non-string values to string for text field
+                    form.textField(setting.label, setting.description || '', String(currentValue ?? ''));
+                    break;
+                case 'dropdown':
+                    form.dropdown(setting.label, setting.options, setting.options.indexOf(currentValue));
+                    break;
+            }
+        }
+        return form;
+    }
+
     const form = new ActionFormData().title(title);
     addPanelBody(form, player, panelId, context);
     const menuItems = getMenuItems(panelDef, pData.permissionLevel);
@@ -101,6 +142,68 @@ async function handleFormResponse(player, panelId, response, context) {
             return showPanel(player, 'reportActionsPanel', { ...context, targetReport: selectedReport });
         }
         return;
+    }
+
+    if (panelId === 'configCategoryPanel') {
+        if (response.selection === 0) {return showPanel(player, 'mainPanel');}
+        const selectedCategory = configPanelSchema[response.selection - 1];
+        if (selectedCategory) {
+            debugLog(`[UIManager] Player ${player.name} selected config category ${selectedCategory.id}.`);
+            // We use a dynamic panelId to represent the specific settings form
+            return showPanel(player, `config_${selectedCategory.id}`);
+        }
+        return;
+    }
+
+    if (panelId.startsWith('config_')) {
+        const categoryId = panelId.replace('config_', '');
+        const category = configPanelSchema.find(c => c.id === categoryId);
+        if (!category) {
+            errorLog(`[UIManager] Could not find config category for ID: ${categoryId}`);
+            return;
+        }
+
+        const newValues = response.formValues;
+        const partialChanges = {};
+        let validationFailed = false;
+
+        category.settings.forEach((setting, index) => {
+            if (validationFailed) { return; }
+
+            let newValue = newValues[index];
+
+            // Parse and validate value from form
+            if (setting.type === 'dropdown') {
+                newValue = setting.options[newValue];
+            } else if (setting.type === 'textField' && (setting.key.includes('Seconds') || setting.key.includes('Balance') || setting.key.includes('maxHomes') || setting.key.includes('Interval'))) {
+                const numValue = Number(newValue);
+                if (isNaN(numValue)) {
+                    player.sendMessage(`§cInvalid number provided for ${setting.label}. Changes not saved.`);
+                    validationFailed = true;
+                    return;
+                }
+                newValue = numValue;
+            }
+
+            setValueByPath(partialChanges, setting.key, newValue);
+        });
+
+        if (validationFailed) {
+            // Re-show the form with the invalid data so user can correct it
+            return showPanel(player, panelId);
+        }
+
+        // Apply all grouped changes
+        const config = getConfig();
+        for (const key in partialChanges) {
+            // For nested objects, we need to merge. For top-level simple values, this just replaces it.
+            const newTopLevelValue = deepMerge(config[key], partialChanges[key]);
+            updateConfig(key, newTopLevelValue);
+        }
+
+        player.sendMessage(`§aSuccessfully saved settings for ${category.title}§a.`);
+        // Return to category list
+        return showPanel(player, 'configCategoryPanel');
     }
 
     const panelDef = panelDefinitions[panelId];

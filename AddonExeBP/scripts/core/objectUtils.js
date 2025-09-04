@@ -48,3 +48,27 @@ export function deepMerge(target, source) {
     }
     return target;
 }
+
+/**
+ * Gets a nested value from an object using a dot-notation string path.
+ * @param {object} obj The object to retrieve the value from.
+ * @param {string} path The dot-separated path to the property.
+ * @returns {*} The value of the property, or undefined if not found.
+ */
+export function getValueFromPath(obj, path) {
+    return path.split('.').reduce((current, key) => (current && current[key] !== undefined) ? current[key] : undefined, obj);
+}
+
+/**
+ * Sets a nested value in an object using a dot-notation string path.
+ * This function modifies the object in place.
+ * @param {object} obj The object to modify.
+ * @param {string} path The dot-separated path to the property.
+ * @param {*} value The value to set.
+ */
+export function setValueByPath(obj, path, value) {
+    const keys = path.split('.');
+    const lastKey = keys.pop();
+    const lastObj = keys.reduce((current, key) => (current[key] = current[key] || {}), obj);
+    lastObj[lastKey] = value;
+}
