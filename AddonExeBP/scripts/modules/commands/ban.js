@@ -64,11 +64,17 @@ commandManager.register({
     ],
     execute: (player, args) => {
         const { duration, reason } = args;
+
+        // Check if the optional 'duration' argument was provided, but is not a valid duration string.
+        // This indicates the user tried to type a multi-word reason without quotes in a slash command.
+        if (duration && parseDuration(duration) === 0) {
+            player.sendMessage('§cInvalid duration format. If you are providing a multi-word reason, please enclose it in "quotes".');
+            return;
+        }
+
         // For slash commands, target is a player object array. For chat, it's a name string.
         const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
 
-        // For slash commands, multi-word reasons must be in quotes. The logic here is now simplified
-        // to rely on the standard argument parsing provided by the command system.
         banPlayer(player, targetPlayer, duration, reason || 'No reason provided.');
     }
 });
