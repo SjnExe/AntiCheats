@@ -37,6 +37,14 @@ export const panelDefinitions = {
                 actionValue: 'reportListPanel'
             },
             {
+                id: 'config',
+                text: '§3Config',
+                icon: 'textures/ui/settings_glyph_color_2x',
+                permissionLevel: 0, // Owner only
+                actionType: 'openPanel',
+                actionValue: 'configCategoryPanel'
+            },
+            {
                 id: 'moderation',
                 text: '§cModeration',
                 icon: 'textures/ui/hammer_l.png',
@@ -141,5 +149,10 @@ export const panelDefinitions = {
                 actionValue: 'showUnbanForm'
             }
         ]
+    },
+    configCategoryPanel: {
+        title: '§l§3Configuration§r',
+        parentPanelId: 'mainPanel',
+        items: [] // Dynamically populated by uiManager
     }
 };
