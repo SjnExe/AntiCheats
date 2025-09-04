@@ -21,7 +21,7 @@ commandManager.register({
         const maxHomes = config.homes.maxHomes;
 
         if (homeCount === 0) {
-            player.sendMessage(`§aYou have no homes set. Use /x:sethome <name> to set one. (${homeCount}/${maxHomes})`);
+            player.sendMessage(`§aYou have no homes set. Use /sethome <name> to set one. (${homeCount}/${maxHomes})`);
         } else {
             player.sendMessage(`§aYour homes (${homeCount}/${maxHomes}): §e${homeList.join(', ')}`);
         }

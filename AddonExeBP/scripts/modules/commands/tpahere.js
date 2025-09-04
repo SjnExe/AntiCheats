@@ -35,7 +35,7 @@ commandManager.register({
 
         if (result.success) {
             player.sendMessage(`§aTPA Here request sent to ${targetPlayer.name}. They have ${config.tpa.requestTimeoutSeconds} seconds to accept.`);
-            targetPlayer.sendMessage(`§a${player.name} has requested for you to teleport to them. Type §e/x:tpaccept§a to accept or §e/x:tpadeny§a to deny.`);
+            targetPlayer.sendMessage(`§a${player.name} has requested for you to teleport to them. Type §e/tpaccept§a to accept or §e/tpadeny§a to deny.`);
         } else {
             player.sendMessage(`§c${result.message}`);
         }

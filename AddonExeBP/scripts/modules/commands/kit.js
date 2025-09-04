@@ -26,7 +26,7 @@ commandManager.register({
                 return;
             }
             player.sendMessage(`§aAvailable kits: §e${allKits.join(', ')}`);
-            player.sendMessage('§7Use /x:kit <kitName> to claim a kit.');
+            player.sendMessage('§7Use /kit <kitName> to claim a kit.');
             return;
         }
 

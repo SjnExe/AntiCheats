@@ -50,38 +50,25 @@ commandManager.register({
     parameters: [
         { name: 'target', type: 'player', description: 'The player to mute.' },
         { name: 'duration', type: 'string', description: 'The duration of the mute (e.g., 1d, 2h, 30m). Default: perm', optional: true },
-        { name: 'reason', type: 'string', description: 'The reason for the mute.', optional: true }
+        { name: 'reason', type: 'text', description: 'The reason for the mute.', optional: true }
     ],
     execute: (player, args) => {
-        if (Array.isArray(args)) { // Chat command
-            if (args.length < 1) {
-                player.sendMessage('§cUsage: !mute <player> [duration] [reason]');
-                return;
-            }
-            const targetName = args[0];
-            const targetPlayer = findPlayerByName(targetName);
-            let duration;
-            let reason;
-            if (args.length > 1) {
-                const parsedMs = parseDuration(args[1]);
-                if (parsedMs > 0) {
-                    duration = args[1];
-                    reason = args.slice(2).join(' ') || 'No reason provided.';
-                } else {
-                    reason = args.slice(1).join(' ');
-                }
-            } else {
-                reason = 'No reason provided.';
-            }
-            mutePlayer(player, targetPlayer, duration, reason);
-        } else { // Slash command
-            const { target, duration, reason } = args;
-            if (!target || target.length === 0) {
-                player.sendMessage('§cPlayer not found.');
-                return;
-            }
-            mutePlayer(player, target[0], duration, reason || 'No reason provided.');
+        const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
+
+        if (!targetPlayer) {
+            player.sendMessage('§cPlayer not found.');
+            return;
         }
+
+        let duration = args.duration;
+        let reason = args.reason;
+
+        if (duration && parseDuration(duration) === 0) {
+            reason = `${duration}${reason ? ' ' + reason : ''}`;
+            duration = undefined;
+        }
+
+        mutePlayer(player, targetPlayer, duration, reason || 'No reason provided.');
     }
 });
 
@@ -95,17 +82,9 @@ commandManager.register({
         { name: 'target', type: 'string', description: 'The name of the player to unmute.' }
     ],
     execute: (player, args) => {
-        let targetName;
-        if (Array.isArray(args)) {
-            if (args.length < 1) {
-                player.sendMessage('§cUsage: !unmute <player>');
-                return;
-            }
-            targetName = args[0];
-        } else {
-            targetName = args.target;
-        }
+        const { target: targetName } = args;
         const targetId = getPlayerIdByName(targetName);
+
         if (!targetId) {
             player.sendMessage(`§cPlayer "${targetName}" has never joined the server or name is misspelled.`);
             return;
