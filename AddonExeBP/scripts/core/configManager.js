@@ -1,7 +1,7 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
 import { errorLog } from './errorLogger.js';
-import { deepEqual, deepMerge } from './utils.js';
+import { deepEqual, deepMerge } from './objectUtils.js';
 
 const currentConfigKey = 'addonexe:config:current';
 const lastLoadedConfigKey = 'addonexe:config:lastLoaded';
@@ -111,10 +111,19 @@ export function reloadConfig() {
     const storageConfig = deepMerge({}, defaultConfig); // Fresh deep copy from the file
 
     for (const key in storageConfig) {
+        // The owner and version should always be taken from the file, so we skip them in the loop.
+        if (key === 'ownerPlayerNames' || key === 'version') {
+            continue;
+        }
+
         if (!deepEqual(lastLoadedConfig[key], storageConfig[key])) {
             currentConfig[key] = deepMerge({}, storageConfig[key]);
         }
     }
+
+    // Always update owner and version from the file
+    currentConfig.ownerPlayerNames = storageConfig.ownerPlayerNames;
+    currentConfig.version = storageConfig.version;
 
     lastLoadedConfig = deepMerge({}, storageConfig);
 
