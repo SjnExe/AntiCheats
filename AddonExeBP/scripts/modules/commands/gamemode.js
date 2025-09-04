@@ -55,12 +55,14 @@ function setGamemode(player, gamemode, target) {
     }
 }
 
-const gamemodeCommand = {
+commandManager.register({
+    name: 'gm',
     description: 'Sets your or another player\'s gamemode.',
     category: 'General',
-    permissionLevel: 1, // Admins only
+    permissionLevel: 1,
+    disableSlashCommand: false,
     parameters: [
-        { name: 'gamemode', type: 'string', description: 'The gamemode to set (survival, creative, adventure, spectator).', optional: false },
+        { name: 'gamemode', type: 'string', description: 's, c, a, sp, or full name', optional: false },
         { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }
     ],
     execute: (player, args) => {
@@ -70,38 +72,22 @@ const gamemodeCommand = {
         }
         setGamemode(player, args.gamemode, args.target);
     }
-};
-
-commandManager.register({
-    ...gamemodeCommand,
-    name: 'gamemode',
-    disableSlashCommand: true
 });
 
-commandManager.register({
-    ...gamemodeCommand,
-    name: 'gm',
-    disableSlashCommand: false
-});
-
-const legacyCommands = [
-    { name: 'gms', aliases: ['survival'], gamemode: 'survival', description: 'Sets your or another player\'s gamemode to Survival.' },
-    { name: 'gmc', aliases: ['creative'], gamemode: 'creative', description: 'Sets your or another player\'s gamemode to Creative.' },
-    { name: 'gma', aliases: ['adventure'], gamemode: 'adventure', description: 'Sets your or another player\'s gamemode to Adventure.' },
-    { name: 'gmsp', aliases: ['spectator'], gamemode: 'spectator', description: 'Sets your or another player\'s gamemode to Spectator.' },
-    { name: 's', gamemode: 'survival', description: 'Sets your or another player\'s gamemode to Survival.' },
-    { name: 'c', gamemode: 'creative', description: 'Sets your or another player\'s gamemode to Creative.' },
-    { name: 'a', gamemode: 'adventure', description: 'Sets your or another player\'s gamemode to Adventure.' },
-    { name: 'sp', gamemode: 'spectator', description: 'Sets your or another player\'s gamemode to Spectator.' }
+const legacyCommandSetup = [
+    { name: 'gms', aliases: ['s', 'survival'], gamemode: 'survival', description: 'Sets gamemode to Survival.' },
+    { name: 'gmc', aliases: ['c', 'creative'], gamemode: 'creative', description: 'Sets gamemode to Creative.' },
+    { name: 'gma', aliases: ['a', 'adventure'], gamemode: 'adventure', description: 'Sets gamemode to Adventure.' },
+    { name: 'gmsp', aliases: ['sp', 'spectator'], gamemode: 'spectator', description: 'Sets gamemode to Spectator.' }
 ];
 
-for (const cmd of legacyCommands) {
+for (const cmd of legacyCommandSetup) {
     commandManager.register({
         name: cmd.name,
-        aliases: cmd.aliases || [],
+        aliases: cmd.aliases,
         description: cmd.description,
         category: 'General',
-        permissionLevel: 1, // Admins only
+        permissionLevel: 1,
         disableSlashCommand: false,
         parameters: [
             { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }

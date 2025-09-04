@@ -57,22 +57,34 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Description:** Freezes or unfreezes a player, preventing movement.
   - **Permission:** Admin
   - **Aliases:** `!freeze`, `!lock`
-- **/gamemode**
-  - **Syntax:** `!gamemode <gamemode> [target]` (Chat-only)
-  - **Description:** Sets a player's gamemode (`survival`, `creative`, `adventure`, `spectator`).
-  - **Permission:** Admin
-  - **Aliases:** `!gm`
-
 - **/gm**
   - **Syntax:** `/gm <gamemode> [target]`
-  - **Description:** Sets a player's gamemode (`s`, `c`, `a`, `sp`, or full names).
+  - **Description:** Sets a player's gamemode. `gamemode` can be `survival`, `creative`, `adventure`, or `spectator` (or their shortcuts `s`, `c`, `a`, `sp`).
   - **Permission:** Admin
 
-- **/gms, /gmc, /gma, /gmsp, /s, /c, /a, /sp**
-  - **Syntax:** `/gms [target]`, `/s [target]`, etc.
-  - **Description:** Shortcuts to set a player's gamemode to Survival, Creative, Adventure, or Spectator.
+- **/gms**
+  - **Syntax:** `/gms [target]`
+  - **Description:** Sets a player's gamemode to Survival.
   - **Permission:** Admin
-  - **Aliases:** `/survival`, `/creative`, `/adventure`, `/spectator`
+  - **Aliases:** `/s`, `/survival`
+
+- **/gmc**
+  - **Syntax:** `/gmc [target]`
+  - **Description:** Sets a player's gamemode to Creative.
+  - **Permission:** Admin
+  - **Aliases:** `/c`, `/creative`
+
+- **/gma**
+  - **Syntax:** `/gma [target]`
+  - **Description:** Sets a player's gamemode to Adventure.
+  - **Permission:** Admin
+  - **Aliases:** `/a`, `/adventure`
+
+- **/gmsp**
+  - **Syntax:** `/gmsp [target]`
+  - **Description:** Sets a player's gamemode to Spectator.
+  - **Permission:** Admin
+  - **Aliases:** `/sp`, `/spectator`
 - **/invsee**
   - **Syntax:** `/invsee <target: player> [page: int]`
   - **Description:** Views a player's inventory in chat.
