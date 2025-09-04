@@ -34,6 +34,7 @@ jobs:
       - name: Replace placeholders in staged files
         shell: bash
         env:
+          VERSION_STRING: ${{ env.VERSION_STRING }}
           VERSION_ARRAY_STRING: ${{ env.VERSION_ARRAY_STRING }}
         run: |
           set -e
@@ -46,6 +47,9 @@ jobs:
           sed -i "s|\"version\": \[1, 0, 0\]|\"version\": ${VERSION_ARRAY_STRING}|g" "$BP_MANIFEST"
           sed -i "s|\"version\": \[1, 0, 0\]|\"version\": ${VERSION_ARRAY_STRING}|g" "$RP_MANIFEST"
           sed -i "s|version: \[1, 0, 0\]|version: ${VERSION_ARRAY_STRING}|g" "$CONFIG_JS_PATH"
+
+          # Replace version string in descriptions
+          sed -i "s|v1.0.0|v${VERSION_STRING}|g" "$BP_MANIFEST" "$RP_MANIFEST"
 
           echo "--- Verification ---"
           echo "BP Manifest:"
