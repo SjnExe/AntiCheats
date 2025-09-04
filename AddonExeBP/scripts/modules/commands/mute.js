@@ -53,21 +53,11 @@ commandManager.register({
         { name: 'reason', type: 'text', description: 'The reason for the mute.', optional: true }
     ],
     execute: (player, args) => {
+        const { duration, reason } = args;
         const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
 
-        if (!targetPlayer) {
-            player.sendMessage('§cPlayer not found.');
-            return;
-        }
-
-        let duration = args.duration;
-        let reason = args.reason;
-
-        if (duration && parseDuration(duration) === 0) {
-            reason = `${duration}${reason ? ' ' + reason : ''}`;
-            duration = undefined;
-        }
-
+        // For slash commands, multi-word reasons must be in quotes. The logic here is now simplified
+        // to rely on the standard argument parsing provided by the command system.
         mutePlayer(player, targetPlayer, duration, reason || 'No reason provided.');
     }
 });

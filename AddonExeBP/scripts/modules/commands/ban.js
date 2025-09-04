@@ -63,25 +63,12 @@ commandManager.register({
         { name: 'reason', type: 'text', description: 'The reason for the ban.', optional: true }
     ],
     execute: (player, args) => {
+        const { duration, reason } = args;
         // For slash commands, target is a player object array. For chat, it's a name string.
         const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
 
-        if (!targetPlayer) {
-            player.sendMessage('§cPlayer not found.');
-            return;
-        }
-
-        let duration = args.duration;
-        let reason = args.reason;
-
-        // The command manager can't distinguish between an optional duration and the reason.
-        // We need to check if the 'duration' argument is actually a duration or the start of the reason.
-        if (duration && parseDuration(duration) === 0) {
-            // It's not a valid duration, so it must be the start of the reason.
-            reason = `${duration}${reason ? ' ' + reason : ''}`;
-            duration = undefined; // Reset duration
-        }
-
+        // For slash commands, multi-word reasons must be in quotes. The logic here is now simplified
+        // to rely on the standard argument parsing provided by the command system.
         banPlayer(player, targetPlayer, duration, reason || 'No reason provided.');
     }
 });
