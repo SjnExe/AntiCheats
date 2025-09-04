@@ -52,9 +52,9 @@ For the best experience, especially for server owners who need to configure the 
         -   **Windows:** `C:\\Users\\<YourUsername>\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com.mojang`
         -   **Android:** `/Android/data/com.mojang.minecraftpe/files/games/com.mojang/`
         -   **iOS:** The `On My iPad/iPhone/iPod > Minecraft > games > com.mojang` folder inside the Files app.
-    -   Move the `AddonExeBP` folder into the `development_behavior_packs` folder.
-    -   Move the `AddonExeRP` folder into the `development_resource_packs` folder.
-    -   If these `development_` folders don't exist, you can create them.
+    -   Move the `AddonExeBP` folder into the `behavior_packs` folder.
+    -   Move the `AddonExeRP` folder into the `resource_packs` folder.
+    -   If these folders don't exist, you can create them.
 
 4.  **Apply in Your World:**
     -   Open Minecraft and go to the settings of the world you want to add AddonExe to.
