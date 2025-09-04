@@ -1,6 +1,6 @@
 export const config = {
     // --- System & Core Settings ---
-    version: 'v__VERSION_STRING__',
+    version: [1, 0, 0], // This will be replaced by the release workflow
     ownerPlayerNames: ['SjnTechMlmYT'], // Default : ['Your•Name•Here']
     adminTag: 'admin',
     commandPrefix: '!',
