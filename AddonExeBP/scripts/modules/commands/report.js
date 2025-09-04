@@ -3,7 +3,6 @@ import * as reportManager from '../../core/reportManager.js';
 import { getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { ModalFormData } from '@minecraft/server-ui';
 import { uiWait } from '../../core/utils.js';
-import { debugLog } from '../../core/logger.js';
 
 commandManager.register({
     name: 'report',
@@ -14,22 +13,22 @@ commandManager.register({
         { name: 'target', type: 'string', description: 'The name of the player to report.' }
     ],
     execute: async (player, args) => {
-        const { target: targetName } = args;
+        const { target: reportedPlayerName } = args;
 
-        if (!targetName) {
+        if (!reportedPlayerName) {
             player.sendMessage('§cYou must specify a player to report.');
             return;
         }
 
-        const targetId = getPlayerIdByName(targetName);
+        const targetId = getPlayerIdByName(reportedPlayerName);
         if (!targetId) {
-            player.sendMessage(`§cPlayer "${targetName}" has never joined this server.`);
+            player.sendMessage(`§cPlayer "${reportedPlayerName}" has never joined this server.`);
             return;
         }
 
         // Load the target's data to get their correctly-cased name for the UI
         const targetData = loadPlayerData(targetId);
-        const correctTargetName = targetData ? targetData.name : targetName;
+        const correctTargetName = targetData ? targetData.name : reportedPlayerName;
 
         const form = new ModalFormData()
             .title(`Report ${correctTargetName}`)
@@ -49,7 +48,6 @@ commandManager.register({
             return;
         }
 
-        debugLog(`[ReportCommand] Creating report with: targetId=${targetId}, correctTargetName=${correctTargetName}, reason=${reason}`);
         reportManager.createReport(player, targetId, correctTargetName, reason);
         player.sendMessage('§aReport submitted. Thank you for your help.');
     }
