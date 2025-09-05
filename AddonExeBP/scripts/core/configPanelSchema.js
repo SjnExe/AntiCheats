@@ -28,7 +28,7 @@
 export const configPanelSchema = [
     {
         id: 'general',
-        title: '§l§3General Settings§r',
+        title: '§l§3General System§r',
         icon: 'textures/ui/settings_glyph_color_2x',
         settings: [
             {
@@ -66,7 +66,7 @@ export const configPanelSchema = [
     },
     {
         id: 'tpa',
-        title: '§l§bTPA Settings§r',
+        title: '§l§bTPA System§r',
         icon: 'textures/ui/Transfer',
         settings: [
             {
@@ -97,7 +97,7 @@ export const configPanelSchema = [
     },
     {
         id: 'homes',
-        title: '§l§aHome Settings§r',
+        title: '§l§aHome System§r',
         icon: 'textures/ui/icon_recipe_item',
         settings: [
             {
@@ -128,7 +128,7 @@ export const configPanelSchema = [
     },
     {
         id: 'economy',
-        title: '§l§6Economy Settings§r',
+        title: '§l§6Economy System§r',
         icon: 'textures/ui/common_gold_ingot',
         settings: [
             {
@@ -153,7 +153,7 @@ export const configPanelSchema = [
     },
     {
         id: 'playerInfo',
-        title: '§l§ePlayer Info Settings§r',
+        title: '§l§ePlayer Info System§r',
         icon: 'textures/ui/icon_multiplayer',
         settings: [
             {

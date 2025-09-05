@@ -76,3 +76,44 @@ export function setValueByPath(obj, path, value) {
     const lastObj = keys.reduce((current, key) => (current[key] = current[key] || {}), obj);
     lastObj[lastKey] = value;
 }
+
+/**
+ * Reconciles three configuration objects based on a specific set of rules for addon updates.
+ * - If a setting's default value has changed between versions, the new default is forced.
+ * - If a setting's default value is unchanged, the user's custom value is preserved.
+ * @param {object} newDefault - The new default config object (from the updated config.js).
+ * @param {object} oldDefault - The old default config object (from the last loaded version).
+ * @param {object} userSaved - The user's currently saved config object.
+ * @returns {object} The final, reconciled configuration object.
+ */
+export function reconcileConfig(newDefault, oldDefault, userSaved) {
+    const finalConfig = {};
+
+    for (const key in newDefault) {
+        const isNewKey = !oldDefault.hasOwnProperty(key);
+        const newDefaultValue = newDefault[key];
+        const oldDefaultValue = oldDefault[key];
+        const userSavedValue = userSaved ? userSaved[key] : undefined;
+        const userHasSavedValue = userSaved && userSaved.hasOwnProperty(key);
+
+        const isObject = (val) => val && typeof val === 'object' && !Array.isArray(val);
+
+        if (isNewKey) {
+            // New property in this version, so add it from the new default config.
+            finalConfig[key] = newDefaultValue;
+        } else if (isObject(newDefaultValue) && isObject(oldDefaultValue)) {
+            // Property is a nested object, so we must recurse.
+            // If the user doesn't have a saved object for this key, pass an empty one to the recursion.
+            const userSavedChild = isObject(userSavedValue) ? userSavedValue : {};
+            finalConfig[key] = reconcileConfig(newDefaultValue, oldDefaultValue, userSavedChild);
+        } else if (!deepEqual(newDefaultValue, oldDefaultValue)) {
+            // The default value itself has changed between versions. Force the new default value.
+            finalConfig[key] = newDefaultValue;
+        } else {
+            // The default value is the same as the last version. Preserve the user's setting.
+            // If the user hasn't customized this specific key, fall back to the new default value.
+            finalConfig[key] = userHasSavedValue ? userSavedValue : newDefaultValue;
+        }
+    }
+    return finalConfig;
+}

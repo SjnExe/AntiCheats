@@ -1,7 +1,7 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
 import { errorLog } from './errorLogger.js';
-import { deepEqual, deepMerge } from './objectUtils.js';
+import { deepEqual, deepMerge, setValueByPath, reconcileConfig } from './objectUtils.js';
 
 const currentConfigKey = 'exe:config:current';
 const lastLoadedConfigKey = 'exe:config:lastLoaded';
@@ -15,47 +15,50 @@ let lastLoadedConfig = null;
  * @returns {boolean} True if this is the first time the addon is being initialized.
  */
 export function loadConfig() {
-    const storageConfig = deepMerge({}, defaultConfig);
+    const newDefaultConfig = deepMerge({}, defaultConfig);
     let isFirstInit = false;
 
-    const currentConfigStr = world.getDynamicProperty(currentConfigKey);
-    const lastLoadedConfigStr = world.getDynamicProperty(lastLoadedConfigKey);
+    const userSavedConfigStr = world.getDynamicProperty(currentConfigKey);
+    const oldDefaultConfigStr = world.getDynamicProperty(lastLoadedConfigKey);
 
-    if (!currentConfigStr) {
-        // First time setup
+    if (!userSavedConfigStr) {
+        // Scenario: First-time initialization.
         isFirstInit = true;
-        currentConfig = deepMerge({}, storageConfig);
-        lastLoadedConfig = deepMerge({}, storageConfig);
+        currentConfig = deepMerge({}, newDefaultConfig);
+        errorLog('[ConfigManager] No saved config found. Initializing with default values.');
     } else {
-        // Subsequent startups
+        // Scenario: Subsequent startup. Load all configs.
+        let userSavedConfig;
+        let oldDefaultConfig;
         try {
-            currentConfig = JSON.parse(currentConfigStr);
+            userSavedConfig = JSON.parse(userSavedConfigStr);
         } catch (e) {
-            errorLog('[ConfigManager] Failed to parse current config. Resetting to default.', e);
-            currentConfig = deepMerge({}, storageConfig);
+            errorLog('[ConfigManager] Failed to parse user-saved config. It will be reset.', e);
+            userSavedConfig = deepMerge({}, newDefaultConfig);
+        }
+        try {
+            oldDefaultConfig = JSON.parse(oldDefaultConfigStr);
+        } catch {
+            errorLog('[ConfigManager] Could not parse last loaded config. Assuming it is the first load after an update.');
+            oldDefaultConfig = null; // Treat as if the last version is unknown.
         }
 
-        try {
-            lastLoadedConfig = JSON.parse(lastLoadedConfigStr);
-        } catch (e) {
-            errorLog('[ConfigManager] Failed to parse last loaded config. Resetting to default.', e);
-            lastLoadedConfig = deepMerge({}, storageConfig);
-        }
-
-        // Version check for migration
-        if (!deepEqual(lastLoadedConfig.version, storageConfig.version)) {
-            errorLog(`[ConfigManager] Version mismatch detected. Migrating config from ${lastLoadedConfig.version?.join('.')} to ${storageConfig.version?.join('.')}.`);
-            // Preserve user's settings by merging them on top of the new default config
-            currentConfig = deepMerge(storageConfig, currentConfig);
-            // Explicitly set the version to the new version
-            currentConfig.version = storageConfig.version;
-            // Update the last loaded config to the new version
-            lastLoadedConfig = deepMerge({}, storageConfig);
+        // Check for version change to determine which logic to use.
+        if (!oldDefaultConfig || !deepEqual(oldDefaultConfig.version, newDefaultConfig.version)) {
+            // Scenario: Addon has been updated (version is different).
+            errorLog(`[ConfigManager] Version mismatch detected. Migrating config.`);
+            // Preserve user's settings by merging them on top of the new defaults.
+            currentConfig = deepMerge(newDefaultConfig, userSavedConfig);
+        } else {
+            // Scenario: Same version, normal load.
+            // Reconcile changes made directly to config.js file as per user's logic.
+            currentConfig = reconcileConfig(newDefaultConfig, oldDefaultConfig, userSavedConfig);
         }
     }
 
-    // Final merge to ensure any new properties from the default config are added
-    currentConfig = deepMerge(deepMerge({}, storageConfig), currentConfig);
+    // After all logic, the 'last loaded' config must be updated to the new default structure
+    // for the *next* startup's comparison.
+    lastLoadedConfig = deepMerge({}, newDefaultConfig);
 
     saveCurrentConfig();
     saveLastLoadedConfig();
@@ -110,25 +113,32 @@ export function updateConfig(key, value) {
  * Reloads the configuration based on the user's specified logic.
  */
 export function reloadConfig() {
-    const storageConfig = deepMerge({}, defaultConfig); // Fresh deep copy from the file
+    // eslint-disable-next-line no-console
+    console.log('[ConfigManager] Reloading configuration...');
+    const newDefaultConfig = deepMerge({}, defaultConfig);
 
-    for (const key in storageConfig) {
-        // The owner and version should always be taken from the file, so we skip them in the loop.
-        if (key === 'ownerPlayerNames' || key === 'version') {
-            continue;
-        }
+    // Reconcile the new file defaults with the last-known defaults and the current user settings.
+    currentConfig = reconcileConfig(newDefaultConfig, lastLoadedConfig, currentConfig);
 
-        if (!deepEqual(lastLoadedConfig[key], storageConfig[key])) {
-            currentConfig[key] = deepMerge({}, storageConfig[key]);
-        }
-    }
-
-    // Always update owner and version from the file
-    currentConfig.ownerPlayerNames = storageConfig.ownerPlayerNames;
-    currentConfig.version = storageConfig.version;
-
-    lastLoadedConfig = deepMerge({}, storageConfig);
+    // Update the last loaded config to the new default structure for the next comparison.
+    lastLoadedConfig = deepMerge({}, newDefaultConfig);
 
     saveCurrentConfig();
     saveLastLoadedConfig();
+    // eslint-disable-next-line no-console
+    console.log('[ConfigManager] Configuration reloaded and reconciled.');
+}
+
+/**
+ * Updates multiple keys in the configuration using path notation and saves once.
+ * @param {Object.<string, any>} updates An object where keys are dot-notation paths and values are the new values.
+ */
+export function updateMultipleConfig(updates) {
+    if (!currentConfig) {
+        loadConfig();
+    }
+    for (const path in updates) {
+        setValueByPath(currentConfig, path, updates[path]);
+    }
+    saveCurrentConfig();
 }
