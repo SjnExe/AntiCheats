@@ -34,14 +34,11 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Permission:** Admin
   - **Aliases:** `!ci`, `!clearinv`
 
-- **/ecwipe, /ecwipe2, /ecwipe3**
-  - **Syntax:** `!<command> [target: player]` (Chat-only)
-  - **Description:** Clears a player's Ender Chest. Three versions exist for testing different methods due to potential instability.
-    - `ecwipe`: Uses the most direct API method (`clearAll`).
-    - `ecwipe2`: Clears slots one by one.
-    - `ecwipe3`: Uses vanilla `/item replace` commands.
+- **/ecwipe**
+  - **Syntax:** `!ecwipe [target: player]` (Chat-only)
+  - **Description:** Clears a player's Ender Chest.
   - **Permission:** Admin
-  - **Aliases:** `!clearec`, `!ecclear` (and variants with 2/3)
+  - **Aliases:** `!clearec`, `!ecclear`
 
 - **/clearchat**
   - **Syntax:** `/clearchat`

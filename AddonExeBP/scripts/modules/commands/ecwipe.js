@@ -32,16 +32,21 @@ commandManager.register({
             const executorData = getPlayer(sender.id);
             const targetData = getPlayer(targetPlayer.id);
 
-            if (executorData.permissionLevel > targetData.permissionLevel && sender.id !== targetPlayer.id) {
-                sender.sendMessage('§cYou cannot clear the Ender Chest of a player with a higher rank.');
+            // Lower permissionLevel number means higher rank. 0=Owner, 1=Admin.
+            if (executorData.permissionLevel > targetData.permissionLevel) {
+                sender.sendMessage('§cYou cannot clear the Ender Chest of a player with a higher rank than you.');
                 playSound(sender, 'note.bass');
                 return;
             }
         }
 
         try {
-            const ecContainer = targetPlayer.enderChestContainer;
-            ecContainer.clearAll();
+            // Ender Chest has 27 slots (0-26). We loop through and clear each one with a command.
+            for (let i = 0; i < 27; i++) {
+                // targetPlayer.runCommand() executes the command *as* the target player,
+                // so @s is the correct and most reliable selector.
+                targetPlayer.runCommand(`item replace entity @s slot.enderchest ${i} with air`);
+            }
 
             if (targetPlayer.id === sender.id) {
                 sender.sendMessage('§aYour Ender Chest has been cleared.');
