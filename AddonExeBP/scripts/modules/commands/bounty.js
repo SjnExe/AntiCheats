@@ -1,7 +1,7 @@
 import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import { getConfig } from '../../core/configManager.js';
-import { getPlayer, savePlayerData } from '../../core/playerDataManager.js';
+import { getPlayer, incrementPlayerBounty, addPlayerBountyContribution } from '../../core/playerDataManager.js';
 import { world } from '@minecraft/server';
 import { findPlayerByName } from '../utils/playerUtils.js';
 
@@ -35,13 +35,9 @@ function placeBounty(player, targetPlayer, amount) {
     }
     const result = economyManager.removeBalance(player.id, amount);
     if (result) {
-        targetData.bounty += amount;
-        if (!sourceData.bounties) {
-            sourceData.bounties = {};
-        }
-        sourceData.bounties[targetPlayer.id] = (sourceData.bounties[targetPlayer.id] || 0) + amount;
-        savePlayerData(player.id);
-        savePlayerData(targetPlayer.id);
+        incrementPlayerBounty(targetPlayer.id, amount);
+        addPlayerBountyContribution(player.id, targetPlayer.id, amount);
+
         player.sendMessage('§aYou have placed a bounty of §e$' + amount + '§a on ' + targetPlayer.name + '.');
         world.sendMessage('§cSomeone has placed a bounty of §e$' + amount + '§c on ' + targetPlayer.name + '!');
     } else {

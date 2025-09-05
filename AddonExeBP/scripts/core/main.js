@@ -29,9 +29,7 @@ export function updatePlayerRank(player) {
     const newRank = rankManager.getPlayerRank(player, config);
 
     if (oldRankId !== newRank.id) {
-        pData.rankId = newRank.id;
-        pData.permissionLevel = newRank.permissionLevel;
-        playerDataManager.savePlayerData(player.id); // Save the change immediately
+        playerDataManager.setPlayerRank(player.id, newRank.id, newRank.permissionLevel);
         debugLog(`[AddonExe] Player ${player.name}'s rank updated from ${oldRankId} to ${newRank.name}.`);
         player.sendMessage(`§aYour rank has been updated to ${newRank.name}.`);
     }
@@ -197,7 +195,7 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         playerCache.addAdminToXrayCache(player.id);
     }
 
-    // Check for a death location to message the player
+    // Check for a death location to message the player, then clear it.
     if (pData.lastDeathLocation) {
         const location = pData.lastDeathLocation;
         const config = getConfig();
@@ -209,6 +207,9 @@ world.afterEvents.playerSpawn.subscribe(async (event) => {
         };
         const message = formatString(config.playerInfo.deathCoordsMessage, context);
         player.sendMessage(message);
+
+        // Clear the death location so it's not sent again on the next join
+        playerDataManager.setPlayerLastDeathLocation(player.id, null);
     }
 });
 
@@ -242,13 +243,13 @@ world.afterEvents.entityDie?.subscribe((event) => {
     if (config.playerInfo.enableDeathCoords) {
         const pData = playerDataManager.getPlayer(player.id);
         if (pData) {
-            pData.lastDeathLocation = {
+            const deathLocation = {
                 x: player.location.x,
                 y: player.location.y,
                 z: player.location.z,
                 dimensionId: player.dimension.id
             };
-            // The data will be saved on playerLeave event
+            playerDataManager.setPlayerLastDeathLocation(player.id, deathLocation);
         }
     }
 });

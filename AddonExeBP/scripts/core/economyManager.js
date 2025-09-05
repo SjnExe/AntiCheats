@@ -1,4 +1,4 @@
-import { getPlayer, savePlayerData } from './playerDataManager.js';
+import { getPlayer, setPlayerBalance, incrementPlayerBalance } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { world } from '@minecraft/server';
 
@@ -63,18 +63,18 @@ export function setBalance(playerId, amount) {
     if (!pData || amount < 0) {
         return false;
     }
-    pData.balance = amount;
-    savePlayerData(playerId);
+    setPlayerBalance(playerId, amount);
     return true;
 }
 
 export function addBalance(playerId, amount) {
     if (amount < 0) {return false;}
-    const currentBalance = getBalance(playerId);
-    if (currentBalance === null) {
+    const pData = getPlayer(playerId);
+    if (!pData) {
         return false;
     }
-    return setBalance(playerId, currentBalance + amount);
+    incrementPlayerBalance(playerId, amount);
+    return true;
 }
 
 export function removeBalance(playerId, amount) {
@@ -83,7 +83,8 @@ export function removeBalance(playerId, amount) {
     if (currentBalance === null || currentBalance < amount) {
         return false;
     }
-    return setBalance(playerId, currentBalance - amount);
+    incrementPlayerBalance(playerId, -amount);
+    return true;
 }
 
 export function transfer(sourcePlayerId, targetPlayerId, amount) {
@@ -102,10 +103,9 @@ export function transfer(sourcePlayerId, targetPlayerId, amount) {
         return { success: false, message: 'Could not find the target player\'s data.' };
     }
 
-    sourceData.balance -= amount;
-    targetData.balance += amount;
+    // Use the data wrappers to ensure dirty flags are set
+    incrementPlayerBalance(sourcePlayerId, -amount);
+    incrementPlayerBalance(targetPlayerId, amount);
 
-    savePlayerData(sourcePlayerId);
-    savePlayerData(targetPlayerId);
     return { success: true, message: 'Transfer successful.' };
 }

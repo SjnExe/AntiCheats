@@ -1,4 +1,4 @@
-import { getPlayer, savePlayerData } from './playerDataManager.js';
+import { getPlayer, setPlayerHome as setPlayerDataHome, deletePlayerHome as deletePlayerDataHome } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 
 /**
@@ -15,8 +15,9 @@ export function setHome(player, homeName) {
 
     const config = getConfig();
     const homeCount = Object.keys(pData.homes).length;
+    const lowerCaseHomeName = homeName.toLowerCase();
 
-    if (homeCount >= config.homes.maxHomes && !pData.homes[homeName]) {
+    if (homeCount >= config.homes.maxHomes && !pData.homes[lowerCaseHomeName]) {
         return { success: false, message: `You have reached the maximum number of homes (${config.homes.maxHomes}).` };
     }
 
@@ -24,14 +25,14 @@ export function setHome(player, homeName) {
         return { success: false, message: 'Home name cannot be longer than 20 characters.' };
     }
 
-    pData.homes[homeName.toLowerCase()] = {
+    const location = {
         x: player.location.x,
         y: player.location.y,
         z: player.location.z,
         dimensionId: player.dimension.id
     };
 
-    savePlayerData(player.id);
+    setPlayerDataHome(player.id, lowerCaseHomeName, location);
     return { success: true, message: `Home '${homeName}' has been set.` };
 }
 
@@ -59,12 +60,13 @@ export function deleteHome(player, homeName) {
         return { success: false, message: 'Could not find your player data.' };
     }
 
-    if (!pData.homes[homeName.toLowerCase()]) {
+    const lowerCaseHomeName = homeName.toLowerCase();
+
+    if (!pData.homes[lowerCaseHomeName]) {
         return { success: false, message: `Home '${homeName}' does not exist.` };
     }
 
-    delete pData.homes[homeName.toLowerCase()];
-    savePlayerData(player.id);
+    deletePlayerDataHome(player.id, lowerCaseHomeName);
     return { success: true, message: `Home '${homeName}' has been deleted.` };
 }
 
