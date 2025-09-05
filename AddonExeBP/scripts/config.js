@@ -11,7 +11,7 @@ export const config = {
 
     // --- Data Management ---
     data: {
-        autoSaveIntervalSeconds: 300 // Time in seconds. Set to 0 to disable. Default is 5 minutes.
+        autoSaveIntervalSeconds: 30 // Time in seconds. Set to 0 to disable. Default is 30 seconds.
     },
 
     // --- Restart Settings ---

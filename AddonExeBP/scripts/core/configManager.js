@@ -46,7 +46,7 @@ export function loadConfig() {
         // Check for version change to determine which logic to use.
         if (!oldDefaultConfig || !deepEqual(oldDefaultConfig.version, newDefaultConfig.version)) {
             // Scenario: Addon has been updated (version is different).
-            errorLog(`[ConfigManager] Version mismatch detected. Migrating config.`);
+            errorLog('[ConfigManager] Version mismatch detected. Migrating config.');
             // Preserve user's settings by merging them on top of the new defaults.
             currentConfig = deepMerge(newDefaultConfig, userSavedConfig);
         } else {

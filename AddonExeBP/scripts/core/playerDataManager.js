@@ -17,6 +17,7 @@
  * @property {Object.<string, number>} bounties
  * @property {boolean} xrayNotifications
  * @property {HomeLocation | null} lastDeathLocation
+ * @property {boolean} [needsSave] - Internal flag for the auto-saver.
  */
 
 import { getConfig } from './configManager.js';
@@ -37,13 +38,19 @@ const activePlayerData = new Map();
  */
 let playerNameIdMap = new Map();
 
+/** A flag indicating that the name-to-ID map has changed and needs to be saved. */
+export let isNameIdMapDirty = false;
+
+
 /**
  * Saves the player name-to-ID map to a dynamic property.
  */
-function saveNameIdMap() {
+export function saveNameIdMap() {
     try {
         const dataToSave = Array.from(playerNameIdMap.entries());
         world.setDynamicProperty(playerNameIdMapKey, JSON.stringify(dataToSave));
+        isNameIdMapDirty = false; // Reset the flag after saving
+        debugLog('[PlayerDataManager] Saved name-to-ID map.');
     } catch (e) {
         errorLog(`[PlayerDataManager] Failed to save name-to-ID map: ${e.stack}`);
     }
@@ -76,8 +83,14 @@ export function savePlayerData(playerId) {
     }
     try {
         const playerData = activePlayerData.get(playerId);
-        const dataString = JSON.stringify(playerData);
+        // Don't save the internal 'needsSave' flag to disk
+        const { needsSave, ...dataToSave } = playerData;
+        const dataString = JSON.stringify(dataToSave);
         world.setDynamicProperty(`${playerPropertyPrefix}${playerId}`, dataString);
+        // Mark the data as clean after a successful save
+        if (playerData) {
+            playerData.needsSave = false;
+        }
     } catch (e) {
         errorLog(`[PlayerDataManager] Failed to save data for player ${playerId}: ${e.stack}`);
     }
@@ -92,7 +105,9 @@ export function loadPlayerData(playerId) {
     try {
         const dataString = world.getDynamicProperty(`${playerPropertyPrefix}${playerId}`);
         if (dataString && typeof dataString === 'string') {
+            /** @type {PlayerData} */
             const playerData = JSON.parse(dataString);
+            playerData.needsSave = false; // Loaded data is considered clean
             activePlayerData.set(playerId, playerData);
             return playerData;
         }
@@ -108,10 +123,25 @@ export function loadPlayerData(playerId) {
  * @returns {PlayerData}
  */
 export function getOrCreatePlayer(player) {
-    // Update the name-to-ID map every time a player is processed.
-    if (playerNameIdMap.get(player.name.toLowerCase()) !== player.id) {
-        playerNameIdMap.set(player.name.toLowerCase(), player.id);
-        saveNameIdMap();
+    const playerNameLower = player.name.toLowerCase();
+    let mapWasModified = false;
+
+    // Check if the current name is correctly mapped
+    if (playerNameIdMap.get(playerNameLower) !== player.id) {
+        playerNameIdMap.set(playerNameLower, player.id);
+        mapWasModified = true;
+
+        // Clean up old usernames for this player ID
+        for (const [name, id] of playerNameIdMap.entries()) {
+            if (id === player.id && name !== playerNameLower) {
+                playerNameIdMap.delete(name);
+                debugLog(`[PlayerDataManager] Removed old username '${name}' for player ID ${player.id}.`);
+            }
+        }
+    }
+
+    if (mapWasModified) {
+        isNameIdMapDirty = true;
     }
 
     if (activePlayerData.has(player.id)) {
@@ -135,10 +165,11 @@ export function getOrCreatePlayer(player) {
         bounty: config.playerDefaults.bounty,
         bounties: {},
         xrayNotifications: config.playerDefaults.xrayNotifications,
-        lastDeathLocation: null
+        lastDeathLocation: null,
+        needsSave: true // New data should be saved on the next cycle
     };
     activePlayerData.set(player.id, newPlayerData);
-    savePlayerData(player.id); // Save the new player's data immediately
+    // Do not save immediately, let the auto-saver handle it.
     return newPlayerData;
 }
 
@@ -165,8 +196,12 @@ export function getPlayer(playerId) {
  * @param {string} playerId
  */
 export function handlePlayerLeave(playerId) {
-    if (activePlayerData.has(playerId)) {
-        savePlayerData(playerId);
+    const pData = activePlayerData.get(playerId);
+    if (pData) {
+        // Only save if the data has been modified
+        if (pData.needsSave) {
+            savePlayerData(playerId);
+        }
         activePlayerData.delete(playerId);
     }
 }
@@ -185,4 +220,160 @@ export function getAllPlayerData() {
  */
 export function getAllPlayerNameIdMap() {
     return playerNameIdMap;
+}
+
+
+// --- Data Modification Wrappers ---
+// These functions ensure that any data modification correctly
+// flags the player's data to be saved by the auto-saver.
+
+/**
+ * Updates a player's rank and permission level.
+ * @param {string} playerId
+ * @param {string} rankId
+ * @param {number} permissionLevel
+ */
+export function setPlayerRank(playerId, rankId, permissionLevel) {
+    const pData = getPlayer(playerId);
+    if (pData) {
+        pData.rankId = rankId;
+        pData.permissionLevel = permissionLevel;
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Adds to a player's bounty.
+ * @param {string} playerId
+ * @param {number} amount
+ */
+export function incrementPlayerBounty(playerId, amount) {
+    const pData = getPlayer(playerId);
+    if (pData) {
+        pData.bounty = (pData.bounty || 0) + amount;
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Adds to the record of bounties a player has placed on another.
+ * @param {string} sourcePlayerId The player placing the bounty.
+ * @param {string} targetPlayerId The player receiving the bounty.
+ * @param {number} amount The amount of the bounty.
+ */
+export function addPlayerBountyContribution(sourcePlayerId, targetPlayerId, amount) {
+    const pData = getPlayer(sourcePlayerId);
+    if (pData) {
+        if (!pData.bounties) {
+            pData.bounties = {};
+        }
+        pData.bounties[targetPlayerId] = (pData.bounties[targetPlayerId] || 0) + amount;
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Sets or updates a player's home location.
+ * @param {string} playerId
+ * @param {string} homeName
+ * @param {HomeLocation} location
+ */
+export function setPlayerHome(playerId, homeName, location) {
+    const pData = getPlayer(playerId);
+    if (pData) {
+        pData.homes[homeName] = location;
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Deletes a player's home.
+ * @param {string} playerId
+ * @param {string} homeName
+ */
+export function deletePlayerHome(playerId, homeName) {
+    const pData = getPlayer(playerId);
+    if (pData && pData.homes[homeName]) {
+        delete pData.homes[homeName];
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Sets a player's balance to a specific value.
+ * @param {string} playerId
+ * @param {number} newBalance
+ */
+export function setPlayerBalance(playerId, newBalance) {
+    const pData = getPlayer(playerId);
+    if (pData) {
+        pData.balance = newBalance;
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Adds or removes from a player's balance.
+ * @param {string} playerId
+ * @param {number} amount The amount to add (can be negative).
+ */
+export function incrementPlayerBalance(playerId, amount) {
+    const pData = getPlayer(playerId);
+    if (pData) {
+        pData.balance += amount;
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Sets a cooldown for a kit for a player.
+ * @param {string} playerId
+ * @param {string} kitName
+ * @param {number} timestamp The timestamp when the cooldown expires.
+ */
+export function setKitCooldown(playerId, kitName, timestamp) {
+    const pData = getPlayer(playerId);
+    if (pData) {
+        pData.kitCooldowns[kitName] = timestamp;
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Sets a player's bounty.
+ * @param {string} playerId
+ * @param {number} amount
+ */
+export function setPlayerBounty(playerId, amount) {
+    const pData = getPlayer(playerId);
+    if (pData) {
+        pData.bounty = amount;
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Toggles whether a player receives X-ray notifications.
+ * @param {string} playerId
+ * @param {boolean} status
+ */
+export function setPlayerXrayNotifications(playerId, status) {
+    const pData = getPlayer(playerId);
+    if (pData) {
+        pData.xrayNotifications = status;
+        pData.needsSave = true;
+    }
+}
+
+/**
+ * Sets a player's last death location.
+ * @param {string} playerId
+ * @param {HomeLocation | null} location
+ */
+export function setPlayerLastDeathLocation(playerId, location) {
+    const pData = getPlayer(playerId);
+    if (pData) {
+        pData.lastDeathLocation = location;
+        pData.needsSave = true;
+    }
 }
