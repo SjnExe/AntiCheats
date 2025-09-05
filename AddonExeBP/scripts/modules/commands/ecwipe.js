@@ -45,7 +45,7 @@ commandManager.register({
             for (let i = 0; i < 27; i++) {
                 // targetPlayer.runCommand() executes the command *as* the target player,
                 // so @s is the correct and most reliable selector.
-                targetPlayer.runCommand(`item replace entity @s slot.enderchest ${i} with air`);
+                targetPlayer.runCommand(`/item replace entity @s slot.enderchest ${i} with air`);
             }
 
             if (targetPlayer.id === sender.id) {
