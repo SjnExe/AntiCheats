@@ -1,7 +1,7 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
 import { errorLog } from './errorLogger.js';
-import { deepEqual, deepMerge, setValueByPath } from './objectUtils.js';
+import { deepEqual, deepMerge, setValueByPath, reconcileConfig } from './objectUtils.js';
 
 const currentConfigKey = 'exe:config:current';
 const lastLoadedConfigKey = 'exe:config:lastLoaded';
@@ -17,45 +17,43 @@ let lastLoadedConfig = null;
 export function loadConfig() {
     const newDefaultConfig = deepMerge({}, defaultConfig);
     let isFirstInit = false;
+    let userSavedConfig = null;
+    let oldDefaultConfig = null;
 
-    const savedConfigStr = world.getDynamicProperty(currentConfigKey);
-    const lastVersionConfigStr = world.getDynamicProperty(lastLoadedConfigKey);
+    const userSavedConfigStr = world.getDynamicProperty(currentConfigKey);
+    const oldDefaultConfigStr = world.getDynamicProperty(lastLoadedConfigKey);
 
-    if (!savedConfigStr) {
-        // This is the first time the addon is being run, or storage was lost.
+    if (!userSavedConfigStr) {
+        // First time setup. The user has no saved config.
         isFirstInit = true;
         currentConfig = deepMerge({}, newDefaultConfig);
-        lastLoadedConfig = deepMerge({}, newDefaultConfig);
         errorLog('[ConfigManager] No saved config found. Initializing with default values.');
     } else {
-        // A saved config exists, load it.
+        // Subsequent startup. The user has a saved config.
         try {
-            currentConfig = JSON.parse(savedConfigStr);
+            userSavedConfig = JSON.parse(userSavedConfigStr);
         } catch (e) {
-            errorLog('[ConfigManager] Failed to parse saved config. Resetting to default.', e);
-            currentConfig = deepMerge({}, newDefaultConfig); // Fallback on parse error
+            errorLog('[ConfigManager] Failed to parse user-saved config. It will be reset.', e);
+            userSavedConfig = deepMerge({}, newDefaultConfig); // Fallback on error
         }
 
-        // Check for version mismatch to log migration
         try {
-            const lastVersion = JSON.parse(lastVersionConfigStr)?.version;
-            if (!deepEqual(lastVersion, newDefaultConfig.version)) {
-                errorLog(`[ConfigManager] Version mismatch detected. Migrating config from ${lastVersion?.join('.')} to ${newDefaultConfig.version?.join('.')}.`);
-            }
+            // The 'last loaded' config represents the default config from the previous run.
+            oldDefaultConfig = JSON.parse(oldDefaultConfigStr);
         } catch {
-            // This can happen if lastLoadedConfig is missing or corrupt, not a critical error.
-            errorLog('[ConfigManager] Could not determine last loaded config version. Assuming migration is needed.');
+            errorLog('[ConfigManager] Could not parse last loaded config. Assuming full migration.');
+            // If we can't parse the old defaults, we can't compare.
+            // A safe fallback is to treat it like a first-time setup for the user's values.
+            oldDefaultConfig = deepMerge({}, newDefaultConfig);
         }
+
+        // Perform the reconciliation based on the new logic.
+        currentConfig = reconcileConfig(newDefaultConfig, oldDefaultConfig, userSavedConfig);
     }
 
-    // The single, definitive merge operation.
-    // This handles both initial setup and migration. It ensures user settings are preserved
-    // over new defaults, while new properties from the default config are added.
-    currentConfig = deepMerge(newDefaultConfig, currentConfig);
-
-    // After merging, the 'last loaded' config should be updated to match the new default structure
-    // for the next time a version check is needed.
-    lastLoadedConfig = deepMerge({}, defaultConfig);
+    // After reconciliation, the 'last loaded' config must be updated to the new default structure
+    // for the *next* startup's comparison.
+    lastLoadedConfig = deepMerge({}, newDefaultConfig);
 
     saveCurrentConfig();
     saveLastLoadedConfig();
