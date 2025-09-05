@@ -113,6 +113,7 @@ commandManager.register({
     description: 'Unbans a player.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'string', description: 'The name of the player to unban.' }
     ],
