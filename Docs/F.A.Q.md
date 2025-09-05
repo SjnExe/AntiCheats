@@ -79,9 +79,11 @@ Installing on a Bedrock Dedicated Server is slightly different, as you manually 
     -   `AddonExeRP` goes into the `resource_packs` folder.
 
 2.  **Activate the Packs:**
-    -   In your BDS's root directory, you will find two files from the AddonExe release: `world_behavior_packs.json` and `world_resource_packs.json`.
-    -   Copy both of these files into the root folder of your world (the same folder that contains your `level.dat`).
-    -   The server will read these files on startup and automatically activate the required packs for that world.
+    -   You need to tell the server to use the addon's packs. To do this, download the following two files:
+        -   [**`world_behavior_packs.json`**](https://github.com/SjnExe/AddonExe/blob/main/world_behavior_packs.json)
+        -   [**`world_resource_packs.json`**](https://github.com/SjnExe/AddonExe/blob/main/world_resource_packs.json)
+    -   Place both of these files into the root folder of your world (the same folder that contains your `level.dat`).
+    -   The server will read these files on startup and automatically activate the required packs for that world. The version `[0,0,0]` in these files tells the server to always use the latest version of the packs you have installed.
 
 3.  **Enable Beta APIs for BDS:**
     -   AddonExe requires the "Beta APIs" experimental feature to be enabled. This can be tricky on BDS. You have two main options:
