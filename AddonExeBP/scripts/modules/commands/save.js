@@ -8,6 +8,7 @@ commandManager.register({
     description: 'Manually saves all server data to disk.',
     category: 'Administration',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [],
     execute: (player, args) => {
         player.sendMessage('§aStarting manual data save...');

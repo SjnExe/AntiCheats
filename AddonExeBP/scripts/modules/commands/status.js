@@ -6,6 +6,7 @@ commandManager.register({
     description: 'Displays the current server status.',
     category: 'General',
     permissionLevel: 1024, // Everyone
+    allowConsole: true,
     parameters: [],
     execute: (player, args) => {
         const onlinePlayers = world.getAllPlayers().length;

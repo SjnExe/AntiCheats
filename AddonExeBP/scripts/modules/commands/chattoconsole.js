@@ -7,6 +7,7 @@ commandManager.register({
     description: 'Toggles or sets whether player chat is logged to the server console.',
     category: 'Administration',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [
         { name: 'state', type: 'string', description: 'Set to "true" or "on" to enable, "false" or "off" to disable. Toggles if omitted.', optional: true }
     ],

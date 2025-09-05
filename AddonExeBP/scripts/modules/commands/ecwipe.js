@@ -10,6 +10,7 @@ commandManager.register({
     aliases: ['clearec', 'ecclear'],
     category: 'Moderation',
     permissionLevel: 1, // Admin and above
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'string', description: 'The player whose Ender Chest to clear.', optional: true }
     ],
@@ -17,26 +18,32 @@ commandManager.register({
         let targetPlayer;
 
         if (!args.target) {
+            if (sender.isConsole) {
+                sender.sendMessage('§cYou must specify a target player when running this command from the console.');
+                return;
+            }
             targetPlayer = sender;
         } else {
             const targetName = args.target;
             const potentialTargets = [...world.getPlayers({ name: targetName })];
 
             if (potentialTargets.length === 0) {
-                sender.sendMessage(`§cPlayer "${targetName}" not found.`);
-                playSound(sender, 'note.bass');
+                sender.sendMessage(`§cPlayer "${targetName}" not found or is offline.`);
+                if (!sender.isConsole) playSound(sender, 'note.bass');
                 return;
             }
             targetPlayer = potentialTargets[0];
 
-            const executorData = getPlayer(sender.id);
-            const targetData = getPlayer(targetPlayer.id);
+            if (!sender.isConsole) {
+                const executorData = getPlayer(sender.id);
+                const targetData = getPlayer(targetPlayer.id);
 
-            // Lower permissionLevel number means higher rank. 0=Owner, 1=Admin.
-            if (executorData.permissionLevel > targetData.permissionLevel) {
-                sender.sendMessage('§cYou cannot clear the Ender Chest of a player with a higher rank than you.');
-                playSound(sender, 'note.bass');
-                return;
+                // Lower permissionLevel number means higher rank. 0=Owner, 1=Admin.
+                if (executorData.permissionLevel > targetData.permissionLevel) {
+                    sender.sendMessage('§cYou cannot clear the Ender Chest of a player with a higher rank than you.');
+                    playSound(sender, 'note.bass');
+                    return;
+                }
             }
         }
 
@@ -48,18 +55,18 @@ commandManager.register({
                 targetPlayer.runCommand(`/replaceitem entity @s slot.enderchest ${i} air 1`);
             }
 
-            if (targetPlayer.id === sender.id) {
-                sender.sendMessage('§aYour Ender Chest has been cleared.');
-            } else {
+            if (sender.isConsole || targetPlayer.id !== sender.id) {
                 sender.sendMessage(`§aSuccessfully cleared the Ender Chest of ${targetPlayer.name}.`);
                 targetPlayer.sendMessage('§eYour Ender Chest has been cleared by an admin.');
-                playSound(targetPlayer, 'random.orb');
+                if (!sender.isConsole) playSound(targetPlayer, 'random.orb');
+            } else {
+                sender.sendMessage('§aYour Ender Chest has been cleared.');
             }
-            playSound(sender, 'random.orb');
+            if (!sender.isConsole) playSound(sender, 'random.orb');
         } catch (error) {
             errorLog(`Failed to clear Ender Chest for ${targetPlayer.name}: ${error}`);
             sender.sendMessage('§cAn error occurred while trying to clear the Ender Chest.');
-            playSound(sender, 'note.bass');
+            if (!sender.isConsole) playSound(sender, 'note.bass');
         }
     }
 });

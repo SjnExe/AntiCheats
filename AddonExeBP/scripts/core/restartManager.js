@@ -19,14 +19,13 @@ export function startRestart(initiator) {
 
     const config = getConfig();
     const countdownSeconds = config.restart?.countdownSeconds ?? 30;
+    const announcer = initiator.isConsole ? 'The Console' : initiator.name;
 
     restartInProgress = true;
     countdownTimer = countdownSeconds;
 
-    world.sendMessage(`§l§c[SERVER] Attention! The server will restart in ${countdownSeconds} seconds.`);
-    if (initiator) {
-        initiator.sendMessage('§aYou have initiated the server restart sequence.');
-    }
+    world.sendMessage(`§l§c[SERVER] Attention! Restart initiated by ${announcer}. The server will restart in ${countdownSeconds} seconds.`);
+    initiator.sendMessage('§aYou have initiated the server restart sequence.');
 
     const countdownInterval = system.runInterval(() => {
         if (countdownTimer > 0) {

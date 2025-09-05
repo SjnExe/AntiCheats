@@ -6,6 +6,7 @@ commandManager.register({
     description: 'Clears all active reports.',
     category: 'Moderation',
     permissionLevel: 1, // Admin and above
+    allowConsole: true,
     parameters: [],
     execute: (player, args) => {
         clearAllReports();

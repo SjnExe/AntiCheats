@@ -6,6 +6,7 @@ commandManager.register({
     description: 'Freezes or unfreezes a player.',
     category: 'Moderation',
     permissionLevel: 1, // Admin only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'player', description: 'The player to freeze or unfreeze.' },
         { name: 'state', type: 'string', description: 'Set to "on" to freeze or "off" to unfreeze. Toggles if omitted.', optional: true }

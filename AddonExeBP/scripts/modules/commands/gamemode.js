@@ -22,10 +22,18 @@ const gamemodeNames = {
 };
 
 function setGamemode(player, gamemode, target) {
-    let targetPlayer = player;
+    let targetPlayer;
     if (target && target.length > 0) {
         targetPlayer = target[0];
+    } else {
+        if (player.isConsole) {
+            player.sendMessage('§cYou must specify a target player when running this command from the console.');
+            return;
+        }
+        targetPlayer = player;
+    }
 
+    if (!player.isConsole) {
         const executorData = getPlayer(player.id);
         const targetData = getPlayer(targetPlayer.id);
         if (executorData && targetData && executorData.permissionLevel >= targetData.permissionLevel && player.id !== targetPlayer.id) {
@@ -43,11 +51,13 @@ function setGamemode(player, gamemode, target) {
     try {
         targetPlayer.setGameMode(gameModeValue);
         const gamemodeName = gamemodeNames[gameModeValue];
-        if (player.id === targetPlayer.id) {
-            player.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`);
-        } else {
+        const announcer = player.isConsole ? 'the Console' : player.name;
+
+        if (player.isConsole || player.id !== targetPlayer.id) {
             player.sendMessage(`§aSet ${targetPlayer.name}'s gamemode to ${gamemodeName}.`);
-            targetPlayer.sendMessage(`§aYour gamemode has been set to ${gamemodeName} by ${player.name}.`);
+            targetPlayer.sendMessage(`§aYour gamemode has been set to ${gamemodeName} by ${announcer}.`);
+        } else {
+            player.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`);
         }
     } catch (e) {
         player.sendMessage(`§cFailed to set gamemode. Error: ${e.message}`);
@@ -60,6 +70,7 @@ commandManager.register({
     description: 'Sets your or another player\'s gamemode.',
     category: 'General',
     permissionLevel: 1,
+    allowConsole: true,
     disableSlashCommand: false,
     parameters: [
         { name: 'gamemode', type: 'string', description: 's, c, a, sp, or full name', optional: false },
@@ -88,6 +99,7 @@ for (const cmd of legacyCommandSetup) {
         description: cmd.description,
         category: 'General',
         permissionLevel: 1,
+        allowConsole: true,
         disableSlashCommand: false,
         parameters: [
             { name: 'target', type: 'player', description: 'The player to set the gamemode for.', optional: true }

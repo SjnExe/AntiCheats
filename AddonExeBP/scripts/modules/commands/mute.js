@@ -47,6 +47,7 @@ commandManager.register({
     aliases: ['silence'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'player', description: 'The player to mute.' },
         { name: 'duration', type: 'string', description: 'The duration of the mute (e.g., 1d, 2h, 30m). Default: perm', optional: true },
@@ -78,6 +79,7 @@ commandManager.register({
     aliases: ['um'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'string', description: 'The name of the player to unmute.' }
     ],

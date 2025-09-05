@@ -9,6 +9,7 @@ commandManager.register({
     description: 'Sets a player\'s rank by adding or removing the associated tag.',
     category: 'Administration',
     permissionLevel: 1, // Admin and above
+    allowConsole: true,
     parameters: [
         { name: 'action', type: 'string', description: 'The action to perform: "set" or "remove".' },
         { name: 'target', type: 'player', description: 'The player to set the rank for.' },

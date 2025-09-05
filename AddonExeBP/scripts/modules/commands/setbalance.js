@@ -7,6 +7,7 @@ commandManager.register({
     description: 'Sets a player\'s balance to a specific amount. (Admin and above)',
     category: 'Economy',
     permissionLevel: 1, // Admin and above
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'player', description: 'The player whose balance to set.' },
         { name: 'amount', type: 'float', description: 'The amount to set the balance to.' }

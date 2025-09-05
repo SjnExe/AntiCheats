@@ -7,6 +7,7 @@ commandManager.register({
     description: 'Displays the server rules.',
     category: 'General',
     permissionLevel: 1024, // Everyone
+    allowConsole: true,
     parameters: [
         { name: 'ruleNumber', type: 'int', description: 'The specific rule number to display.', optional: true }
     ],

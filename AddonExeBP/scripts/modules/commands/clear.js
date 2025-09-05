@@ -8,23 +8,32 @@ commandManager.register({
     aliases: ['ci', 'clearinv'],
     category: 'Moderation',
     permissionLevel: 1, // Admin-only to prevent accidental self-clearing
+    allowConsole: true,
     disableSlashCommand: true,
     parameters: [
         { name: 'target', type: 'player', description: 'The player whose inventory to clear.', optional: true }
     ],
     execute: (player, args) => {
-        let targetPlayer = player;
+        let targetPlayer;
         if (args.target && args.target.length > 0) {
+            targetPlayer = args.target[0];
+        } else {
+            if (player.isConsole) {
+                player.sendMessage('§cYou must specify a target player when running this command from the console.');
+                return;
+            }
+            targetPlayer = player;
+        }
+
+        if (!player.isConsole) {
             const executorData = getPlayer(player.id);
-            if (executorData.permissionLevel > 1) {
+            if (executorData.permissionLevel > 1 && player.id !== targetPlayer.id) {
                 player.sendMessage("§cYou do not have permission to clear another player's inventory.");
                 playSound(player, 'note.bass');
                 return;
             }
-
-            targetPlayer = args.target[0];
             const targetData = getPlayer(targetPlayer.id);
-            if (executorData.permissionLevel >= targetData.permissionLevel) {
+            if (executorData.permissionLevel >= targetData.permissionLevel && player.id !== targetPlayer.id) {
                 player.sendMessage('§cYou cannot clear the inventory of a player with the same or higher rank than you.');
                 playSound(player, 'note.bass');
                 return;
@@ -36,13 +45,13 @@ commandManager.register({
             inventory.setItem(i);
         }
 
-        if (targetPlayer.id === player.id) {
-            player.sendMessage('§aYour inventory has been cleared.');
-        } else {
+        if (player.isConsole || targetPlayer.id !== player.id) {
             player.sendMessage(`§aSuccessfully cleared the inventory of ${targetPlayer.name}.`);
             targetPlayer.sendMessage('§eYour inventory has been cleared by an admin.');
-            playSound(targetPlayer, 'random.orb');
+            if (!player.isConsole) playSound(targetPlayer, 'random.orb');
+        } else {
+            player.sendMessage('§aYour inventory has been cleared.');
         }
-        playSound(player, 'random.orb');
+        if (!player.isConsole) playSound(player, 'random.orb');
     }
 });

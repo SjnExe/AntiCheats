@@ -49,6 +49,7 @@ commandManager.register({
     description: 'Bans a player who is currently offline.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'string', description: 'The name of the player to ban.' },
         { name: 'duration', type: 'string', description: 'The duration of the ban (e.g., 1d, 2h, 30m). Default: perm', optional: true },

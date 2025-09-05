@@ -6,6 +6,7 @@ commandManager.register({
     description: 'Initiates the server restart sequence.',
     category: 'Administration',
     permissionLevel: 1, // Admin only
+    allowConsole: true,
     parameters: [],
     execute: (player, args) => {
         startRestart(player);

@@ -6,6 +6,7 @@ commandManager.register({
     description: 'Toggles the debug logging mode.',
     category: 'Administration',
     permissionLevel: 1, // Admin and above
+    allowConsole: true,
     parameters: [
         { name: 'state', type: 'boolean', description: 'Set to true to enable, false to disable. Toggles if omitted.', optional: true }
     ],
