@@ -1,4 +1,4 @@
-import { world, system } from '@minecraft/server';
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 import { playSound } from '../../core/utils.js';
@@ -8,7 +8,7 @@ import { errorLog } from '../../core/errorLogger.js';
 function kickPlayer(player, targetPlayer, reason) {
     if (!targetPlayer) {
         player.sendMessage('§cPlayer not found.');
-        if (!player.isConsole) playSound(player, 'note.bass');
+        if (!player.isConsole) {playSound(player, 'note.bass');}
         return;
     }
 
@@ -36,17 +36,24 @@ function kickPlayer(player, targetPlayer, reason) {
     try {
         const commandToRun = `kick "${targetPlayer.name}" ${reason}`;
         if (player.isConsole) {
-            world.getDimension('overworld').runCommand(commandToRun);
+            // For console, iterate through all dimensions to ensure the kick command finds the player.
+            for (const dimension of world.getDimensions()) {
+                try {
+                    dimension.runCommand(commandToRun);
+                    break; // If it succeeds once, we're done.
+                } catch (_e) { // eslint-disable-line no-unused-vars
+                    // Expected if player is not in this dimension.
+                }
+            }
         } else {
-            // A player can run the command directly, which is slightly more robust
-            // as it doesn't assume the overworld dimension context.
+            // A player can run the command directly.
             player.runCommand(commandToRun);
         }
         player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}. Reason: ${reason}`);
-        if (!player.isConsole) playSound(player, 'random.orb');
+        if (!player.isConsole) {playSound(player, 'random.orb');}
     } catch (error) {
         player.sendMessage(`§cFailed to kick ${targetPlayer.name}. See console for details.`);
-        if (!player.isConsole) playSound(player, 'note.bass');
+        if (!player.isConsole) {playSound(player, 'note.bass');}
         errorLog(`[/x:kick] Failed to run kick command for ${targetPlayer.name}:`, error);
     }
 }

@@ -1,4 +1,4 @@
-import { system } from '@minecraft/server';
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { getPlayer, getPlayerIdByName } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
@@ -53,13 +53,22 @@ function banPlayer(player, targetPlayer, duration, reason) {
             errorLog(`[/x:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
         }
     } else {
-        // Console cannot use runCommand, but can use world.getDimension().runCommand()
+        // For console, iterate through all dimensions to ensure the kick command finds the player.
         try {
-            world.getDimension('overworld').runCommand(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
+            const command = `kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`;
+            for (const dimension of world.getDimensions()) {
+                try {
+                    dimension.runCommand(command);
+                    // If the command succeeds in one dimension, we can stop.
+                    break;
+                } catch (_e) { // eslint-disable-line no-unused-vars
+                    // This is expected if the player is not in this dimension. Continue to the next.
+                }
+            }
         } catch (error) {
-            // Log warning to console
-            console.warn(`[Commands:Ban] Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`);
-            errorLog(`[/x:ban] Failed to run kick command from console for ${targetPlayer.name} after banning:`, error);
+            // This outer catch is for unexpected errors.
+            console.warn(`[Commands:Ban] Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`); // eslint-disable-line no-console
+            errorLog(`[/x:ban] Failed to run kick command from console for ${targetPlayer.name}:`, error);
         }
     }
 }

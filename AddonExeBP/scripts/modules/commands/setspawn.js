@@ -45,6 +45,6 @@ commandManager.register({
 
         const locationString = `X: ${Math.floor(location.x)}, Y: ${Math.floor(location.y)}, Z: ${Math.floor(location.z)} in ${location.dimensionId.replace('minecraft:', '')}`;
         player.sendMessage(`§aServer spawn point set to: ${locationString}`);
-        if (!player.isConsole) playSound(player, 'random.orb');
+        if (!player.isConsole) {playSound(player, 'random.orb');}
     }
 });

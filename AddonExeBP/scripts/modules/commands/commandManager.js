@@ -64,16 +64,16 @@ class CommandManager {
                 // Console execution
                 if (!command.allowConsole) {
                     // Using console.warn is appropriate for server-side messages.
-                    console.warn(`[CommandManager] Command '${name}' cannot be run from the console.`);
+                    console.warn(`[CommandManager] Command '${name}' cannot be run from the console.`); // eslint-disable-line no-console
                     return;
                 }
                 // Bypassing permission check for console
                 system.run(() => {
                     try {
                         // Pass a special identifier for the console executor
-                        command.execute({ isConsole: true, sendMessage: (msg) => console.log(msg.replace(/§[0-9a-fklmnor]/g, '')) }, parsedArgs);
+                        command.execute({ isConsole: true, sendMessage: (msg) => console.log(msg.replace(/§[0-9a-fklmnor]/g, '')) }, parsedArgs); // eslint-disable-line no-console
                     } catch (error) {
-                        console.error(`[CommandManager] Error executing console command '${name}': ${error.stack}`);
+                        console.error(`[CommandManager] Error executing console command '${name}': ${error.stack}`); // eslint-disable-line no-console
                     }
                 });
                 return;

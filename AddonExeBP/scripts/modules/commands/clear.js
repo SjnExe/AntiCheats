@@ -48,10 +48,10 @@ commandManager.register({
         if (player.isConsole || targetPlayer.id !== player.id) {
             player.sendMessage(`§aSuccessfully cleared the inventory of ${targetPlayer.name}.`);
             targetPlayer.sendMessage('§eYour inventory has been cleared by an admin.');
-            if (!player.isConsole) playSound(targetPlayer, 'random.orb');
+            if (!player.isConsole) {playSound(targetPlayer, 'random.orb');}
         } else {
             player.sendMessage('§aYour inventory has been cleared.');
         }
-        if (!player.isConsole) playSound(player, 'random.orb');
+        if (!player.isConsole) {playSound(player, 'random.orb');}
     }
 });

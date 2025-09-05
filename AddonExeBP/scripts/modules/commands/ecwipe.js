@@ -29,7 +29,7 @@ commandManager.register({
 
             if (potentialTargets.length === 0) {
                 sender.sendMessage(`§cPlayer "${targetName}" not found or is offline.`);
-                if (!sender.isConsole) playSound(sender, 'note.bass');
+                if (!sender.isConsole) {playSound(sender, 'note.bass');}
                 return;
             }
             targetPlayer = potentialTargets[0];
@@ -58,15 +58,15 @@ commandManager.register({
             if (sender.isConsole || targetPlayer.id !== sender.id) {
                 sender.sendMessage(`§aSuccessfully cleared the Ender Chest of ${targetPlayer.name}.`);
                 targetPlayer.sendMessage('§eYour Ender Chest has been cleared by an admin.');
-                if (!sender.isConsole) playSound(targetPlayer, 'random.orb');
+                if (!sender.isConsole) {playSound(targetPlayer, 'random.orb');}
             } else {
                 sender.sendMessage('§aYour Ender Chest has been cleared.');
             }
-            if (!sender.isConsole) playSound(sender, 'random.orb');
+            if (!sender.isConsole) {playSound(sender, 'random.orb');}
         } catch (error) {
             errorLog(`Failed to clear Ender Chest for ${targetPlayer.name}: ${error}`);
             sender.sendMessage('§cAn error occurred while trying to clear the Ender Chest.');
-            if (!sender.isConsole) playSound(sender, 'note.bass');
+            if (!sender.isConsole) {playSound(sender, 'note.bass');}
         }
     }
 });
