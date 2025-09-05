@@ -55,7 +55,7 @@ This addon is packed with features to keep your server clean:
     - View online players, sorted by rank and name.
     - Player names are clearly marked with `(Owner)`, `(Admin)`, and `(You)` suffixes.
     - Perform a wide range of actions: Kick, Ban/Unban, Mute/Unmute, Freeze, View/Clear Inventory, Teleport.
-  - **New Commands:** `/clear` (clear inventory), `/ecwipe` (wipe ender chest), `/invsee` (view inventory).
+  - **New Commands:** `/clear` (clear inventory), `/invsee` (view inventory), and experimental `/ecwipe` commands for testing Ender Chest clearing.
   - Extensive slash commands for all administrative functions (Note: a `!` prefix is available as a fallback).
 - 💾 **Persistent Player Data Management:**
   - Mutes and bans are saved across player sessions using dynamic properties.
