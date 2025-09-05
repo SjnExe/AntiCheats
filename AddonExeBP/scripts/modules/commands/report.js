@@ -3,7 +3,6 @@ import * as reportManager from '../../core/reportManager.js';
 import { getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { ModalFormData } from '@minecraft/server-ui';
 import { uiWait } from '../../core/utils.js';
-import { world } from '@minecraft/server';
 import { showPanel } from '../../core/uiManager.js';
 import { clearAllReports } from '../../core/reportManager.js';
 

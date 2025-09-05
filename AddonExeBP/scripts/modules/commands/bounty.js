@@ -153,7 +153,7 @@ commandManager.register({
             const playerNameIdMap = getAllPlayerNameIdMap();
             const bounties = [];
 
-            for (const [_, playerId] of playerNameIdMap.entries()) {
+            for (const [, playerId] of playerNameIdMap.entries()) {
                 const pData = getPlayer(playerId) ?? loadPlayerData(playerId);
                 if (pData && pData.bounty > 0) {
                     bounties.push({ name: pData.name, bounty: pData.bounty });

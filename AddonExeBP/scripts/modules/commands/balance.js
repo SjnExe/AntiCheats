@@ -1,4 +1,3 @@
-import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import * as playerDataManager from '../../core/playerDataManager.js';
