@@ -2,7 +2,7 @@ import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
 import { configPanelSchema } from './configPanelSchema.js';
 import { getPlayer, getPlayerIdByName, loadPlayerData, getAllPlayerNameIdMap } from './playerDataManager.js';
-import { getConfig, updateConfig } from './configManager.js';
+import { getConfig, updateMultipleConfig } from './configManager.js';
 import { debugLog } from './logger.js';
 import { errorLog } from './errorLogger.js';
 import { getPlayerRank } from './rankManager.js';
@@ -169,7 +169,7 @@ async function handleFormResponse(player, panelId, response, context) {
         }
 
         const newValues = response.formValues;
-        const partialChanges = {};
+        const updates = {};
         let validationFailed = false;
 
         category.settings.forEach((setting, index) => {
@@ -190,7 +190,7 @@ async function handleFormResponse(player, panelId, response, context) {
                 newValue = numValue;
             }
 
-            setValueByPath(partialChanges, setting.key, newValue);
+            updates[setting.key] = newValue;
         });
 
         if (validationFailed) {
@@ -198,18 +198,8 @@ async function handleFormResponse(player, panelId, response, context) {
             return showPanel(player, panelId);
         }
 
-        // Apply all grouped changes
-        const config = getConfig();
-        for (const key in partialChanges) {
-            if (typeof config[key] === 'object' && config[key] !== null && !Array.isArray(config[key])) {
-                // If the config property is an object, deep merge the changes
-                const newTopLevelValue = deepMerge(config[key], partialChanges[key]);
-                updateConfig(key, newTopLevelValue);
-            } else {
-                // Otherwise, it's a primitive value, so just update it directly
-                updateConfig(key, partialChanges[key]);
-            }
-        }
+        // Apply all grouped changes at once
+        updateMultipleConfig(updates);
 
         player.sendMessage(`§aSuccessfully saved settings for ${category.title}§a.`);
         // Return to category list

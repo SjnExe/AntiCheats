@@ -1,7 +1,7 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
 import { errorLog } from './errorLogger.js';
-import { deepEqual, deepMerge } from './objectUtils.js';
+import { deepEqual, deepMerge, setValueByPath } from './objectUtils.js';
 
 const currentConfigKey = 'exe:config:current';
 const lastLoadedConfigKey = 'exe:config:lastLoaded';
@@ -131,4 +131,18 @@ export function reloadConfig() {
 
     saveCurrentConfig();
     saveLastLoadedConfig();
+}
+
+/**
+ * Updates multiple keys in the configuration using path notation and saves once.
+ * @param {Object.<string, any>} updates An object where keys are dot-notation paths and values are the new values.
+ */
+export function updateMultipleConfig(updates) {
+    if (!currentConfig) {
+        loadConfig();
+    }
+    for (const path in updates) {
+        setValueByPath(currentConfig, path, updates[path]);
+    }
+    saveCurrentConfig();
 }
