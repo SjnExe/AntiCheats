@@ -18,14 +18,12 @@ const commandFiles = [
 
     // Economy System
     'balance.js',
-    'baltop.js',
     'pay.js',
-    'rbounty.js',
+    'bounty.js',
     'kit.js',
 
     // TPA System
     'tpa.js',
-    'tpastatus.js',
 
     // Moderation
     'kick.js',
