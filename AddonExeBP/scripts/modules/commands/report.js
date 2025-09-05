@@ -28,7 +28,6 @@ commandManager.register({
         }
 
         // Try to get the correctly-cased name if the player is online, otherwise use the provided name.
-        // This is the best we can do without storing the original-cased name of every player.
         const onlinePlayer = Array.from(world.getPlayers()).find(p => p.id === targetId);
         const correctTargetName = onlinePlayer ? onlinePlayer.name : reportedPlayerName;
 
