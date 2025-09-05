@@ -1,5 +1,4 @@
 import { getAllPlayerData, savePlayerData, isNameIdMapDirty, saveNameIdMap } from './playerDataManager.js';
-import { world } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { system } from '@minecraft/server';
 import { debugLog } from './logger.js';
@@ -66,7 +65,7 @@ export function initializeDataManager() {
             debugLog('[DataManager] Auto-save triggered by interval.');
             const wasAnythingSaved = saveAllData({ log: false }); // Don't spam logs for auto-saves
             if (wasAnythingSaved) {
-                world.sendMessage('§7§o[Auto-Save] Server data has been saved.§r');
+                debugLog('[Auto-Save] Server data has been saved.');
             }
         }, intervalTicks);
         debugLog(`[DataManager] Auto-save enabled. Interval: ${autoSaveIntervalSeconds} seconds.`);

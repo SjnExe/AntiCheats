@@ -53,6 +53,7 @@ function loadPersistentData() {
     loadPunishments();
     loadReports();
     loadCooldowns();
+    playerDataManager.initializeLeaderboard();
 }
 
 /**

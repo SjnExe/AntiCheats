@@ -36,15 +36,8 @@ function kickPlayer(player, targetPlayer, reason) {
     try {
         const commandToRun = `kick "${targetPlayer.name}" ${reason}`;
         if (player.isConsole) {
-            // For console, iterate through all dimensions to ensure the kick command finds the player.
-            for (const dimension of world.getDimensions()) {
-                try {
-                    dimension.runCommand(commandToRun);
-                    break; // If it succeeds once, we're done.
-                } catch (_e) { // eslint-disable-line no-unused-vars
-                    // Expected if player is not in this dimension.
-                }
-            }
+            // For console, run the command in the overworld.
+            world.getDimension('overworld').runCommand(commandToRun);
         } else {
             // A player can run the command directly.
             player.runCommand(commandToRun);

@@ -1,6 +1,6 @@
 import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
-import { getPlayer, getPlayerIdByName } from '../../core/playerDataManager.js';
+import { getPlayer, getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSoundFromConfig } from '../../core/utils.js';
 import { findPlayerByName } from '../utils/playerUtils.js';
@@ -53,18 +53,10 @@ function banPlayer(player, targetPlayer, duration, reason) {
             errorLog(`[/x:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
         }
     } else {
-        // For console, iterate through all dimensions to ensure the kick command finds the player.
+        // For console, run the command in the overworld.
         try {
             const command = `kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`;
-            for (const dimension of world.getDimensions()) {
-                try {
-                    dimension.runCommand(command);
-                    // If the command succeeds in one dimension, we can stop.
-                    break;
-                } catch (_e) { // eslint-disable-line no-unused-vars
-                    // This is expected if the player is not in this dimension. Continue to the next.
-                }
-            }
+            world.getDimension('overworld').runCommand(command);
         } catch (error) {
             // This outer catch is for unexpected errors.
             console.warn(`[Commands:Ban] Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`); // eslint-disable-line no-console
@@ -139,5 +131,85 @@ commandManager.register({
         if (!player.isConsole) {
             playSoundFromConfig(player, 'adminNotificationReceived');
         }
+    }
+});
+
+function offlineBanPlayer(player, targetId, targetName, duration, reason) {
+    if (!player.isConsole) {
+        if (player.id === targetId) {
+            player.sendMessage('§cYou cannot ban yourself.');
+            return;
+        }
+
+        const executorData = getPlayer(player.id);
+        const targetData = loadPlayerData(targetId);
+
+        if (!executorData || !targetData) {
+            player.sendMessage('§cCould not retrieve player data for permission check.');
+            return;
+        }
+
+        if (executorData.permissionLevel >= targetData.permissionLevel) {
+            player.sendMessage('§cYou cannot ban a player with the same or higher rank than you.');
+            return;
+        }
+    }
+
+    const durationString = duration || 'perm';
+    const durationMs = duration ? parseDuration(duration) : Infinity;
+    const expires = durationMs === Infinity ? Infinity : Date.now() + durationMs;
+
+    addPunishment(targetId, {
+        type: 'ban',
+        expires,
+        reason
+    });
+
+    const durationText = durationMs === Infinity ? 'permanently' : `for ${durationString}`;
+    player.sendMessage(`§aSuccessfully banned ${targetName} ${durationText}. Reason: ${reason}`);
+    if (!player.isConsole) {
+        playSoundFromConfig(player, 'adminNotificationReceived');
+    }
+
+    try {
+        player.runCommand(`kick "${targetName}" You have been banned ${durationText}. Reason: ${reason}`);
+    } catch {
+        // Player is likely offline, which is fine.
+    }
+}
+
+commandManager.register({
+    name: 'offlineban',
+    aliases: ['oban'],
+    description: 'Bans a player who is currently offline.',
+    category: 'Moderation',
+    permissionLevel: 1, // Admins only
+    allowConsole: true,
+    parameters: [
+        { name: 'target', type: 'string', description: 'The name of the player to ban.' },
+        { name: 'duration', type: 'string', description: 'The duration of the ban (e.g., 1d, 2h, 30m). Default: perm', optional: true },
+        { name: 'reason', type: 'text', description: 'The reason for the ban.', optional: true }
+    ],
+    execute: (player, args) => {
+        const { target: targetName } = args;
+
+        const targetId = getPlayerIdByName(targetName);
+        if (!targetId) {
+            player.sendMessage(`§cPlayer "${targetName}" has never joined this server.`);
+            return;
+        }
+
+        const targetData = loadPlayerData(targetId);
+        const correctTargetName = targetData ? targetData.name : targetName;
+
+        let duration = args.duration;
+        let reason = args.reason;
+
+        if (duration && parseDuration(duration) === 0) {
+            reason = `${duration}${reason ? ' ' + reason : ''}`;
+            duration = undefined;
+        }
+
+        offlineBanPlayer(player, targetId, correctTargetName, duration, reason || 'No reason provided.');
     }
 });
