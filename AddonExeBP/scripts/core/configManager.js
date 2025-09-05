@@ -15,47 +15,47 @@ let lastLoadedConfig = null;
  * @returns {boolean} True if this is the first time the addon is being initialized.
  */
 export function loadConfig() {
-    const storageConfig = deepMerge({}, defaultConfig);
+    const newDefaultConfig = deepMerge({}, defaultConfig);
     let isFirstInit = false;
 
-    const currentConfigStr = world.getDynamicProperty(currentConfigKey);
-    const lastLoadedConfigStr = world.getDynamicProperty(lastLoadedConfigKey);
+    const savedConfigStr = world.getDynamicProperty(currentConfigKey);
+    const lastVersionConfigStr = world.getDynamicProperty(lastLoadedConfigKey);
 
-    if (!currentConfigStr) {
-        // First time setup
+    if (!savedConfigStr) {
+        // This is the first time the addon is being run, or storage was lost.
         isFirstInit = true;
-        currentConfig = deepMerge({}, storageConfig);
-        lastLoadedConfig = deepMerge({}, storageConfig);
+        currentConfig = deepMerge({}, newDefaultConfig);
+        lastLoadedConfig = deepMerge({}, newDefaultConfig);
+        errorLog('[ConfigManager] No saved config found. Initializing with default values.');
     } else {
-        // Subsequent startups
+        // A saved config exists, load it.
         try {
-            currentConfig = JSON.parse(currentConfigStr);
+            currentConfig = JSON.parse(savedConfigStr);
         } catch (e) {
-            errorLog('[ConfigManager] Failed to parse current config. Resetting to default.', e);
-            currentConfig = deepMerge({}, storageConfig);
+            errorLog('[ConfigManager] Failed to parse saved config. Resetting to default.', e);
+            currentConfig = deepMerge({}, newDefaultConfig); // Fallback on parse error
         }
 
+        // Check for version mismatch to log migration
         try {
-            lastLoadedConfig = JSON.parse(lastLoadedConfigStr);
-        } catch (e) {
-            errorLog('[ConfigManager] Failed to parse last loaded config. Resetting to default.', e);
-            lastLoadedConfig = deepMerge({}, storageConfig);
-        }
-
-        // Version check for migration
-        if (!deepEqual(lastLoadedConfig.version, storageConfig.version)) {
-            errorLog(`[ConfigManager] Version mismatch detected. Migrating config from ${lastLoadedConfig.version?.join('.')} to ${storageConfig.version?.join('.')}.`);
-            // Preserve user's settings by merging them on top of the new default config
-            currentConfig = deepMerge(storageConfig, currentConfig);
-            // Explicitly set the version to the new version
-            currentConfig.version = storageConfig.version;
-            // Update the last loaded config to the new version
-            lastLoadedConfig = deepMerge({}, storageConfig);
+            const lastVersion = JSON.parse(lastVersionConfigStr)?.version;
+            if (!deepEqual(lastVersion, newDefaultConfig.version)) {
+                errorLog(`[ConfigManager] Version mismatch detected. Migrating config from ${lastVersion?.join('.')} to ${newDefaultConfig.version?.join('.')}.`);
+            }
+        } catch {
+            // This can happen if lastLoadedConfig is missing or corrupt, not a critical error.
+            errorLog('[ConfigManager] Could not determine last loaded config version. Assuming migration is needed.');
         }
     }
 
-    // Final merge to ensure any new properties from the default config are added
-    currentConfig = deepMerge(deepMerge({}, storageConfig), currentConfig);
+    // The single, definitive merge operation.
+    // This handles both initial setup and migration. It ensures user settings are preserved
+    // over new defaults, while new properties from the default config are added.
+    currentConfig = deepMerge(newDefaultConfig, currentConfig);
+
+    // After merging, the 'last loaded' config should be updated to match the new default structure
+    // for the next time a version check is needed.
+    lastLoadedConfig = deepMerge({}, defaultConfig);
 
     saveCurrentConfig();
     saveLastLoadedConfig();
