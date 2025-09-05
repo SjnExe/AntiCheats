@@ -8,6 +8,7 @@ commandManager.register({
     description: 'Lists all active bounties or a specific player\'s bounty.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'player', description: 'The player to check the bounty of.', optional: true }
     ],

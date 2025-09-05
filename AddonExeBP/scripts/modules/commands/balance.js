@@ -18,6 +18,11 @@ commandManager.register({
             return;
         }
 
+        if (player.isConsole && (!args.target || args.target.length === 0)) {
+            player.sendMessage('§cYou must specify a target player when running this command from the console.');
+            return;
+        }
+
         let targetPlayer = player;
         if (args.target && args.target.length > 0) {
             targetPlayer = args.target[0];

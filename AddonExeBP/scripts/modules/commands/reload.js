@@ -9,6 +9,7 @@ commandManager.register({
     description: 'Reloads the addon configuration from the config file.',
     category: 'Administration',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [],
     execute: (player, args) => {
         try {

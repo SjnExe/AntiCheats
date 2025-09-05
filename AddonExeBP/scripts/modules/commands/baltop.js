@@ -9,6 +9,7 @@ commandManager.register({
     description: 'Shows the players with the highest balances on the server.',
     category: 'Economy',
     permissionLevel: 1024, // Everyone
+    allowConsole: true,
     parameters: [],
     execute: (player, args) => {
         const config = getConfig();

@@ -9,6 +9,7 @@ commandManager.register({
     description: 'Sets a player\'s rank by adding or removing the associated tag.',
     category: 'Administration',
     permissionLevel: 1, // Admin and above
+    allowConsole: true,
     parameters: [
         { name: 'action', type: 'string', description: 'The action to perform: "set" or "remove".' },
         { name: 'target', type: 'player', description: 'The player to set the rank for.' },
@@ -62,7 +63,9 @@ commandManager.register({
                 player.sendMessage(`§aSuccessfully removed the ${rankDef.name} rank from ${targetPlayer.name} by removing tag '${rankTag}'.`);
             }
             updatePlayerRank(targetPlayer);
-            playSound(player, 'random.orb');
+            if (!player.isConsole) {
+                playSound(player, 'random.orb');
+            }
         } catch (e) {
             player.sendMessage('§cFailed to update rank tag.');
             errorLog(`[/x:rank] Error: ${e.stack}`);

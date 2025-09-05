@@ -8,6 +8,7 @@ commandManager.register({
     description: 'Grants a player the admin tag.',
     category: 'Administration',
     permissionLevel: 0, // Owner only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'player', description: 'The player to grant or revoke admin from.' },
         { name: 'action', type: 'string', description: 'The action to perform: "add" or "remove". Defaults to "add".', optional: true }

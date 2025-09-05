@@ -48,25 +48,42 @@ class CommandManager {
 
         const commandCallback = (origin, ...args) => {
             const player = origin.sourceEntity;
-            if (!player) {
-                return;
-            }
 
-            const pData = getPlayer(player.id);
-            if (!pData || pData.permissionLevel > command.permissionLevel) {
-                player.sendMessage('§cYou do not have permission to use this command.');
-                return;
-            }
-
+            // Prepare arguments regardless of executor
             const mandatoryParams = command.parameters?.filter(p => !p.optional) || [];
             const optionalParams = command.parameters?.filter(p => p.optional) || [];
             const allParams = [...mandatoryParams, ...optionalParams];
-
             const parsedArgs = {};
             for (let i = 0; i < allParams.length; i++) {
                 if (args[i] !== undefined) {
                     parsedArgs[allParams[i].name] = args[i];
                 }
+            }
+
+            if (!player) {
+                // Console execution
+                if (!command.allowConsole) {
+                    // Using console.warn is appropriate for server-side messages.
+                    console.warn(`[CommandManager] Command '${name}' cannot be run from the console.`); // eslint-disable-line no-console
+                    return;
+                }
+                // Bypassing permission check for console
+                system.run(() => {
+                    try {
+                        // Pass a special identifier for the console executor
+                        command.execute({ isConsole: true, sendMessage: (msg) => console.log(msg.replace(/§[0-9a-fklmnor]/g, '')) }, parsedArgs); // eslint-disable-line no-console
+                    } catch (error) {
+                        console.error(`[CommandManager] Error executing console command '${name}': ${error.stack}`); // eslint-disable-line no-console
+                    }
+                });
+                return;
+            }
+
+            // Player execution
+            const pData = getPlayer(player.id);
+            if (!pData || pData.permissionLevel > command.permissionLevel) {
+                player.sendMessage('§cYou do not have permission to use this command.');
+                return;
             }
 
             system.run(() => {

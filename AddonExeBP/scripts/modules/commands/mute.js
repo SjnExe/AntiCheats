@@ -10,22 +10,24 @@ function mutePlayer(player, targetPlayer, duration, reason) {
         playSound(player, 'note.bass');
         return;
     }
-    if (player.id === targetPlayer.id) {
-        player.sendMessage('§cYou cannot mute yourself.');
-        playSound(player, 'note.bass');
-        return;
-    }
-    const executorData = getPlayer(player.id);
-    const targetData = getPlayer(targetPlayer.id);
-    if (!executorData || !targetData) {
-        player.sendMessage('§cCould not retrieve player data for permission check.');
-        playSound(player, 'note.bass');
-        return;
-    }
-    if (executorData.permissionLevel >= targetData.permissionLevel) {
-        player.sendMessage('§cYou cannot mute a player with the same or higher rank than you.');
-        playSound(player, 'note.bass');
-        return;
+    if (!player.isConsole) {
+        if (player.id === targetPlayer.id) {
+            player.sendMessage('§cYou cannot mute yourself.');
+            playSound(player, 'note.bass');
+            return;
+        }
+        const executorData = getPlayer(player.id);
+        const targetData = getPlayer(targetPlayer.id);
+        if (!executorData || !targetData) {
+            player.sendMessage('§cCould not retrieve player data for permission check.');
+            playSound(player, 'note.bass');
+            return;
+        }
+        if (executorData.permissionLevel >= targetData.permissionLevel) {
+            player.sendMessage('§cYou cannot mute a player with the same or higher rank than you.');
+            playSound(player, 'note.bass');
+            return;
+        }
     }
     const durationString = duration || 'perm';
     const durationMs = duration ? parseDuration(duration) : Infinity;
@@ -36,9 +38,12 @@ function mutePlayer(player, targetPlayer, duration, reason) {
         reason
     });
     const durationText = durationMs === Infinity ? 'permanently' : `for ${durationString}`;
+    const announcer = player.isConsole ? 'the Console' : player.name;
     player.sendMessage(`§aSuccessfully muted ${targetPlayer.name} ${durationText}. Reason: ${reason}`);
-    targetPlayer.sendMessage(`§cYou have been muted ${durationText}. Reason: ${reason}`);
-    playSound(player, 'random.orb');
+    targetPlayer.sendMessage(`§cYou have been muted ${durationText} by ${announcer}.`);
+    if (!player.isConsole) {
+        playSound(player, 'random.orb');
+    }
 }
 
 commandManager.register({
@@ -47,6 +52,7 @@ commandManager.register({
     aliases: ['silence'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'player', description: 'The player to mute.' },
         { name: 'duration', type: 'string', description: 'The duration of the mute (e.g., 1d, 2h, 30m). Default: perm', optional: true },
@@ -78,6 +84,7 @@ commandManager.register({
     aliases: ['um'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'string', description: 'The name of the player to unmute.' }
     ],
@@ -89,22 +96,26 @@ commandManager.register({
             player.sendMessage(`§cPlayer "${targetName}" has never joined the server or name is misspelled.`);
             return;
         }
-        if (targetId === player.id) {
-            player.sendMessage('§cYou cannot unmute yourself.');
-            return;
-        }
-        const executorData = getPlayer(player.id);
-        const targetData = loadPlayerData(targetId);
-        if (!executorData || !targetData) {
-            player.sendMessage('§cCould not retrieve player data for permission check.');
-            return;
-        }
-        if (executorData.permissionLevel >= targetData.permissionLevel) {
-            player.sendMessage('§cYou cannot unmute a player with the same or higher rank than you.');
-            return;
+        if (!player.isConsole) {
+            if (targetId === player.id) {
+                player.sendMessage('§cYou cannot unmute yourself.');
+                return;
+            }
+            const executorData = getPlayer(player.id);
+            const targetData = loadPlayerData(targetId);
+            if (!executorData || !targetData) {
+                player.sendMessage('§cCould not retrieve player data for permission check.');
+                return;
+            }
+            if (executorData.permissionLevel >= targetData.permissionLevel) {
+                player.sendMessage('§cYou cannot unmute a player with the same or higher rank than you.');
+                return;
+            }
         }
         removePunishment(targetId);
         player.sendMessage(`§aSuccessfully unmuted ${targetName}.`);
-        playSound(player, 'random.orb');
+        if (!player.isConsole) {
+            playSound(player, 'random.orb');
+        }
     }
 });

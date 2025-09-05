@@ -1,3 +1,4 @@
+import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { getPlayer, getPlayerIdByName } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
@@ -6,27 +7,26 @@ import { findPlayerByName } from '../utils/playerUtils.js';
 import { errorLog } from '../../core/errorLogger.js';
 
 function banPlayer(player, targetPlayer, duration, reason) {
-    if (!targetPlayer) {
-        player.sendMessage('§cPlayer not found.');
-        return;
-    }
-
-    if (player.id === targetPlayer.id) {
+    // Console execution does not have a player object with an id
+    if (player && player.id === targetPlayer.id) {
         player.sendMessage('§cYou cannot ban yourself.');
         return;
     }
 
-    const executorData = getPlayer(player.id);
-    const targetData = getPlayer(targetPlayer.id);
+    // Permission check for player execution
+    if (player && !player.isConsole) {
+        const executorData = getPlayer(player.id);
+        const targetData = getPlayer(targetPlayer.id);
 
-    if (!executorData || !targetData) {
-        player.sendMessage('§cCould not retrieve player data for permission check.');
-        return;
-    }
+        if (!executorData || !targetData) {
+            player.sendMessage('§cCould not retrieve player data for permission check.');
+            return;
+        }
 
-    if (executorData.permissionLevel >= targetData.permissionLevel) {
-        player.sendMessage('§cYou cannot ban a player with the same or higher rank than you.');
-        return;
+        if (executorData.permissionLevel >= targetData.permissionLevel) {
+            player.sendMessage('§cYou cannot ban a player with the same or higher rank than you.');
+            return;
+        }
     }
 
     const durationString = duration || 'perm';
@@ -42,13 +42,34 @@ function banPlayer(player, targetPlayer, duration, reason) {
 
     const durationText = durationMs === Infinity ? 'permanently' : `for ${durationString}`;
     player.sendMessage(`§aSuccessfully banned ${targetPlayer.name} ${durationText}. Reason: ${reason}`);
-    playSoundFromConfig(player, 'adminNotificationReceived');
 
-    try {
-        player.runCommand(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
-    } catch (error) {
-        player.sendMessage(`§eWarning: Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`);
-        errorLog(`[/x:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
+    if (player && !player.isConsole) {
+        playSoundFromConfig(player, 'adminNotificationReceived');
+        try {
+            // Player can run kick command
+            player.runCommand(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
+        } catch (error) {
+            player.sendMessage(`§eWarning: Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`);
+            errorLog(`[/x:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
+        }
+    } else {
+        // For console, iterate through all dimensions to ensure the kick command finds the player.
+        try {
+            const command = `kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`;
+            for (const dimension of world.getDimensions()) {
+                try {
+                    dimension.runCommand(command);
+                    // If the command succeeds in one dimension, we can stop.
+                    break;
+                } catch (_e) { // eslint-disable-line no-unused-vars
+                    // This is expected if the player is not in this dimension. Continue to the next.
+                }
+            }
+        } catch (error) {
+            // This outer catch is for unexpected errors.
+            console.warn(`[Commands:Ban] Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`); // eslint-disable-line no-console
+            errorLog(`[/x:ban] Failed to run kick command from console for ${targetPlayer.name}:`, error);
+        }
     }
 }
 
@@ -57,17 +78,25 @@ commandManager.register({
     description: 'Bans a player for a specified duration with a reason.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'player', description: 'The player to ban.' },
         { name: 'duration', type: 'string', description: 'The duration of the ban (e.g., 1d, 2h, 30m). Default: perm', optional: true },
         { name: 'reason', type: 'text', description: 'The reason for the ban.', optional: true }
     ],
     execute: (player, args) => {
-        // For slash commands, target is a player object array. For chat, it's a name string.
+        // For slash commands (from player or console), target is a player object array.
+        // For chat commands, it's a name string.
         const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
 
         if (!targetPlayer) {
-            player.sendMessage('§cPlayer not found.');
+            player.sendMessage('§cPlayer not found. If they are offline, use the /offlineban command.');
+            return;
+        }
+
+        // Prevent console from banning itself (it has no ID)
+        if (player.isConsole && !targetPlayer.id) {
+            player.sendMessage('§cCannot target the console for a ban.');
             return;
         }
 
@@ -92,6 +121,7 @@ commandManager.register({
     description: 'Unbans a player.',
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
     parameters: [
         { name: 'target', type: 'string', description: 'The name of the player to unban.' }
     ],
@@ -106,6 +136,8 @@ commandManager.register({
 
         removePunishment(targetId);
         player.sendMessage(`§aSuccessfully unbanned ${targetName}. They can now rejoin the server.`);
-        playSoundFromConfig(player, 'adminNotificationReceived');
+        if (!player.isConsole) {
+            playSoundFromConfig(player, 'adminNotificationReceived');
+        }
     }
 });
