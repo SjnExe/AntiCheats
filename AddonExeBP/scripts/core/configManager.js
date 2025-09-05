@@ -1,6 +1,7 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
-import { errorLog, log } from './errorLogger.js';
+import { errorLog } from './errorLogger.js';
+import { log } from './logger.js';
 import { deepEqual, deepMerge, setValueByPath, reconcileConfig } from './objectUtils.js';
 
 const currentConfigKey = 'exe:config:current';
