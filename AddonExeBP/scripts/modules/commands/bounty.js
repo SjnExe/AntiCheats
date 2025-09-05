@@ -4,7 +4,6 @@ import { getPlayer, incrementPlayerBounty, addPlayerBountyContribution, getAllPl
 import { getConfig } from '../../core/configManager.js';
 import { world } from '@minecraft/server';
 import { findPlayerByName } from '../utils/playerUtils.js';
-import { getPlayerFromCache } from '../../core/playerCache.js';
 
 commandManager.register({
     name: 'removebounty',
@@ -154,12 +153,10 @@ commandManager.register({
             const playerNameIdMap = getAllPlayerNameIdMap();
             const bounties = [];
 
-            for (const [playerName, playerId] of playerNameIdMap.entries()) {
+            for (const [_, playerId] of playerNameIdMap.entries()) {
                 const pData = getPlayer(playerId) ?? loadPlayerData(playerId);
                 if (pData && pData.bounty > 0) {
-                    const onlinePlayer = getPlayerFromCache(playerId);
-                    const displayName = onlinePlayer ? onlinePlayer.name : playerName;
-                    bounties.push({ name: displayName, bounty: pData.bounty });
+                    bounties.push({ name: pData.name, bounty: pData.bounty });
                 }
             }
 

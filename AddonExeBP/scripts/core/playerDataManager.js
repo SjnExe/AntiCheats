@@ -8,6 +8,7 @@
 
 /**
  * @typedef {object} PlayerData
+ * @property {string} name - The player's last known in-game name.
  * @property {string} rankId
  * @property {number} permissionLevel
  * @property {Object.<string, HomeLocation>} homes
@@ -97,13 +98,22 @@ export function initializeLeaderboard() {
     debugLog('[PlayerDataManager] No leaderboard found in storage, generating a new one...');
     const allPlayersMap = getAllPlayerNameIdMap();
     const allEntries = [];
+    const tempPlayerIdNameMap = new Map();
 
     for (const [name, id] of allPlayersMap.entries()) {
         const pData = loadPlayerData(id); // Load each player's data
-        if (pData && pData.balance > 0) {
-            allEntries.push({ playerId: id, name: name, balance: pData.balance });
+        if (pData) {
+            // Use the proper-cased name from the saved data
+            const properName = pData.name ?? name;
+            tempPlayerIdNameMap.set(id, properName);
+            if (pData.balance > 0) {
+                allEntries.push({ playerId: id, name: properName, balance: pData.balance });
+            }
         }
     }
+
+    // Set the global reverse map
+    playerIdNameMap = tempPlayerIdNameMap;
 
     allEntries.sort((a, b) => b.balance - a.balance);
     const config = getConfig();
@@ -125,8 +135,6 @@ export function loadNameIdMap() {
         if (dataString && typeof dataString === 'string') {
             const parsedData = JSON.parse(dataString);
             playerNameIdMap = new Map(parsedData);
-            // Create the reverse map for efficient ID-to-name lookups
-            playerIdNameMap = new Map(Array.from(playerNameIdMap, a => a.reverse()));
             debugLog(`[PlayerDataManager] Loaded ${playerNameIdMap.size} entries into name-to-ID map.`);
         }
     } catch (e) {
@@ -160,23 +168,17 @@ function triggerLeaderboardSave() {
 /**
  * Updates the leaderboard if the player's new balance qualifies them.
  * @param {string} playerId
- * @param {number} newBalance
+ * @param {PlayerData} pData
  */
-function updateAndSaveLeaderboard(playerId, newBalance) {
+function updateAndSaveLeaderboard(playerId, pData) {
     const config = getConfig();
     const cacheSize = (config.economy.baltopLimit ?? 10) + 5;
     const lowestBalanceOnBoard = leaderboardCache.length < cacheSize ? 0 : leaderboardCache[leaderboardCache.length - 1].balance;
 
     const playerIsOnBoard = leaderboardCache.some(p => p.playerId === playerId);
 
-    if (!playerIsOnBoard && newBalance <= lowestBalanceOnBoard) {
+    if (!playerIsOnBoard && pData.balance <= lowestBalanceOnBoard) {
         // Player is not on the board and their balance isn't high enough to get on.
-        return;
-    }
-
-    const playerName = playerIdNameMap.get(playerId) ?? 'Unknown';
-    if (playerName === 'Unknown') {
-        errorLog(`[PlayerDataManager] Could not find name for player ID ${playerId} for leaderboard update.`);
         return;
     }
 
@@ -187,7 +189,7 @@ function updateAndSaveLeaderboard(playerId, newBalance) {
     }
 
     // Add the new entry and sort
-    leaderboardCache.push({ playerId, name: playerName, balance: newBalance });
+    leaderboardCache.push({ playerId: playerId, name: pData.name, balance: pData.balance });
     leaderboardCache.sort((a, b) => b.balance - a.balance);
 
     // Trim the cache to the correct size
@@ -258,12 +260,12 @@ export function getOrCreatePlayer(player) {
         // Clean up old usernames for this player ID from both maps
         const oldName = playerIdNameMap.get(player.id);
         if (oldName) {
-            playerNameIdMap.delete(oldName);
+            playerNameIdMap.delete(oldName.toLowerCase());
             debugLog(`[PlayerDataManager] Removed old username '${oldName}' for player ID ${player.id}.`);
         }
 
         playerNameIdMap.set(playerNameLower, player.id);
-        playerIdNameMap.set(player.id, playerNameLower);
+        playerIdNameMap.set(player.id, player.name); // Store the proper-cased name
         mapWasModified = true;
     }
 
@@ -272,7 +274,13 @@ export function getOrCreatePlayer(player) {
     }
 
     if (activePlayerData.has(player.id)) {
-        return activePlayerData.get(player.id);
+        const pData = activePlayerData.get(player.id);
+        // Update name if it has changed since last join
+        if (pData.name !== player.name) {
+            pData.name = player.name;
+            pData.needsSave = true;
+        }
+        return pData;
     }
 
     // Try to load from dynamic properties first
@@ -284,6 +292,7 @@ export function getOrCreatePlayer(player) {
     // If still not found, create new data
     const config = getConfig();
     const newPlayerData = {
+        name: player.name,
         rankId: config.playerDefaults.rankId,
         permissionLevel: config.playerDefaults.permissionLevel,
         homes: {},
@@ -436,7 +445,7 @@ export function setPlayerBalance(playerId, newBalance) {
     if (pData) {
         pData.balance = newBalance;
         pData.needsSave = true;
-        updateAndSaveLeaderboard(playerId, newBalance);
+        updateAndSaveLeaderboard(playerId, pData);
     }
 }
 
@@ -450,7 +459,7 @@ export function incrementPlayerBalance(playerId, amount) {
     if (pData) {
         pData.balance += amount;
         pData.needsSave = true;
-        updateAndSaveLeaderboard(playerId, pData.balance);
+        updateAndSaveLeaderboard(playerId, pData);
     }
 }
 
