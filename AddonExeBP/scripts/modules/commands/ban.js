@@ -53,18 +53,10 @@ function banPlayer(player, targetPlayer, duration, reason) {
             errorLog(`[/x:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
         }
     } else {
-        // For console, iterate through all dimensions to ensure the kick command finds the player.
+        // For console, run the command in the overworld.
         try {
             const command = `kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`;
-            for (const dimension of world.getDimensions()) {
-                try {
-                    dimension.runCommand(command);
-                    // If the command succeeds in one dimension, we can stop.
-                    break;
-                } catch (_e) { // eslint-disable-line no-unused-vars
-                    // This is expected if the player is not in this dimension. Continue to the next.
-                }
-            }
+            world.getDimension('overworld').runCommand(command);
         } catch (error) {
             // This outer catch is for unexpected errors.
             console.warn(`[Commands:Ban] Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`); // eslint-disable-line no-console
