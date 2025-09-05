@@ -13,34 +13,23 @@ const commandFiles = [
     'version.js',
 
     // Home System
-    'sethome.js',
     'home.js',
-    'delhome.js',
-    'homes.js',
     'spawn.js',
 
     // Economy System
     'balance.js',
     'baltop.js',
     'pay.js',
-    'payconfirm.js',
-    'bounty.js',
-    'listbounty.js',
     'rbounty.js',
     'kit.js',
 
     // TPA System
     'tpa.js',
-    'tpahere.js',
-    'tpaccept.js',
-    'tpadeny.js',
-    'tpacancel.js',
     'tpastatus.js',
 
     // Moderation
     'kick.js',
     'ban.js', // This file contains 'unban'
-    'offlineban.js',
     'mute.js', // This file contains 'unmute'
     'freeze.js',
     'vanish.js',
@@ -50,8 +39,6 @@ const commandFiles = [
     'copyinv.js',
     'clearchat.js',
     'report.js',
-    'reports.js',
-    'clearreports.js',
 
     // Administration
     'admin.js',
@@ -61,7 +48,6 @@ const commandFiles = [
     'save.js',
     'debug.js',
     'rank.js',
-    'setspawn.js',
     'setbalance.js',
     'tp.js',
     'gamemode.js',

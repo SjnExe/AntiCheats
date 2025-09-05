@@ -4,6 +4,8 @@ import { getPlayerIdByName } from '../../core/playerDataManager.js';
 import { ModalFormData } from '@minecraft/server-ui';
 import { uiWait } from '../../core/utils.js';
 import { world } from '@minecraft/server';
+import { showPanel } from '../../core/uiManager.js';
+import { clearAllReports } from '../../core/reportManager.js';
 
 commandManager.register({
     name: 'report',
@@ -51,5 +53,29 @@ commandManager.register({
 
         reportManager.createReport(player, targetId, correctTargetName, reason);
         player.sendMessage('§aReport submitted. Thank you for your help.');
+    }
+});
+
+commandManager.register({
+    name: 'reports',
+    description: 'Views the list of active reports.',
+    category: 'Moderation',
+    permissionLevel: 1, // Admin and above
+    parameters: [],
+    execute: (player, args) => {
+        showPanel(player, 'reportListPanel');
+    }
+});
+
+commandManager.register({
+    name: 'clearreports',
+    description: 'Clears all active reports.',
+    category: 'Moderation',
+    permissionLevel: 1, // Admin and above
+    allowConsole: true,
+    parameters: [],
+    execute: (player, args) => {
+        clearAllReports();
+        player.sendMessage('§aAll reports have been cleared.');
     }
 });

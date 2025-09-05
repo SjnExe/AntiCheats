@@ -68,3 +68,22 @@ For the best experience, especially for server owners who need to configure the 
     -   The addon will not work without these settings.
 
 After these steps, the addon should be installed and ready to configure!
+
+### For Bedrock Dedicated Server (BDS)
+
+Installing on a Bedrock Dedicated Server is slightly different, as you manually manage the world files.
+
+1.  **Place the Pack Folders:**
+    -   After extracting the `AddonExeBP` and `AddonExeRP` folders, move them into your BDS's main directory.
+    -   `AddonExeBP` goes into the `behavior_packs` folder.
+    -   `AddonExeRP` goes into the `resource_packs` folder.
+
+2.  **Activate the Packs:**
+    -   In your BDS's root directory, you will find two files from the AddonExe release: `world_behavior_packs.json` and `world_resource_packs.json`.
+    -   Copy both of these files into the root folder of your world (the same folder that contains your `level.dat`).
+    -   The server will read these files on startup and automatically activate the required packs for that world.
+
+3.  **Enable Beta APIs for BDS:**
+    -   AddonExe requires the "Beta APIs" experimental feature to be enabled. This can be tricky on BDS. You have two main options:
+        -   **Easy Method (Recommended):** Download your world folder from the server. Open the world in a local version of Minecraft (on PC or mobile), go into the world settings, and enable the "Beta APIs" toggle under "Experiments". Then, re-upload the modified world folder to your server.
+        -   **Advanced Method:** Use an NBT editor (like [NBTStudio](https://github.com/tryashtar/nbt-studio)) to manually edit your world's `level.dat` file. You need to find the `experiments` tag and add a tag named `gametest` with a value of `1` (byte). This method is powerful but can corrupt your world if done incorrectly.
