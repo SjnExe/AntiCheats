@@ -1,7 +1,6 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
 import { errorLog } from './errorLogger.js';
-import { log } from './logger.js';
 import { deepEqual, deepMerge, setValueByPath, reconcileConfig } from './objectUtils.js';
 
 const currentConfigKey = 'exe:config:current';
@@ -114,7 +113,8 @@ export function updateConfig(key, value) {
  * Reloads the configuration based on the user's specified logic.
  */
 export function reloadConfig() {
-    log('[ConfigManager] Reloading configuration...');
+    // eslint-disable-next-line no-console
+    console.log('[ConfigManager] Reloading configuration...');
     const newDefaultConfig = deepMerge({}, defaultConfig);
 
     // Reconcile the new file defaults with the last-known defaults and the current user settings.
@@ -125,7 +125,8 @@ export function reloadConfig() {
 
     saveCurrentConfig();
     saveLastLoadedConfig();
-    log('[ConfigManager] Configuration reloaded and reconciled.');
+    // eslint-disable-next-line no-console
+    console.log('[ConfigManager] Configuration reloaded and reconciled.');
 }
 
 /**
