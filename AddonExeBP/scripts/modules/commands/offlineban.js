@@ -4,22 +4,24 @@ import { addPunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSoundFromConfig } from '../../core/utils.js';
 
 function offlineBanPlayer(player, targetId, targetName, duration, reason) {
-    if (player.id === targetId) {
-        player.sendMessage('§cYou cannot ban yourself.');
-        return;
-    }
+    if (!player.isConsole) {
+        if (player.id === targetId) {
+            player.sendMessage('§cYou cannot ban yourself.');
+            return;
+        }
 
-    const executorData = getPlayer(player.id);
-    const targetData = loadPlayerData(targetId);
+        const executorData = getPlayer(player.id);
+        const targetData = loadPlayerData(targetId);
 
-    if (!executorData || !targetData) {
-        player.sendMessage('§cCould not retrieve player data for permission check.');
-        return;
-    }
+        if (!executorData || !targetData) {
+            player.sendMessage('§cCould not retrieve player data for permission check.');
+            return;
+        }
 
-    if (executorData.permissionLevel >= targetData.permissionLevel) {
-        player.sendMessage('§cYou cannot ban a player with the same or higher rank than you.');
-        return;
+        if (executorData.permissionLevel >= targetData.permissionLevel) {
+            player.sendMessage('§cYou cannot ban a player with the same or higher rank than you.');
+            return;
+        }
     }
 
     const durationString = duration || 'perm';
@@ -34,7 +36,9 @@ function offlineBanPlayer(player, targetId, targetName, duration, reason) {
 
     const durationText = durationMs === Infinity ? 'permanently' : `for ${durationString}`;
     player.sendMessage(`§aSuccessfully banned ${targetName} ${durationText}. Reason: ${reason}`);
-    playSoundFromConfig(player, 'adminNotificationReceived');
+    if (!player.isConsole) {
+        playSoundFromConfig(player, 'adminNotificationReceived');
+    }
 
     try {
         player.runCommand(`kick "${targetName}" You have been banned ${durationText}. Reason: ${reason}`);

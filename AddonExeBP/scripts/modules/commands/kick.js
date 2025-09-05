@@ -1,4 +1,4 @@
-import { system } from '@minecraft/server';
+import { world, system } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 import { playSound } from '../../core/utils.js';
@@ -36,8 +36,10 @@ function kickPlayer(player, targetPlayer, reason) {
     try {
         const commandToRun = `kick "${targetPlayer.name}" ${reason}`;
         if (player.isConsole) {
-            system.runCommand(commandToRun);
+            world.getDimension('overworld').runCommand(commandToRun);
         } else {
+            // A player can run the command directly, which is slightly more robust
+            // as it doesn't assume the overworld dimension context.
             player.runCommand(commandToRun);
         }
         player.sendMessage(`§aSuccessfully kicked ${targetPlayer.name}. Reason: ${reason}`);

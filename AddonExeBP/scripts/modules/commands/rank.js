@@ -63,7 +63,9 @@ commandManager.register({
                 player.sendMessage(`§aSuccessfully removed the ${rankDef.name} rank from ${targetPlayer.name} by removing tag '${rankTag}'.`);
             }
             updatePlayerRank(targetPlayer);
-            playSound(player, 'random.orb');
+            if (!player.isConsole) {
+                playSound(player, 'random.orb');
+            }
         } catch (e) {
             player.sendMessage('§cFailed to update rank tag.');
             errorLog(`[/x:rank] Error: ${e.stack}`);

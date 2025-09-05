@@ -53,10 +53,9 @@ function banPlayer(player, targetPlayer, duration, reason) {
             errorLog(`[/x:ban] Failed to run kick command for ${targetPlayer.name} after banning:`, error);
         }
     } else {
-        // Console cannot use runCommand, but can use system.runCommand
+        // Console cannot use runCommand, but can use world.getDimension().runCommand()
         try {
-            // This assumes the API for kicking is available via system.runCommand
-            system.runCommand(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
+            world.getDimension('overworld').runCommand(`kick "${targetPlayer.name}" You have been banned ${durationText}. Reason: ${reason}`);
         } catch (error) {
             // Log warning to console
             console.warn(`[Commands:Ban] Could not kick ${targetPlayer.name} after banning. They will be kicked on next join.`);
@@ -128,6 +127,8 @@ commandManager.register({
 
         removePunishment(targetId);
         player.sendMessage(`§aSuccessfully unbanned ${targetName}. They can now rejoin the server.`);
-        playSoundFromConfig(player, 'adminNotificationReceived');
+        if (!player.isConsole) {
+            playSoundFromConfig(player, 'adminNotificationReceived');
+        }
     }
 });

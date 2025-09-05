@@ -21,22 +21,24 @@ commandManager.register({
 
         const targetPlayer = target[0];
 
-        if (player.id === targetPlayer.id) {
-            player.sendMessage('§cYou cannot freeze yourself.');
-            return;
-        }
+        if (!player.isConsole) {
+            if (player.id === targetPlayer.id) {
+                player.sendMessage('§cYou cannot freeze yourself.');
+                return;
+            }
 
-        const executorData = getPlayer(player.id);
-        const targetData = getPlayer(targetPlayer.id);
+            const executorData = getPlayer(player.id);
+            const targetData = getPlayer(targetPlayer.id);
 
-        if (!executorData || !targetData) {
-            player.sendMessage('§cCould not retrieve player data for permission check.');
-            return;
-        }
+            if (!executorData || !targetData) {
+                player.sendMessage('§cCould not retrieve player data for permission check.');
+                return;
+            }
 
-        if (executorData.permissionLevel >= targetData.permissionLevel) {
-            player.sendMessage('§cYou cannot freeze a player with the same or higher rank than you.');
-            return;
+            if (executorData.permissionLevel >= targetData.permissionLevel) {
+                player.sendMessage('§cYou cannot freeze a player with the same or higher rank than you.');
+                return;
+            }
         }
 
         const action = state ? state.toLowerCase() : 'toggle';
@@ -55,8 +57,9 @@ commandManager.register({
             }
             targetPlayer.addTag(frozenTag);
             targetPlayer.addEffect('slowness', 2000000, { amplifier: 255, showParticles: false });
+            const announcer = player.isConsole ? 'the Console' : 'an admin';
             player.sendMessage(`§aSuccessfully froze ${targetPlayer.name}.`);
-            targetPlayer.sendMessage('§cYou have been frozen by an admin.');
+            targetPlayer.sendMessage(`§cYou have been frozen by ${announcer}.`);
         } else {
             if (!isFrozen) {
                 player.sendMessage(`§ePlayer ${targetPlayer.name} is not frozen.`);
