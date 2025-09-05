@@ -43,12 +43,7 @@ export function saveAllData(options = {}) {
         }
     }
 
-    // Save all reports (this manager doesn't have a dirty flag system yet, so we force it)
-    // TODO: Implement a dirty flag system for reports as well.
-    const reportsWereSaved = saveReports({ force: true });
-    if (reportsWereSaved) {
-        anythingWasSaved = true;
-    }
+    // Reports are saved immediately by the reportManager, so they are not needed here.
 
 
     if (log && anythingWasSaved) {
