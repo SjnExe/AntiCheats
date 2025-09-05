@@ -68,14 +68,8 @@ function finalizeRestart() {
             const ownerNames = config.ownerPlayerNames.map(name => `name=!"${name}"`).join(',');
             const command = `kick @a[tag=!${config.adminTag},${ownerNames}] ${kickMessage}`;
 
-            debugLog(`[RestartManager] Running kick command in all dimensions: /${command}`);
-            for (const dimension of world.getDimensions()) {
-                try {
-                    dimension.runCommand(command);
-                } catch (_e) { // eslint-disable-line no-unused-vars
-                    // This is expected if the command doesn't find anyone to kick in a particular dimension.
-                }
-            }
+            debugLog(`[RestartManager] Running kick command: /${command}`);
+            world.getDimension('overworld').runCommand(command);
             debugLog('[RestartManager] Kick command finished.');
 
             // Send a message to any remaining (admin/owner) players.

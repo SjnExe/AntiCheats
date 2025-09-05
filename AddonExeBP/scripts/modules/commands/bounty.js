@@ -1,9 +1,64 @@
 import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
+import { getPlayer, incrementPlayerBounty, addPlayerBountyContribution, getAllPlayerNameIdMap, loadPlayerData } from '../../core/playerDataManager.js';
 import { getConfig } from '../../core/configManager.js';
-import { getPlayer, incrementPlayerBounty, addPlayerBountyContribution } from '../../core/playerDataManager.js';
 import { world } from '@minecraft/server';
 import { findPlayerByName } from '../utils/playerUtils.js';
+import { getPlayerFromCache } from '../../core/playerCache.js';
+
+commandManager.register({
+    name: 'removebounty',
+    aliases: ['rbounty', 'delbounty', '-bounty'],
+    description: 'Removes a bounty from a player using your money.',
+    category: 'Economy',
+    permissionLevel: 1024, // Everyone
+    parameters: [
+        { name: 'amount', type: 'float', description: 'The amount to remove from the bounty.' },
+        { name: 'target', type: 'player', description: 'The player to remove the bounty from. Defaults to yourself.', optional: true }
+    ],
+    execute: (player, args) => {
+        const { target, amount } = args;
+        let targetPlayer = player;
+
+        if (target && target.length > 0) {
+            targetPlayer = target[0];
+        }
+
+        if (isNaN(amount) || amount <= 0) {
+            player.sendMessage('§cInvalid amount. Please enter a positive number.');
+            return;
+        }
+
+        const targetData = getPlayer(targetPlayer.id);
+        if (!targetData) {
+            player.sendMessage('§cCould not find player data.');
+            return;
+        }
+
+        if (targetData.bounty === 0) {
+            player.sendMessage('§cThis player has no bounty on them.');
+            return;
+        }
+
+        if (amount > targetData.bounty) {
+            player.sendMessage('§cYou cannot remove more than the bounty amount ($' + targetData.bounty.toFixed(2) + ').');
+            return;
+        }
+
+        if (economyManager.getBalance(player.id) < amount) {
+            player.sendMessage('§cYou dont have enough money for this!');
+            return;
+        }
+
+        const result = economyManager.removeBalance(player.id, amount);
+        if (result) {
+            incrementPlayerBounty(targetPlayer.id, -amount);
+            player.sendMessage('§aYou have removed $' + amount.toFixed(2) + ' from ' + targetPlayer.name + "'s bounty.");
+        } else {
+            player.sendMessage('§cFailed to remove bounty.');
+        }
+    }
+});
 
 function placeBounty(player, targetPlayer, amount) {
     const config = getConfig();
@@ -71,6 +126,52 @@ commandManager.register({
                 return;
             }
             placeBounty(player, target[0], amount);
+        }
+    }
+});
+
+commandManager.register({
+    name: 'listbounty',
+    aliases: ['lbounty', 'bounties', 'bountylist', 'showbounties', 'hitlist'],
+    description: 'Lists all active bounties or a specific player\'s bounty.',
+    category: 'Economy',
+    permissionLevel: 1024, // Everyone
+    allowConsole: true,
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to check the bounty of.', optional: true }
+    ],
+    execute: (player, args) => {
+        if (args.target && args.target.length > 0) {
+            const targetPlayer = args.target[0];
+            const targetData = getPlayer(targetPlayer.id);
+            if (!targetData) {
+                player.sendMessage('§cCould not find player data.');
+                return;
+            }
+            player.sendMessage('§aBounty on ' + targetPlayer.name + ': §e$' + targetData.bounty.toFixed(2));
+        } else {
+            let message = '§a--- All Player Bounties ---\n';
+            const playerNameIdMap = getAllPlayerNameIdMap();
+            const bounties = [];
+
+            for (const [playerName, playerId] of playerNameIdMap.entries()) {
+                const pData = getPlayer(playerId) ?? loadPlayerData(playerId);
+                if (pData && pData.bounty > 0) {
+                    const onlinePlayer = getPlayerFromCache(playerId);
+                    const displayName = onlinePlayer ? onlinePlayer.name : playerName;
+                    bounties.push({ name: displayName, bounty: pData.bounty });
+                }
+            }
+
+            if (bounties.length === 0) {
+                message += '§7No active bounties.';
+            } else {
+                bounties.sort((a, b) => b.bounty - a.bounty);
+                for (const bounty of bounties) {
+                    message += `§e${bounty.name}§r: $${bounty.bounty.toFixed(2)}\n`;
+                }
+            }
+            player.sendMessage(message.trim());
         }
     }
 });
