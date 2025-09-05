@@ -84,6 +84,7 @@ export function savePlayerData(playerId) {
     try {
         const playerData = activePlayerData.get(playerId);
         // Don't save the internal 'needsSave' flag to disk
+        // eslint-disable-next-line no-unused-vars
         const { needsSave, ...dataToSave } = playerData;
         const dataString = JSON.stringify(dataToSave);
         world.setDynamicProperty(`${playerPropertyPrefix}${playerId}`, dataString);

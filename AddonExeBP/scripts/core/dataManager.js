@@ -1,5 +1,4 @@
 import { getAllPlayerData, savePlayerData, isNameIdMapDirty, saveNameIdMap } from './playerDataManager.js';
-import { saveReports } from './reportManager.js';
 import { world } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { system } from '@minecraft/server';

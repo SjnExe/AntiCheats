@@ -90,11 +90,11 @@ export function reconcileConfig(newDefault, oldDefault, userSaved) {
     const finalConfig = {};
 
     for (const key in newDefault) {
-        const isNewKey = !oldDefault.hasOwnProperty(key);
+        const isNewKey = !Object.prototype.hasOwnProperty.call(oldDefault, key);
         const newDefaultValue = newDefault[key];
         const oldDefaultValue = oldDefault[key];
         const userSavedValue = userSaved ? userSaved[key] : undefined;
-        const userHasSavedValue = userSaved && userSaved.hasOwnProperty(key);
+        const userHasSavedValue = userSaved && Object.prototype.hasOwnProperty.call(userSaved, key);
 
         const isObject = (val) => val && typeof val === 'object' && !Array.isArray(val);
 

@@ -8,7 +8,7 @@ import { errorLog } from './errorLogger.js';
 import { getPlayerRank } from './rankManager.js';
 import { getPlayerFromCache } from './playerCache.js';
 import * as utils from './utils.js';
-import { getValueFromPath, setValueByPath, deepMerge } from './objectUtils.js';
+import { getValueFromPath } from './objectUtils.js';
 import * as punishmentManager from './punishmentManager.js';
 import * as reportManager from './reportManager.js';
 

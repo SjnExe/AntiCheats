@@ -45,6 +45,7 @@ const commandFiles = [
     'freeze.js',
     'vanish.js',
     'clear.js',
+    'ecwipe.js',
     'invsee.js',
     'copyinv.js',
     'clearchat.js',

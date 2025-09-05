@@ -34,6 +34,12 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Permission:** Admin
   - **Aliases:** `!ci`, `!clearinv`
 
+- **/ecwipe**
+  - **Syntax:** `!ecwipe [target: player]` (Chat-only)
+  - **Description:** Clears a player's Ender Chest.
+  - **Permission:** Admin
+  - **Aliases:** `!clearec`, `!ecclear`
+
 - **/clearchat**
   - **Syntax:** `/clearchat`
   - **Description:** Clears the chat for all players.
