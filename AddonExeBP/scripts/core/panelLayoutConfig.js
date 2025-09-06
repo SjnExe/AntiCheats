@@ -98,7 +98,7 @@ export const panelDefinitions = {
             {
                 id: 'assignReport',
                 text: '§eAssign to Me',
-                icon: 'textures/ui/mine.png',
+                icon: 'textures/ui/profile_glyph_color.png',
                 permissionLevel: 1,
                 actionType: 'functionCall',
                 actionValue: 'assignReport'
