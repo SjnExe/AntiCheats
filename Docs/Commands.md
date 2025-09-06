@@ -25,7 +25,7 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 
 - **/ban**
   - **Syntax:** `/ban <target: player> [duration: string] [reason: text]`
-  - **Description:** Bans a player. `duration` is a string like `30m`, `2h`, `7d`. Defaults to `perm`. `reason` can be multiple words.
+  - **Description:** Bans a player. Also includes `/unban` and `/offlineban`.
   - **Permission:** Admin
 
 - **/clear**
@@ -46,11 +46,6 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Permission:** Admin
   - **Aliases:** `/cc`
 
-- **/clearreports**
-  - **Syntax:** `/clearreports`
-  - **Description:** Clears all player-submitted reports.
-  - **Permission:** Admin
-  - **Aliases:** `/delreports`
 
 - **/copyinv**
   - **Syntax:** `/copyinv <target: player>`
@@ -112,7 +107,7 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 
 - **/mute**
   - **Syntax:** `/mute <target: player> [duration: string] [reason: text]`
-  - **Description:** Mutes a player. `duration` is a string like `30m`, `1h`. Defaults to `perm`. `reason` can be multiple words.
+  - **Description:** Mutes a player. Also includes `/unmute`. `duration` is a string like `30m`, `1h`. Defaults to `perm`. `reason` can be multiple words.
   - **Permission:** Admin
   - **Aliases:** `/silence`
 
@@ -134,7 +129,7 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 
 - **/reports**
   - **Syntax:** `/reports`
-  - **Description:** Views the list of active reports via a UI panel.
+  - **Description:** Views the list of active reports via a UI panel. Also includes `/clearreports`.
   - **Permission:** Admin
   - **Aliases:** `/reportlist`
 
@@ -144,29 +139,12 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Permission:** Admin
   - **Aliases:** `/setbal`
 
-- **/setspawn**
-  - **Syntax:** `/setspawn`
-  - **Description:** Sets the world's default spawn point to your current location.
-  - **Permission:** Admin
-
 - **/tp**
   - **Syntax 1 (Player):** `!tp <targetPlayer> [destinationPlayer]`
   - **Syntax 2 (Coords):** `!tp [targetPlayer] <x> <y> <z>`
   - **Description:** Teleports a player to another player or to coordinates. Chat-only command.
   - **Permission:** Admin
   - **Aliases:** `!teleport`
-
-- **/unban**
-  - **Syntax:** `/unban <target: string>`
-  - **Description:** Unbans a player. The player can be offline.
-  - **Permission:** Admin
-  - **Aliases:** `/pardon`
-
-- **/unmute**
-  - **Syntax:** `/unmute <target: string>`
-  - **Description:** Unmutes a player. The player can be offline.
-  - **Permission:** Admin
-  - **Aliases:** `/um`
 
 - **/vanish**
   - **Syntax:** `/vanish`
@@ -202,17 +180,12 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
 
 - **/report**
   - **Syntax:** `/report <target: player> <reason: text>`
-  - **Description:** Reports a player for misconduct. `reason` can be multiple words.
+  - **Description:** Reports a player for misconduct. Also includes `/reports` and `/clearreports` for admins.
 
 - **/rules**
   - **Syntax:** `/rules [ruleNumber: int]`
   - **Description:** Displays the server rules.
   - **Aliases:** `/rule`
-
-- **/spawn**
-  - **Syntax:** `/spawn`
-  - **Description:** Teleports you to the world spawn.
-  - **Aliases:** `/lobby`, `/hub`
 
 - **/status**
   - **Syntax:** `/status`
@@ -224,76 +197,30 @@ Command permissions are based on a level system defined in `AddonExeBP/scripts/c
   - **Description:** Displays the current version of AddonExe.
   - **Aliases:** `/ver`
 
-### TPA System Commands
-- **/tpa**
-  - **Syntax:** `/tpa <target: player>`
-  - **Description:** Sends a teleport request to another player.
+### Homes System
+- **`/sethome <name>`:** Sets a home at your current location.
+- **`/home [name]`:** Teleports you to a set home.
+- **`/delhome <name>`:** Deletes a home.
+- **`/homes`:** Lists all of your homes.
 
-- **/tpahere**
-  - **Syntax:** `/tpahere <target: player>`
-  - **Description:** Requests another player to teleport to your location.
+### TPA System
+- **`/tpa <player>`:** Request to teleport to another player.
+- **`/tpahere <player>`:** Request a player to teleport to you.
+- **`/tpaccept`:** Accept an incoming teleport request.
+- **`/tpadeny`:** Deny an incoming teleport request.
+- **`/tpacancel`:** Cancel your outgoing teleport request.
+- **`/tpastatus`:** Check the status of your TPA requests.
 
-- **/tpaccept**
-  - **Syntax:** `/tpaccept`
-  - **Description:** Accepts an incoming teleport request.
-  - **Aliases:** `/tpyes`
+### Economy System
+- **`/balance [player]`:** Shows your or another player's balance.
+- **`/baltop`:** Shows the players with the highest balances.
+- **`/pay <player> <amount>`:** Pays another player from your balance. Includes `/payconfirm`.
 
-- **/tpadeny**
-  - **Syntax:** `/tpadeny`
-  - **Description:** Denies an incoming teleport request.
-  - **Aliases:** `/tpno`
+### Bounty System
+- **`/bounty <player> <amount>`:** Places a bounty on a player.
+- **`/listbounty [player]`:** Lists active bounties.
+- **`/removebounty <amount> [player]`:** Removes a portion of a bounty from a player.
 
-- **/tpacancel**
-  - **Syntax:** `/tpacancel`
-  - **Description:** Cancels an outgoing teleport request you have sent.
-
-- **/tpastatus**
-  - **Syntax:** `/tpastatus`
-  - **Description:** Checks the status of your TPA requests.
-
-### Economy System Commands
-- **/balance**
-  - **Syntax:** `/balance [target: player]`
-  - **Description:** Shows your or another player's balance.
-  - **Aliases:** `/bal`, `/money`
-
-- **/baltop**
-  - **Syntax:** `/baltop`
-  - **Description:** Shows the players with the highest balances.
-  - **Aliases:** `/topbal`, `/leaderboard`
-
-- **/pay**
-  - **Syntax:** `/pay <target: player> <amount: float>`
-  - **Description:** Pays another player from your balance.
-
-- **/payconfirm**
-  - **Syntax:** `/payconfirm`
-  - **Description:** Confirms a pending high-value payment.
-
-### Bounty System Commands
-- **/bounty**
-  - **Syntax:** `/bounty <target: player> <amount: int>`
-  - **Description:** Places a bounty on a player.
-
-- **/listbounty**
-  - **Syntax:** `/listbounty [target: player]`
-  - **Description:** Lists active bounties.
-  - **Aliases:** `/bounties`
-
-- **/removebounty**
-  - **Syntax:** `/removebounty <amount: float> [target: player]`
-  - **Description:** Removes a portion of a bounty from a player.
-  - **Aliases:** `/rbounty`
-
-### Homes System Commands
-- **/sethome**
-  - **Syntax:** `/sethome <homeName: string>`
-  - **Aliases:** `/addhome`
-- **/home**
-  - **Syntax:** `/home [homeName: string]`
-- **/delhome**
-  - **Syntax:** `/delhome <homeName: string>`
-  - **Aliases:** `/remhome`
-- **/homes**
-  - **Syntax:** `/homes`
-  - **Aliases:** `/listhomes`
+### Spawn System
+- **`/spawn`:** Teleports you to the world spawn.
+- **`/setspawn`:** Sets the world's default spawn point (Admin only).

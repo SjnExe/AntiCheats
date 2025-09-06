@@ -67,7 +67,7 @@ export const configPanelSchema = [
     {
         id: 'tpa',
         title: '§l§bTPA System§r',
-        icon: 'textures/ui/Transfer',
+        icon: 'textures/ui/icon_multiplayer',
         settings: [
             {
                 key: 'tpa.enabled',
@@ -129,7 +129,7 @@ export const configPanelSchema = [
     {
         id: 'economy',
         title: '§l§6Economy System§r',
-        icon: 'textures/ui/common_gold_ingot',
+        icon: 'textures/items/gold_ingot.png',
         settings: [
             {
                 key: 'economy.enabled',

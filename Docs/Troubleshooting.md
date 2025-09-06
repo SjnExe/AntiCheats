@@ -78,6 +78,11 @@ For a quick summary, see the [F.A.Q.](F.A.Q.md#how-do-i-change-the-server-owner)
 4.  **Check if Command is Disabled:** In `config.js`, there is a `commandSettings` section. Verify that the command you are trying to use is not set to `enabled: false`.
 5.  **Check for Typos:** Ensure you're typing the command correctly.
 
+**Problem: The `/baltop` command is slow or seems to lag the first time it's run.**
+
+- **This is expected on first use.** The first time `/baltop` is run on a world, the addon needs to scan every player file to generate the leaderboard cache. This can take a few seconds on servers with a very large player history.
+- **Subsequent uses will be instant.** After the initial scan, the leaderboard is cached and will be extremely fast to access. This one-time scan is necessary to include offline players in the leaderboard.
+
 ---
 
 ## 4. Admin UI (`!panel`) Issues
