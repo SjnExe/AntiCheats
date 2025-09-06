@@ -47,6 +47,11 @@ Below are links to specific sections particularly relevant for Add-On developmen
 - [Minecraft Bedrock 1.21.100 Update Notes for Creators](https://learn.microsoft.com/en-us/minecraft/creator/documents/update1.21.100?view=minecraft-bedrock-stable)
 - [Scripting V2.0.0 Overview](https://learn.microsoft.com/en-us/minecraft/creator/documents/scriptingv2.0.0overview?view=minecraft-bedrock-stable) (Details on API v2 changes and Custom Components V2)
 
+### Official Minecraft Changelogs
+
+- **[Minecraft Feedback - Release Changelogs](https://feedback.minecraft.net/hc/en-us/sections/360001186971-Release-Changelogs)**
+  - This page contains changelogs for both the Bedrock and Java editions of Minecraft. For addon development, refer to the **Bedrock** changelogs.
+
 ### Official Mojang & Microsoft Samples/Tools
 
 - **Mojang Bedrock Addon Samples**:
@@ -55,6 +60,9 @@ Below are links to specific sections particularly relevant for Add-On developmen
   - [https://github.com/Mojang/minecraft-creator-tools](https://github.com/Mojang/minecraft-creator-tools)
 - **Microsoft Minecraft Samples**:
   - [https://github.com/microsoft/minecraft-samples](https://github.com/microsoft/minecraft-samples)
+- **Microsoft Minecraft Scripting Samples**:
+  - [https://github.com/microsoft/minecraft-scripting-samples](https://github.com/microsoft/minecraft-scripting-samples)
+  - Contains many useful examples, including for custom commands.
 - **Mojang Minecraft Scripting Libraries**:
   - [https://github.com/Mojang/minecraft-scripting-libraries](https://github.com/Mojang/minecraft-scripting-libraries)
 

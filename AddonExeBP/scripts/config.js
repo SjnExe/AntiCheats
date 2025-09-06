@@ -1,17 +1,17 @@
 export const config = {
     // --- System & Core Settings ---
-    version: 'v__VERSION_STRING__',
+    version: [1, 0, 0], // This will be replaced by the release workflow
     ownerPlayerNames: ['Your•Name•Here'], // Default : ['Your•Name•Here']
     adminTag: 'admin',
     commandPrefix: '!',
-    serverName: '§aServerExe',
+    serverName: '§cServerExe',
     defaultGamemode: 'survival',
     debug: false,
     exeGlobalNotificationsDefaultOn: true,
 
     // --- Data Management ---
     data: {
-        autoSaveIntervalSeconds: 300 // Time in seconds. Set to 0 to disable. Default is 5 minutes.
+        autoSaveIntervalSeconds: 30 // Time in seconds. Set to 0 to disable. Default is 30 seconds.
     },
 
     // --- Restart Settings ---
@@ -62,7 +62,8 @@ export const config = {
     },
     playerInfo: {
         enableWelcomer: true,
-        welcomeMessage: 'Welcome, {playerName}, to our amazing server!',
+        // Available placeholders: {playerName}, {serverName}, {discordLink}, {websiteLink}. Use \n for a new line.
+        welcomeMessage: 'Welcome, {playerName}, to {serverName}!',
         notifyAdminOnNewPlayer: true,
         enableDeathCoords: true,
         deathCoordsMessage: '§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.'
@@ -94,31 +95,34 @@ export const config = {
     },
 
     // --- Miscellaneous ---
-    spawnLocation: null, // Example: { x: 0, y: 100, z: 0, dimensionId: 'minecraft:overworld' }
+    // Default spawn location. Can be set manually here (e.g., { x: 0, y: 100, z: 0, dimensionId: 'minecraft:overworld' }) or with the in-game /setspawn command.
+    spawnLocation: null,
 
     // --- Sound Events ---
     soundEvents: {
         tpaRequestReceived: { enabled: true, soundId: 'random.orb', volume: 1.0, pitch: 1.2 },
         adminNotificationReceived: { enabled: true, soundId: 'note.pling', volume: 0.8, pitch: 1.5 },
         playerWarningReceived: { enabled: true, soundId: 'note.bass', volume: 1.0, pitch: 0.8 },
-        commandError: { enabled: false, soundId: 'mob.villager.no', volume: 1.0, pitch: 0.9 }
+        commandError: { enabled: true, soundId: 'mob.villager.no', volume: 1.0, pitch: 0.9 }
     },
 
     // --- Command Enable/Disable ---
-    // This section will be populated as commands are added.
     commandSettings: {
         'admin': { enabled: true },
         'balance': { enabled: true },
         'baltop': { enabled: true },
         'ban': { enabled: true },
         'bounty': { enabled: true },
+        'chattoconsole': { enabled: true },
         'clear': { enabled: true },
         'clearchat': { enabled: true },
         'clearreports': { enabled: true },
         'copyinv': { enabled: true },
+        'deathcoords': { enabled: true },
         'debug': { enabled: true },
         'delhome': { enabled: true },
         'freeze': { enabled: true },
+        'gm': { enabled: true },
         'gma': { enabled: true },
         'gmc': { enabled: true },
         'gms': { enabled: true },
@@ -139,7 +143,9 @@ export const config = {
         'reload': { enabled: true },
         'report': { enabled: true },
         'reports': { enabled: true },
+        'restart': { enabled: true },
         'rules': { enabled: true },
+        'save': { enabled: true },
         'setbalance': { enabled: true },
         'sethome': { enabled: true },
         'setspawn': { enabled: true },
@@ -152,6 +158,8 @@ export const config = {
         'tpadeny': { enabled: true },
         'tpahere': { enabled: true },
         'tpastatus': { enabled: true },
+        'unban': { enabled: true },
+        'unmute': { enabled: true },
         'vanish': { enabled: true },
         'version': { enabled: true },
         'xraynotify': { enabled: true }

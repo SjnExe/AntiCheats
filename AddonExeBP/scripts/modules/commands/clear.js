@@ -1,6 +1,5 @@
 import { commandManager } from './commandManager.js';
 import { playSound } from '../../core/utils.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
 import { getPlayer } from '../../core/playerDataManager.js';
 
 commandManager.register({
@@ -9,49 +8,50 @@ commandManager.register({
     aliases: ['ci', 'clearinv'],
     category: 'Moderation',
     permissionLevel: 1, // Admin-only to prevent accidental self-clearing
+    allowConsole: true,
+    disableSlashCommand: true,
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player whose inventory to clear.', optional: true }
+    ],
     execute: (player, args) => {
-        if (args.length > 0) {
-            // Clearing another player's inventory (requires admin)
+        let targetPlayer;
+        if (args.target && args.target.length > 0) {
+            targetPlayer = args.target[0];
+        } else {
+            if (player.isConsole) {
+                player.sendMessage('§cYou must specify a target player when running this command from the console.');
+                return;
+            }
+            targetPlayer = player;
+        }
+
+        if (!player.isConsole) {
             const executorData = getPlayer(player.id);
-            if (executorData.permissionLevel > 1) { // Assuming 0=owner, 1=admin
+            if (executorData.permissionLevel > 1 && player.id !== targetPlayer.id) {
                 player.sendMessage("§cYou do not have permission to clear another player's inventory.");
                 playSound(player, 'note.bass');
                 return;
             }
-
-            const targetName = args[0];
-            const targetPlayer = findPlayerByName(targetName);
-
-            if (!targetPlayer) {
-                player.sendMessage(`§cPlayer "${targetName}" not found.`);
-                playSound(player, 'note.bass');
-                return;
-            }
-
             const targetData = getPlayer(targetPlayer.id);
-            if (executorData.permissionLevel >= targetData.permissionLevel) {
+            if (executorData.permissionLevel >= targetData.permissionLevel && player.id !== targetPlayer.id) {
                 player.sendMessage('§cYou cannot clear the inventory of a player with the same or higher rank than you.');
                 playSound(player, 'note.bass');
                 return;
             }
+        }
 
-            const inventory = targetPlayer.getComponent('inventory').container;
-            for (let i = 0; i < inventory.size; i++) {
-                inventory.setItem(i);
-            }
+        const inventory = targetPlayer.getComponent('inventory').container;
+        for (let i = 0; i < inventory.size; i++) {
+            inventory.setItem(i);
+        }
 
+        if (player.isConsole || targetPlayer.id !== player.id) {
             player.sendMessage(`§aSuccessfully cleared the inventory of ${targetPlayer.name}.`);
             targetPlayer.sendMessage('§eYour inventory has been cleared by an admin.');
-            playSound(player, 'random.orb');
-            playSound(targetPlayer, 'random.orb');
+            if (!player.isConsole) {playSound(targetPlayer, 'random.orb');}
         } else {
-            // Clearing own inventory
-            const inventory = player.getComponent('inventory').container;
-            for (let i = 0; i < inventory.size; i++) {
-                inventory.setItem(i);
-            }
             player.sendMessage('§aYour inventory has been cleared.');
-            playSound(player, 'random.orb');
         }
+        if (!player.isConsole) {playSound(player, 'random.orb');}
     }
 });

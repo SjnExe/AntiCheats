@@ -1,5 +1,6 @@
 import { system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
+import { errorLog } from './errorLogger.js';
 
 /**
  * Parses a duration string (e.g., "10m", "2h", "7d") and returns the duration in milliseconds.
@@ -48,7 +49,7 @@ export function playSound(player, soundId) {
     try {
         player.playSound(soundId);
     } catch (e) {
-        console.error(`Failed to play sound "${soundId}" for player ${player.name}: ${e}`);
+        errorLog(`Failed to play sound "${soundId}" for player ${player.name}: ${e}`);
     }
 }
 
@@ -94,7 +95,7 @@ export function playSoundFromConfig(player, soundEventKey) {
             });
         }
     } catch (error) {
-        console.error(`Failed to play sound from config for key "${soundEventKey}": ${error}`);
+        errorLog(`Failed to play sound from config for key "${soundEventKey}": ${error}`);
     }
 }
 
@@ -104,10 +105,10 @@ export function playSoundFromConfig(player, soundEventKey) {
  * @returns {string} The Minecraft color code.
  */
 function getCountdownColor(secondsRemaining) {
-    if (secondsRemaining <= 1) return '§4'; // Dark Red
-    if (secondsRemaining <= 3) return '§c'; // Red
-    if (secondsRemaining <= 5) return '§6'; // Gold
-    if (secondsRemaining <= 10) return '§e'; // Yellow
+    if (secondsRemaining <= 1) {return '§4';} // Dark Red
+    if (secondsRemaining <= 3) {return '§c';} // Red
+    if (secondsRemaining <= 5) {return '§6';} // Gold
+    if (secondsRemaining <= 10) {return '§e';} // Yellow
     return '§a'; // Green
 }
 
@@ -163,4 +164,27 @@ export function startTeleportWarmup(player, durationSeconds, onWarmupComplete, t
             system.clearRun(intervalId);
         }
     }, 20); // Run every second
+}
+
+/**
+ * Formats a string by replacing placeholders with values from a context object.
+ * @param {string} template The string template with placeholders like {key}.
+ * @param {object} context An object containing the values to substitute.
+ * @returns {string} The formatted string.
+ */
+export function formatString(template, context) {
+    if (!template) {
+        return '';
+    }
+    // Replace \n with actual newlines first
+    let message = template.replace(/\\n/g, '\n');
+
+    // Replace placeholders
+    for (const key in context) {
+        if (Object.prototype.hasOwnProperty.call(context, key)) {
+            const placeholder = new RegExp(`{${key}}`, 'g');
+            message = message.replace(placeholder, context[key]);
+        }
+    }
+    return message;
 }

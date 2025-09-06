@@ -23,7 +23,7 @@ If your issue isn't listed in the F.A.Q. or this guide, please consider [reporti
 
 - **Behavior Pack Order:** Ensure `AddonExeBP` is at the **VERY TOP** of your Behavior Pack list in your world settings. This is the most common cause of issues.
 - **Resource Pack Applied:** Make sure `AddonExeRP` is also applied in the Resource Pack section of your world settings.
-- **"Beta APIs" Enabled:** In your World Settings under "Experiments", ensure the **"Beta APIs"** toggle is turned ON. The addon will not work without it.
+- **Enable Cheats & Beta APIs:** In your World Settings, ensure both **"Activate Cheats"** (under the "Game" tab) and **"Beta APIs"** (under the "Experiments" tab) are turned ON.
 - **Correct Files:** Double-check you've downloaded the latest `.mcaddon` file from the official [GitHub Releases](https://github.com/SjnExe/AddonExe/releases) and applied both packs from it.
 
 **Problem: World fails to load or crashes on load after adding AddonExe.**
@@ -77,6 +77,11 @@ For a quick summary, see the [F.A.Q.](F.A.Q.md#how-do-i-change-the-server-owner)
     - Use `!help` to see the commands available to your rank.
 4.  **Check if Command is Disabled:** In `config.js`, there is a `commandSettings` section. Verify that the command you are trying to use is not set to `enabled: false`.
 5.  **Check for Typos:** Ensure you're typing the command correctly.
+
+**Problem: The `/baltop` command is slow or seems to lag the first time it's run.**
+
+- **This is expected on first use.** The first time `/baltop` is run on a world, the addon needs to scan every player file to generate the leaderboard cache. This can take a few seconds on servers with a very large player history.
+- **Subsequent uses will be instant.** After the initial scan, the leaderboard is cached and will be extremely fast to access. This one-time scan is necessary to include offline players in the leaderboard.
 
 ---
 

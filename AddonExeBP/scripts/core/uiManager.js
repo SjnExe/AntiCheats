@@ -1,11 +1,14 @@
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from './panelLayoutConfig.js';
+import { configPanelSchema } from './configPanelSchema.js';
 import { getPlayer, getPlayerIdByName, loadPlayerData, getAllPlayerNameIdMap } from './playerDataManager.js';
-import { getConfig } from './configManager.js';
+import { getConfig, updateMultipleConfig } from './configManager.js';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 import { getPlayerRank } from './rankManager.js';
 import { getPlayerFromCache } from './playerCache.js';
 import * as utils from './utils.js';
+import { getValueFromPath } from './objectUtils.js';
 import * as punishmentManager from './punishmentManager.js';
 import * as reportManager from './reportManager.js';
 
@@ -29,7 +32,7 @@ export async function showPanel(player, panelId, context = {}) {
 
         await handleFormResponse(player, panelId, response, context);
     } catch (e) {
-        console.error(`[UIManager] showPanel failed for panel '${panelId}': ${e.stack}`);
+        errorLog(`[UIManager] showPanel failed for panel '${panelId}': ${e.stack}`);
         debugLog(`[UIManager] ERROR: showPanel failed for panel '${panelId}': ${e.message}`);
     }
 }
@@ -37,6 +40,40 @@ export async function showPanel(player, panelId, context = {}) {
 // Builds and returns a form object based on a panel definition.
 async function buildPanelForm(player, panelId, context) {
     debugLog(`[UIManager] Building form for panel '${panelId}' for player ${player.name}.`);
+
+    // First, handle dynamic panel generation that doesn't rely on panelDefinitions
+    if (panelId.startsWith('config_')) {
+        const categoryId = panelId.replace('config_', '');
+        const category = configPanelSchema.find(c => c.id === categoryId);
+        if (!category) {
+            errorLog(`[UIManager] Could not find config category for ID: ${categoryId}`);
+            return null;
+        }
+        debugLog(`[UIManager] Building config settings form for category: ${categoryId}`);
+        const form = new ModalFormData().title(category.title);
+        const config = getConfig();
+
+        for (const setting of category.settings) {
+            const currentValue = getValueFromPath(config, setting.key);
+            switch (setting.type) {
+                case 'toggle':
+                    form.toggle(setting.label, { defaultValue: !!currentValue });
+                    break;
+                case 'textField':
+                    form.textField(setting.label, setting.description || '', { defaultValue: String(currentValue ?? '') });
+                    break;
+                case 'dropdown':
+                {
+                    const index = setting.options.indexOf(currentValue);
+                    form.dropdown(setting.label, setting.options, { defaultValueIndex: index === -1 ? 0 : index });
+                    break;
+                }
+            }
+        }
+        return form;
+    }
+
+    // Then, handle panels that are statically or semi-statically defined
     const panelDef = panelDefinitions[panelId];
     if (!panelDef) {
         debugLog(`[UIManager] Panel definition not found for '${panelId}'.`);
@@ -63,6 +100,16 @@ async function buildPanelForm(player, panelId, context) {
     if (panelId === 'reportListPanel') {
         debugLog(`[UIManager] Building dynamic list form for panel '${panelId}'.`);
         return buildReportListForm(title);
+    }
+
+    if (panelId === 'configCategoryPanel') {
+        debugLog('[UIManager] Building config category list form.');
+        const form = new ActionFormData().title(title);
+        form.button('§l§8< Back', 'textures/gui/controls/left.png');
+        for (const category of configPanelSchema) {
+            form.button(category.title, category.icon);
+        }
+        return form;
     }
 
     const form = new ActionFormData().title(title);
@@ -92,7 +139,7 @@ async function handleFormResponse(player, panelId, response, context) {
     }
 
     if (panelId === 'reportListPanel') {
-        if (response.selection === 0) return showPanel(player, 'mainPanel');
+        if (response.selection === 0) {return showPanel(player, 'mainPanel');}
         const reports = reportManager.getAllReports().filter(r => r.status === 'open' || r.status === 'assigned').sort((a, b) => a.timestamp - b.timestamp);
         const selectedReport = reports[response.selection - 1];
         if (selectedReport) {
@@ -100,6 +147,63 @@ async function handleFormResponse(player, panelId, response, context) {
             return showPanel(player, 'reportActionsPanel', { ...context, targetReport: selectedReport });
         }
         return;
+    }
+
+    if (panelId === 'configCategoryPanel') {
+        if (response.selection === 0) {return showPanel(player, 'mainPanel');}
+        const selectedCategory = configPanelSchema[response.selection - 1];
+        if (selectedCategory) {
+            debugLog(`[UIManager] Player ${player.name} selected config category ${selectedCategory.id}.`);
+            // We use a dynamic panelId to represent the specific settings form
+            return showPanel(player, `config_${selectedCategory.id}`);
+        }
+        return;
+    }
+
+    if (panelId.startsWith('config_')) {
+        const categoryId = panelId.replace('config_', '');
+        const category = configPanelSchema.find(c => c.id === categoryId);
+        if (!category) {
+            errorLog(`[UIManager] Could not find config category for ID: ${categoryId}`);
+            return;
+        }
+
+        const newValues = response.formValues;
+        const updates = {};
+        let validationFailed = false;
+
+        category.settings.forEach((setting, index) => {
+            if (validationFailed) { return; }
+
+            let newValue = newValues[index];
+
+            // Parse and validate value from form
+            if (setting.type === 'dropdown') {
+                newValue = setting.options[newValue];
+            } else if (setting.type === 'textField' && (setting.key.includes('Seconds') || setting.key.includes('Balance') || setting.key.includes('maxHomes') || setting.key.includes('Interval'))) {
+                const numValue = Number(newValue);
+                if (isNaN(numValue)) {
+                    player.sendMessage(`§cInvalid number provided for ${setting.label}. Changes not saved.`);
+                    validationFailed = true;
+                    return;
+                }
+                newValue = numValue;
+            }
+
+            updates[setting.key] = newValue;
+        });
+
+        if (validationFailed) {
+            // Re-show the form with the invalid data so user can correct it
+            return showPanel(player, panelId);
+        }
+
+        // Apply all grouped changes at once
+        updateMultipleConfig(updates);
+
+        player.sendMessage(`§aSuccessfully saved settings for ${category.title}§a.`);
+        // Return to category list
+        return showPanel(player, 'configCategoryPanel');
     }
 
     const panelDef = panelDefinitions[panelId];
@@ -218,7 +322,7 @@ function buildReportListForm(title) {
         reports.sort((a, b) => a.timestamp - b.timestamp);
         for (const report of reports) {
             const statusColor = report.status === 'assigned' ? '§6' : '§c';
-            form.button(`[${statusColor}${report.status.toUpperCase()}§r] ${report.reportedPlayerName}\n§7Reported by: ${report.reporterName}`);
+            form.button(`[${statusColor}${report.status.toUpperCase()}§r] ${report.reportedPlayerName}\n§8Reported by: ${report.reporterName}`);
         }
     }
     return form;
@@ -239,7 +343,7 @@ uiActionFunctions['showRules'] = async (player, context) => {
 
 uiActionFunctions['assignReport'] = (player, context, panelId) => {
     const { targetReport } = context;
-    if (!targetReport) return;
+    if (!targetReport) {return;}
     debugLog(`[UIManager] Action 'assignReport' called by ${player.name} for report ${targetReport.id}.`);
     reportManager.assignReport(targetReport.id, player.id);
     player.sendMessage(`§aReport ${targetReport.id} has been assigned to you.`);
@@ -248,7 +352,7 @@ uiActionFunctions['assignReport'] = (player, context, panelId) => {
 
 uiActionFunctions['resolveReport'] = (player, context, panelId) => {
     const { targetReport } = context;
-    if (!targetReport) return;
+    if (!targetReport) {return;}
     debugLog(`[UIManager] Action 'resolveReport' called by ${player.name} for report ${targetReport.id}.`);
     reportManager.resolveReport(targetReport.id);
     player.sendMessage(`§aReport ${targetReport.id} has been marked as resolved.`);
@@ -257,7 +361,7 @@ uiActionFunctions['resolveReport'] = (player, context, panelId) => {
 
 uiActionFunctions['clearReport'] = (player, context, panelId) => {
     const { targetReport } = context;
-    if (!targetReport) return;
+    if (!targetReport) {return;}
     debugLog(`[UIManager] Action 'clearReport' called by ${player.name} for report ${targetReport.id}.`);
     reportManager.clearReport(targetReport.id);
     player.sendMessage(`§aReport ${targetReport.id} has been cleared.`);

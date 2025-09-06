@@ -1,24 +1,24 @@
 import { commandManager } from './commandManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
 
 commandManager.register({
     name: 'invsee',
     description: "Views a player's inventory in chat.",
     category: 'Moderation',
     permissionLevel: 1, // Admin only
+    allowConsole: true,
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player whose inventory to view.' },
+        { name: 'page', type: 'int', description: 'The page of the inventory to view.', optional: true }
+    ],
     execute: (player, args) => {
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !invsee <playerName> [page]');
+        const { target, page: pageArg } = args;
+
+        if (!target || target.length === 0) {
+            player.sendMessage('§cPlayer not found.');
             return;
         }
 
-        const targetName = args[0];
-        const targetPlayer = findPlayerByName(targetName);
-
-        if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found.`);
-            return;
-        }
+        const targetPlayer = target[0];
 
         const inventory = targetPlayer.getComponent('inventory').container;
         const items = [];
@@ -36,7 +36,7 @@ commandManager.register({
 
         const ITEMS_PER_PAGE = 10;
         const totalPages = Math.ceil(items.length / ITEMS_PER_PAGE);
-        let page = parseInt(args[1], 10) - 1 || 0;
+        let page = (pageArg || 1) - 1;
         if (page < 0 || page >= totalPages) {
             page = 0;
         }

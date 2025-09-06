@@ -2,6 +2,7 @@ import { world, system } from '@minecraft/server';
 import { getConfig } from './configManager.js';
 import { saveAllData } from './dataManager.js';
 import { debugLog } from './logger.js';
+import { errorLog } from './errorLogger.js';
 
 let restartInProgress = false;
 let countdownTimer = -1;
@@ -18,14 +19,13 @@ export function startRestart(initiator) {
 
     const config = getConfig();
     const countdownSeconds = config.restart?.countdownSeconds ?? 30;
+    const announcer = initiator.isConsole ? 'The Console' : initiator.name;
 
     restartInProgress = true;
     countdownTimer = countdownSeconds;
 
-    world.sendMessage(`§l§c[SERVER] Attention! The server will restart in ${countdownSeconds} seconds.`);
-    if (initiator) {
-        initiator.sendMessage('§aYou have initiated the server restart sequence.');
-    }
+    world.sendMessage(`§l§c[SERVER] Attention! Restart initiated by ${announcer}. The server will restart in ${countdownSeconds} seconds.`);
+    initiator.sendMessage('§aYou have initiated the server restart sequence.');
 
     const countdownInterval = system.runInterval(() => {
         if (countdownTimer > 0) {
@@ -69,18 +69,18 @@ function finalizeRestart() {
             const command = `kick @a[tag=!${config.adminTag},${ownerNames}] ${kickMessage}`;
 
             debugLog(`[RestartManager] Running kick command: /${command}`);
-            const result = world.getDimension('overworld').runCommand(command);
-            debugLog(`[RestartManager] Kick command finished. Success count: ${result.successCount}`);
+            world.getDimension('overworld').runCommand(command);
+            debugLog('[RestartManager] Kick command finished.');
 
             // Send a message to any remaining (admin/owner) players.
             for (const player of world.getAllPlayers()) {
                 player.sendMessage('§aYou were not kicked by the restart sequence because you are an admin/owner.');
             }
         } catch (error) {
-            console.error(`[RestartManager] Failed to execute kick command: ${error}`);
+            errorLog(`[RestartManager] Failed to execute kick command: ${error}`);
         }
 
-        console.warn('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved and players have been kicked.');
+        errorLog('[AddonExe] SERVER IS READY FOR RESTART. Data has been saved and players have been kicked.');
 
         restartInProgress = false; // Reset the flag
     }, 60); // 3-second delay

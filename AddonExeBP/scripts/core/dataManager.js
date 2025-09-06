@@ -1,39 +1,55 @@
-import { savePlayerData, getAllPlayerData } from './playerDataManager.js';
-import { saveReports } from './reportManager.js';
-import { world } from '@minecraft/server';
+import { getAllPlayerData, savePlayerData, isNameIdMapDirty, saveNameIdMap } from './playerDataManager.js';
 import { getConfig } from './configManager.js';
 import { system } from '@minecraft/server';
 import { debugLog } from './logger.js';
 
 /**
- * Saves all volatile data to world properties.
- * This includes all online player data and all reports.
+ * Saves all "dirty" data to world properties.
+ * This includes player data flagged with `needsSave` and the name-to-ID map if it has changed.
  * @param {object} [options={}]
  * @param {boolean} [options.log=true] - Whether to log the save event.
+ * @returns {boolean} - True if any data was saved, false otherwise.
  */
 export function saveAllData(options = {}) {
     const { log = true } = options;
     if (log) {
-        debugLog('[DataManager] Starting full data save...');
+        debugLog('[DataManager] Starting data sync...');
     }
 
-    // Save all online players' data
+    let anythingWasSaved = false;
+
+    // Save the player name-to-ID map if it's dirty
+    if (isNameIdMapDirty) {
+        saveNameIdMap(); // This function will log its own success
+        anythingWasSaved = true;
+    }
+
+    // Save data for online players whose data is dirty
     const allPlayerData = getAllPlayerData();
     let savedPlayerCount = 0;
-    for (const playerId of allPlayerData.keys()) {
-        savePlayerData(playerId);
-        savedPlayerCount++;
-    }
-    if (log) {
-        debugLog(`[DataManager] Saved data for ${savedPlayerCount} online players.`);
+    for (const [playerId, playerData] of allPlayerData.entries()) {
+        if (playerData.needsSave) {
+            savePlayerData(playerId);
+            savedPlayerCount++;
+        }
     }
 
-    // Save all reports
-    saveReports({ force: true }); // Force save, ignoring the needsSave flag for manual/auto saves.
-
-    if (log) {
-        debugLog('[DataManager] Full data save complete.');
+    if (savedPlayerCount > 0) {
+        anythingWasSaved = true;
+        if (log) {
+            debugLog(`[DataManager] Saved data for ${savedPlayerCount} modified players.`);
+        }
     }
+
+    // Reports are saved immediately by the reportManager, so they are not needed here.
+
+
+    if (log && anythingWasSaved) {
+        debugLog('[DataManager] Data sync complete.');
+    } else if (log) {
+        debugLog('[DataManager] Data sync finished, no changes to save.');
+    }
+    return anythingWasSaved;
 }
 
 /**
@@ -47,8 +63,10 @@ export function initializeDataManager() {
         const intervalTicks = autoSaveIntervalSeconds * 20; // 20 ticks/sec
         system.runInterval(() => {
             debugLog('[DataManager] Auto-save triggered by interval.');
-            saveAllData({ log: false }); // Don't spam logs for auto-saves
-            world.sendMessage('§7§o[Auto-Save] All server data has been saved.§r');
+            const wasAnythingSaved = saveAllData({ log: false }); // Don't spam logs for auto-saves
+            if (wasAnythingSaved) {
+                debugLog('[Auto-Save] Server data has been saved.');
+            }
         }, intervalTicks);
         debugLog(`[DataManager] Auto-save enabled. Interval: ${autoSaveIntervalSeconds} seconds.`);
     } else {

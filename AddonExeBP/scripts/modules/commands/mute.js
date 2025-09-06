@@ -1,8 +1,50 @@
 import { commandManager } from './commandManager.js';
-import { findPlayerByName } from '../utils/playerUtils.js';
 import { getPlayer, getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { addPunishment, removePunishment } from '../../core/punishmentManager.js';
 import { parseDuration, playSound } from '../../core/utils.js';
+import { findPlayerByName } from '../utils/playerUtils.js';
+
+function mutePlayer(player, targetPlayer, duration, reason) {
+    if (!targetPlayer) {
+        player.sendMessage('§cPlayer not found.');
+        playSound(player, 'note.bass');
+        return;
+    }
+    if (!player.isConsole) {
+        if (player.id === targetPlayer.id) {
+            player.sendMessage('§cYou cannot mute yourself.');
+            playSound(player, 'note.bass');
+            return;
+        }
+        const executorData = getPlayer(player.id);
+        const targetData = getPlayer(targetPlayer.id);
+        if (!executorData || !targetData) {
+            player.sendMessage('§cCould not retrieve player data for permission check.');
+            playSound(player, 'note.bass');
+            return;
+        }
+        if (executorData.permissionLevel >= targetData.permissionLevel) {
+            player.sendMessage('§cYou cannot mute a player with the same or higher rank than you.');
+            playSound(player, 'note.bass');
+            return;
+        }
+    }
+    const durationString = duration || 'perm';
+    const durationMs = duration ? parseDuration(duration) : Infinity;
+    const expires = durationMs === Infinity ? Infinity : Date.now() + durationMs;
+    addPunishment(targetPlayer.id, {
+        type: 'mute',
+        expires,
+        reason
+    });
+    const durationText = durationMs === Infinity ? 'permanently' : `for ${durationString}`;
+    const announcer = player.isConsole ? 'the Console' : player.name;
+    player.sendMessage(`§aSuccessfully muted ${targetPlayer.name} ${durationText}. Reason: ${reason}`);
+    targetPlayer.sendMessage(`§cYou have been muted ${durationText} by ${announcer}.`);
+    if (!player.isConsole) {
+        playSound(player, 'random.orb');
+    }
+}
 
 commandManager.register({
     name: 'mute',
@@ -10,73 +52,29 @@ commandManager.register({
     aliases: ['silence'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
+    parameters: [
+        { name: 'target', type: 'player', description: 'The player to mute.' },
+        { name: 'duration', type: 'string', description: 'The duration of the mute (e.g., 1d, 2h, 30m). Default: perm', optional: true },
+        { name: 'reason', type: 'text', description: 'The reason for the mute.', optional: true }
+    ],
     execute: (player, args) => {
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !mute <player> [duration] [reason]');
-            playSound(player, 'note.bass');
-            return;
-        }
-
-        const targetName = args[0];
-        const targetPlayer = findPlayerByName(targetName);
+        const targetPlayer = Array.isArray(args.target) ? args.target[0] : findPlayerByName(args.target);
 
         if (!targetPlayer) {
-            player.sendMessage(`§cPlayer "${targetName}" not found.`);
-            playSound(player, 'note.bass');
+            player.sendMessage('§cPlayer not found.');
             return;
         }
 
-        if (player.id === targetPlayer.id) {
-            player.sendMessage('§cYou cannot mute yourself.');
-            playSound(player, 'note.bass');
-            return;
+        let duration = args.duration;
+        let reason = args.reason;
+
+        if (duration && parseDuration(duration) === 0) {
+            reason = `${duration}${reason ? ' ' + reason : ''}`;
+            duration = undefined;
         }
 
-        const executorData = getPlayer(player.id);
-        const targetData = getPlayer(targetPlayer.id);
-
-        if (!executorData || !targetData) {
-            player.sendMessage('§cCould not retrieve player data for permission check.');
-            playSound(player, 'note.bass');
-            return;
-        }
-
-        if (executorData.permissionLevel >= targetData.permissionLevel) {
-            player.sendMessage('§cYou cannot mute a player with the same or higher rank than you.');
-            playSound(player, 'note.bass');
-            return;
-        }
-
-        let durationString = 'perm';
-        let reason;
-        let durationMs = Infinity;
-
-        if (args.length > 1) {
-            const parsedMs = parseDuration(args[1]);
-            if (parsedMs > 0) {
-                durationString = args[1];
-                durationMs = parsedMs;
-                reason = args.slice(2).join(' ') || 'No reason provided.';
-            } else {
-                // Invalid duration format, treat it as part of the reason
-                reason = args.slice(1).join(' ');
-            }
-        } else {
-            reason = 'No reason provided.';
-        }
-
-        const expires = durationMs === Infinity ? Infinity : Date.now() + durationMs;
-
-        addPunishment(targetPlayer.id, {
-            type: 'mute',
-            expires,
-            reason
-        });
-
-        const durationText = durationMs === Infinity ? 'permanently' : `for ${durationString}`;
-        player.sendMessage(`§aSuccessfully muted ${targetPlayer.name} ${durationText}. Reason: ${reason}`);
-        targetPlayer.sendMessage(`§cYou have been muted ${durationText}. Reason: ${reason}`);
-        playSound(player, 'random.orb');
+        mutePlayer(player, targetPlayer, duration, reason || 'No reason provided.');
     }
 });
 
@@ -86,48 +84,38 @@ commandManager.register({
     aliases: ['um'],
     category: 'Moderation',
     permissionLevel: 1, // Admins only
+    allowConsole: true,
+    parameters: [
+        { name: 'target', type: 'string', description: 'The name of the player to unmute.' }
+    ],
     execute: (player, args) => {
-        if (args.length < 1) {
-            player.sendMessage('§cUsage: !unmute <player>');
-            playSound(player, 'note.bass');
-            return;
-        }
-
-        const targetName = args[0];
-        // For unmuting, we need to handle offline players.
-        // This simplified version assumes the player is online.
+        const { target: targetName } = args;
         const targetId = getPlayerIdByName(targetName);
 
         if (!targetId) {
             player.sendMessage(`§cPlayer "${targetName}" has never joined the server or name is misspelled.`);
-            playSound(player, 'note.bass');
             return;
         }
-
-        if (targetId === player.id) {
-            player.sendMessage('§cYou cannot unmute yourself.');
-            playSound(player, 'note.bass');
-            return;
+        if (!player.isConsole) {
+            if (targetId === player.id) {
+                player.sendMessage('§cYou cannot unmute yourself.');
+                return;
+            }
+            const executorData = getPlayer(player.id);
+            const targetData = loadPlayerData(targetId);
+            if (!executorData || !targetData) {
+                player.sendMessage('§cCould not retrieve player data for permission check.');
+                return;
+            }
+            if (executorData.permissionLevel >= targetData.permissionLevel) {
+                player.sendMessage('§cYou cannot unmute a player with the same or higher rank than you.');
+                return;
+            }
         }
-
-        const executorData = getPlayer(player.id);
-        const targetData = loadPlayerData(targetId);
-
-        if (!executorData || !targetData) {
-            player.sendMessage('§cCould not retrieve player data for permission check.');
-            playSound(player, 'note.bass');
-            return;
-        }
-
-        if (executorData.permissionLevel >= targetData.permissionLevel) {
-            player.sendMessage('§cYou cannot unmute a player with the same or higher rank than you.');
-            playSound(player, 'note.bass');
-            return;
-        }
-
         removePunishment(targetId);
         player.sendMessage(`§aSuccessfully unmuted ${targetName}.`);
-        // Cannot send message to target if they are offline.
-        playSound(player, 'random.orb');
+        if (!player.isConsole) {
+            playSound(player, 'random.orb');
+        }
     }
 });

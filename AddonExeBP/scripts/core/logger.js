@@ -7,6 +7,7 @@ import { getConfig } from './configManager.js';
 export function debugLog(message) {
     const config = getConfig();
     if (config && config.debug) {
+        // eslint-disable-next-line no-console
         console.log(message);
     }
 }

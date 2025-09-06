@@ -1,40 +1,99 @@
 import { world } from '@minecraft/server';
 import { config as defaultConfig } from '../config.js';
+import { errorLog } from './errorLogger.js';
+import { deepEqual, deepMerge, setValueByPath, reconcileConfig } from './objectUtils.js';
 
-let loadedConfig = null;
+const currentConfigKey = 'exe:config:current';
+const lastLoadedConfigKey = 'exe:config:lastLoaded';
+
+let currentConfig = null;
+let lastLoadedConfig = null;
 
 /**
- * Loads the addon's configuration from world dynamic properties.
- * It merges the saved config with the default config to handle new additions.
+ * Loads the addon's configurations from world dynamic properties.
  * This should only be called once at startup from main.js.
+ * @returns {boolean} True if this is the first time the addon is being initialized.
  */
 export function loadConfig() {
-    const configStr = world.getDynamicProperty('addonexe:config');
+    const newDefaultConfig = deepMerge({}, defaultConfig);
+    let isFirstInit = false;
 
-    if (configStr === undefined) {
-        world.setDynamicProperty('addonexe:config', JSON.stringify(defaultConfig));
-        loadedConfig = defaultConfig;
+    const userSavedConfigStr = world.getDynamicProperty(currentConfigKey);
+    const oldDefaultConfigStr = world.getDynamicProperty(lastLoadedConfigKey);
+
+    if (!userSavedConfigStr) {
+        // Scenario: First-time initialization.
+        isFirstInit = true;
+        currentConfig = deepMerge({}, newDefaultConfig);
+        errorLog('[ConfigManager] No saved config found. Initializing with default values.');
     } else {
+        // Scenario: Subsequent startup. Load all configs.
+        let userSavedConfig;
+        let oldDefaultConfig;
         try {
-            const savedConfig = JSON.parse(configStr);
-            // Merge default config with saved to ensure new properties are added
-            loadedConfig = { ...defaultConfig, ...savedConfig };
-            // Save the potentially updated config back to the world
-            world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
-        } catch (error) {
-            console.error('[ConfigManager] Failed to parse saved config. Loading default config instead.', error);
-            loadedConfig = defaultConfig;
+            userSavedConfig = JSON.parse(userSavedConfigStr);
+        } catch (e) {
+            errorLog('[ConfigManager] Failed to parse user-saved config. It will be reset.', e);
+            userSavedConfig = deepMerge({}, newDefaultConfig);
         }
+        try {
+            oldDefaultConfig = JSON.parse(oldDefaultConfigStr);
+        } catch {
+            errorLog('[ConfigManager] Could not parse last loaded config. Assuming it is the first load after an update.');
+            oldDefaultConfig = null; // Treat as if the last version is unknown.
+        }
+
+        // Check for version change to determine which logic to use.
+        if (!oldDefaultConfig || !deepEqual(oldDefaultConfig.version, newDefaultConfig.version)) {
+            // Scenario: Addon has been updated (version is different).
+            errorLog('[ConfigManager] Version mismatch detected. Migrating config.');
+            // Preserve user's settings by merging them on top of the new defaults.
+            currentConfig = deepMerge(newDefaultConfig, userSavedConfig);
+        } else {
+            // Scenario: Same version, normal load.
+            // Reconcile changes made directly to config.js file as per user's logic.
+            currentConfig = reconcileConfig(newDefaultConfig, oldDefaultConfig, userSavedConfig);
+        }
+    }
+
+    // After all logic, the 'last loaded' config must be updated to the new default structure
+    // for the *next* startup's comparison.
+    lastLoadedConfig = deepMerge({}, newDefaultConfig);
+
+    saveCurrentConfig();
+    saveLastLoadedConfig();
+
+    return isFirstInit;
+}
+
+/**
+ * Gets the currently active configuration.
+ * @returns {object} The loaded configuration object.
+ */
+export function getConfig() {
+    return currentConfig || defaultConfig;
+}
+
+/**
+ * Saves the current config to its dynamic property.
+ */
+function saveCurrentConfig() {
+    try {
+        world.setDynamicProperty(currentConfigKey, JSON.stringify(currentConfig));
+    } catch (e) {
+        errorLog('[ConfigManager] Failed to save current config.', e);
     }
 }
 
 /**
- * Gets the currently loaded configuration.
- * Assumes that loadConfig() has already been called.
- * @returns {object} The loaded configuration object.
+ * Saves the last loaded config to its dynamic property.
  */
-export function getConfig() {
-    return loadedConfig || defaultConfig;
+function saveLastLoadedConfig() {
+    try {
+        world.setDynamicProperty(lastLoadedConfigKey, JSON.stringify(lastLoadedConfig));
+    } catch (e) {
+        errorLog('[ConfigManager] Failed to save last loaded config.', e);
+    }
 }
 
 /**
@@ -43,37 +102,43 @@ export function getConfig() {
  * @param {*} value The new value for the key.
  */
 export function updateConfig(key, value) {
-    if (!loadedConfig) {
-        // This case should ideally not be hit if init order is correct
+    if (!currentConfig) {
         loadConfig();
     }
-    loadedConfig[key] = value;
-    world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
+    currentConfig[key] = value;
+    saveCurrentConfig();
 }
 
 /**
- * Reloads the configuration, ensuring ownerPlayerNames is updated from the config file
- * as it was read on server startup.
+ * Reloads the configuration based on the user's specified logic.
  */
-export function forceReloadOwnerNameFromFile() {
-    const configStr = world.getDynamicProperty('addonexe:config');
-    let savedConfig = {};
+export function reloadConfig() {
+    // eslint-disable-next-line no-console
+    console.log('[ConfigManager] Reloading configuration...');
+    const newDefaultConfig = deepMerge({}, defaultConfig);
 
-    if (configStr !== undefined) {
-        try {
-            savedConfig = JSON.parse(configStr);
-        } catch (error) {
-            console.error('[ConfigManager] Failed to parse saved config during reload. Using default config as base.', error);
-            savedConfig = defaultConfig;
-        }
-    } else {
-        savedConfig = defaultConfig;
+    // Reconcile the new file defaults with the last-known defaults and the current user settings.
+    currentConfig = reconcileConfig(newDefaultConfig, lastLoadedConfig, currentConfig);
+
+    // Update the last loaded config to the new default structure for the next comparison.
+    lastLoadedConfig = deepMerge({}, newDefaultConfig);
+
+    saveCurrentConfig();
+    saveLastLoadedConfig();
+    // eslint-disable-next-line no-console
+    console.log('[ConfigManager] Configuration reloaded and reconciled.');
+}
+
+/**
+ * Updates multiple keys in the configuration using path notation and saves once.
+ * @param {Object.<string, any>} updates An object where keys are dot-notation paths and values are the new values.
+ */
+export function updateMultipleConfig(updates) {
+    if (!currentConfig) {
+        loadConfig();
     }
-
-    // Merge defaults with saved, then explicitly set owner names from the file's startup state
-    loadedConfig = { ...defaultConfig, ...savedConfig };
-    loadedConfig.ownerPlayerNames = defaultConfig.ownerPlayerNames;
-
-    // Save the reloaded and corrected config back to the world
-    world.setDynamicProperty('addonexe:config', JSON.stringify(loadedConfig));
+    for (const path in updates) {
+        setValueByPath(currentConfig, path, updates[path]);
+    }
+    saveCurrentConfig();
 }

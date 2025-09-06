@@ -1,16 +1,16 @@
 import { commandManager } from './commandManager.js';
 import { getPlayer } from '../../core/playerDataManager.js';
-import { getConfig } from '../../core/configManager.js';
 
-function showCategorizedHelp(player, userPermissionLevel) {
-    const config = getConfig();
+function showCategorizedHelp(player, userPermissionLevel, isConsole) {
     const categorizedCommands = {};
 
-    // Dynamically categorize all registered commands that the player has access to
-    for (const cmd of commandManager.commands.values()) {
-        if (userPermissionLevel > cmd.permissionLevel) continue;
-        const cmdSetting = config.commandSettings?.[cmd.name];
-        if (cmdSetting && cmdSetting.enabled === false) continue;
+    let commandList = commandManager.commands;
+    if (isConsole) {
+        commandList = commandList.filter(cmd => cmd.allowConsole);
+    }
+
+    for (const cmd of commandList) {
+        if (userPermissionLevel > cmd.permissionLevel) { continue; }
 
         const category = cmd.category || 'General';
         if (!categorizedCommands[category]) {
@@ -19,7 +19,6 @@ function showCategorizedHelp(player, userPermissionLevel) {
         categorizedCommands[category].push(cmd);
     }
 
-    // Define the order in which categories should appear
     const categoryOrder = [
         'Administration',
         'Moderation',
@@ -37,7 +36,6 @@ function showCategorizedHelp(player, userPermissionLevel) {
 
         if (commands && commands.length > 0) {
             commandsShown = true;
-            // Use a distinct color for the category headers
             helpMessage += `\n§l§e--- ${categoryName} ---§r`;
             for (const cmd of commands.sort((a, b) => a.name.localeCompare(b.name))) {
                 helpMessage += `\n §b!${cmd.name}§r: ${cmd.description}`;
@@ -53,11 +51,11 @@ function showCategorizedHelp(player, userPermissionLevel) {
     player.sendMessage(helpMessage);
 }
 
-function showSpecificHelp(player, commandName) {
-    const cmd = commandManager.commands.get(commandName) || commandManager.commands.get(commandManager.aliases.get(commandName));
+function showSpecificHelp(player, commandName, isConsole) {
+    const cmd = commandManager.commands.find(c => c.name === commandName || (c.aliases && c.aliases.includes(commandName)));
 
-    if (!cmd) {
-        player.sendMessage(`§cUnknown command: '${commandName}'.`);
+    if (!cmd || (isConsole && !cmd.allowConsole)) {
+        player.sendMessage(`§cUnknown command: '${commandName}'. Or it cannot be used from the console.`);
         return;
     }
 
@@ -74,19 +72,33 @@ function showSpecificHelp(player, commandName) {
 
 commandManager.register({
     name: 'help',
-    aliases: ['?', 'h'],
+    slashName: 'xhelp',
+    aliases: ['?', 'h', 'cmds', 'commands'],
+    disabledSlashAliases: ['?'],
     description: 'Displays a list of available commands or help for a specific command.',
     category: 'General',
     permissionLevel: 1024, // Available to everyone
+    allowConsole: true,
+    parameters: [
+        { name: 'command', type: 'string', description: 'The command to get help for.', optional: true }
+    ],
     execute: (player, args) => {
-        const pData = getPlayer(player.id);
-        const userPermissionLevel = pData ? pData.permissionLevel : 1024;
-        const topic = args[0] ? args[0].toLowerCase() : null;
+        let userPermissionLevel = 1024; // Default for players without data
+        if (player.isConsole) {
+            userPermissionLevel = 0; // Highest permission for console
+        } else {
+            const pData = getPlayer(player.id);
+            if (pData) {
+                userPermissionLevel = pData.permissionLevel;
+            }
+        }
+
+        const topic = args.command ? args.command.toLowerCase() : null;
 
         if (!topic) {
-            showCategorizedHelp(player, userPermissionLevel);
+            showCategorizedHelp(player, userPermissionLevel, player.isConsole);
         } else {
-            showSpecificHelp(player, topic);
+            showSpecificHelp(player, topic, player.isConsole);
         }
     }
 });
