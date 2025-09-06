@@ -2,6 +2,13 @@
 
 Commands in AddonExe are primarily run using native slash commands, which support autocomplete in-game.
 
+> [!IMPORTANT]
+> **Using Commands from the Server Console**
+> All slash commands can also be executed directly from the server console (e.g., in Bedrock Dedicated Server).
+> - **Commands are run with a `/` prefix,** just like in-game (e.g., `/xhelp`).
+> - **Specify the target player:** For commands that normally affect the person running them (like `/home` or `/clear`), you must specify the target player's name. For example: `/home "Steve" "my-base"` or `/clear "Steve"`.
+> - The chat-based `!` prefix is not supported in the console.
+
 > [!NOTE]
 > - To use slash commands, you must **enable cheats** in your world settings.
 > - Some commands have an `x` prefix (e.g., `/xhelp`) to avoid conflicts with built-in Minecraft commands.

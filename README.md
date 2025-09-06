@@ -37,7 +37,7 @@ Designed to be robust, highly configurable, and packed with features to ensure f
 
 - **Scripting Power:** Built entirely with the Minecraft Scripting API, offering flexibility and complex detection logic not always possible with traditional methods.
 - **Comprehensive Detection (Coming Soon):** While currently a powerful moderation tool, a full suite of cheat detections is in active development.
-- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`/panel`) and extensive slash commands. Most commands also have a chat-based fallback (e.g. `!panel`).
+- **User-Friendly Tools:** Manage your server with ease using an intuitive in-game UI (`/panel`) and extensive slash commands, which can be used in-game, from the server console, or via a chat-based fallback (e.g. `!panel`).
 - **Highly Customizable:** Fine-tune almost every aspect, from feature toggles to command permissions, to perfectly suit your server's needs.
 - **Active Development:** Continuously updated with new features, improvements, and compatibility for the latest Minecraft versions.
 - **Open & Documented:** With clear documentation and an open codebase, understand how it works and even contribute!
@@ -95,7 +95,8 @@ We recommend the following manual installation method, as it makes future config
     - In your world settings, go to the "Game" section and enable **"Activate Cheats"**. This is required for slash commands to work.
     - Next, go to the "Experiments" section and **enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features and will not function without this setting enabled.
     > **For Bedrock Dedicated Server (BDS) users:**
-    > You must also edit your `server.properties` file and set `allow-cheats=true`.
+    > - You must also edit your `server.properties` file and set `allow-cheats=true`.
+    > - Commands can be run directly from the server console using the leading slash (e.g., `/xreload`). See the [Commands List](Docs/Commands.md) for more details.
 5.  **Prioritize:** Ensure `AddonExeBP` is at the **TOP** of your behavior pack list in the world settings. This is crucial for AddonExe to function correctly.
 6.  **👑 Set Owner(s) (CRUCIAL!):**
     - Now that you've installed the folders, navigate to `behavior_packs/AddonExeBP/scripts/` and open `config.js` in a text editor.
