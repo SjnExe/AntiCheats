@@ -4,31 +4,32 @@ import { errorLog } from '../../core/errorLogger.js';
 // By importing this single file, all commands within the imported modules will be registered.
 
 const commandFiles = [
-    // General
+    // --- General Commands ---
     'help.js',
-    'deathcoords.js',
     'panel.js',
     'rules.js',
     'status.js',
     'version.js',
+    'deathcoords.js',
+    'spawn.js',       // Contains /setspawn (admin)
 
-    // Home System
-    'home.js',
-    'spawn.js',
+    // --- TPA System ---
+    'tpa.js',         // Contains /tpa, /tpahere, /tpaccept, /tpadeny, /tpacancel, /tpastatus
 
-    // Economy System
-    'balance.js',
-    'pay.js',
-    'bounty.js',
+    // --- Home System ---
+    'home.js',        // Contains /sethome, /delhome, /homes
+
+    // --- Economy System ---
+    'balance.js',     // Contains /baltop
+    'pay.js',         // Contains /payconfirm
+    'bounty.js',      // Contains /listbounty, /removebounty
     'kit.js',
 
-    // TPA System
-    'tpa.js',
-
-    // Moderation
+    // --- Moderation Commands ---
+    'report.js',      // Contains /reports, /clearreports (admin)
     'kick.js',
-    'ban.js', // This file contains 'unban'
-    'mute.js', // This file contains 'unmute'
+    'ban.js',         // Contains /unban, /offlineban
+    'mute.js',        // Contains /unmute
     'freeze.js',
     'vanish.js',
     'clear.js',
@@ -36,19 +37,18 @@ const commandFiles = [
     'invsee.js',
     'copyinv.js',
     'clearchat.js',
-    'report.js',
 
-    // Administration
+    // --- Administration Commands ---
     'admin.js',
-    'chattoconsole.js',
+    'debug.js',
+    'gamemode.js',
+    'rank.js',
     'reload.js',
     'restart.js',
     'save.js',
-    'debug.js',
-    'rank.js',
     'setbalance.js',
     'tp.js',
-    'gamemode.js',
+    'chattoconsole.js',
     'xraynotify.js'
 ];
 

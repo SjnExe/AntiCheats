@@ -1,9 +1,8 @@
 import { commandManager } from './commandManager.js';
 import * as reportManager from '../../core/reportManager.js';
-import { getPlayerIdByName } from '../../core/playerDataManager.js';
+import { getPlayerIdByName, loadPlayerData } from '../../core/playerDataManager.js';
 import { ModalFormData } from '@minecraft/server-ui';
 import { uiWait } from '../../core/utils.js';
-import { world } from '@minecraft/server';
 import { showPanel } from '../../core/uiManager.js';
 import { clearAllReports } from '../../core/reportManager.js';
 
@@ -29,9 +28,9 @@ commandManager.register({
             return;
         }
 
-        // Try to get the correctly-cased name if the player is online, otherwise use the provided name.
-        const onlinePlayer = Array.from(world.getPlayers()).find(p => p.id === targetId);
-        const correctTargetName = onlinePlayer ? onlinePlayer.name : reportedPlayerName;
+        // Get the correct name for the player, whether they are online or offline.
+        const offlineData = loadPlayerData(targetId);
+        const correctTargetName = offlineData ? offlineData.name : reportedPlayerName;
 
         const form = new ModalFormData()
             .title(`Report ${correctTargetName}`)

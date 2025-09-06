@@ -1,4 +1,3 @@
-import { world } from '@minecraft/server';
 import { commandManager } from './commandManager.js';
 import * as economyManager from '../../core/economyManager.js';
 import * as playerDataManager from '../../core/playerDataManager.js';
@@ -60,31 +59,27 @@ commandManager.register({
             return;
         }
 
-        const allData = playerDataManager.getAllPlayerData();
-        if (allData.size === 0) {
-            player.sendMessage('§cNo player balances to show.');
+        const leaderboard = playerDataManager.getLeaderboard();
+        const displayLimit = config.economy.baltopLimit ?? 10;
+        const topPlayers = leaderboard.slice(0, displayLimit);
+
+        if (topPlayers.length === 0) {
+            player.sendMessage('§cThe leaderboard is currently empty.');
             return;
         }
 
-        const allPlayers = world.getAllPlayers();
-
-        const leaderboard = [...allData.entries()]
-            .map(([playerId, pData]) => ({
-                name: allPlayers.find(p => p.id === playerId)?.name ?? 'Unknown',
-                balance: pData.balance ?? 0
-            }))
-            .filter(p => p.balance > 0)
-            .sort((a, b) => b.balance - a.balance)
-            .slice(0, config.economy.baltopLimit);
-
-        if (leaderboard.length === 0) {
-            player.sendMessage('§cAll players are broke and no one has money.');
-            return;
-        }
+        const rankColors = {
+            1: '§4', // Dark Red
+            2: '§c', // Red
+            3: '§6'  // Gold
+        };
+        const defaultColor = '§e'; // Yellow
 
         let message = '§l§b--- Top Balances ---\n';
-        leaderboard.forEach((entry, index) => {
-            message += `§e#${index + 1}§r ${entry.name}: §a$${entry.balance.toFixed(2)}\n`;
+        topPlayers.forEach((entry, index) => {
+            const rank = index + 1;
+            const color = rankColors[rank] || defaultColor;
+            message += `${color}#${rank}§r ${entry.name}: §a$${entry.balance.toFixed(2)}\n`;
         });
 
         player.sendMessage(message.trim());
