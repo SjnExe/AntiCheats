@@ -35,7 +35,7 @@
   - **Kits:** A system for players to claim predefined kits of items with cooldowns.
   - **Death Coordinates:** Automatically informs players of their death location upon respawning.
 
-➡️ **For a full list and details of all features, check out our [Features Overview](Docs/FeaturesOverview.md)!**
+➡️ **For a full list and details of all features, check out our [Features Overview](https://github.com/SjnExe/AddonExe/blob/exe/Docs/FeaturesOverview.md)!**
 
 ---
 
@@ -66,8 +66,8 @@ Follow steps 1 & 2 above, then:
     -   Move the extracted `AddonExeBP` and `AddonExeRP` folders into your BDS's `behavior_packs` and `resource_packs` folders.
 2.  **Activate the Packs:**
     -   Download the following two files from the root of the repository:
-        -   [**`world_behavior_packs.json`**](world_behavior_packs.json)
-        -   [**`world_resource_packs.json`**](world_resource_packs.json)
+        -   [**`world_behavior_packs.json`**](https://github.com/SjnExe/AddonExe/blob/exe/world_behavior_packs.json)
+        -   [**`world_resource_packs.json`**](https://github.com/SjnExe/AddonExe/blob/exe/world_resource_packs.json)
     -   Place both of these files into the root folder of your world (the same folder that contains your `level.dat`).
 3.  **Enable Beta APIs:**
     -   The easiest method is to download your world, open it in a local version of Minecraft, enable the "Beta APIs" experiment, and then re-upload the world to your server.
@@ -87,16 +87,16 @@ After installing, you **must** set yourself as the owner to access admin command
     ```
 4.  Save the file. If your server is live, run the `/reload` command in-game.
 
-➡️ For a detailed guide on all settings, see our [**Configuration Guide**](Docs/ConfigurationGuide.md).
+➡️ For a detailed guide on all settings, see our [**Configuration Guide**](https://github.com/SjnExe/AddonExe/blob/exe/Docs/ConfigurationGuide.md).
 
 ---
 
 ## 📖 Full Documentation & Support
 
-- 📜 [**Commands List**](Docs/Commands.md) - Every command for players and admins.
-- 🏅 [**Rank System**](Docs/RankSystem.md) - How to configure and use ranks.
-- ❓ [**F.A.Q.**](Docs/F.A.Q.md) - Answers to common questions.
-- 🛠️ [**Troubleshooting Guide**](Docs/Troubleshooting.md) - Solutions for common problems.
+- 📜 [**Commands List**](https://github.com/SjnExe/AddonExe/blob/exe/Docs/Commands.md) - Every command for players and admins.
+- 🏅 [**Rank System**](https://github.com/SjnExe/AddonExe/blob/exe/Docs/RankSystem.md) - How to configure and use ranks.
+- ❓ [**F.A.Q.**](https://github.com/SjnExe/AddonExe/blob/exe/Docs/F.A.Q.md) - Answers to common questions.
+- 🛠️ [**Troubleshooting Guide**](https://github.com/SjnExe/AddonExe/blob/exe/Docs/Troubleshooting.md) - Solutions for common problems.
 
 ### Need Help?
 - **Join our [Discord Server](https://discord.gg/SMUHUnGyyz)** for community support.
@@ -106,4 +106,4 @@ After installing, you **must** set yourself as the owner to access admin command
 
 ## ⚖️ License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/SjnExe/AddonExe/blob/exe/LICENSE) file for details.
