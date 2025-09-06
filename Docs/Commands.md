@@ -1,40 +1,44 @@
 # AddonExe Commands
 
-Commands in AddonExe are primarily run using slash commands (e.g., `/help`), which support autocomplete in-game. For convenience, most commands can also be run using a chat-based prefix, which defaults to `!` (e.g., `!help`).
+Commands in AddonExe are primarily run using native slash commands, which support autocomplete in-game.
 
 > [!NOTE]
 > - To use slash commands, you must **enable cheats** in your world settings.
-> - For chat commands, arguments with spaces must be enclosed in `"double quotes"`.
+> - Some commands have an `x` prefix (e.g., `/xhelp`) to avoid conflicts with built-in Minecraft commands.
+> - The `exe:` namespace can be used as a fallback for non-'x' commands if other addons have conflicting command names (e.g. `/exe:status`).
+> - For convenience, most commands can also be run using a chat-based prefix, which defaults to `!` (e.g., `!help`). When using chat commands, arguments with spaces must be enclosed in `"double quotes"`.
 > - Angle brackets `< >` denote required parameters. Square brackets `[ ]` denote optional parameters.
 
 ---
 
 ## Member Commands
-Commands available to all players by default (Permission Level 1024).
+Commands available to all players by default.
 
 ### General
-- **/help [command]**
+- **/xhelp [command]**
   - Shows a list of available commands or help for a specific command.
-  - *Aliases: `?`, `h`, `cmds`, `commands`*
+  - *Chat Alias: `!help`*
 - **/panel**
   - Opens the main UI panel.
-  - *Aliases: `ui`, `menu`*
+  - *Chat Alias: `!panel`*
 - **/rules [ruleNumber]**
   - Displays the server rules.
-  - *Aliases: `rule`*
+  - *Chat Alias: `!rules`*
 - **/status**
-  - Displays the current server status, including online players and current tick.
+  - Displays the current server status.
+  - *Chat Alias: `!status`*
 - **/version**
   - Displays the current version of the addon.
-  - *Aliases: `ver`*
+  - *Chat Alias: `!version`*
 - **/deathcoords**
   - Shows your last death coordinates.
-  - *Aliases: `deathlocation`, `lastdeath`*
+  - *Chat Alias: `!deathcoords`*
 - **/spawn**
   - Teleports you to the world spawn.
-  - *Aliases: `lobby`, `hub`*
+  - *Chat Alias: `!spawn`*
 - **/kit [kitName]**
   - Lists available kits or claims a specific kit.
+  - *Chat Alias: `!kit`*
 
 ### TPA System
 - **/tpa <target>**
@@ -63,10 +67,8 @@ Commands available to all players by default (Permission Level 1024).
 ### Economy System
 - **/balance [target]**
   - Shows your or another player's balance.
-  - *Aliases: `bal`, `money`*
 - **/baltop**
   - Shows the players with the highest balances on the server.
-  - *Aliases: `topbal`, `leaderboard`*
 - **/pay <target> <amount>**
   - Pays another player from your balance.
 - **/payconfirm**
@@ -83,31 +85,31 @@ Commands available to all players by default (Permission Level 1024).
 ---
 
 ## Moderation Commands
-Commands available to Admins and above (Permission Level 1).
+Commands available to Admins and above.
 
 ### Player Punishment
 - **/ban <target> [duration] [reason]**
-  - Bans a player. `duration` can be `30m`, `2h`, `7d`, etc.
+  - Bans a player.
 - **/unban <target>**
   - Unbans a player.
 - **/offlineban <target> [duration] [reason]**
   - Bans a player who is currently offline.
 - **/kick <target> [reason]**
-  - Kicks a player from the server. (Chat-only)
+  - Kicks a player from the server.
 - **/mute <target> [duration] [reason]**
   - Mutes a player in chat.
 - **/unmute <target>**
   - Unmutes a player.
 - **/freeze <target>**
-  - Freezes or unfreezes a player, preventing them from moving.
+  - Freezes or unfreezes a player.
 
 ### Player Management
 - **/invsee <target> [page]**
-  - Views a player's inventory in chat.
+  - Views a player's inventory.
 - **/clear [target]**
-  - Clears your own or another player's inventory. (Chat-only)
+  - Clears another player's inventory.
 - **/ecwipe [target]**
-  - Clears a player's Ender Chest. (Chat-only)
+  - Clears a player's Ender Chest.
 - **/copyinv <target>**
   - Copies the inventory of another player.
 - **/vanish**
@@ -115,9 +117,9 @@ Commands available to Admins and above (Permission Level 1).
 
 ### Server Moderation
 - **/report <target>**
-  - Reports a player for misconduct using a UI.
+  - Reports a player for misconduct.
 - **/reports**
-  - Views the list of active reports via a UI panel.
+  - Views the list of active reports.
 - **/clearreports**
   - Clears all player-submitted reports.
 - **/clearchat**
@@ -128,13 +130,14 @@ Commands available to Admins and above (Permission Level 1).
 ---
 
 ## Administration Commands
-Commands for high-level server management, typically for Admins and Owners.
+Commands for high-level server management.
 
 ### Core Management
 - **/admin <target> <add|remove>**
-  - Adds or removes a player from the Admin rank. (Owner only)
-- **/reload**
-  - Reloads the addon configuration from `config.js`.
+  - Adds or removes a player from the Admin rank.
+- **/xreload**
+  - Reloads the addon configuration.
+  - *Chat Alias: `!reload`*
 - **/debug [true|false]**
   - Toggles the script debug logging mode.
 - **/save**
@@ -147,8 +150,8 @@ Commands for high-level server management, typically for Admins and Owners.
   - Sets a player's balance.
 - **/setspawn [x] [y] [z]**
   - Sets the world's default spawn point.
-- **/tp <target> [destination]** or **!tp [target] <x> <y> <z>**
-  - Teleports a player to another player or to coordinates. (Chat-only for coordinates)
+- **/tp <target> [destination]**
+  - Teleports a player.
 - **/gamemode <mode> [target]**
   - Sets a player's gamemode.
 - **/rank <set|remove> <target> <rankId>**
