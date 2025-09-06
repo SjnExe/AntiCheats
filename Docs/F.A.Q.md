@@ -83,7 +83,7 @@ Installing on a Bedrock Dedicated Server is slightly different, as you manually 
         -   [**`world_behavior_packs.json`**](../world_behavior_packs.json)
         -   [**`world_resource_packs.json`**](../world_resource_packs.json)
     -   Place both of these files into the root folder of your world (the same folder that contains your `level.dat`).
-    -   The server will read these files on startup and automatically activate the required packs for that world. The version `[0,0,0]` in these files tells the server to always use the latest version of the packs you have installed.
+    -   The server will read these files on startup and automatically activate the required packs for that world. The version `[0,1,0]` in these files should be updated whenever you update the addon
 
 3.  **Enable Beta APIs for BDS:**
     -   AddonExe requires the "Beta APIs" experimental feature to be enabled. This can be tricky on BDS. You have two main options:
